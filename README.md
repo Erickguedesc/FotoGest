@@ -4,7 +4,7 @@ A proposta do projeto é desenvolver uma plataforma digital voltada para fotógr
 
 ## Alunos integrantes da equipe
 
-* Arthur Nunes Gontijo de Barcellosm 
+* Arthur Nunes Gontijo de Barcellos
 * Caio Gabriel de Lima Leal
 * Erick Guedes de Carvalho
 * Ian Nycolas Fernandes Costa
