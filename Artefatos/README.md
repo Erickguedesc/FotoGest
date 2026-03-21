@@ -2,15 +2,12 @@
 
 Este diretório mantém os artefatos do projeto. 
 
+## [Atas](../Artefatos/Atas/)
 
-Liste os artefatos produzidos, com suas localizações e descrição do conteúdo.
+- [Ata: XX de XX de XXXX](../Artefatos/Atas/XXXXX.pdf)
 
-Por exemplo, pode-se criar um diretório "atas", que seria descrito da seguinte forma:
-* `/atas`
-	* **Ata_xx_ago_2020.docx**: Ata de reunião do dia xx de agosto de 2020.
+## [Modelagem](../Artefatos/Modelagem/)
 
-Pode-se também criar um diretório "canvas", que seria descrito da seguinte forma:
-* `/canvas`
-	* **BusinessModelCanvas.pdf**: Canvas do modelo de negócios.
+## [Planejamento](../Artefatos/Planejamento/)
 
-Assim, sucessivamente para outros artefatos como `processos` e `DER`, etc.
+## [Protótipo-Telas](../Artefatos/Protótipo-Telas/)
