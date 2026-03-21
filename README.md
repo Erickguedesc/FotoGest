@@ -1,4 +1,4 @@
-# [OLHARI]
+# OLHARI
 
 [Escreva um ou dois  parágrafo resumindo o objetivo do seu projeto.]
 
