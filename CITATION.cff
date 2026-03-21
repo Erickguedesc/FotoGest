@@ -1,27 +1,23 @@
 cff-version: 1.0.1
 message: Please cite this software using these metadata.
-title: 
+title: Olhari
 authors:
-  - family-names: 
-    given-names: 
-  - family-names: 
-    given-names: 
-  - family-names: 
-    given-names: 
-  - family-names: 
-    given-names: 
-  - family-names: 
-    given-names: 
-  - family-names: 
-    given-names:
+  - family-names: Nunes Gontijo de Barcellos
+    given-names: Arthur
+  - family-names: Gabriel de Lima Leal
+    given-names: Caio
+  - family-names: Guedes de Carvalho
+    given-names: Erick
+  - family-names: Nycolas Fernandes Costa
+    given-names: Ian
   - name-suffix: Professor
     affiliation: PUC Minas
-    family-names: 
-    given-names: 
+    family-names: Torio Lopes Ruas Nhimi
+    given-names: Filipe
   - name-suffix: Professor
     affiliation: PUC Minas
-    family-names: 
-    given-names: 
+    family-names: Vilela Cardoso
+    given-names: Leonardo
 keywords:
   - 
   - 
