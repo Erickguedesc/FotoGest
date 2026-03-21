@@ -1,18 +1,18 @@
 # OLHARI
 
-[Escreva um ou dois  parágrafo resumindo o objetivo do seu projeto.]
+A proposta do projeto é desenvolver uma plataforma digital voltada para fotógrafos, reunindo em um único lugar ferramentas para divulgação do trabalho, organização e gestão do negócio. A ideia é facilitar tanto a conexão com clientes quanto a administração dos serviços, tornando o processo mais profissional, organizado e eficiente.
 
 ## Alunos integrantes da equipe
 
-* [Nome completo do aluno 1]
-* [Nome completo do aluno 2]
-* [Nome completo do aluno 3]
-* [Nome completo do aluno 4]
+* Arthur Nunes Gontijo de Barcellosm 
+* Caio Gabriel de Lima Leal
+* Erick Guedes de Carvalho
+* Ian Nycolas Fernandes Costa
 
 ## Professores responsáveis
 
-* [Nome completo do professor 1]
-* [Nome completo do professor 2]
+* Filipe Torio Lopes Ruas Nhimi
+* Leonardo Vilela Cardoso
 
 ## Instruções de utilização
 
