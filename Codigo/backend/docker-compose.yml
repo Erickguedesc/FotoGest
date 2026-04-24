@@ -1,13 +1,56 @@
-version: '3.8'
+  version: '3.9'
 
-services:
-  postgres:
-    image: postgres:15
-    container_name: olhari_postgres
-    restart: always
-    environment:
-      POSTGRES_DB: olhari
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456
-    ports:
-      - "5432:5432"
+  services:
+    olhari-db:
+      image: postgres:16-alpine
+      container_name: olhari_postgres
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB:       olhari_db
+        POSTGRES_USER:     olhari_user
+        POSTGRES_PASSWORD: olhari_senha123
+      ports:
+        - "5432:5432"
+      volumes:
+        - pgdata:/var/lib/postgresql/data
+        # Executa o schema na primeira inicialização:
+        - ./src/main/resources/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U olhari_user -d olhari_db"]
+        interval: 10s
+        timeout:  5s
+        retries:  5
+
+    olhari-api:
+      build: .
+      container_name: olhari_api
+      depends_on:
+        olhari-db:
+          condition: service_healthy
+      environment:
+        SPRING_DATASOURCE_URL:      jdbc:postgresql://olhari-db:5432/olhari_db
+        SPRING_DATASOURCE_USERNAME: olhari_user
+        SPRING_DATASOURCE_PASSWORD: olhari_senha123
+      ports:
+        - "8080:8080"
+
+  volumes:
+    pgdata:
+      driver: local
+
+
+
+  # Subir apenas o banco (durante desenvolvimento local)
+  #docker compose up olhari-db -d
+
+  # Verificar se está rodando
+  #docker compose ps
+
+  # Acessar o banco via CLI
+  #docker exec -it olhari_postgres psql -U olhari_user -d olhari_db
+
+  # Parar e remover containers (mantém os dados)
+  #docker compose stop
+
+  # Resetar tudo (apaga dados também)
+  #docker compose down -v

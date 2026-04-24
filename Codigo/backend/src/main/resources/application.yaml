@@ -1,13 +1,76 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/olhari
-    username: postgres
-    password: 123456
+  application:
+    name: olhari-api
 
+  # ── BANCO DE DADOS
+  datasource:
+    url: jdbc:postgresql://localhost:5432/olhari_db
+    username: olhari_user
+    password: olhari_senha123
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+  # ── JPA / HIBERNATE
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      # Alterado para 'update' para criar as tabelas no seu banco novo
+      ddl-auto: update # Em produção, alterar para 'validate' quando clientes reais usar o sistema
+    show-sql: true # Permite ver o Hibernate criando as tabelas no console
     properties:
       hibernate:
         format_sql: true
+        jdbc.time_zone: America/Sao_Paulo
+
+  # ── E-MAIL (Configuração para disparo automático)
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    # PASSO 1: Substitua pelo e-mail real do projeto (ex: contato.olhari@gmail.com)
+    username: seu-email@gmail.com 
+    # PASSO 2: NÃO use sua senha comum. Use a "Senha de App" gerada no Google.
+    password: sua-app-password-gmail 
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+  # ── SEGURANÇA (Senha fixa para facilitar seu teste)
+  security:
+    user:
+      name: admin
+      password: admin123
+
+# ── CONFIGURAÇÃO DO ACTUATOR E MONITORAMENTO
+# APÓS CONFIGURAR O E-MAIL, mude 'mail.enabled' para true para validar a conexão.
+management:
+  health:
+    mail:
+      enabled: false  # Cura o erro 503: não derruba a API se o e-mail falhar.. dps mudar para true apos configurar o email acima
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+
+# ── SEGURANÇA E NUVEM
+jwt:
+  secret: SuaChaveSecretaJwtDeveSerLongaESegura128bitsMinimo!
+  expiration: 86400000
+
+cloudinary:
+  cloud-name: ddwei8qbu
+  api-key: 776843477352766
+  api-secret: XGkFTftRE5VCS7aT9ho32P_W6fc
+  
+# ── SERVIDOR E LOGS
+server:
+  port: 8080
+  error:
+    include-message: always
+
+logging:
+  level:
+    com.olhari: DEBUG
+    org.hibernate.SQL: INFO
+    org.springframework: WARN
