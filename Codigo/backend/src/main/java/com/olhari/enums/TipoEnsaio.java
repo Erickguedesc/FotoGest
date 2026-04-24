@@ -11,5 +11,8 @@ public enum TipoEnsaio {
     BOOK,
     BATIZADO,
     EXTERNO,
+    FORMATURA, 
+    EVENTO,    
+    DEBUTANTE,
     OUTRO
 }
