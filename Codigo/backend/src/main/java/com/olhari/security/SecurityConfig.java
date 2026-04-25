@@ -19,4 +19,8 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+    // Se precisar de autenticação, você pode configurar aqui
+    // teste//
+
 }
