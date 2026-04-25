@@ -36,7 +36,7 @@ public class FotoService {
                 .orElseThrow(() -> new RuntimeException("Ensaio não encontrado!"));
 
         // 2. Sobe para o Cloudinary
-        Map uploadResult = cloudinaryService.upload(arquivo);
+        Map<String, Object> uploadResult = cloudinaryService.upload(arquivo);
         String url = (String) uploadResult.get("secure_url");
         String publicId = (String) uploadResult.get("public_id");
 
