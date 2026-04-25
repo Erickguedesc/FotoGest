@@ -12,16 +12,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleConflict(DataIntegrityViolationException ex) {
-        String mensagem = "Erro de integridade de dados.";
-        
+        String message = "Erro de integridade de dados.";
+
         // Verifica se o erro veio daquelas travas (constraints) que criamos no banco
         if (ex.getMessage() != null && ex.getMessage().contains("uk_cliente_email")) {
-            mensagem = "O e-mail informado já pertence a outro cliente.";
+            message = "O e-mail informado já pertence a outro cliente.";
         } else if (ex.getMessage() != null && ex.getMessage().contains("uk_cliente_cpf")) {
-            mensagem = "O CPF informado já está vinculado a um cadastro existente.";
+            message = "O CPF informado já está vinculado a um cadastro existente.";
         }
 
-        ErrorResponse error = new ErrorResponse(mensagem, HttpStatus.CONFLICT.value());
+        ErrorResponse error = new ErrorResponse(message, HttpStatus.CONFLICT.value());
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 }
