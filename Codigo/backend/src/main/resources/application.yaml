@@ -68,9 +68,11 @@ server:
   port: 8080
   error:
     include-message: always
+    include-binding-errors: always  # <--- ADICIONE ESTA LINHA AQUI
 
 logging:
   level:
     com.olhari: DEBUG
     org.hibernate.SQL: INFO
     org.springframework: WARN
+    

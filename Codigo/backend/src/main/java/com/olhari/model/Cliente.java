@@ -6,10 +6,13 @@ import java.time.OffsetDateTime;
 import java.util.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotBlank;
+
 
 @Entity
 @Table(name = "cliente")
 @Getter
+@Data // Gerencia Getters e Setters
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,6 +24,7 @@ public class Cliente {
     private UUID id;
 
     @Column(nullable = false, length = 200)
+    @NotBlank(message = "O nome do cliente é obrigatório") // Adicione esta linha
     private String nome;
 
     @Column(unique = true, length = 200)

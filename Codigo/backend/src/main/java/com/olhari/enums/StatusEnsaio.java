@@ -10,12 +10,11 @@ public enum StatusEnsaio {
     REALIZADO,    // Fotos tiradas, ainda não editadas
     EM_SELECAO,    // FOTOS EM SELECAO //
     EM_EDICAO,    // Fotógrafa está editando
-    FINALIZACAO,  // Cliente selecionou, aguardando entrega final
-    ENTREGUE,     // Fotos em alta resolução entregues
+    FINALIZADO,  // Cliente selecionou, aguardando entrega final
     CANCELADO;    // Ensaio cancelado
 
     /** Retorna true se o ensaio está em um estado final (não muda mais) */
     public boolean isFinal() {
-        return this == ENTREGUE || this == CANCELADO;
+        return this == FINALIZADO || this == CANCELADO;
     }
 }
