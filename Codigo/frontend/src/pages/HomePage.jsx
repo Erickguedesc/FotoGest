@@ -1,5 +1,4 @@
 import '../styles/home.css'
-
 import Navbar from '../components/homepage/Navbar'
 import HeroSection from '../components/homepage/HeroSection'
 import AboutSection from '../components/homepage/AboutSection'
