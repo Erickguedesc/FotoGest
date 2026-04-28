@@ -7,6 +7,9 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.*;
+// Adicione esses imports no topo do arquivo
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "ensaio")
@@ -27,15 +30,17 @@ public class Ensaio {
     private Cliente cliente;
 
     /** Newborn, Gestante, Familia... */
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "tipo_ensaio")
-    private TipoEnsaio tipo;
+  // DEPOIS ✅
+@Enumerated(EnumType.STRING)
+@JdbcTypeCode(SqlTypes.NAMED_ENUM)
+@Column(nullable = false, columnDefinition = "tipo_ensaio")
+private TipoEnsaio tipo;
 
-    /** Agendado → Realizado → Em_Edicao → Finalizacao → Entregue */
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "status_ensaio")
-    @Builder.Default
-    private StatusEnsaio status = StatusEnsaio.AGENDADO;
+@Enumerated(EnumType.STRING)
+@JdbcTypeCode(SqlTypes.NAMED_ENUM)
+@Column(nullable = false, columnDefinition = "status_ensaio")
+@Builder.Default
+private StatusEnsaio status = StatusEnsaio.AGENDADO;
 
     @Column(name = "data_ensaio", nullable = false)
     private OffsetDateTime dataEnsaio;
@@ -44,22 +49,20 @@ public class Ensaio {
     private String local;
 
     /** Quantidade de fotos incluídas no pacote */
-    @Builder.Default
-    @Column(name = "qtd_fotos_pacote", nullable = false)
-    private Integer qtdFotosPacote = 30;
+   @Column(name = "qtd_fotos_pacote", nullable = false)
+   private Integer qtdFotosPacote;
 
-    @Builder.Default
-    @Column(name = "valor_pacote", precision = 10, scale = 2, nullable = false)
-    private BigDecimal valorPacote = BigDecimal.ZERO;
+// ✅ Sem default — o @NotNull no DTO já garante que sempre vem valor
+@Column(name = "valor_pacote", precision = 10, scale = 2, nullable = false)
+private BigDecimal valorPacote;
 
     /** Valor por foto além do pacote (RF11) */
-    @Builder.Default
-    @Column(name = "valor_foto_extra", precision = 10, scale = 2)
-    private BigDecimal valorFotoExtra = new BigDecimal("35.00");
+     @Column(name = "valor_foto_extra", precision = 10, scale = 2)
+     private BigDecimal valorFotoExtra;
 
-    @Builder.Default
-    @Column(name = "cobrar_foto_extra")
-    private Boolean cobrarFotoExtra = false;
+ //✅ Sem default — fotógrafa decide explicitamente
+@Column(name = "cobrar_foto_extra")
+private Boolean cobrarFotoExtra;
 
     @Column(columnDefinition = "TEXT")
     private String observacoes;

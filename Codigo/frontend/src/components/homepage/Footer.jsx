@@ -6,7 +6,7 @@ export default function Footer() {
       </span>
 
       <a
-        href="/login-adm"
+        href="/Login"
         className="no-underline flex items-center gap-2 text-[11px] text-[var(--text-muted)] uppercase tracking-[0.1em] transition-colors duration-300 hover:text-[var(--gold)] group"
       >
         <svg
