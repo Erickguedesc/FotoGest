@@ -37,10 +37,7 @@ spring:
       mail.smtp.starttls.enable: true
 
   # ── SEGURANÇA (Senha fixa para facilitar seu teste)
-  security:
-    user:
-      name: admin
-      password: admin123
+  
 
 # ── CONFIGURAÇÃO DO ACTUATOR E MONITORAMENTO
 # APÓS CONFIGURAR O E-MAIL, mude 'mail.enabled' para true para validar a conexão.
@@ -55,7 +52,7 @@ management:
 
 # ── SEGURANÇA E NUVEM
 jwt:
-  secret: SuaChaveSecretaJwtDeveSerLongaESegura128bitsMinimo!
+  secret:  8f42a3c1e9d7b6f05a2c4e8d1f3b7a9c2e5d8f1a4b7c0e3f6a9d2b5e8c1f4a7
   expiration: 86400000
 
 cloudinary:

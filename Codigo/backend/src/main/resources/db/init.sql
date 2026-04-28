@@ -125,7 +125,9 @@ CREATE OR REPLACE TRIGGER trg_album_ts BEFORE UPDATE ON album FOR EACH ROW EXECU
 
 -- 1. Fotógrafa (Erick - senha: admin123 codificada em BCrypt)
 INSERT INTO fotografa (nome, email, senha_hash, telefone, cnpj)
-VALUES ('Erick Barbosa', 'contato@olhari.com', '$2a$12$xXHq0Cp.FjXHIpgKAbq9reNsQPKjvv7etPAEqM7B.xK3fkpXFdVia', '(31) 99000-1234', '00.000.000/0001-00')
+VALUES ('Erick Barbosa', 'contato@olhari.com', 
+'$2a$10$uJTG.SFW7By6pq2LSEZQv.df76RPhIeINUU5k1w94FBSo3DhKZY3.', 
+'(31) 99000-1234', '00.000.000/0001-00')
 ON CONFLICT DO NOTHING;
 
 -- 2. Cliente de exemplo
