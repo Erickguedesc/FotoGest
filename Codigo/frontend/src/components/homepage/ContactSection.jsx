@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const WHATSAPP_NUMBER = '5531900000000' // ← Substituir pelo número real
+const WHATSAPP_NUMBER = '553199646207' // ← Número real
 
 export default function ContactSection() {
   const [form, setForm] = useState({
