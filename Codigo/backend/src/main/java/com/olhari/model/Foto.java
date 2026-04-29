@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+
 @Entity
 @Table(name = "foto")
 @Getter
@@ -21,10 +22,9 @@ public class Foto {
     private UUID id;
 
     /** Qual ensaio esta foto pertence */
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "ensaio_id", nullable = false)
-    @JsonIgnoreProperties({"fotos", "cliente"}) // <--- ISSO AQUI EVITA O LOOP
-    private Ensaio ensaio;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+@JoinColumn(name = "ensaio_id", nullable = false)
+private Ensaio ensaio;
 
     /** ID único da foto no Cloudinary */
     @Column(name = "cloudinary_id", nullable = false, unique = true, length = 300)

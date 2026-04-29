@@ -1,56 +1,65 @@
 package com.olhari.service;
 
+import com.olhari.dto.FotoResponse;
 import com.olhari.model.Ensaio;
 import com.olhari.model.Foto;
 import com.olhari.repository.FotoRepository;
 import com.olhari.repository.EnsaioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import lombok.Builder;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-
-@Builder // <-- ADICIONE ISSO
-@AllArgsConstructor // <-- O BUILDER PRECISA DISSO
-@NoArgsConstructor  // <-- O HIBERNATE PRECISA DISSO
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class FotoService {
 
-    @Autowired
-    private CloudinaryService cloudinaryService;
+    private final CloudinaryService cloudinaryService;
+    private final FotoRepository fotoRepository;
+    private final EnsaioRepository ensaioRepository;
+public FotoResponse salvarFoto(MultipartFile arquivo, UUID ensaioId) throws IOException {
+    Ensaio ensaio = ensaioRepository.findById(ensaioId)
+            .orElseThrow(() -> new RuntimeException("Ensaio não encontrado"));
 
-    @Autowired
-    private FotoRepository fotoRepository;
+    Map<String, Object> uploadResult = cloudinaryService.upload(arquivo);
+    String url = (String) uploadResult.get("secure_url");
+    String publicId = (String) uploadResult.get("public_id");
 
-    @Autowired
-    private EnsaioRepository ensaioRepository;
+    Foto foto = Foto.builder()
+            .ensaio(ensaio)
+            .cloudinaryId(publicId)
+            .urlOriginal(url)
+            .urlWatermark(url)
+            .ehCapa(false)
+            .ordem(0)
+            .build();
 
-    public Foto salvarFoto(MultipartFile arquivo, UUID ensaioId) throws IOException {
-        // 1. Busca o ensaio que você acabou de criar no banco
-        Ensaio ensaio = ensaioRepository.findById(ensaioId)
-                .orElseThrow(() -> new RuntimeException("Ensaio não encontrado!"));
+    return toResponse(fotoRepository.save(foto));
+}
 
-        // 2. Sobe para o Cloudinary
-        Map<String, Object> uploadResult = cloudinaryService.upload(arquivo);
-        String url = (String) uploadResult.get("secure_url");
-        String publicId = (String) uploadResult.get("public_id");
+public List<FotoResponse> listarPorEnsaio(UUID ensaioId) {
+    return fotoRepository.findByEnsaioId(ensaioId)
+            .stream()
+            .map(this::toResponse)
+            .collect(Collectors.toList());
+}
 
-        // 3. Monta o objeto Foto para o Postgres
-        Foto foto = Foto.builder()
-                .ensaio(ensaio)
-                .cloudinaryId(publicId)
-                .urlOriginal(url)
-                .urlWatermark(url) // Por enquanto salvamos a mesma, depois faremos a marca d'água
-                .ehCapa(false)
-                .ordem(0)
-                .build();
+private FotoResponse toResponse(Foto foto) {
+    return FotoResponse.builder()
+            .id(foto.getId())
+            .ensaioId(foto.getEnsaio().getId())
+            .cloudinaryId(foto.getCloudinaryId())
+            .urlWatermark(foto.getUrlWatermark())
+            .urlOriginal(foto.getUrlOriginal())
+            .ordem(foto.getOrdem())
+            .ehCapa(foto.getEhCapa())
+            .enviadaEm(foto.getEnviadaEm())
+            .build();
+}
 
-        // 4. Salva no banco e retorna para o Controller
-        return fotoRepository.save(foto);
-    }
 }

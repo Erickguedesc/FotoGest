@@ -6,7 +6,7 @@ import com.olhari.model.Ensaio;
 import com.olhari.repository.AlbumRepository;
 import com.olhari.repository.EnsaioRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -18,7 +18,7 @@ public class AlbumService {
 
     private final AlbumRepository albumRepository;
     private final EnsaioRepository ensaioRepository;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+private final PasswordEncoder passwordEncoder;
 
     public AlbumResponseDTO gerarAlbumCompleto(UUID ensaioId) {
         // 1. Busca o ensaio

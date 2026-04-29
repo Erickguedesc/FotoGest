@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/albuns")
+@RequestMapping("/albuns")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*") // Permite que seu React acesse sem erro de CORS
 public class AlbumController {

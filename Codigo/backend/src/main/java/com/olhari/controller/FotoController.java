@@ -1,40 +1,32 @@
 package com.olhari.controller;
 
-import com.olhari.model.Foto;
-import com.olhari.service.CloudinaryService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.olhari.dto.FotoResponse;
+import com.olhari.service.FotoService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Map;
-import com.olhari.service.FotoService;
+import java.util.List;
 import java.util.UUID;
+
 @RestController
-@RequestMapping("/api/fotos")
+@RequestMapping("/fotos")
+@RequiredArgsConstructor
 public class FotoController {
 
-    @Autowired
-    private CloudinaryService cloudinaryService;
-    @Autowired
-    private FotoService fotoService; // <--- Garanta que esta linha existe!
-  @PostMapping("/upload-teste")
-public ResponseEntity<Map<String, Object>> uploadTeste(@RequestParam("imagem") MultipartFile arquivo) throws IOException {
-    Map<String, Object> resultado = cloudinaryService.upload(arquivo);
-    return ResponseEntity.ok(resultado);
+    private final FotoService fotoService;
+
+ @PostMapping("/upload/{ensaioId}")
+public ResponseEntity<FotoResponse> upload(
+        @PathVariable UUID ensaioId,
+        @RequestParam("imagem") MultipartFile arquivo) throws IOException {
+    return ResponseEntity.ok(fotoService.salvarFoto(arquivo, ensaioId));
 }
 
-
-@PostMapping("/upload/{ensaioId}")
-public ResponseEntity<Foto> upload(
-    @PathVariable UUID ensaioId, 
-    @RequestParam("imagem") MultipartFile arquivo) throws IOException {
-    
-    // Aqui chamaremos o service que faz a mágica completa
-    Foto fotoSalva = fotoService.salvarFoto(arquivo, ensaioId);
-    return ResponseEntity.ok(fotoSalva);
+@GetMapping("/ensaio/{ensaioId}")
+public ResponseEntity<List<FotoResponse>> listarPorEnsaio(@PathVariable UUID ensaioId) {
+    return ResponseEntity.ok(fotoService.listarPorEnsaio(ensaioId));
 }
-
-
 }
