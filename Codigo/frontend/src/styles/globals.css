@@ -48,5 +48,12 @@
   .gold-text {
     color: var(--gold);
   }
+
+  @keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
 }
 

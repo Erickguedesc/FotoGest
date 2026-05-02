@@ -1,34 +1,24 @@
 import { createBrowserRouter } from 'react-router-dom'
-// Importa a função responsável por criar o sistema de rotas da aplicação
-
 import HomePage from '../pages/HomePage'
-// Importa a página inicial (HomePage), que será exibida na rota principal
+import NovoEnsaioPage from '../pages/NovoEnsaioPage'
 
 const router = createBrowserRouter([
   {
     path: '/',
-    // Define a rota principal do sistema
-    // "/" representa a página inicial do site
-
     element: <HomePage />,
-    // Quando o usuário acessar "/", será renderizada a HomePage
+  },
+  {
+    path: '/ensaios',
+    element: <NovoEnsaioPage />,
   },
 
-  // Futuras rotas podem ser adicionadas aqui conforme o crescimento do projeto
-  // Exemplo:
-  // {
-  //   path: '/login',
-  
-  //   element: <LoginPage />,
-  // },
-
-  // {
-  //   path: '/dashboard',
-  //   element: <DashboardPage />,
-  // },
+  // Futuras rotas:
+  // { path: '/login',         element: <LoginPage /> },
+  // { path: '/dashboard',     element: <DashboardPage /> },
+  // { path: '/ensaios',       element: <EnsaiosPage /> },
+  // { path: '/ensaios/:id',   element: <DetalhesEnsaioPage /> },
+  // { path: '/relatorios',    element: <RelatoriosPage /> },
+  // { path: '/solicitacoes',  element: <SolicitacoesPage /> },
 ])
 
-// Cria e organiza todas as rotas principais da aplicação
-
 export default router
-// Exporta o router para ser utilizado no main.jsx ou App.jsx
