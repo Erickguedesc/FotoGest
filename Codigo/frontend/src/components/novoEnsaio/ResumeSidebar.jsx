@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom'
 
-const STEP_LABELS = ['Dados', 'Obs.', 'Pacote', 'Pronto']
+const STEP_LABELS = ['Cliente', 'Ensaio', 'Pacote', 'Pronto']
 const STEP_HINTS = [
+  'Preencha os dados do cliente',
   'Preencha as informações do ensaio',
-  'Adicione observações se necessário',
   'Defina o pacote e valor',
   'Formulário completo — pronto para salvar!',
 ]
@@ -20,24 +20,41 @@ const fmtMoney = (v) =>
 export default function ResumeSidebar({ form, loading }) {
   const navigate = useNavigate()
 
-  const s1Done = !!(form.cliente && form.tipo && form.data && form.hora && form.local)
-  const s3Done = !!(form.valor && form.fotos)
-  const step = s1Done && s3Done ? 3 : s1Done ? 2 : 0
+  // ── Progresso ──────────────────────────────────────────────────────────────
+  // Step 0 → nenhum dado
+  // Step 1 → cliente preenchido
+  // Step 2 → ensaio preenchido
+  // Step 3 → pacote preenchido (pronto)
+  const clienteDone = !!(form.cliente)
+  const ensaioDone  = !!(form.tipo && form.data && form.hora && form.local)
+  const pacoteDone  = !!(form.valor && form.fotos)
+
+  const step = clienteDone && ensaioDone && pacoteDone ? 3
+             : clienteDone && ensaioDone               ? 2
+             : clienteDone                             ? 1
+             : 0
 
   const tipoLabel = form.tipo === 'Outro' ? form.tipoCustom || '—' : form.tipo || '—'
 
-  const resumeRows = [
-    { key: 'Cliente', val: form.cliente || '—' },
+  // ── Linhas do resumo ───────────────────────────────────────────────────────
+  const clienteRows = [
+    { key: 'Nome',     val: form.cliente   || '—' },
+    { key: 'Telefone', val: form.telefone  || '—' },
+    { key: 'E-mail',   val: form.email     || '—' },
+    { key: 'Cidade',   val: form.cidade    || '—' },
+  ]
+
+  const ensaioRows = [
     { key: 'Tipo',    val: tipoLabel },
     { key: 'Data',    val: fmtDate(form.data) },
-    { key: 'Horário', val: form.hora || '—' },
+    { key: 'Horário', val: form.hora  || '—' },
     { key: 'Local',   val: form.local || '—' },
   ]
 
   return (
     <div className="flex flex-col gap-4 sticky top-20">
 
-      {/* Stepper */}
+      {/* ── Stepper ─────────────────────────────────────────────────────────── */}
       <div className="bg-[#171717] border border-white/[0.07] rounded-[14px] overflow-hidden">
         <div className="px-5 py-3.5 border-b border-white/[0.07]">
           <span className="text-[10.5px] tracking-[0.16em] uppercase text-white/45">
@@ -83,15 +100,41 @@ export default function ResumeSidebar({ form, loading }) {
         </div>
       </div>
 
-      {/* Resumo */}
+      {/* ── Resumo do cliente ────────────────────────────────────────────────── */}
       <div className="bg-[#171717] border border-white/[0.07] rounded-[14px] overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-white/[0.07]">
+        <div className="px-5 py-3.5 border-b border-white/[0.07] flex items-center gap-2">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#C9A459" strokeWidth="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
           <span className="text-[10.5px] tracking-[0.16em] uppercase text-white/45">
-            Resumo
+            Cliente
           </span>
         </div>
         <div className="px-5 py-4 flex flex-col">
-          {resumeRows.map(({ key, val }) => (
+          {clienteRows.map(({ key, val }) => (
+            <div key={key} className="flex justify-between items-center py-2 border-b border-white/[0.07] last:border-0">
+              <span className="text-[12px] text-white/45 flex-shrink-0">{key}</span>
+              <span className="text-[13px] text-white text-right max-w-[160px] break-words truncate">{val}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Resumo do ensaio ─────────────────────────────────────────────────── */}
+      <div className="bg-[#171717] border border-white/[0.07] rounded-[14px] overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-white/[0.07] flex items-center gap-2">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#C9A459" strokeWidth="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span className="text-[10.5px] tracking-[0.16em] uppercase text-white/45">
+            Ensaio
+          </span>
+        </div>
+        <div className="px-5 py-4 flex flex-col">
+          {ensaioRows.map(({ key, val }) => (
             <div key={key} className="flex justify-between items-center py-2 border-b border-white/[0.07]">
               <span className="text-[12px] text-white/45">{key}</span>
               <span className="text-[13px] text-white text-right max-w-[160px] break-words">{val}</span>
@@ -104,6 +147,7 @@ export default function ResumeSidebar({ form, loading }) {
             <span className="text-[12px] text-white/45">Fotos incluídas</span>
             <span className="text-[13px] text-white">{form.fotos || '—'}</span>
           </div>
+
           <div className="flex justify-between items-center py-2 border-b border-white/[0.07]">
             <span className="text-[12px] text-white/45">Foto extra</span>
             <span className="text-[13px] text-white">
@@ -124,7 +168,7 @@ export default function ResumeSidebar({ form, loading }) {
         </div>
       </div>
 
-      {/* Botões */}
+      {/* ── Botões ───────────────────────────────────────────────────────────── */}
       <div className="flex gap-2.5">
         <button
           type="button"
