@@ -63,8 +63,10 @@ export default function Header() {
       <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center
                       text-[11px] font-medium text-[var(--gold)]
                       bg-[var(--gold-dim)] border border-[var(--gold-border)]">
-        MC
+        MC 
       </div>
     </header>
+    // aqui onde tem MC a gente ve se será um caminho pra alguma pagina etc ou se mantem, se cria algo... //
+
   )
 }

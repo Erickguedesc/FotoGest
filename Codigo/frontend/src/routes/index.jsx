@@ -1,24 +1,66 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
+
+import PrivateRoute from '../components/layout/PrivateRoute'
 import HomePage from '../pages/HomePage'
+import LoginPage from '../pages/LoginPage'
 import NovoEnsaioPage from '../pages/NovoEnsaioPage'
 
+// Futuras páginas — descomente conforme forem criadas:
+// import DashboardPage      from '../pages/DashboardPage'
+// import EnsaiosPage        from '../pages/EnsaiosPage'
+// import DetalhesEnsaioPage from '../pages/DetalhesEnsaioPage'
+// import RelatoriosPage     from '../pages/RelatoriosPage'
+// import SolicitacoesPage   from '../pages/SolicitacoesPage'
+
 const router = createBrowserRouter([
+
+  // ── Rotas públicas ──────────────────────────────────────────────────────────
   {
     path: '/',
     element: <HomePage />,
   },
   {
-    path: '/ensaios',
-    element: <NovoEnsaioPage />,
+    path: '/login',
+    element: <LoginPage />,
   },
 
-  // Futuras rotas:
-  // { path: '/login',         element: <LoginPage /> },
-  // { path: '/dashboard',     element: <DashboardPage /> },
-  // { path: '/ensaios',       element: <EnsaiosPage /> },
-  // { path: '/ensaios/:id',   element: <DetalhesEnsaioPage /> },
-  // { path: '/relatorios',    element: <RelatoriosPage /> },
-  // { path: '/solicitacoes',  element: <SolicitacoesPage /> },
+  // ── Rotas privadas (exigem login) ───────────────────────────────────────────
+  {
+    path: '/novo-ensaio',
+    element: (
+      <PrivateRoute>
+        <NovoEnsaioPage />
+      </PrivateRoute>
+    ),
+  },
+
+  // Futuras rotas privadas:
+  // {
+  //   path: '/dashboard',
+  //   element: <PrivateRoute><DashboardPage /></PrivateRoute>,
+  // },
+  // {
+  //   path: '/ensaios',
+  //   element: <PrivateRoute><EnsaiosPage /></PrivateRoute>,
+  // },
+  // {
+  //   path: '/ensaios/:id',
+  //   element: <PrivateRoute><DetalhesEnsaioPage /></PrivateRoute>,
+  // },
+  // {
+  //   path: '/relatorios',
+  //   element: <PrivateRoute><RelatoriosPage /></PrivateRoute>,
+  // },
+  // {
+  //   path: '/solicitacoes',
+  //   element: <PrivateRoute><SolicitacoesPage /></PrivateRoute>,
+  // },
+
+  // ── Rota não encontrada ─────────────────────────────────────────────────────
+  {
+    path: '*',
+    element: <Navigate to="/" replace />,
+  },
 ])
 
 export default router

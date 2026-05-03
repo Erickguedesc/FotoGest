@@ -5,14 +5,13 @@ import lombok.*;
 import java.time.OffsetDateTime;
 import java.util.*;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.NotBlank;
-
+import jakarta.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "cliente")
 @Getter
-@Data // Gerencia Getters e Setters
+@Data
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,27 +23,30 @@ public class Cliente {
     private UUID id;
 
     @Column(nullable = false, length = 200)
-    @NotBlank(message = "O nome do cliente é obrigatório") // Adicione esta linha
+    @NotBlank(message = "O nome do cliente é obrigatório")
     private String nome;
 
     @Column(unique = true, length = 200)
     @Email(message = "E-mail inválido")
     private String email;
 
-    @Pattern(regexp = "^\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4}$", message = "Telefone inválido")
+    // Aceita qualquer formato: (31) 98765-4321 | 31987654321 | 31 98765-4321
+    @Pattern(
+        regexp = "^[\\d\\s().+-]{8,20}$",
+        message = "Telefone inválido"
+    )
     @Column(length = 30)
     private String telefone;
-   @Column(unique = true, length = 20)
+
+    @Column(unique = true, length = 20)
     private String cpf;
 
     @Column(length = 120)
     private String cidade;
 
-    /** Como o cliente conheceu a fotógrafa (ex: Instagram, Indicação) */
     @Column(length = 120)
     private String indicacao;
 
-    /** Um cliente pode ter vários ensaios */
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Ensaio> ensaios = new ArrayList<>();

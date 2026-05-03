@@ -110,7 +110,7 @@ export default function NovoEnsaioPage() {
       const ensaioPayload = {
         clienteId,
         tipo:            tipoEnum,
-        dataEnsaio:      `${form.data}T${form.hora}:00`,
+        dataEnsaio: new Date(`${form.data}T${form.hora}:00`).toISOString(),
         local:           form.local.trim(),
         qtdFotosPacote:  parseInt(form.fotos),
         valorPacote:     parseFloat(form.valor),
@@ -166,9 +166,6 @@ export default function NovoEnsaioPage() {
         </div>
 
         <div className="mb-8">
-          <p className="text-[10.5px] tracking-[0.2em] uppercase text-white/45 mb-1">
-            RF03 — Cadastro
-          </p>
           <h1 className="font-serif text-[32px] font-light tracking-[0.04em]">
             Novo Ensaio
           </h1>
