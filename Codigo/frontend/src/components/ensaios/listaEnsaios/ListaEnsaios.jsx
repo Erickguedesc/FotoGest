@@ -57,6 +57,7 @@ export default function ListaEnsaios() {
   const showToast = (message, type = 'success') => setToast({ message, type })
 
   const loadEnsaios = async () => {
+    
     setLoading(true)
     try {
       const response = await ensaiosService.listar(buildParams(filters))
