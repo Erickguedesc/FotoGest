@@ -4,10 +4,10 @@ import PrivateRoute from '../components/layout/PrivateRoute'
 import HomePage from '../pages/HomePage'
 import LoginPage from '../pages/LoginPage'
 import NovoEnsaioPage from '../pages/NovoEnsaioPage'
+import EnsaiosPage from '../pages/EnsaiosPage'
 
 // Futuras páginas — descomente conforme forem criadas:
 // import DashboardPage      from '../pages/DashboardPage'
-// import EnsaiosPage        from '../pages/EnsaiosPage'
 // import DetalhesEnsaioPage from '../pages/DetalhesEnsaioPage'
 // import RelatoriosPage     from '../pages/RelatoriosPage'
 // import SolicitacoesPage   from '../pages/SolicitacoesPage'
@@ -34,14 +34,19 @@ const router = createBrowserRouter([
     ),
   },
 
+  {
+    path: '/ensaios',
+    element: (
+      <PrivateRoute>
+        <EnsaiosPage />
+      </PrivateRoute>
+    ),
+  },
+
   // Futuras rotas privadas:
   // {
   //   path: '/dashboard',
   //   element: <PrivateRoute><DashboardPage /></PrivateRoute>,
-  // },
-  // {
-  //   path: '/ensaios',
-  //   element: <PrivateRoute><EnsaiosPage /></PrivateRoute>,
   // },
   // {
   //   path: '/ensaios/:id',
