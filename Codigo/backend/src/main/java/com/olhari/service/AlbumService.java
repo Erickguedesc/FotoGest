@@ -8,6 +8,8 @@ import com.olhari.repository.EnsaioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 import java.security.SecureRandom;
@@ -18,7 +20,7 @@ public class AlbumService {
 
     private final AlbumRepository albumRepository;
     private final EnsaioRepository ensaioRepository;
-private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     public AlbumResponseDTO gerarAlbumCompleto(UUID ensaioId) {
         // 1. Busca o ensaio
@@ -51,5 +53,37 @@ private final PasswordEncoder passwordEncoder;
             sb.append(caracteres.charAt(random.nextInt(caracteres.length())));
         }
         return sb.toString();
+    }
+
+    public void validarAcesso(String token, String senha) {
+        if (senha == null || senha.trim().isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Senha é obrigatória"
+            );
+        }
+
+        Album album = albumRepository.findByTokenUrl(token)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Álbum não encontrado"
+                ));
+
+        boolean senhaCorreta = passwordEncoder.matches(senha, album.getSenhaHash());
+
+        if (!senhaCorreta) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Senha incorreta"
+            );
+        }
+    }
+
+    public void validarToken(String token) {
+        albumRepository.findByTokenUrl(token)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Álbum não encontrado"
+            ));
     }
 }

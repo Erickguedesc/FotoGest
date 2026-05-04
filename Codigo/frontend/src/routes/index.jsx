@@ -5,6 +5,7 @@ import HomePage from '../pages/HomePage'
 import LoginPage from '../pages/LoginPage'
 import NovoEnsaioPage from '../pages/NovoEnsaioPage'
 import EnsaiosPage from '../pages/EnsaiosPage'
+import AlbumAccessPage from "../pages/AlbumAccessPage"
 
 // Futuras páginas — descomente conforme forem criadas:
 // import DashboardPage      from '../pages/DashboardPage'
@@ -23,6 +24,11 @@ const router = createBrowserRouter([
     path: '/login',
     element: <LoginPage />,
   },
+  {
+  path: "/album/:token",
+  element: <AlbumAccessPage />,
+  },
+
 
   // ── Rotas privadas (exigem login) ───────────────────────────────────────────
   {
