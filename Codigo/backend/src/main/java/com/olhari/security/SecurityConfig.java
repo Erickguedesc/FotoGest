@@ -11,6 +11,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import java.util.List;
 
 @Configuration
@@ -31,8 +32,11 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/solicitacoes/**").permitAll()
                 .requestMatchers("/album/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+
                 // Preflight OPTIONS sempre liberado
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+
                 // Todo o resto exige autenticação
                 .anyRequest().authenticated()
             )

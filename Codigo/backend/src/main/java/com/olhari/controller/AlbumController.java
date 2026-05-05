@@ -11,21 +11,19 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/album") // 🔥 PADRÃO CORRETO
+@RequestMapping("/album")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class AlbumController {
 
-    private final AlbumService albumService; // criação de álbum (BACK 1)
-    private final AlbumPublicoService albumPublicoService; // acesso público (BACK 2)
+    private final AlbumService albumService;
+    private final AlbumPublicoService albumPublicoService;
 
     @PostMapping("/gerar/{ensaioId}")
     public ResponseEntity<AlbumResponseDTO> criarAlbum(@PathVariable UUID ensaioId) {
-        AlbumResponseDTO response = albumService.gerarAlbumCompleto(ensaioId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(albumService.gerarAlbumCompleto(ensaioId));
     }
 
-    // - ACESSAR COM SENHA
     @PostMapping("/{token}/acessar")
     public ResponseEntity<List<FotoPublicaResponse>> acessarAlbum(
             @PathVariable String token,
@@ -34,14 +32,12 @@ public class AlbumController {
                 albumPublicoService.acessarAlbum(token, request.getSenha()));
     }
 
-    // DADOS PÚBLICOS DO ÁLBUM
     @GetMapping("/{token}")
     public ResponseEntity<AlbumPublicoResponse> dadosPublicos(@PathVariable String token) {
         return ResponseEntity.ok(
                 albumPublicoService.dadosPublicos(token));
     }
 
-    // SELEÇÃO DE FOTOS (CLIENTE)
     @PostMapping("/{token}/selecao")
     public ResponseEntity<SelecaoResponse> selecionar(
             @PathVariable String token,
@@ -50,7 +46,6 @@ public class AlbumController {
                 albumPublicoService.selecionarFotos(token, request.getFotosIds()));
     }
 
-    // CONSULTAR SELEÇÃO (FOTÓGRAFA)
     @GetMapping("/{token}/selecao")
     public ResponseEntity<SelecaoResponse> buscar(@PathVariable String token) {
         return ResponseEntity.ok(

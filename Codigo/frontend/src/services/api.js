@@ -36,9 +36,12 @@ api.interceptors.response.use(
         break
 
       case 401:
-        console.warn('Não autorizado. Redirecionando...')
-        localStorage.removeItem('token')
-        window.location.href = '/login'
+        console.warn('Não autorizado:', message)
+        const isPublicGallery = error.config?.url?.includes('/album')
+        if (!isPublicGallery) {
+          localStorage.removeItem('token')
+          window.location.href = '/login'
+        }
         break
 
       case 403:
