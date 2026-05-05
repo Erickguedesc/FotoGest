@@ -7,11 +7,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor // <-- ESSA ANOTAÇÃO É A QUE ESTÁ FALTANDO
+@AllArgsConstructor
 @NoArgsConstructor
 public class ErrorResponse {
     private String mensagem;
     private int status;
 }
-
-

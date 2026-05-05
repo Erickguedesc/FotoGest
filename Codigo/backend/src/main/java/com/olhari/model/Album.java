@@ -25,8 +25,13 @@ public class Album {
 
     /**
      * Token gerado automaticamente para a URL pública.
-     * Exemplo: olhari.com/album/ana-clara-3f8a  (RF05)
+     * Exemplo: olhari.com/album/ana-clara-3f8a (RF05)
      */
+
+    @Column(name = "acesso_liberado")
+    @Builder.Default
+    private Boolean acessoLiberado = false;
+
     @Column(name = "token_url", nullable = false, unique = true, length = 60)
     private String tokenUrl;
 
@@ -38,7 +43,7 @@ public class Album {
     private OffsetDateTime publicadoEm;
 
     /** Opcional: data de expiração do link */
-    @Column(name = "expira_em") 
+    @Column(name = "expira_em")
     private OffsetDateTime expiraEm;
 
     @Builder.Default
@@ -50,19 +55,19 @@ public class Album {
     @Builder.Default
     private List<SelecaoFoto> selecoes = new ArrayList<>();
 
-   @PrePersist
-   protected void onCreate() {
-    // 1. Define a data de publicação como 'agora'
-    this.publicadoEm = OffsetDateTime.now();
-    
-    // 2. Se o token estiver vazio, gera um código aleatório de 8 letras/números
-    if (this.tokenUrl == null) {
-        this.tokenUrl = UUID.randomUUID().toString().substring(0, 8);
+    @PrePersist
+    protected void onCreate() {
+        // 1. Define a data de publicação como 'agora'
+        this.publicadoEm = OffsetDateTime.now();
+
+        // 2. Se o token estiver vazio, gera um código aleatório de 8 letras/números
+        if (this.tokenUrl == null) {
+            this.tokenUrl = UUID.randomUUID().toString().substring(0, 8);
+        }
+
+        // 3. Define a expiração para 30 dias a partir de hoje (opcional)
+        if (this.expiraEm == null) {
+            this.expiraEm = OffsetDateTime.now().plusDays(30);
+        }
     }
-    
-    // 3. Define a expiração para 30 dias a partir de hoje (opcional)
-    if (this.expiraEm == null) {
-        this.expiraEm = OffsetDateTime.now().plusDays(30);
-    }
-}
 }
