@@ -32,11 +32,12 @@ public class AlbumService {
         String token = UUID.randomUUID().toString().substring(0, 8);
 
         // 3. Cria o objeto Album e salva o HASH da senha
-        Album album = Album.builder()
-                .ensaio(ensaio)
-                .tokenUrl(token)
-                .senhaHash(passwordEncoder.encode(senhaLimpa))
-                .build();
+       Album album = Album.builder()
+        .ensaio(ensaio)
+        .tokenUrl(token)
+        .senhaHash(passwordEncoder.encode(senhaLimpa))
+        .acessoLiberado(true) //
+        .build();
 
         albumRepository.save(album);
 

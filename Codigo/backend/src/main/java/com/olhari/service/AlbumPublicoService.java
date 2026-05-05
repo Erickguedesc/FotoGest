@@ -155,16 +155,21 @@ public class AlbumPublicoService {
                                 valorExcedente.doubleValue());
         }
 
-        // 🌐 DADOS PÚBLICOS
-        public AlbumPublicoResponse dadosPublicos(String token) {
+  // 🌐 DADOS PÚBLICOS
+public AlbumPublicoResponse dadosPublicos(String token) {
 
-                Album album = albumRepository.findByTokenUrl(token)
-                                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                                                "Álbum não encontrado"));
+    Album album = albumRepository.findByTokenUrl(token)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Álbum não encontrado"));
 
-                return new AlbumPublicoResponse(
-                                album.getEnsaio().getCliente().getNome(),
-                                album.getEnsaio().getTipo().name(),
-                                fotoRepository.findByEnsaioId(album.getEnsaio().getId()).size());
-        }
+                    // 🛑 ADICIONE ESTA TRAVA AQUI:
+    if (!Boolean.TRUE.equals(album.getAtivo())) {
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Álbum desativado");
+    }
+
+    return new AlbumPublicoResponse(
+            album.getEnsaio().getCliente().getNome(),
+            album.getEnsaio().getTipo().name(),
+            album.getEnsaio().getQtdFotosPacote()); // ✅ Agora pega os 40 do pacote contratado
+}
 }

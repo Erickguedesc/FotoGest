@@ -10,7 +10,7 @@ import AcessoAlbumLayout from "../components/album/acessoAlbum/AcessoAlbumLayout
 import AcessoAlbumForm from "../components/album/acessoAlbum/AcessoAlbumForm"
 import AcessoAlbumLoading from "../components/album/acessoAlbum/AcessoAlbumLoading"
 
-import "../styles/album-access.css"
+//import "../styles/album-access.css"
 
 export default function AlbumAccessPage() {
   const { token } = useParams()

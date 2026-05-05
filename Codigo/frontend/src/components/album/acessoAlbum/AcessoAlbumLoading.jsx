@@ -1,4 +1,4 @@
-import "../../../styles/album-access.css"
+//import "../../../styles/album-access.css"
 
 export default function AcessoAlbumLoading() {
   return (

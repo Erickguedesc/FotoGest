@@ -13,7 +13,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/album")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 public class AlbumController {
 
     private final AlbumService albumService;

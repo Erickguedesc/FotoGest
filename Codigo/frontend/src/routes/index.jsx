@@ -9,7 +9,7 @@ import AlbumAccessPage from "../pages/AlbumAccessPage"
 
 // Futuras páginas — descomente conforme forem criadas:
 // import DashboardPage      from '../pages/DashboardPage'
-// import DetalhesEnsaioPage from '../pages/DetalhesEnsaioPage'
+//import DetalhesEnsaioPage from '../pages/DetalhesEnsaioPage'
 // import RelatoriosPage     from '../pages/RelatoriosPage'
 // import SolicitacoesPage   from '../pages/SolicitacoesPage'
 
