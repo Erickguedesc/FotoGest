@@ -64,12 +64,40 @@ export default function ListaSolicitacoes() {
     }
   }
 
-  const handlePreContrato = (solicitacao) => {
-    showToast(`Importando dados de ${solicitacao.nomeCliente}...`)
-    window.setTimeout(() => {
-      navigate(`/ensaios/solicitacao-${solicitacao.id}/pre-contrato`, { state: { solicitacao } })
-    }, 350)
+//const handlePreContrato = (solicitacao) => {
+  //showToast(`Importando dados de ${solicitacao.nomeCliente}...`)
+
+ // window.setTimeout(() => {
+   // navigate(
+   ///   `/ensaios/solicitacao-${solicitacao.id}/pre-contrato`,
+     // { state: { solicitacao } }
+   // )
+ // }, 350)
+//}
+
+const handleDelete = async (id) => {
+  if (!window.confirm('Deseja apagar esta solicitação?')) return
+
+  setActionId(id)
+
+  try {
+    await solicitacoesService.deletar(id)
+
+    setSolicitacoes((prev) =>
+      prev.filter((item) => item.id !== id)
+    )
+
+    showToast('Solicitação apagada com sucesso.')
+  } catch (error) {
+    const msg =
+      error?.response?.data?.message ||
+      'Não foi possível apagar a solicitação.'
+
+    showToast(msg, 'error')
+  } finally {
+    setActionId(null)
   }
+}
 
   return (
     <>
@@ -100,13 +128,14 @@ export default function ListaSolicitacoes() {
         ) : solicitacoes.length === 0 ? (
           <EmptyState onRefresh={loadSolicitacoes} />
         ) : (
-          <SolicitacoesTable
-            solicitacoes={solicitacoes}
-            onWhatsApp={handleWhatsApp}
-            onStatusChange={handleStatusChange}
-            onPreContrato={handlePreContrato}
-            actionId={actionId}
-          />
+       <SolicitacoesTable
+  solicitacoes={solicitacoes}
+  onWhatsApp={handleWhatsApp}
+  onStatusChange={handleStatusChange}
+  //onPreContrato={handlePreContrato}
+  onDelete={handleDelete}
+  actionId={actionId}
+/>
         )}
       </main>
 

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
-
+// tela de login da fotografa //
 export default function LoginPage() {
   const navigate = useNavigate()
   const [form, setForm]         = useState({ email: '', senha: '' })

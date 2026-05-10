@@ -19,24 +19,30 @@ public class SolicitacaoController {
 
     private final SolicitacaoService service;
 
-    // ── POST /solicitacoes — público, chamado pela homepage ──────────────────
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SolicitacaoResponse criar(@RequestBody @Valid SolicitacaoRequest request) {
+    public SolicitacaoResponse criar(
+            @RequestBody @Valid SolicitacaoRequest request
+    ) {
         return service.criar(request);
     }
 
-    // ── GET /solicitacoes — fotógrafa lista todas as solicitações ────────────
     @GetMapping
     public List<SolicitacaoResponse> listar() {
         return service.listar();
     }
 
-    // ── PATCH /solicitacoes/{id}/status — fotógrafa atualiza o status ────────
     @PatchMapping("/{id}/status")
     public SolicitacaoResponse atualizarStatus(
             @PathVariable UUID id,
-            @RequestParam StatusLead status) {
+            @RequestParam StatusLead status
+    ) {
         return service.atualizarStatus(id, status);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletar(@PathVariable UUID id) {
+        service.deletar(id);
     }
 }

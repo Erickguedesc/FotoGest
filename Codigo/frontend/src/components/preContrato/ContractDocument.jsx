@@ -44,7 +44,6 @@ export default function ContractDocument({ draft, onChange }) {
 
       <div className="precontrato-title-band">
         <div className="precontrato-title-main">Pré-Contrato de Serviços Fotográficos</div>
-        <div className="precontrato-title-sub">Documento gerado automaticamente (RF02)</div>
       </div>
 
       <div className="precontrato-body">
@@ -124,7 +123,7 @@ export default function ContractDocument({ draft, onChange }) {
           </div>
 
           <div className="precontrato-note">
-            <strong>Nota:</strong> O sistema não realiza cobranças online. Os pagamentos ocorrem fora da plataforma (PIX, WhatsApp, etc.) conforme a restrição R01.
+            <strong>Nota:</strong> O sistema não realiza cobranças online. Os pagamentos ocorrem fora da plataforma (PIX, WhatsApp, etc) diretamente entre Fotofrafa(o) e Cliente.
           </div>
         </ContractSection>
 

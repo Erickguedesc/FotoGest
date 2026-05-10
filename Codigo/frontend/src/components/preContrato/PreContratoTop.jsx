@@ -2,7 +2,6 @@ export default function PreContratoTop({ clienteNome, sourceLabel, onCopyLink, o
   return (
     <div className="precontrato-page-top">
       <div>
-        <div className="precontrato-eyebrow">RF02 — Gerado automaticamente</div>
         <h1 className="precontrato-title">Pré-contrato</h1>
         <p className="precontrato-sub">Gerado a partir dos dados {sourceLabel} · {clienteNome || 'complete os dados do cliente'}</p>
       </div>

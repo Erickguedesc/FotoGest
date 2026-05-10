@@ -15,6 +15,7 @@ const OlhariIcon = () => (
 const navLinks = [
   { label: 'Dashboard',   to: '/dashboard' },
   { label: 'Ensaios',     to: '/ensaios' },
+  {label: 'Novo Ensaio', to: '/novo-ensaio'},
   { label: 'Relatórios',  to: '/relatorios' },
   { label: 'Solicitações',to: '/solicitacoes' },
 ]

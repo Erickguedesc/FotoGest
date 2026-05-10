@@ -20,7 +20,6 @@ public class SolicitacaoService {
 
     private final SolicitacaoRepository repository;
 
-    // ── Criar solicitação (chamado pela homepage — público) ──────────────────
     public SolicitacaoResponse criar(SolicitacaoRequest request) {
         SolicitacaoOrcamento solicitacao = SolicitacaoOrcamento.builder()
                 .nomeCliente(request.getNomeCliente())
@@ -32,26 +31,43 @@ public class SolicitacaoService {
         return toResponse(repository.save(solicitacao));
     }
 
-    // ── Listar todas (fotógrafa) ─────────────────────────────────────────────
     public List<SolicitacaoResponse> listar() {
         return repository.findAll()
                 .stream()
-                .sorted((a, b) -> b.getRecebidoEm().compareTo(a.getRecebidoEm())) // mais recentes primeiro
+                .sorted((a, b) -> b.getRecebidoEm().compareTo(a.getRecebidoEm()))
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
-    // ── Atualizar status (fotógrafa) ─────────────────────────────────────────
     public SolicitacaoResponse atualizarStatus(UUID id, StatusLead novoStatus) {
         SolicitacaoOrcamento solicitacao = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Solicitação não encontrada"));
+                        HttpStatus.NOT_FOUND,
+                        "Solicitação não encontrada"
+                ));
 
         solicitacao.setStatusLead(novoStatus);
+
         return toResponse(repository.save(solicitacao));
     }
 
-    // ── Mapper ───────────────────────────────────────────────────────────────
+    public void deletar(UUID id) {
+        SolicitacaoOrcamento solicitacao = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Solicitação não encontrada"
+                ));
+
+        if (solicitacao.getStatusLead() != StatusLead.ATENDIDO) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Só é possível apagar solicitações atendidas."
+            );
+        }
+
+        repository.delete(solicitacao);
+    }
+
     private SolicitacaoResponse toResponse(SolicitacaoOrcamento s) {
         return SolicitacaoResponse.builder()
                 .id(s.getId())

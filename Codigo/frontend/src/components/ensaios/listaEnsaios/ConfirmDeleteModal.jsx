@@ -20,7 +20,7 @@ export default function ConfirmDeleteModal({ ensaio, open, loading, onClose, onC
         Tem certeza que deseja excluir permanentemente o ensaio de <strong className="text-white">{ensaio?.clienteNome}</strong>?
       </p>
       <p className="mt-3 rounded-lg border border-red-400/20 bg-red-400/10 p-3 text-[12px] leading-5 text-red-200/80">
-        O backend só permite excluir ensaios com status Agendado ou Cancelado. Esta ação não poderá ser desfeita.
+         Só é permitido excluir ensaios com status Agendado ou Cancelado. Esta ação não poderá ser desfeita.
       </p>
     </BaseModal>
   )
