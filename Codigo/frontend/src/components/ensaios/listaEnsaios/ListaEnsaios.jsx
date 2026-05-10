@@ -169,6 +169,10 @@ export default function ListaEnsaios() {
     }
   }
 
+  const handlePreContrato = (ensaio) => {
+    navigate(`/ensaios/${ensaio.id}/pre-contrato`)
+  }
+
   const countLabel = `${ensaios.length} ensaio${ensaios.length === 1 ? '' : 's'} cadastrado${ensaios.length === 1 ? '' : 's'}`
 
   return (
@@ -226,6 +230,7 @@ export default function ListaEnsaios() {
                 onEdit={(ensaio) => openModal('edit', ensaio)}
                 onStatus={(ensaio) => openModal('status', ensaio)}
                 onDelete={(ensaio) => openModal('delete', ensaio)}
+                onPreContrato={handlePreContrato}
               />
             ) : (
               <EnsaiosGrid
@@ -234,6 +239,7 @@ export default function ListaEnsaios() {
                 onEdit={(ensaio) => openModal('edit', ensaio)}
                 onStatus={(ensaio) => openModal('status', ensaio)}
                 onDelete={(ensaio) => openModal('delete', ensaio)}
+                onPreContrato={handlePreContrato}
               />
             )}
 

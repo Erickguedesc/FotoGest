@@ -4,7 +4,7 @@ import ProgressBar from './ProgressBar'
 import StatusBadge from './StatusBadge'
 import { formatCurrency, formatDate, getInitials, getTipoLabel } from './ensaioHelpers'
 
-export default function EnsaioCard({ ensaio, onView, onEdit, onStatus, onDelete }) {
+export default function EnsaioCard({ ensaio, onView, onEdit, onStatus, onDelete, onPreContrato }) {
   return (
     <article className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#141414] transition hover:-translate-y-0.5 hover:border-[var(--gold-border)]">
       <button type="button" onClick={() => onView(ensaio)} className="block w-full p-4 text-left">
@@ -30,7 +30,7 @@ export default function EnsaioCard({ ensaio, onView, onEdit, onStatus, onDelete 
         <ProgressBar value={ensaio.progresso} />
       </button>
       <div className="border-t border-white/[0.06] px-4 py-3">
-        <EnsaioActions ensaio={ensaio} onView={onView} onEdit={onEdit} onStatus={onStatus} onDelete={onDelete} />
+        <EnsaioActions ensaio={ensaio} onView={onView} onEdit={onEdit} onStatus={onStatus} onDelete={onDelete} onPreContrato={onPreContrato} />
       </div>
     </article>
   )

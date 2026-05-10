@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { solicitacoesService } from '../../services/solicitacoesService'
+
 const WHATSAPP_NUMBER = '553199646207' // ← Número real
 
 export default function ContactSection() {
@@ -9,29 +11,49 @@ export default function ContactSection() {
     tipoEnsaio: '',
     data: '',
   })
+  const [submitting, setSubmitting] = useState(false)
+  const [feedback, setFeedback] = useState(null)
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setSubmitting(true)
+    setFeedback(null)
 
-    const dataFormatada = form.data.split('-').reverse().join('/')
+    try {
+      await solicitacoesService.criar({
+        nomeCliente: form.nome,
+        whatsapp: form.whatsapp,
+        tipoEnsaio: form.tipoEnsaio,
+        dataDesejada: form.data || null,
+      })
 
-    const mensagem =
-      `Olá! Gostaria de um orçamento:\n` +
-      `*Nome:* ${form.nome}\n` +
-      `*WhatsApp:* ${form.whatsapp}\n` +
-      `*Tipo de Ensaio:* ${form.tipoEnsaio}\n` +
-      `*Previsão de Data:* ${dataFormatada}`
+      const dataFormatada = form.data ? form.data.split('-').reverse().join('/') : 'Não informada'
 
-    const encoded = encodeURIComponent(mensagem)
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`, '_blank')
+      const mensagem =
+        `Olá! Gostaria de um orçamento:\n` +
+        `*Nome:* ${form.nome}\n` +
+        `*WhatsApp:* ${form.whatsapp}\n` +
+        `*Tipo de Ensaio:* ${form.tipoEnsaio}\n` +
+        `*Previsão de Data:* ${dataFormatada}`
+
+      const encoded = encodeURIComponent(mensagem)
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`, '_blank')
+      setFeedback({ type: 'success', message: 'Solicitação enviada com sucesso. Abrimos o WhatsApp para continuar o atendimento.' })
+      setForm({ nome: '', whatsapp: '', tipoEnsaio: '', data: '' })
+    } catch (error) {
+      console.error('[Solicitação] Erro ao enviar:', error?.response?.data || error)
+      setFeedback({ type: 'error', message: 'Não foi possível enviar sua solicitação. Tente novamente.' })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const inputClass =
-    'w-full bg-white/[0.03] border border-white/10 rounded-[10px] px-4 py-[14px] text-white font-sans text-sm transition-all duration-200 outline-none focus:border-[var(--gold)] focus:bg-[rgba(201,164,89,0.05)] placeholder:text-[var(--text-muted)]'
+    'w-full bg-white/[0.03] border border-white/10 rounded-[10px] px-4 py-[14px] text-white font-sans text-sm transition-all duration-200 outline-none focus:border-[var(--gold)] focus:bg-[rgba(201,164,89,0.05)] placeholder:text-[var(--text-muted)] disabled:opacity-60 disabled:cursor-not-allowed'
 
   return (
     <section
@@ -72,6 +94,18 @@ export default function ContactSection() {
           </p>
         </div>
 
+        {feedback && (
+          <div
+            className={`mb-5 rounded-xl border px-4 py-3 text-[13px] leading-relaxed ${
+              feedback.type === 'success'
+                ? 'border-[#34D399]/30 bg-[#34D399]/10 text-[#34D399]'
+                : 'border-[#FB7185]/30 bg-[#FB7185]/10 text-[#FB7185]'
+            }`}
+          >
+            {feedback.message}
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div>
@@ -85,6 +119,7 @@ export default function ContactSection() {
               onChange={handleChange}
               placeholder="Como podemos te chamar?"
               required
+              disabled={submitting}
               className={inputClass}
             />
           </div>
@@ -100,6 +135,7 @@ export default function ContactSection() {
               onChange={handleChange}
               placeholder="(00) 00000-0000"
               required
+              disabled={submitting}
               className={inputClass}
             />
           </div>
@@ -113,6 +149,7 @@ export default function ContactSection() {
               value={form.tipoEnsaio}
               onChange={handleChange}
               required
+              disabled={submitting}
               className={inputClass}
             >
               <option value="" disabled>
@@ -138,15 +175,17 @@ export default function ContactSection() {
               value={form.data}
               onChange={handleChange}
               required
+              disabled={submitting}
               className={inputClass}
             />
           </div>
 
           <button
             type="submit"
-            className="w-full mt-2 py-4 bg-[var(--gold)] text-[#1A1200] border-none rounded-xl font-semibold text-[13px] uppercase tracking-[0.08em] cursor-pointer transition-all duration-300 flex items-center justify-center gap-3 hover:bg-[#E2C07A] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(0,0,0,0.3)]"
+            disabled={submitting}
+            className="w-full mt-2 py-4 bg-[var(--gold)] text-[#1A1200] border-none rounded-xl font-semibold text-[13px] uppercase tracking-[0.08em] cursor-pointer transition-all duration-300 flex items-center justify-center gap-3 hover:bg-[#E2C07A] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(0,0,0,0.3)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
           >
-            Enviar Solicitação
+            {submitting ? 'Enviando...' : 'Enviar Solicitação'}
             <svg
               width="16"
               height="16"
@@ -162,7 +201,7 @@ export default function ContactSection() {
         </form>
 
         <p className="text-center mt-6 text-[11px] text-[var(--text-muted)]">
-          Ao enviar, o WhatsApp será aberto com as informações preenchidas.
+          Ao enviar, salvamos sua solicitação e abrimos o WhatsApp com as informações preenchidas.
         </p>
       </div>
     </section>

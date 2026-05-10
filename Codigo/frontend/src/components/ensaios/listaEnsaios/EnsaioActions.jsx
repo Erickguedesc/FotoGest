@@ -1,7 +1,7 @@
 import Icon from './Icon'
 import { canDeleteEnsaio } from './ensaioHelpers'
 
-export default function EnsaioActions({ ensaio, onView, onEdit, onStatus, onDelete }) {
+export default function EnsaioActions({ ensaio, onView, onEdit, onStatus, onDelete, onPreContrato }) {
   const deletable = canDeleteEnsaio(ensaio)
 
   return (
@@ -14,6 +14,9 @@ export default function EnsaioActions({ ensaio, onView, onEdit, onStatus, onDele
       </button>
       <button type="button" onClick={() => onStatus(ensaio)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.10] text-white/35 transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]" title="Alterar status">
         <Icon name="check" />
+      </button>
+      <button type="button" onClick={() => onPreContrato(ensaio)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.10] text-white/35 transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]" title="Gerar pré-contrato">
+        <Icon name="file" />
       </button>
       <button
         type="button"

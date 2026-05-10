@@ -12,7 +12,7 @@ const columns = [
   { key: 'actions', label: '' },
 ]
 
-export default function EnsaiosTable({ ensaios, sort, onSort, onView, onEdit, onStatus, onDelete }) {
+export default function EnsaiosTable({ ensaios, sort, onSort, onView, onEdit, onStatus, onDelete, onPreContrato }) {
   return (
     <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#141414]">
       <div className="overflow-x-auto">
@@ -33,7 +33,7 @@ export default function EnsaiosTable({ ensaios, sort, onSort, onView, onEdit, on
           </thead>
           <tbody>
             {ensaios.map((ensaio) => (
-              <EnsaioTableRow key={ensaio.id} ensaio={ensaio} onView={onView} onEdit={onEdit} onStatus={onStatus} onDelete={onDelete} />
+              <EnsaioTableRow key={ensaio.id} ensaio={ensaio} onView={onView} onEdit={onEdit} onStatus={onStatus} onDelete={onDelete} onPreContrato={onPreContrato} />
             ))}
           </tbody>
         </table>
