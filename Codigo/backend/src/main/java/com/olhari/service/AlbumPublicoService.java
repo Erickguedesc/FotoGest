@@ -168,8 +168,13 @@ public AlbumPublicoResponse dadosPublicos(String token) {
     }
 
     return new AlbumPublicoResponse(
-            album.getEnsaio().getCliente().getNome(),
-            album.getEnsaio().getTipo().name(),
-            album.getEnsaio().getQtdFotosPacote()); // ✅ Agora pega os 40 do pacote contratado
+        album.getEnsaio().getCliente().getNome(),
+        album.getEnsaio().getTipo().name(),
+        album.getEnsaio().getQtdFotosPacote(),
+        album.getEnsaio().getDataEnsaio(),
+        album.getEnsaio().getLocal(),
+        album.getEnsaio().getCobrarFotoExtra(),
+        album.getEnsaio().getValorFotoExtra()
+);
 }
 }

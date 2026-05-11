@@ -9,6 +9,7 @@ import AlbumAccessPage from "../pages/AlbumAccessPage"
 import SolicitacoesPage from '../pages/SolicitacoesPage'
 import PreContratoPage from '../pages/PreContratoPage'
 import DetalhesEnsaio from '../pages/DetalhesEnsaio'
+import GaleriaPage from "../pages/GaleriaPage"
 
 // Futuras páginas — descomente conforme forem criadas:
 // import DashboardPage      from '../pages/DashboardPage'
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
   {
   path: "/album/:token",
   element: <AlbumAccessPage />,
+  },
+  {
+  path: "/galeria/:token",
+  element: <GaleriaPage />,
   },
 
 

@@ -50,36 +50,49 @@ export default function AlbumAccessPage() {
   }, [token])
 
   async function handleAcessar() {
-    if (!senha.trim()) {
-      setErro("Informe a senha de acesso.")
-      return
-    }
-
-    try {
-      setLoading(true)
-      setErro("")
-
-      await acessarAlbumComSenha(token, senha)
-
-      navigate("/galeria")
-    } catch (error) {
-      const status = error?.response?.status
-
-      if (status === 401) {
-        setErro("Senha incorreta. Confira a senha enviada pela fotógrafa e tente novamente.")
-      } else if (status === 403) {
-        setErro(MSG_ALBUM_PAUSADO)
-      } else if (status === 404) {
-        setErro("Álbum não encontrado. Confira se o link recebido está correto.")
-      } else if (status === 410) {
-        setErro("Este álbum expirou. Entre em contato com a fotógrafa para solicitar um novo acesso.")
-      } else {
-        setErro("Não foi possível acessar a galeria agora. Tente novamente em instantes.")
-      }
-    } finally {
-      setLoading(false)
-    }
+  if (!senha.trim()) {
+    setErro("Informe a senha de acesso.")
+    return
   }
+
+  try {
+    setLoading(true)
+    setErro("")
+
+    const fotos = await acessarAlbumComSenha(token, senha)
+    const dadosPublicos = await validarAlbumPorToken(token)
+    console.log("DADOS PÚBLICOS DO ÁLBUM:", dadosPublicos)
+
+    sessionStorage.setItem(
+      `olhari_album_${token}`,
+      JSON.stringify({
+        ...dadosPublicos,
+        fotos,
+        acessoValidadoEm: new Date().toISOString(),
+      })
+    )
+
+    navigate(`/galeria/${token}`)
+  } catch (error) {
+    const status = error?.response?.status
+
+    console.error("Erro ao acessar álbum:", error)
+
+    if (status === 401) {
+      setErro("Senha incorreta. Confira a senha enviada pela fotógrafa e tente novamente.")
+    } else if (status === 403) {
+      setErro(MSG_ALBUM_PAUSADO)
+    } else if (status === 404) {
+      setErro("Álbum não encontrado. Confira se o link recebido está correto.")
+    } else if (status === 410) {
+      setErro("Este álbum expirou. Entre em contato com a fotógrafa para solicitar um novo acesso.")
+    } else {
+      setErro("Não foi possível acessar a galeria agora. Tente novamente em instantes.")
+    }
+  } finally {
+    setLoading(false)
+  }
+}
 
   if (validandoToken) {
     return <AcessoAlbumLoading />
