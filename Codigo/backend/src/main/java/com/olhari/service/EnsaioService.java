@@ -36,6 +36,7 @@ public class EnsaioService {
     @Transactional
     public EnsaioResponse criar(EnsaioRequest request) {
         Cliente cliente = buscarCliente(request.getClienteId());
+        
 
 boolean cobrar = Boolean.TRUE.equals(request.getCobrarFotoExtra());
 
@@ -96,6 +97,7 @@ public List<EnsaioResponse> listar(
     public EnsaioResponse atualizar(UUID id, EnsaioRequest request) {
         Ensaio ensaio = buscarEnsaio(id);
         Cliente cliente = buscarCliente(request.getClienteId());
+        atualizarDadosCliente(cliente, request);
 
         ensaio.setCliente(cliente);
         ensaio.setTipo(request.getTipo());
@@ -183,6 +185,41 @@ public void deletar(UUID id) {
         };
     }
 
+
+    private void atualizarDadosCliente(Cliente cliente, EnsaioRequest request) {
+    if (request.getClienteNome() != null && !request.getClienteNome().trim().isEmpty()) {
+        cliente.setNome(request.getClienteNome().trim());
+    }
+
+    if (request.getClienteEmail() != null) {
+        cliente.setEmail(normalizarTexto(request.getClienteEmail()));
+    }
+
+    if (request.getClienteTelefone() != null) {
+        cliente.setTelefone(normalizarTexto(request.getClienteTelefone()));
+    }
+
+    if (request.getClienteCpf() != null) {
+        cliente.setCpf(normalizarTexto(request.getClienteCpf()));
+    }
+
+    if (request.getClienteCidade() != null) {
+        cliente.setCidade(normalizarTexto(request.getClienteCidade()));
+    }
+
+    if (request.getClienteIndicacao() != null) {
+        cliente.setIndicacao(normalizarTexto(request.getClienteIndicacao()));
+    }
+}
+
+private String normalizarTexto(String valor) {
+    if (valor == null) return null;
+
+    String texto = valor.trim();
+
+    return texto.isEmpty() ? null : texto;
+}
+
     private EnsaioResponse toResponse(Ensaio ensaio) {
     return EnsaioResponse.builder()
             .id(ensaio.getId())
@@ -191,6 +228,9 @@ public void deletar(UUID id) {
             .clienteNome(ensaio.getCliente().getNome())
             .clienteTelefone(ensaio.getCliente().getTelefone())
             .clienteEmail(ensaio.getCliente().getEmail())
+            .clienteCpf(ensaio.getCliente().getCpf())
+            .clienteCidade(ensaio.getCliente().getCidade())
+            .clienteIndicacao(ensaio.getCliente().getIndicacao())
 
             .tipo(ensaio.getTipo())
             .status(ensaio.getStatus())

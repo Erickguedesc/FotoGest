@@ -5,19 +5,25 @@ export const fotosService = {
     return api.get(`/fotos/ensaio/${ensaioId}`)
   },
 
-  upload: (ensaioId, arquivos = []) => {
-    const formData = new FormData()
+upload: (ensaioId, arquivos = [], onProgress) => {
+  const formData = new FormData()
 
-    arquivos.forEach((arquivo) => {
-      formData.append('imagens', arquivo)
-    })
+  arquivos.forEach((arquivo) => {
+    formData.append('imagens', arquivo)
+  })
 
-    return api.post(`/fotos/upload/${ensaioId}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-  },
+  return api.post(`/fotos/upload/${ensaioId}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    onUploadProgress: (event) => {
+      if (!event.total || !onProgress) return
+
+      const percent = Math.round((event.loaded * 100) / event.total)
+      onProgress(percent)
+    },
+  })
+},
 
   definirCapa: (fotoId) => {
     return api.patch(`/fotos/${fotoId}/capa`)
@@ -29,5 +35,9 @@ export const fotosService = {
 
   remover: (fotoId) => {
     return api.delete(`/fotos/${fotoId}`)
+  },
+
+    removerVarios: (fotosIds = []) => {
+    return Promise.all(fotosIds.map((fotoId) => api.delete(`/fotos/${fotoId}`)))
   },
 }

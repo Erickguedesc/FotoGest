@@ -19,6 +19,9 @@ public class EnsaioResponse {
     private String clienteNome;
     private String clienteTelefone;
     private String clienteEmail;
+    private String clienteCpf;
+    private String clienteCidade;
+    private String clienteIndicacao;
 
     private TipoEnsaio tipo;
     private StatusEnsaio status;
