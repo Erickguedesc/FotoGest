@@ -2,14 +2,11 @@ spring:
   application:
     name: olhari-api
 
-  spring:
   servlet:
     multipart:
       max-file-size: 20MB
-      max-request-size: 25MB
-    
+      max-request-size: 100MB
 
-  # ── BANCO DE DADOS
   datasource:
     url: jdbc:postgresql://localhost:5432/olhari_db
     username: olhari_user
@@ -20,63 +17,53 @@ spring:
       minimum-idle: 2
       connection-timeout: 30000
 
-  # ── JPA / HIBERNATE
   jpa:
     hibernate:
-      # Alterado para 'update' para criar as tabelas no seu banco novo
-      ddl-auto: update # Em produção, alterar para 'validate' quando clientes reais usar o sistema
-    show-sql: true # Permite ver o Hibernate criando as tabelas no console
+      ddl-auto: update
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
         jdbc.time_zone: America/Sao_Paulo
 
-  # ── E-MAIL (Configuração para disparo automático)
   mail:
     host: smtp.gmail.com
     port: 587
-    # PASSO 1: Substitua pelo e-mail real do projeto (ex: contato.olhari@gmail.com)
-    username: seu-email@gmail.com 
-    # PASSO 2: NÃO use sua senha comum. Use a "Senha de App" gerada no Google.
-    password: sua-app-password-gmail 
+    username: seu-email@gmail.com
+    password: sua-app-password-gmail
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
 
-  # ── SEGURANÇA (Senha fixa para facilitar seu teste)
-  
-
-# ── CONFIGURAÇÃO DO ACTUATOR E MONITORAMENTO
-# APÓS CONFIGURAR O E-MAIL, mude 'mail.enabled' para true para validar a conexão.
 management:
   health:
     mail:
-      enabled: false  # Cura o erro 503: não derruba a API se o e-mail falhar.. dps mudar para true apos configurar o email acima
+      enabled: false
   endpoints:
     web:
       exposure:
         include: health, info
 
-# ── SEGURANÇA E NUVEM
 jwt:
-  secret:  8f42a3c1e9d7b6f05a2c4e8d1f3b7a9c2e5d8f1a4b7c0e3f6a9d2b5e8c1f4a7
+  secret: 8f42a3c1e9d7b6f05a2c4e8d1f3b7a9c2e5d8f1a4b7c0e3f6a9d2b5e8c1f4a7
   expiration: 86400000
 
 cloudinary:
   cloud-name: ddwei8qbu
   api-key: 776843477352766
   api-secret: XGkFTftRE5VCS7aT9ho32P_W6fc
-  
-# ── SERVIDOR E LOGS
+
+app:
+  frontend-url: http://localhost:5173
+
 server:
   port: 8080
   error:
     include-message: always
-    include-binding-errors: always  # <--- ADICIONE ESTA LINHA AQUI
+    include-binding-errors: always
 
 logging:
   level:
     com.olhari: DEBUG
     org.hibernate.SQL: INFO
     org.springframework: WARN
-    

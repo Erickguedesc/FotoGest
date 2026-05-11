@@ -14,18 +14,26 @@ import java.util.UUID;
 public class EnsaioResponse {
 
     private UUID id;
+
     private UUID clienteId;
     private String clienteNome;
+    private String clienteTelefone;
+    private String clienteEmail;
+
     private TipoEnsaio tipo;
     private StatusEnsaio status;
+
     private OffsetDateTime dataEnsaio;
     private String local;
+
     private Integer qtdFotosPacote;
     private BigDecimal valorPacote;
     private BigDecimal valorFotoExtra;
     private Boolean cobrarFotoExtra;
+
     private String observacoes;
     private Short progresso;
+
     private OffsetDateTime criadoEm;
     private OffsetDateTime atualizadoEm;
 }

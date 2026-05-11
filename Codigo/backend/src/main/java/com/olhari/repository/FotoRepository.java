@@ -9,5 +9,12 @@ import java.util.UUID;
 
 @Repository
 public interface FotoRepository extends JpaRepository<Foto, UUID> {
+
     List<Foto> findByEnsaioId(UUID ensaioId);
+
+    List<Foto> findByEnsaioIdOrderByOrdemAscEnviadaEmAsc(UUID ensaioId);
+
+    int countByEnsaioId(UUID ensaioId);
+
+    boolean existsByEnsaioIdAndEhCapaTrue(UUID ensaioId);
 }

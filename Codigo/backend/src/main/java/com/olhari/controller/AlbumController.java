@@ -13,7 +13,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/album")
 @RequiredArgsConstructor
-// @CrossOrigin(origins = "*")
 public class AlbumController {
 
     private final AlbumService albumService;
@@ -22,6 +21,16 @@ public class AlbumController {
     @PostMapping("/gerar/{ensaioId}")
     public ResponseEntity<AlbumResponseDTO> criarAlbum(@PathVariable UUID ensaioId) {
         return ResponseEntity.ok(albumService.gerarAlbumCompleto(ensaioId));
+    }
+
+    @GetMapping("/ensaio/{ensaioId}")
+    public ResponseEntity<AlbumAdminResponseDTO> buscarAlbumPorEnsaio(@PathVariable UUID ensaioId) {
+        return ResponseEntity.ok(albumService.buscarAlbumPorEnsaio(ensaioId));
+    }
+
+    @PatchMapping("/reabrir/{ensaioId}")
+    public ResponseEntity<AlbumAdminResponseDTO> reabrirAlbum(@PathVariable UUID ensaioId) {
+        return ResponseEntity.ok(albumService.reabrirAlbum(ensaioId));
     }
 
     @PostMapping("/{token}/acessar")

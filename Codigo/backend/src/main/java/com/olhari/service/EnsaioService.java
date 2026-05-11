@@ -184,22 +184,29 @@ public void deletar(UUID id) {
     }
 
     private EnsaioResponse toResponse(Ensaio ensaio) {
-        return EnsaioResponse.builder()
-                .id(ensaio.getId())
-                .clienteId(ensaio.getCliente().getId())
-                .clienteNome(ensaio.getCliente().getNome())
-                .tipo(ensaio.getTipo())
-                .status(ensaio.getStatus())
-                .dataEnsaio(ensaio.getDataEnsaio())
-                .local(ensaio.getLocal())
-                .qtdFotosPacote(ensaio.getQtdFotosPacote())
-                .valorPacote(ensaio.getValorPacote())
-                .valorFotoExtra(ensaio.getValorFotoExtra())
-                .cobrarFotoExtra(ensaio.getCobrarFotoExtra())
-                .observacoes(ensaio.getObservacoes())
-                .progresso(ensaio.getProgresso())
-                .criadoEm(ensaio.getCriadoEm())
-                .atualizadoEm(ensaio.getAtualizadoEm())
-                .build();
-    }
+    return EnsaioResponse.builder()
+            .id(ensaio.getId())
+
+            .clienteId(ensaio.getCliente().getId())
+            .clienteNome(ensaio.getCliente().getNome())
+            .clienteTelefone(ensaio.getCliente().getTelefone())
+            .clienteEmail(ensaio.getCliente().getEmail())
+
+            .tipo(ensaio.getTipo())
+            .status(ensaio.getStatus())
+            .dataEnsaio(ensaio.getDataEnsaio())
+            .local(ensaio.getLocal())
+
+            .qtdFotosPacote(ensaio.getQtdFotosPacote())
+            .valorPacote(ensaio.getValorPacote())
+            .valorFotoExtra(ensaio.getValorFotoExtra())
+            .cobrarFotoExtra(ensaio.getCobrarFotoExtra())
+
+            .observacoes(ensaio.getObservacoes())
+            .progresso(ensaio.getProgresso())
+
+            .criadoEm(ensaio.getCriadoEm())
+            .atualizadoEm(ensaio.getAtualizadoEm())
+            .build();
+}
 }

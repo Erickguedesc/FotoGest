@@ -2,10 +2,15 @@ package com.olhari.repository;
 
 import com.olhari.model.Album;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.UUID;
+
 import java.util.Optional;
+import java.util.UUID;
 
 public interface AlbumRepository extends JpaRepository<Album, UUID> {
-    Optional<Album> findByTokenUrl(String tokenUrl);
-}
 
+    Optional<Album> findByTokenUrl(String tokenUrl);
+
+    Optional<Album> findByEnsaioId(UUID ensaioId);
+
+    boolean existsByTokenUrl(String tokenUrl);
+}

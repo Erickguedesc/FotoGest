@@ -8,6 +8,7 @@ import EnsaiosPage from '../pages/EnsaiosPage'
 import AlbumAccessPage from "../pages/AlbumAccessPage"
 import SolicitacoesPage from '../pages/SolicitacoesPage'
 import PreContratoPage from '../pages/PreContratoPage'
+import DetalhesEnsaio from '../pages/DetalhesEnsaio'
 
 // Futuras páginas — descomente conforme forem criadas:
 // import DashboardPage      from '../pages/DashboardPage'
@@ -41,7 +42,14 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
-
+{
+  path: '/ensaios/:id',
+  element: (
+    <PrivateRoute>
+      <DetalhesEnsaio />
+    </PrivateRoute>
+  ),
+},
   {
     path: '/ensaios',
     element: (

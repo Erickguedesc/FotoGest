@@ -1,7 +1,9 @@
 package com.olhari.security;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,16 +28,30 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
             .authorizeHttpRequests(auth -> auth
+                // Preflight OPTIONS sempre liberado
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                 // Rotas públicas
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/solicitacoes/**").permitAll()
-                .requestMatchers("/album/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
 
-                // Preflight OPTIONS sempre liberado
-                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                // Álbum público da cliente
+                .requestMatchers(HttpMethod.GET, "/album/*").permitAll()
+                .requestMatchers(HttpMethod.POST, "/album/*/acessar").permitAll()
+                .requestMatchers(HttpMethod.POST, "/album/*/selecao").permitAll()
+                .requestMatchers(HttpMethod.GET, "/album/*/selecao").permitAll()
+
+                // Álbum administrativo da fotógrafa
+                .requestMatchers(HttpMethod.POST, "/album/gerar/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/album/ensaio/**").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/album/reabrir/**").authenticated()
+
+                // Fotos administrativas
+                .requestMatchers("/fotos/**").authenticated()
 
                 // Todo o resto exige autenticação
                 .anyRequest().authenticated()
@@ -54,19 +70,15 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Em dev: aceita qualquer origem. Em prod, troque por:
-        // config.setAllowedOrigins(List.of("https://seusite.vercel.app"));
         config.setAllowedOriginPatterns(List.of("*"));
-
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization"));
-
-        // Permite envio do header Authorization com credenciais
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
+
         return source;
     }
 }

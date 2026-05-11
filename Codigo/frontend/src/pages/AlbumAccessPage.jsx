@@ -12,6 +12,9 @@ import AcessoAlbumLoading from "../components/album/acessoAlbum/AcessoAlbumLoadi
 
 import "../styles/album-access.css"
 
+const MSG_ALBUM_PAUSADO =
+  "Álbum em atualização. A fotógrafa está fazendo ajustes nesta galeria. Assim que a nova versão for publicada, você receberá uma nova senha de acesso."
+
 export default function AlbumAccessPage() {
   const { token } = useParams()
   const navigate = useNavigate()
@@ -26,8 +29,18 @@ export default function AlbumAccessPage() {
       try {
         setErro("")
         await validarAlbumPorToken(token)
-      } catch {
-        setErro("Álbum não encontrado ou indisponível.")
+      } catch (error) {
+        const status = error?.response?.status
+
+        if (status === 403) {
+          setErro(MSG_ALBUM_PAUSADO)
+        } else if (status === 404) {
+          setErro("Álbum não encontrado. Confira se o link recebido está correto.")
+        } else if (status === 410) {
+          setErro("Este álbum expirou. Entre em contato com a fotógrafa para solicitar um novo acesso.")
+        } else {
+          setErro("Não foi possível carregar este álbum agora. Tente novamente em instantes.")
+        }
       } finally {
         setValidandoToken(false)
       }
@@ -49,8 +62,20 @@ export default function AlbumAccessPage() {
       await acessarAlbumComSenha(token, senha)
 
       navigate("/galeria")
-    } catch {
-      setErro("Senha incorreta. Verifique e tente novamente.")
+    } catch (error) {
+      const status = error?.response?.status
+
+      if (status === 401) {
+        setErro("Senha incorreta. Confira a senha enviada pela fotógrafa e tente novamente.")
+      } else if (status === 403) {
+        setErro(MSG_ALBUM_PAUSADO)
+      } else if (status === 404) {
+        setErro("Álbum não encontrado. Confira se o link recebido está correto.")
+      } else if (status === 410) {
+        setErro("Este álbum expirou. Entre em contato com a fotógrafa para solicitar um novo acesso.")
+      } else {
+        setErro("Não foi possível acessar a galeria agora. Tente novamente em instantes.")
+      }
     } finally {
       setLoading(false)
     }

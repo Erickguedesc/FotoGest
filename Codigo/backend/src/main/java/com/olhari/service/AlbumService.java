@@ -1,18 +1,22 @@
 package com.olhari.service;
 
+import com.olhari.dto.AlbumAdminResponseDTO;
 import com.olhari.dto.AlbumResponseDTO;
 import com.olhari.model.Album;
 import com.olhari.model.Ensaio;
 import com.olhari.repository.AlbumRepository;
 import com.olhari.repository.EnsaioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.UUID;
 import java.security.SecureRandom;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -22,38 +26,67 @@ public class AlbumService {
     private final EnsaioRepository ensaioRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${app.frontend-url:http://localhost:5173}")
+    private String frontendUrl;
+
+    @Transactional
     public AlbumResponseDTO gerarAlbumCompleto(UUID ensaioId) {
-        // 1. Busca o ensaio
         Ensaio ensaio = ensaioRepository.findById(ensaioId)
-                .orElseThrow(() -> new RuntimeException("Ensaio não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Ensaio não encontrado"
+                ));
 
-        // 2. Gera Senha e Token aleatórios
-        String senhaLimpa = gerarSenhaAleatoria(6);
-        String token = UUID.randomUUID().toString().substring(0, 8);
+        String senhaLimpa = gerarSenhaAleatoria(6).trim().toUpperCase();
 
-        // 3. Cria o objeto Album e salva o HASH da senha
-       Album album = Album.builder()
-        .ensaio(ensaio)
-        .tokenUrl(token)
-        .senhaHash(passwordEncoder.encode(senhaLimpa))
-        .acessoLiberado(true) //
-        .build();
+        Album album = albumRepository.findByEnsaioId(ensaioId)
+                .orElseGet(() -> Album.builder()
+                        .ensaio(ensaio)
+                        .tokenUrl(gerarTokenUnico())
+                        .build()
+                );
+
+        album.setSenhaHash(passwordEncoder.encode(senhaLimpa));
+        album.setAcessoLiberado(true);
+        album.setAtivo(true);
+        album.setPublicadoEm(OffsetDateTime.now());
+
+        if (album.getExpiraEm() == null) {
+            album.setExpiraEm(OffsetDateTime.now().plusDays(30));
+        }
 
         albumRepository.save(album);
 
-        // 4. Retorna o DTO com a senha limpa para a fotógrafa copiar
-        String urlCompleta = "https://olhari.com/galeria/" + token;
+        String urlCompleta = frontendUrl + "/album/" + album.getTokenUrl();
+
         return new AlbumResponseDTO(urlCompleta, senhaLimpa);
     }
 
-    private String gerarSenhaAleatoria(int tamanho) {
-        String caracteres = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Sem '0', 'O', 'I' para não confundir
-        SecureRandom random = new SecureRandom();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < tamanho; i++) {
-            sb.append(caracteres.charAt(random.nextInt(caracteres.length())));
-        }
-        return sb.toString();
+    @Transactional(readOnly = true)
+    public AlbumAdminResponseDTO buscarAlbumPorEnsaio(UUID ensaioId) {
+        Album album = albumRepository.findByEnsaioId(ensaioId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Álbum ainda não foi criado para este ensaio"
+                ));
+
+        return toAdminResponse(album);
+    }
+
+    @Transactional
+    public AlbumAdminResponseDTO reabrirAlbum(UUID ensaioId) {
+        Album album = albumRepository.findByEnsaioId(ensaioId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Álbum ainda não foi criado para este ensaio"
+                ));
+
+        album.setAcessoLiberado(false);
+        album.setAtivo(false);
+
+        albumRepository.save(album);
+
+        return toAdminResponse(album);
     }
 
     public void validarAcesso(String token, String senha) {
@@ -70,7 +103,16 @@ public class AlbumService {
                         "Álbum não encontrado"
                 ));
 
-        boolean senhaCorreta = passwordEncoder.matches(senha, album.getSenhaHash());
+        if (!Boolean.TRUE.equals(album.getAtivo()) || !Boolean.TRUE.equals(album.getAcessoLiberado())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Álbum indisponível"
+            );
+        }
+
+        String senhaTratada = senha.trim().toUpperCase();
+
+        boolean senhaCorreta = passwordEncoder.matches(senhaTratada, album.getSenhaHash());
 
         if (!senhaCorreta) {
             throw new ResponseStatusException(
@@ -81,10 +123,54 @@ public class AlbumService {
     }
 
     public void validarToken(String token) {
-        albumRepository.findByTokenUrl(token)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Álbum não encontrado"
-            ));
+        Album album = albumRepository.findByTokenUrl(token)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Álbum não encontrado"
+                ));
+
+        if (!Boolean.TRUE.equals(album.getAtivo()) || !Boolean.TRUE.equals(album.getAcessoLiberado())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Álbum indisponível"
+            );
+        }
+    }
+
+    private AlbumAdminResponseDTO toAdminResponse(Album album) {
+        String urlCompleta = frontendUrl + "/album/" + album.getTokenUrl();
+
+        return new AlbumAdminResponseDTO(
+                album.getId(),
+                album.getEnsaio().getId(),
+                album.getTokenUrl(),
+                urlCompleta,
+                album.getAtivo(),
+                album.getAcessoLiberado(),
+                album.getPublicadoEm(),
+                album.getExpiraEm()
+        );
+    }
+
+    private String gerarTokenUnico() {
+        String token;
+
+        do {
+            token = UUID.randomUUID().toString().substring(0, 8);
+        } while (albumRepository.existsByTokenUrl(token));
+
+        return token;
+    }
+
+    private String gerarSenhaAleatoria(int tamanho) {
+        String caracteres = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < tamanho; i++) {
+            sb.append(caracteres.charAt(random.nextInt(caracteres.length())));
+        }
+
+        return sb.toString();
     }
 }

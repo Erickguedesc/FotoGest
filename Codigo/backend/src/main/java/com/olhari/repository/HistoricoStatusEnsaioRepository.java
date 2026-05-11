@@ -1,0 +1,12 @@
+package com.olhari.repository;
+
+import com.olhari.model.HistoricoStatusEnsaio;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.UUID;
+
+public interface HistoricoStatusEnsaioRepository extends JpaRepository<HistoricoStatusEnsaio, UUID> {
+
+    List<HistoricoStatusEnsaio> findByEnsaioIdOrderByAlteradoEmAsc(UUID ensaioId);
+}

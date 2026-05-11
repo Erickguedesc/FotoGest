@@ -2,9 +2,20 @@ import { getStatusInfo } from './ensaioHelpers'
 
 export default function StatusBadge({ status }) {
   const info = getStatusInfo(status)
+
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] tracking-[0.05em] ${info.chipClass}`}>
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+    <span
+      className={`
+        inline-flex items-center gap-2
+        whitespace-nowrap
+        rounded-full border
+        px-4 py-2
+        text-[11px] font-medium
+        leading-none
+        ${info.chipClass}
+      `}
+    >
+      <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-current opacity-80" />
       {info.label}
     </span>
   )
