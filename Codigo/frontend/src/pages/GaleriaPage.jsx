@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { Navigate, useParams } from "react-router-dom"
 import { enviarSelecaoFotos } from "../services/albumAccessService"
 
 const LIMITE_PADRAO = 30
 const VALOR_EXTRA_PADRAO = 35
+
 
 function getFotoUrl(foto) {
   return foto?.urlWatermark || foto?.url || foto?.src || ""
@@ -48,7 +49,6 @@ function HeartIcon({ filled = false }) {
 
 export default function GaleriaPage() {
   const { token } = useParams()
-  const navigate = useNavigate()
 
   const album = useMemo(() => {
     const raw = sessionStorage.getItem(`olhari_album_${token}`)
@@ -63,20 +63,31 @@ export default function GaleriaPage() {
     }
   }, [token])
 
-  const [aba, setAba] = useState("galeria")
-  const [favoritas, setFavoritas] = useState([])
-  const [lightboxIndex, setLightboxIndex] = useState(null)
-  const [modalAberto, setModalAberto] = useState(false)
-  const [enviando, setEnviando] = useState(false)
-  const [selecaoEnviada, setSelecaoEnviada] = useState(false)
-  const [erroEnvio, setErroEnvio] = useState("")
+const [aba, setAba] = useState("galeria")
 
-  if (!album) {
-    navigate(`/album/${token}`, { replace: true })
-    return null
-  }
+const [favoritas, setFavoritas] = useState(
+  Array.isArray(album?.fotosSelecionadas) ? album.fotosSelecionadas : []
+)
+
+const [lightboxIndex, setLightboxIndex] = useState(null)
+const [lightboxOrigem, setLightboxOrigem] = useState("galeria")
+
+const [modalAberto, setModalAberto] = useState(false)
+const [modalSucessoAberto, setModalSucessoAberto] = useState(false)
+const [enviando, setEnviando] = useState(false)
+
+const [selecaoEnviada, setSelecaoEnviada] = useState(
+  Boolean(album?.selecaoEnviada || album?.selecaoFinalizada)
+)
+
+const [erroEnvio, setErroEnvio] = useState("")
+
+if (!album) {
+  return <Navigate to={`/album/${token}`} replace />
+}
 
   const fotos = Array.isArray(album.fotos) ? album.fotos : []
+
 
   const nomeCliente =
     album.nomeCliente ||
@@ -113,8 +124,9 @@ export default function GaleriaPage() {
   const totalSelecionadas = favoritas.length
   const excedente = Math.max(0, totalSelecionadas - limite)
   const valorExcedente = cobraFotoExtra ? excedente * valorFotoExtra : 0
-  const progresso = Math.min(100, Math.round((totalSelecionadas / limite) * 100))
-
+const progresso =limite > 0
+    ? Math.min(100, Math.round((totalSelecionadas / limite) * 100))
+    : 0
   const fotosFavoritas = fotos.filter((foto) => favoritas.includes(foto.id))
 
   function toggleFavorita(fotoId) {
@@ -129,47 +141,70 @@ export default function GaleriaPage() {
     })
   }
 
-  function abrirLightbox(index) {
-    setLightboxIndex(index)
-  }
+  function abrirLightbox(index, origem = "galeria") {
+  setLightboxOrigem(origem)
+  setLightboxIndex(index)
+}
 
   function fecharLightbox() {
     setLightboxIndex(null)
   }
 
-  function moverLightbox(direcao) {
-    setLightboxIndex((indexAtual) => {
-      if (indexAtual === null) return null
-      return (indexAtual + direcao + fotos.length) % fotos.length
-    })
+function moverLightbox(direcao) {
+  setLightboxIndex((indexAtual) => {
+    if (indexAtual === null || fotosLightbox.length === 0) return null
+
+    return (
+      (indexAtual + direcao + fotosLightbox.length) %
+      fotosLightbox.length
+    )
+  })
+}
+
+async function confirmarSelecao() {
+  if (selecaoEnviada) {
+    setModalAberto(false)
+    setErroEnvio("Esta seleção já foi finalizada e não pode ser alterada.")
+    return
   }
 
-  async function confirmarSelecao() {
-    try {
-      setEnviando(true)
-      setErroEnvio("")
+  try {
+    setEnviando(true)
+    setErroEnvio("")
 
-      await enviarSelecaoFotos(token, favoritas)
+    await enviarSelecaoFotos(token, favoritas)
 
-      setSelecaoEnviada(true)
-      setModalAberto(false)
-    } catch (error) {
-      const status = error?.response?.status
+    setSelecaoEnviada(true)
+    setModalAberto(false)
+    setModalSucessoAberto(true)
 
-      if (status === 400) {
-        setErroEnvio("Esta seleção já foi enviada ou contém fotos inválidas.")
-      } else if (status === 403) {
-        setErroEnvio("Acesso não autorizado ao álbum.")
-      } else {
-        setErroEnvio("Não foi possível enviar sua seleção. Tente novamente.")
-      }
-    } finally {
-      setEnviando(false)
+    sessionStorage.setItem(
+      `olhari_album_${token}`,
+      JSON.stringify({
+        ...album,
+        selecaoEnviada: true,
+        fotosSelecionadas: favoritas,
+      })
+    )
+  } catch (error) {
+    const status = error?.response?.status
+
+    setModalAberto(false)
+
+    if (status === 400) {
+      setErroEnvio("Esta seleção já foi enviada ou contém fotos inválidas.")
+    } else if (status === 403) {
+      setErroEnvio("Acesso não autorizado ao álbum.")
+    } else {
+      setErroEnvio("Não foi possível enviar sua seleção. Tente novamente.")
     }
+  } finally {
+    setEnviando(false)
   }
-
-  const fotoLightbox = lightboxIndex !== null ? fotos[lightboxIndex] : null
-
+}
+  
+const fotosLightbox = lightboxOrigem === "favoritas" ? fotosFavoritas : fotos
+const fotoLightbox = lightboxIndex !== null ? fotosLightbox[lightboxIndex] : null
   return (
     <main className="min-h-screen bg-[#f5f0e8] text-[#1a1610]">
       <section className="relative flex min-h-[76vh] items-center justify-center overflow-hidden px-6 py-20 text-center text-white">
@@ -261,6 +296,32 @@ export default function GaleriaPage() {
         </div>
       </nav>
 
+{modalSucessoAberto ? (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#0a0806]/85 p-5 backdrop-blur">
+    <div className="w-full max-w-md rounded-3xl border border-[#2a2420] bg-[#1a1612] p-8 text-center text-[#e8dfd4] shadow-2xl">
+      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#5a9468]/15 text-3xl text-[#7db88a]">
+        ✓
+      </div>
+
+      <h2 className="font-serif text-3xl font-light">
+        Seleção confirmada!
+      </h2>
+
+      <p className="mt-3 text-sm leading-7 text-[#887e74]">
+        Suas fotos favoritas foram enviadas para a fotógrafa. A seleção não poderá mais ser alterada por aqui.
+      </p>
+
+      <button
+        type="button"
+        onClick={() => setModalSucessoAberto(false)}
+        className="mt-7 w-full rounded-full bg-[#a8783a] px-6 py-4 text-xs font-medium uppercase tracking-[0.18em] text-white transition hover:opacity-90"
+      >
+        Entendi
+      </button>
+    </div>
+  </div>
+) : null}
+
       {selecaoEnviada ? (
         <section className="mx-auto max-w-4xl px-6 py-10">
           <div className="rounded-3xl border border-[#d7cbb9] bg-[#faf8f4] p-8 text-center">
@@ -305,8 +366,8 @@ export default function GaleriaPage() {
                   >
                     <button
                       type="button"
-                      onClick={() => abrirLightbox(index)}
-                      className="block w-full cursor-zoom-in"
+onClick={() => abrirLightbox(index, "galeria")}                      
+className="block w-full cursor-zoom-in"
                     >
                       <img
                         src={url}
@@ -330,20 +391,19 @@ export default function GaleriaPage() {
                     <span className="absolute left-3 top-3 text-[10px] tracking-[0.12em] text-white/50 opacity-0 transition group-hover:opacity-100">
                       #{String(index + 1).padStart(3, "0")}
                     </span>
-
-                    <div className="absolute inset-0 flex items-end justify-end bg-gradient-to-b from-transparent to-black/45 p-3 opacity-0 transition group-hover:opacity-100">
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          toggleFavorita(foto.id)
-                        }}
-                        className="flex h-10 w-10 items-center justify-center rounded-full bg-[#faf8f4]/95 text-[#bf5c68] transition hover:scale-110"
-                        title="Favoritar"
-                      >
-                        <HeartIcon filled={selecionada} />
-                      </button>
-                    </div>
+<div className="pointer-events-none absolute inset-0 flex items-end justify-end bg-gradient-to-b from-transparent to-black/45 p-3 opacity-0 transition group-hover:opacity-100">
+  <button
+    type="button"
+    onClick={(event) => {
+      event.stopPropagation()
+      toggleFavorita(foto.id)
+    }}
+    className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#faf8f4]/95 text-[#bf5c68] transition hover:scale-110"
+    title="Favoritar"
+  >
+    <HeartIcon filled={selecionada} />
+  </button>
+</div>
                   </article>
                 )
               })}
@@ -399,18 +459,15 @@ export default function GaleriaPage() {
                   </div>
 
                   <div className="columns-2 gap-2 md:columns-3">
-                    {fotosFavoritas.map((foto) => {
-                      const index = fotos.findIndex((item) => item.id === foto.id)
-
-                      return (
+                  {fotosFavoritas.map((foto, index) => {
+                     return (
                         <article
                           key={foto.id}
                           className="group relative mb-2 break-inside-avoid overflow-hidden rounded-md border-2 border-[#bf5c68]/45 bg-[#ede6d8]"
                         >
                           <button
                             type="button"
-                            onClick={() => abrirLightbox(index)}
-                            className="block w-full"
+onClick={() => abrirLightbox(index, "favoritas")}                            className="block w-full"
                           >
                             <img
                               src={getFotoUrl(foto)}
@@ -545,14 +602,18 @@ export default function GaleriaPage() {
                   </p>
                 ) : null}
 
-                <button
-                  type="button"
-                  disabled={totalSelecionadas === 0 || enviando}
-                  onClick={() => setModalAberto(true)}
-                  className="w-full rounded-full bg-[#a8783a] px-6 py-4 text-xs font-medium uppercase tracking-[0.18em] text-white shadow-lg shadow-[#a8783a]/20 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  Confirmar seleção
-                </button>
+<button
+  type="button"
+  disabled={totalSelecionadas === 0 || enviando || selecaoEnviada}
+  onClick={() => {
+    setErroEnvio("")
+
+    setModalAberto(true)
+  }}
+  className="w-full rounded-full bg-[#a8783a] px-6 py-4 text-xs font-medium uppercase tracking-[0.18em] text-white shadow-lg shadow-[#a8783a]/20 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
+>
+  {selecaoEnviada ? "Seleção já enviada" : "Confirmar seleção"}
+</button>
 
                 <p className="mt-3 text-center text-xs text-[#887e74]">
                   {totalSelecionadas === 0
@@ -633,7 +694,7 @@ export default function GaleriaPage() {
               {Array.from({ length: 16 }).map((_, item) => (
                 <span
                   key={item}
-                  className="rotate-[-35deg] select-none self-center text-center font-serif text-sm italic tracking-[0.18em] text-white/15"
+                  className="rotate-[-35deg] select-none self-center text-center font-serif text-sm italic tracking-[0.18em] text-black/15"
                 >
                   © olhari fotografia
                 </span>
@@ -670,8 +731,7 @@ export default function GaleriaPage() {
             </button>
 
             <span className="text-xs uppercase tracking-[0.18em] text-white/30">
-              {(lightboxIndex || 0) + 1} / {fotos.length}
-            </span>
+{(lightboxIndex || 0) + 1} / {fotosLightbox.length}            </span>
           </div>
         </div>
       ) : null}
