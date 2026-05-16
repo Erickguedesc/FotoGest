@@ -11,6 +11,7 @@ import PreContratoPage from '../pages/PreContratoPage'
 import DetalhesEnsaio from '../pages/DetalhesEnsaio'
 import GaleriaPage from "../pages/GaleriaPage"
 import RelatoriosPage from '../pages/RelatoriosPage'
+import DashboardPage from '../pages/DashboardPage'
 
 // Futuras páginas — descomente conforme forem criadas:
 // import DashboardPage      from '../pages/DashboardPage'
@@ -30,12 +31,12 @@ const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
-  path: "/album/:token",
-  element: <AlbumAccessPage />,
+    path: "/album/:token",
+    element: <AlbumAccessPage />,
   },
   {
-  path: "/galeria/:token",
-  element: <GaleriaPage />,
+    path: "/galeria/:token",
+    element: <GaleriaPage />,
   },
 
 
@@ -48,14 +49,14 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
-{
-  path: '/ensaios/:id',
-  element: (
-    <PrivateRoute>
-      <DetalhesEnsaio />
-    </PrivateRoute>
-  ),
-},
+  {
+    path: '/ensaios/:id',
+    element: (
+      <PrivateRoute>
+        <DetalhesEnsaio />
+      </PrivateRoute>
+    ),
+  },
   {
     path: '/ensaios',
     element: (
@@ -86,13 +87,22 @@ const router = createBrowserRouter([
   },
 
   {
-  path: '/relatorios',
-  element: (
-    <PrivateRoute>
-      <RelatoriosPage />
-    </PrivateRoute>
-  ),
-},
+    path: '/relatorios',
+    element: (
+      <PrivateRoute>
+        <RelatoriosPage />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    path: '/dashboard',
+    element: (
+      <PrivateRoute>
+        <DashboardPage />
+      </PrivateRoute>
+    ),
+  },
 
   // Futuras rotas privadas:
   // {
