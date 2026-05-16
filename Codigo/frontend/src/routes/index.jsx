@@ -10,6 +10,7 @@ import SolicitacoesPage from '../pages/SolicitacoesPage'
 import PreContratoPage from '../pages/PreContratoPage'
 import DetalhesEnsaio from '../pages/DetalhesEnsaio'
 import GaleriaPage from "../pages/GaleriaPage"
+import RelatoriosPage from '../pages/RelatoriosPage'
 
 // Futuras páginas — descomente conforme forem criadas:
 // import DashboardPage      from '../pages/DashboardPage'
@@ -83,6 +84,15 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
+
+  {
+  path: '/relatorios',
+  element: (
+    <PrivateRoute>
+      <RelatoriosPage />
+    </PrivateRoute>
+  ),
+},
 
   // Futuras rotas privadas:
   // {
