@@ -68,11 +68,10 @@ public class DashboardService {
                 .filter(valor -> valor != null)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        int selecoesEnviadas = (int) ensaios.stream()
-                .filter(ensaio -> temSelecaoEnviada(ensaio, albumPorEnsaio))
-                .filter(ensaio -> ensaio.getStatus() != StatusEnsaio.FINALIZADO)
-                .filter(ensaio -> ensaio.getStatus() != StatusEnsaio.CANCELADO)
-                .count();
+     int selecoesEnviadas = (int) ensaios.stream()
+        .filter(ensaio -> ensaio.getStatus() == StatusEnsaio.EM_SELECAO)
+        .filter(ensaio -> temSelecaoEnviada(ensaio, albumPorEnsaio))
+        .count();
 
         int ensaiosSemFotosEnviadas = (int) ensaios.stream()
                 .filter(ensaio -> ensaio.getStatus() == StatusEnsaio.REALIZADO)
@@ -113,14 +112,15 @@ public class DashboardService {
                 albumPorEnsaio
         );
 
-        List<DashboardSolicitacaoResumoResponse> solicitacoesRecentes = solicitacoes.stream()
-                .sorted(Comparator.comparing(
-                        SolicitacaoOrcamento::getRecebidoEm,
-                        Comparator.nullsLast(Comparator.reverseOrder())
-                ))
-                .limit(5)
-                .map(this::toSolicitacaoResumo)
-                .toList();
+       List<DashboardSolicitacaoResumoResponse> solicitacoesRecentes = solicitacoes.stream()
+        .filter(solicitacao -> solicitacao.getStatusLead() == StatusLead.EM_SOLICITACAO)
+        .sorted(Comparator.comparing(
+                SolicitacaoOrcamento::getRecebidoEm,
+                Comparator.nullsLast(Comparator.reverseOrder())
+        ))
+        .limit(5)
+        .map(this::toSolicitacaoResumo)
+        .toList();
 
         return DashboardResumoResponse.builder()
                 .ensaiosEsteMes(ensaiosEsteMes.size())
@@ -156,20 +156,18 @@ public class DashboardService {
                         .dataReferencia(ensaio.getDataEnsaio())
                         .build());
             }
+if (ensaio.getStatus() == StatusEnsaio.EM_SELECAO
+        && temSelecaoEnviada(ensaio, albumPorEnsaio)) {
 
-            if (temSelecaoEnviada(ensaio, albumPorEnsaio)
-                    && ensaio.getStatus() != StatusEnsaio.FINALIZADO
-                    && ensaio.getStatus() != StatusEnsaio.CANCELADO) {
-
-                itens.add(DashboardAtencaoResponse.builder()
-                        .tipo("SELECAO_ENVIADA")
-                        .titulo("Cliente com seleção enviada")
-                        .descricao("Revisar favoritas da cliente")
-                        .ensaioId(ensaio.getId())
-                        .clienteNome(ensaio.getCliente().getNome())
-                        .dataReferencia(ensaio.getAtualizadoEm())
-                        .build());
-            }
+    itens.add(DashboardAtencaoResponse.builder()
+            .tipo("SELECAO_ENVIADA")
+            .titulo("Cliente com seleção enviada")
+            .descricao("Revisar favoritas da cliente")
+            .ensaioId(ensaio.getId())
+            .clienteNome(ensaio.getCliente().getNome())
+            .dataReferencia(ensaio.getAtualizadoEm())
+            .build());
+}
         }
 
         solicitacoes.stream()

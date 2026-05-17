@@ -21,7 +21,7 @@ export default function DashboardStats({ dashboard }) {
             <StatCard
                 titulo="Seleções enviadas"
                 valor={dashboard?.selecoesEnviadas || 0}
-                descricao="clientes aguardando revisão"
+                descricao="clientes aguardando Edição"
                 icon={CheckCircle2}
             />
 

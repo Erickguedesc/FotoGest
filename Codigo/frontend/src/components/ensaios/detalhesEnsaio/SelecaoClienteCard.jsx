@@ -1,7 +1,12 @@
+import { useState } from 'react'
 import SectionTitle from './SectionTitle'
 
 const getNomeFoto = (foto) => {
   if (!foto) return 'foto-nao-encontrada.jpg'
+
+  if (foto.nomeOriginal) {
+    return foto.nomeOriginal
+  }
 
   if (foto.cloudinaryId) {
     const partes = foto.cloudinaryId.split('/')
@@ -17,21 +22,39 @@ export default function SelecaoClienteCard({
   loading,
   onBuscarSelecao,
 }) {
+  const [jaConsultouSelecao, setJaConsultouSelecao] = useState(false)
+  const [erroConsulta, setErroConsulta] = useState(null)
+
   const fotosSelecionadas = selecao?.fotosIds
     ? fotos.filter((foto) => selecao.fotosIds.includes(foto.id))
     : []
 
+  const semSelecao =
+    !selecao || !selecao.totalSelecionadas || selecao.totalSelecionadas === 0
+
+  const handleBuscarSelecao = async () => {
+    try {
+      setErroConsulta(null)
+      await onBuscarSelecao()
+      setJaConsultouSelecao(true)
+    } catch (error) {
+      console.error('[Seleção] Erro ao consultar seleção:', error)
+      setErroConsulta('Não foi possível consultar a seleção no momento.')
+      setJaConsultouSelecao(true)
+    }
+  }
+
   const baixarLista = () => {
-    const conteudo = fotosSelecionadas
-      .map((foto) => getNomeFoto(foto))
-      .join('\n')
+  const conteudo = fotosSelecionadas
+  .map((foto) => `"${getNomeFoto(foto)}"`)
+  .join(' OR ')
 
     const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
 
     const link = document.createElement('a')
     link.href = url
-    link.download = 'fotos-selecionadas.txt'
+    link.download = 'Filtro-fotos-selecionadas.txt'
     link.click()
 
     URL.revokeObjectURL(url)
@@ -41,24 +64,48 @@ export default function SelecaoClienteCard({
     <section className="rounded-2xl border border-[var(--gold-border)] bg-[#121212]">
       <SectionTitle title="Fotos selecionadas pela cliente" />
 
-      {!selecao || selecao.totalSelecionadas === 0 ? (
+      {semSelecao ? (
         <div className="flex min-h-[190px] flex-col items-center justify-center p-8 text-center">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]">
             ⏱
           </div>
 
-          <p className="text-[14px] text-white/75">
-            Aguardando seleção da cliente.
-          </p>
+          {erroConsulta ? (
+            <>
+              <p className="text-[14px] text-red-300">
+                {erroConsulta}
+              </p>
 
-          <p className="mt-1 text-[12px] text-white/40">
-            Quando a cliente finalizar a escolha, a seleção aparecerá aqui.
-          </p>
+              <p className="mt-1 text-[12px] text-white/40">
+                Tente consultar novamente em alguns instantes.
+              </p>
+            </>
+          ) : jaConsultouSelecao ? (
+            <>
+              <p className="text-[14px] text-white/75">
+                Seleção ainda não feita pela cliente.
+              </p>
+
+              <p className="mt-1 text-[12px] text-white/40">
+                Quando a cliente finalizar a escolha, as fotos selecionadas aparecerão aqui.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-[14px] text-white/75">
+                Aguardando seleção da cliente.
+              </p>
+
+              <p className="mt-1 text-[12px] text-white/40">
+                Quando a cliente finalizar a escolha, a seleção aparecerá aqui.
+              </p>
+            </>
+          )}
 
           <button
             type="button"
             disabled={loading}
-            onClick={onBuscarSelecao}
+            onClick={handleBuscarSelecao}
             className="mt-5 rounded-lg border border-[var(--gold-border)] px-4 py-2 text-[12px] text-[var(--gold)] transition hover:bg-[var(--gold-dim)] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? 'Consultando...' : 'Consultar seleção'}
@@ -69,7 +116,11 @@ export default function SelecaoClienteCard({
           <div className="mb-5 grid grid-cols-4 gap-3 max-md:grid-cols-2">
             <Resumo label="Selecionadas" value={selecao.totalSelecionadas} />
             <Resumo label="Limite" value={selecao.limitePlano} />
-            <Resumo label="Excedente" value={selecao.excedente} danger={selecao.excedente > 0} />
+            <Resumo
+              label="Excedente"
+              value={selecao.excedente}
+              danger={selecao.excedente > 0}
+            />
             <Resumo
               label="Valor extra"
               value={Number(selecao.valorExcedente || 0).toLocaleString('pt-BR', {
