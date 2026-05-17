@@ -20,25 +20,25 @@ export const ensaiosService = {
   buscarPorId: (id) => api.get(`/ensaios/${id}`),
 
   exportarPdf: async (id) => {
-  const response = await api.get(`/ensaios/${id}/pdf`, {
-    responseType: 'blob',
-  })
+    const response = await api.get(`/ensaios/${id}/pdf`, {
+      responseType: 'blob',
+    })
 
-  const blob = new Blob([response.data], {
-    type: 'application/pdf',
-  })
+    const blob = new Blob([response.data], {
+      type: 'application/pdf',
+    })
 
-  const url = window.URL.createObjectURL(blob)
+    const url = window.URL.createObjectURL(blob)
 
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `ensaio-${id}.pdf`
-  document.body.appendChild(link)
-  link.click()
-  link.remove()
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `ensaio-${id}.pdf`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
 
-  window.URL.revokeObjectURL(url)
-},
+    window.URL.revokeObjectURL(url)
+  },
 
   buscarHistoricoStatus: (id) => api.get(`/ensaios/${id}/historico-status`),
 

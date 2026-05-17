@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 const navLinks = [
   { href: '#sobre', label: 'Sobre Mim' },
   { href: '#portfolio', label: 'Olhares Capturados' },
+  { href: '#produtos', label: 'Meus Produtos' },
 ]
 
 export default function Navbar() {
