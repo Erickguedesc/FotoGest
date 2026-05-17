@@ -2,50 +2,53 @@ package com.olhari.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "fotografa")
+@Table(name = "configuracao_estudio")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Fotografa {
+public class ConfiguracaoEstudio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, length = 150)
-    private String nome;
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "fotografa_id", nullable = false, unique = true)
+    private Fotografa fotografa;
 
-    @Column(nullable = false, unique = true, length = 200)
+    @Column(name = "nome_estudio", length = 160)
+    private String nomeEstudio;
+
+    @Column(name = "nome_comercial", length = 160)
+    private String nomeComercial;
+
+    @Column(length = 200)
     private String email;
 
-    /** Senha armazenada com hash BCrypt — nunca salvar em texto puro */
-    @Column(name = "senha_hash", nullable = false, length = 255)
-    private String senhaHash;
-
-    @Column(length = 20)
+    @Column(length = 30)
     private String telefone;
+
+    @Column(length = 120)
+    private String instagram;
+
+    @Column(length = 120)
+    private String cidade;
+
+    @Column(columnDefinition = "TEXT")
+    private String endereco;
 
     @Column(length = 20)
     private String cnpj;
 
-        @Column(length = 120)
-    private String cidade;
-
-    @Column(name = "foto_perfil_url", columnDefinition = "TEXT")
-    private String fotoPerfilUrl;
-
     @Column(name = "logo_url", columnDefinition = "TEXT")
     private String logoUrl;
-
-    @Builder.Default
-    @Column(nullable = false)
-    private Boolean ativo = true;
 
     @Column(name = "criado_em", updatable = false)
     private OffsetDateTime criadoEm;
@@ -63,3 +66,5 @@ public class Fotografa {
         atualizadoEm = OffsetDateTime.now();
     }
 }
+
+// para alterar configuraçes do perfil 
