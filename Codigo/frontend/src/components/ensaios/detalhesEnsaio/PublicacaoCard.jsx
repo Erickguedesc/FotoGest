@@ -1,5 +1,31 @@
 import SectionTitle from './SectionTitle'
 
+const formatarDataHora = (valor) => {
+  if (!valor) return null
+
+  const data = new Date(valor)
+
+  if (Number.isNaN(data.getTime())) return null
+
+  return data.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+const albumEstaExpirado = (valor) => {
+  if (!valor) return false
+
+  const data = new Date(valor)
+
+  if (Number.isNaN(data.getTime())) return false
+
+  return data < new Date()
+}
+
 export default function PublicacaoCard({
   album,
   totalFotos = 0,
@@ -11,6 +37,15 @@ export default function PublicacaoCard({
   onWhatsApp,
 }) {
   const temAlbum = Boolean(album?.urlAcesso)
+
+  const expiraEm =
+    album?.expiraEm ||
+    album?.dataExpiracao ||
+    album?.expira_em ||
+    null
+
+  const expiraEmFormatado = formatarDataHora(expiraEm)
+  const expirado = albumEstaExpirado(expiraEm)
 
   const buttonLabel = loading
     ? 'Processando...'
@@ -55,6 +90,32 @@ export default function PublicacaoCard({
               {album.urlAcesso}
             </p>
 
+      {expiraEmFormatado && (
+  <div
+    className={`mt-3 flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-[11px] ${
+      expirado
+        ? 'border-red-400/25 bg-red-400/10'
+        : 'border-white/[0.08] bg-black/10'
+    }`}
+  >
+    <span
+      className={`uppercase tracking-[0.14em] ${
+        expirado ? 'text-red-200/70' : 'text-white/35'
+      }`}
+    >
+      {expirado ? 'Expirado em' : 'link válido até'}
+    </span>
+
+    <span
+      className={`whitespace-nowrap font-medium ${
+        expirado ? 'text-red-200' : 'text-[var(--gold)]'
+      }`}
+    >
+      {expiraEmFormatado}
+    </span>
+  </div>
+)}
+
             {album?.senhaAcesso && (
               <>
                 <p className="mb-1 mt-4 text-[10px] uppercase tracking-[0.16em] text-white/35">
@@ -88,7 +149,7 @@ export default function PublicacaoCard({
         )}
 
         {!albumPublicado && temAlbum && (
-          <div className="mt-4 rounded-xl border border-orange-400/25 bg-gree-400/10 p-4 text-[12px] leading-5 text-orange-200">
+          <div className="mt-4 rounded-xl border border-orange-400/25 bg-orange-400/10 p-4 text-[12px] leading-5 text-orange-200">
             Álbum reaberto para edição. O acesso da cliente está pausado até a próxima publicação.
           </div>
         )}

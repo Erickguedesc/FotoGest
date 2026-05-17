@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import Header from '../components/layout/Header'
@@ -9,6 +9,7 @@ import FormPacoteSection from '../components/novoEnsaio/FormPacoteSection'
 import ResumeSidebar from '../components/novoEnsaio/ResumeSidebar'
 import { ensaiosService } from '../services/ensaiosService'
 import { clientesService } from '../services/clientesService'
+import { configuracoesService } from '../services/configuracoesService'
 
 const TIPO_ENUM_MAP = {
   Newborn:  'NEWBORN',
@@ -38,7 +39,7 @@ const INITIAL_FORM = {
   hora:      '',
   local:     '',
   obs:       '',
-  fotos:     30,
+  fotos:     '',
   valor:     '',
   extraAtivo:false,
   extra:     '',
@@ -50,6 +51,32 @@ export default function NovoEnsaioPage() {
   const [errors, setErrors]   = useState({})
   const [loading, setLoading] = useState(false)
   const [toast, setToast]     = useState(null)
+
+  useEffect(() => {
+  async function carregarPreferencias() {
+    try {
+      const configuracoes = await configuracoesService.buscar()
+      const preferencias = configuracoes?.preferencias
+
+      if (!preferencias) return
+
+      setForm((prev) => ({
+        ...prev,
+        fotos: preferencias.qtdFotosPadrao ?? prev.fotos,
+        extra:
+          preferencias.valorFotoExtraPadrao !== null &&
+          preferencias.valorFotoExtraPadrao !== undefined
+            ? String(preferencias.valorFotoExtraPadrao)
+            : prev.extra,
+        local: prev.local || preferencias.cidadePadrao || '',
+      }))
+    } catch (error) {
+      console.error('[NovoEnsaio] Erro ao carregar preferências:', error)
+    }
+  }
+
+  carregarPreferencias()
+}, [])
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
