@@ -21,6 +21,7 @@
   import StatusSidebar from '../components/ensaios/detalhesEnsaio/StatusSidebar'
   import PublicacaoCard from '../components/ensaios/detalhesEnsaio/PublicacaoCard'
   import AcoesGerais from '../components/ensaios/detalhesEnsaio/AcoesGerais'
+  import { configuracoesService } from '../services/configuracoesService'
 
   const extrairTokenDoLink = (url) => {
     if (!url) return ''
@@ -57,6 +58,7 @@
 
     const [uploadProgress, setUploadProgress] = useState(0)
     const [uploadTotal, setUploadTotal] = useState(0)
+    const [configuracoes, setConfiguracoes] = useState(null)
 
     const albumToken = useMemo(() => {
       if (album?.tokenUrl) return album.tokenUrl
@@ -129,12 +131,13 @@
     setLoading(true)
 
     try {
-      await Promise.all([
-        loadEnsaio(),
-        loadFotos(),
-        loadAlbum(),
-        loadHistoricoStatus(),
-      ])
+    await Promise.all([
+  loadEnsaio(),
+  loadFotos(),
+  loadAlbum(),
+  loadHistoricoStatus(),
+  loadConfiguracoes(),
+])
     } finally {
       setLoading(false)
     }
@@ -510,23 +513,46 @@
       return
     }
 
-    const texto =
-      album?.urlAcesso && albumPublicado
-        ? album?.senhaAcesso
-          ? `Olá! Seu álbum já está disponível:\n\nLink: ${album.urlAcesso}\nSenha: ${album.senhaAcesso}`
-          : `Olá! Seu álbum já está disponível:\n\nLink: ${album.urlAcesso}`
-        : 'Olá! Estou entrando em contato sobre seu ensaio.'
+ const mensagemPadraoAlbum =
+  configuracoes?.preferencias?.mensagemEnvioAlbum?.trim() ||
+  'Olá! Seu álbum já está disponível.'
 
+const texto =
+  album?.urlAcesso && albumPublicado
+    ? [
+        mensagemPadraoAlbum,
+        `Link: ${album.urlAcesso}`,
+        album?.senhaAcesso ? `Senha: ${album.senhaAcesso}` : null,
+      ]
+        .filter(Boolean)
+        .join('\n\n')
+    : 'Olá! Estou entrando em contato sobre seu ensaio.'
     window.open(
       `https://wa.me/${telefone}?text=${encodeURIComponent(texto)}`,
       '_blank'
     )
   }
 
-    const handleExportPdf = () => {
-      showToast('Exportação de PDF será ligada depois.', 'error')
-    }
+  const handleExportPdf = async () => {
+  if (!ensaio?.id) {
+    showToast('Ensaio não encontrado para exportação.', 'error')
+    return
+  }
 
+  try {
+    await ensaiosService.exportarPdf(ensaio.id)
+    showToast('PDF exportado com sucesso.')
+  } catch (error) {
+    console.error('[DetalhesEnsaio] Erro ao exportar PDF:', error?.response || error)
+
+    const msg =
+      error?.response?.data?.message ||
+      error?.response?.data?.erro ||
+      'Não foi possível exportar o PDF do ensaio.'
+
+    showToast(msg, 'error')
+  }
+}
     const handleDelete = () => {
       setDeleteModalOpen(true)
     }
@@ -555,6 +581,18 @@
         setDeleteLoading(false)
       }
     }
+
+    const loadConfiguracoes = async () => {
+  try {
+    const data = await configuracoesService.buscar()
+    setConfiguracoes(data)
+    return data
+  } catch (error) {
+    console.error('[DetalhesEnsaio] Erro ao carregar configurações:', error)
+    setConfiguracoes(null)
+    return null
+  }
+}
 
     if (loading) {
       return (

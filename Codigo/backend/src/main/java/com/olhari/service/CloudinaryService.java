@@ -38,4 +38,16 @@ public class CloudinaryService {
                 .uploader()
                 .destroy(publicId, ObjectUtils.emptyMap());
     }
+    @SuppressWarnings("unchecked")
+public Map<String, Object> uploadConfiguracao(MultipartFile multipartFile, String pasta) throws IOException {
+    return (Map<String, Object>) cloudinary
+            .uploader()
+            .upload(
+                    multipartFile.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder", "olhari/configuracoes/" + pasta,
+                            "resource_type", "image"
+                    )
+            );
+}
 }

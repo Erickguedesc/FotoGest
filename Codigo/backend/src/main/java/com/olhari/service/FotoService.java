@@ -58,33 +58,36 @@ public class FotoService {
 
         List<Foto> fotosSalvas = new ArrayList<>();
 
-        for (int i = 0; i < arquivos.size(); i++) {
-            MultipartFile arquivo = arquivos.get(i);
+ for (int i = 0; i < arquivos.size(); i++) {
+    MultipartFile arquivo = arquivos.get(i);
 
-            validarImagem(arquivo);
+    String nomeOriginal = arquivo.getOriginalFilename();
 
-            Map<String, Object> uploadResult = cloudinaryService.upload(arquivo, ensaioId);
+    validarImagem(arquivo);
 
-            String url = String.valueOf(uploadResult.get("secure_url"));
-            String publicId = String.valueOf(uploadResult.get("public_id"));
+    Map<String, Object> uploadResult = cloudinaryService.upload(arquivo, ensaioId);
 
-            boolean deveSerCapa = !jaTemCapa && i == 0;
+    String url = String.valueOf(uploadResult.get("secure_url"));
+    String publicId = String.valueOf(uploadResult.get("public_id"));
 
-            Foto foto = Foto.builder()
-                    .ensaio(ensaio)
-                    .cloudinaryId(publicId)
-                    .urlOriginal(url)
-                    .urlWatermark(url)
-                    .ehCapa(deveSerCapa)
-                    .ordem(proximaOrdem + i)
-                    .build();
+    boolean deveSerCapa = !jaTemCapa && i == 0;
 
-            fotosSalvas.add(fotoRepository.save(foto));
+    Foto foto = Foto.builder()
+            .ensaio(ensaio)
+            .cloudinaryId(publicId)
+            .nomeOriginal(nomeOriginal)
+            .urlOriginal(url)
+            .urlWatermark(url)
+            .ehCapa(deveSerCapa)
+            .ordem(proximaOrdem + i)
+            .build();
 
-            if (deveSerCapa) {
-                jaTemCapa = true;
-            }
-        }
+    fotosSalvas.add(fotoRepository.save(foto));
+
+    if (deveSerCapa) {
+        jaTemCapa = true;
+    }
+}
 
         return fotosSalvas
                 .stream()
@@ -262,16 +265,17 @@ public class FotoService {
         }
     }
 
-    private FotoResponse toResponse(Foto foto) {
-        return FotoResponse.builder()
-                .id(foto.getId())
-                .ensaioId(foto.getEnsaio().getId())
-                .cloudinaryId(foto.getCloudinaryId())
-                .urlWatermark(foto.getUrlWatermark())
-                .urlOriginal(foto.getUrlOriginal())
-                .ordem(foto.getOrdem())
-                .ehCapa(foto.getEhCapa())
-                .enviadaEm(foto.getEnviadaEm())
-                .build();
-    }
+   private FotoResponse toResponse(Foto foto) {
+    return FotoResponse.builder()
+            .id(foto.getId())
+            .ensaioId(foto.getEnsaio().getId())
+            .cloudinaryId(foto.getCloudinaryId())
+            .nomeOriginal(foto.getNomeOriginal())
+            .urlWatermark(foto.getUrlWatermark())
+            .urlOriginal(foto.getUrlOriginal())
+            .ordem(foto.getOrdem())
+            .ehCapa(foto.getEhCapa())
+            .enviadaEm(foto.getEnviadaEm())
+            .build();
+}
 }

@@ -5,9 +5,6 @@ import lombok.*;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-
 @Entity
 @Table(name = "foto")
 @Getter
@@ -22,13 +19,17 @@ public class Foto {
     private UUID id;
 
     /** Qual ensaio esta foto pertence */
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-@JoinColumn(name = "ensaio_id", nullable = false)
-private Ensaio ensaio;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "ensaio_id", nullable = false)
+    private Ensaio ensaio;
 
     /** ID único da foto no Cloudinary */
     @Column(name = "cloudinary_id", nullable = false, unique = true, length = 300)
     private String cloudinaryId;
+
+    /** Nome original do arquivo enviado pela fotógrafa */
+    @Column(name = "nome_original", length = 255)
+    private String nomeOriginal;
 
     /** URL com marca d'água — esta é exibida para o cliente (R04) */
     @Column(name = "url_watermark", nullable = false, columnDefinition = "TEXT")
