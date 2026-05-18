@@ -28,6 +28,7 @@ public class FotoService {
     private final EnsaioRepository ensaioRepository;
     private final SelecaoFotoRepository selecaoFotoRepository;
     private final AlbumRepository albumRepository;
+    private final MarcaDaguaService marcaDaguaService;
 
     @Transactional
     public List<FotoResponse> salvarFotos(
@@ -67,8 +68,9 @@ public class FotoService {
 
     Map<String, Object> uploadResult = cloudinaryService.upload(arquivo, ensaioId);
 
-    String url = String.valueOf(uploadResult.get("secure_url"));
-    String publicId = String.valueOf(uploadResult.get("public_id"));
+ String urlOriginal = String.valueOf(uploadResult.get("secure_url"));
+String urlWatermark = marcaDaguaService.gerarUrlComMarcaDagua(urlOriginal);
+String publicId = String.valueOf(uploadResult.get("public_id"));
 
     boolean deveSerCapa = !jaTemCapa && i == 0;
 
@@ -76,8 +78,8 @@ public class FotoService {
             .ensaio(ensaio)
             .cloudinaryId(publicId)
             .nomeOriginal(nomeOriginal)
-            .urlOriginal(url)
-            .urlWatermark(url)
+            .urlOriginal(urlOriginal)
+            .urlWatermark(urlWatermark)
             .ehCapa(deveSerCapa)
             .ordem(proximaOrdem + i)
             .build();

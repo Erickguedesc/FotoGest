@@ -392,3 +392,28 @@ SELECT
 FROM ensaio
 ON CONFLICT (ensaio_id, status)
 DO NOTHING;
+
+------------------------------------
+--   CONFIGURAÇÕES DE MARCA D'ÁGUA
+------------------------------------
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_url TEXT;
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_public_id TEXT;
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_ativa BOOLEAN NOT NULL DEFAULT FALSE;
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_posicao VARCHAR(40) DEFAULT 'INFERIOR_DIREITA';
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_opacidade INTEGER DEFAULT 35;
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_tamanho VARCHAR(20) DEFAULT 'MEDIA';
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_margem INTEGER DEFAULT 30;

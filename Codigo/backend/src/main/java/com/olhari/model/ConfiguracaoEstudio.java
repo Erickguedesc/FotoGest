@@ -6,6 +6,9 @@ import lombok.*;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import com.olhari.enums.MarcaDaguaPosicao;
+import com.olhari.enums.MarcaDaguaTamanho;
+
 @Entity
 @Table(name = "configuracao_estudio")
 @Getter
@@ -49,6 +52,30 @@ public class ConfiguracaoEstudio {
 
     @Column(name = "logo_url", columnDefinition = "TEXT")
     private String logoUrl;
+
+        @Column(name = "marca_dagua_url", columnDefinition = "TEXT")
+    private String marcaDaguaUrl;
+
+    @Column(name = "marca_dagua_public_id", columnDefinition = "TEXT")
+    private String marcaDaguaPublicId;
+
+    @Builder.Default
+    @Column(name = "marca_dagua_ativa", nullable = false)
+    private Boolean marcaDaguaAtiva = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "marca_dagua_posicao", length = 40)
+    private MarcaDaguaPosicao marcaDaguaPosicao = MarcaDaguaPosicao.INFERIOR_DIREITA;
+
+    @Column(name = "marca_dagua_opacidade")
+    private Integer marcaDaguaOpacidade = 35;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "marca_dagua_tamanho", length = 20)
+    private MarcaDaguaTamanho marcaDaguaTamanho = MarcaDaguaTamanho.MEDIA;
+
+    @Column(name = "marca_dagua_margem")
+    private Integer marcaDaguaMargem = 30;
 
     @Column(name = "criado_em", updatable = false)
     private OffsetDateTime criadoEm;

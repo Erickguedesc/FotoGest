@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { cursosMock, homepageCursosService } from '../../services/homepageCursosService'
+import { homepageCursosService } from '../../services/homepageCursosService'
 
 const emptyForm = {
   titulo: '',
@@ -18,7 +18,6 @@ function hasAuthToken() {
 }
 
 function CursoCard({ curso, isAdmin, onEdit, onHide, onActivate, onDelete }) {
-  const isMock = String(curso.id).startsWith('mock-')
 
   return (
     <article
@@ -66,8 +65,8 @@ function CursoCard({ curso, isAdmin, onEdit, onHide, onActivate, onDelete }) {
           {curso.textoBotao || 'Conhecer produto'}
         </a>
 
-        {isAdmin && !isMock && (
-          <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/10 pt-4">
+{isAdmin && (
+            <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/10 pt-4">
             <button
               type="button"
               onClick={() => onEdit(curso)}
@@ -268,18 +267,20 @@ export default function CursosSection() {
         : await homepageCursosService.listarAtivos()
       setCursos(data)
     } catch (err) {
-      console.error('[CursosSection] Erro ao buscar cursos:', err)
-      if (isAdmin) {
-        setCursos(cursosMock)
-        setFeedback({
-          type: 'warning',
-          message:
-            'Backend de cursos indisponível. Exibindo mock temporário; o gerenciamento ficará disponível quando a API responder.',
-        })
-      } else {
-        setError('Não foi possível carregar os produtos no momento.')
-      }
-    } finally {
+  console.error('[CursosSection] Erro ao buscar cursos:', err)
+
+  setCursos([])
+
+  if (isAdmin) {
+    setFeedback({
+      type: 'error',
+      message:
+        'Não foi possível carregar os produtos. Verifique se o backend de cursos está disponível.',
+    })
+  } else {
+    setError('Não foi possível carregar os produtos no momento.')
+  }
+}finally {
       setLoading(false)
     }
   }

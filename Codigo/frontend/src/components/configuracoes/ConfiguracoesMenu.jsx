@@ -1,4 +1,4 @@
-import { Building2, LockKeyhole, SlidersHorizontal, User } from 'lucide-react'
+import { Building2, Image, LockKeyhole, SlidersHorizontal, User } from 'lucide-react'
 
 const tabs = [
   {
@@ -14,7 +14,12 @@ const tabs = [
   description: 'Logo, contato e dados dos PDFs',
   icon: Building2,
 },
-
+{
+  id: 'marcaDagua',
+  label: 'Marca d’água',
+  description: 'Proteção das fotos da galeria',
+  icon: Image,
+},
   {
     id: 'senha',
     label: 'Alterar senha',
