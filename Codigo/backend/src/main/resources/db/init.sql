@@ -113,6 +113,7 @@ CREATE TABLE IF NOT EXISTS foto (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   ensaio_id UUID NOT NULL REFERENCES ensaio(id) ON DELETE CASCADE,
   cloudinary_id VARCHAR(300) NOT NULL UNIQUE,
+  nome_original VARCHAR(255),
   url_watermark TEXT NOT NULL,
   url_original TEXT,
   ordem INTEGER NOT NULL DEFAULT 0,

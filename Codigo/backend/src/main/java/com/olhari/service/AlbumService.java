@@ -18,13 +18,17 @@ import java.security.SecureRandom;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import com.olhari.model.PreferenciasSistema;
+import com.olhari.repository.PreferenciasSistemaRepository;
+
 @Service
 @RequiredArgsConstructor
 public class AlbumService {
 
-    private final AlbumRepository albumRepository;
-    private final EnsaioRepository ensaioRepository;
-    private final PasswordEncoder passwordEncoder;
+private final AlbumRepository albumRepository;
+private final EnsaioRepository ensaioRepository;
+private final PreferenciasSistemaRepository preferenciasSistemaRepository;
+private final PasswordEncoder passwordEncoder;
 
     @Value("${app.frontend-url:http://localhost:5173}")
     private String frontendUrl;
@@ -51,9 +55,9 @@ public class AlbumService {
         album.setAtivo(true);
         album.setPublicadoEm(OffsetDateTime.now());
 
-        if (album.getExpiraEm() == null) {
-            album.setExpiraEm(OffsetDateTime.now().plusDays(30));
-        }
+       int prazoExpiracaoDias = buscarPrazoExpiracaoAlbumDias(ensaio);
+
+      album.setExpiraEm(OffsetDateTime.now().plusDays(prazoExpiracaoDias));
 
         albumRepository.save(album);
 
@@ -173,4 +177,17 @@ public class AlbumService {
 
         return sb.toString();
     }
+
+    private int buscarPrazoExpiracaoAlbumDias(Ensaio ensaio) {
+    UUID fotografaId = ensaio.getCliente() != null
+            ? null
+            : null;
+
+    return preferenciasSistemaRepository.findAll()
+            .stream()
+            .findFirst()
+            .map(PreferenciasSistema::getPrazoExpiracaoAlbumDias)
+            .filter(dias -> dias != null && dias > 0)
+            .orElse(30);
+}
 }

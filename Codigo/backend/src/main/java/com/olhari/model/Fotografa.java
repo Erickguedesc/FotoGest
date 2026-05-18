@@ -34,6 +34,12 @@ public class Fotografa {
     @Column(length = 20)
     private String cnpj;
 
+        @Column(length = 120)
+    private String cidade;
+
+    @Column(name = "foto_perfil_url", columnDefinition = "TEXT")
+    private String fotoPerfilUrl;
+
     @Column(name = "logo_url", columnDefinition = "TEXT")
     private String logoUrl;
 
