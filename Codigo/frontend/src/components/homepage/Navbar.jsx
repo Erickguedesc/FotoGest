@@ -8,6 +8,7 @@ const navLinks = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const isLogged = Boolean(localStorage.getItem('token'))
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -42,6 +43,16 @@ export default function Navbar() {
             {link.label}
           </a>
         ))}
+
+        {isLogged && (
+          <a
+            href="/solicitacoes"
+            className="no-underline px-4 py-2 rounded-full border border-white/15 text-[11px] uppercase tracking-[0.15em] font-semibold transition-all duration-300 hover:border-[var(--gold)] hover:text-[var(--gold)]"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            Solicitações
+          </a>
+        )}
 
         <a
           href="#contato"
@@ -80,6 +91,18 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
+
+          {isLogged && (
+            <a
+              href="/solicitacoes"
+              onClick={() => setMenuOpen(false)}
+              className="no-underline text-center px-5 py-3 rounded-full border border-white/15 text-[11px] uppercase tracking-[0.15em] font-semibold transition-colors hover:border-[var(--gold)] hover:text-[var(--gold)]"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              Solicitações
+            </a>
+          )}
+
           <a
             href="#contato"
             onClick={() => setMenuOpen(false)}

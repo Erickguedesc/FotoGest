@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
 import { solicitacoesService } from '../../services/solicitacoesService'
+import EditableButton from './EditableButton'
 
-const WHATSAPP_NUMBER = '553199646207' // ← Número real
-
-export default function ContactSection() {
+export default function ContactSection({ config, onEdit }) {
+  const whatsappNumber = config?.whatsappNumero || '553199646207'
+  const contactTextLines = (config?.contatoTexto || '').split('\n')
   const [form, setForm] = useState({
     nome: '',
     whatsapp: '',
@@ -41,8 +42,11 @@ export default function ContactSection() {
         `*Previsão de Data:* ${dataFormatada}`
 
       const encoded = encodeURIComponent(mensagem)
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`, '_blank')
-      setFeedback({ type: 'success', message: 'Solicitação enviada com sucesso. Abrimos o WhatsApp para continuar o atendimento.' })
+      window.open(`https://wa.me/${whatsappNumber}?text=${encoded}`, '_blank')
+      setFeedback({
+        type: 'success',
+        message: 'Solicitação enviada com sucesso. Abrimos o WhatsApp para continuar o atendimento.',
+      })
       setForm({ nome: '', whatsapp: '', tipoEnsaio: '', data: '' })
     } catch (error) {
       console.error('[Solicitação] Erro ao enviar:', error?.response?.data || error)
@@ -58,10 +62,11 @@ export default function ContactSection() {
   return (
     <section
       id="contato"
-      className="min-h-[80vh] px-[10%] py-28 flex items-center justify-center"
+      className="relative min-h-[80vh] px-[10%] py-28 flex items-center justify-center"
     >
+      <EditableButton onClick={onEdit} className="absolute right-[10%] top-8 z-10" />
+
       <div className="w-full max-w-[500px] bg-[var(--card)] border border-white/10 rounded-3xl px-10 py-14 relative">
-        {/* Header */}
         <div className="text-center mb-8">
           <div
             className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-6 border"
@@ -85,12 +90,15 @@ export default function ContactSection() {
           </div>
 
           <h2 className="font-serif text-[32px] font-light tracking-[0.02em] mb-2">
-            Solicite um orçamento
+            {config?.contatoTitulo}
           </h2>
           <p className="text-[13px] text-[var(--text-muted)] leading-relaxed">
-            Dê o primeiro passo para eternizar seus momentos.
-            <br />
-            Retornaremos no WhatsApp em até 24h.
+            {contactTextLines.map((line, index) => (
+              <span key={`${line}-${index}`}>
+                {line}
+                {index < contactTextLines.length - 1 && <br />}
+              </span>
+            ))}
           </p>
         </div>
 
@@ -106,7 +114,6 @@ export default function ContactSection() {
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div>
             <label className="block text-[10px] uppercase tracking-[0.12em] text-[var(--gold)] mb-2">

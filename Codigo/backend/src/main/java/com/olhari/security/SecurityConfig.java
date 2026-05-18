@@ -37,6 +37,7 @@ public class SecurityConfig {
                 // Rotas públicas
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/solicitacoes/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/homepage-config").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
 
                 // Álbum público da cliente

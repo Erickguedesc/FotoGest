@@ -180,6 +180,21 @@ CREATE TABLE IF NOT EXISTS solicitacao_orcamento (
 CREATE INDEX IF NOT EXISTS idx_solicitacao_orcamento_status_lead
 ON solicitacao_orcamento(status_lead);
 
+CREATE TABLE IF NOT EXISTS homepage_config (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  dados_json TEXT NOT NULL DEFAULT '{}',
+  atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+INSERT INTO homepage_config (
+  dados_json
+)
+SELECT '{}'
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM homepage_config
+);
+
 ------------------------------------
 --   FUNÇÕES E TRIGGERS
 ------------------------------------
@@ -250,6 +265,12 @@ EXECUTE FUNCTION fn_atualiza_timestamp();
 DROP TRIGGER IF EXISTS trg_album_ts ON album;
 CREATE TRIGGER trg_album_ts
 BEFORE UPDATE ON album
+FOR EACH ROW
+EXECUTE FUNCTION fn_atualiza_timestamp();
+
+DROP TRIGGER IF EXISTS trg_homepage_config_ts ON homepage_config;
+CREATE TRIGGER trg_homepage_config_ts
+BEFORE UPDATE ON homepage_config
 FOR EACH ROW
 EXECUTE FUNCTION fn_atualiza_timestamp();
 
