@@ -63,14 +63,15 @@ export default function AlbumAccessPage() {
     const dadosPublicos = await validarAlbumPorToken(token)
     console.log("DADOS PÚBLICOS DO ÁLBUM:", dadosPublicos)
 
-    sessionStorage.setItem(
-      `olhari_album_${token}`,
-      JSON.stringify({
-        ...dadosPublicos,
-        fotos,
-        acessoValidadoEm: new Date().toISOString(),
-      })
-    )
+   sessionStorage.setItem(
+  `olhari_album_${token}`,
+  JSON.stringify({
+    ...dadosPublicos,
+    fotos,
+    senhaAcessoTemporaria: senha,
+    acessoValidadoEm: new Date().toISOString(),
+  })
+)
 
     navigate(`/galeria/${token}`)
   } catch (error) {

@@ -194,15 +194,31 @@ public class MarcaDaguaService {
         int opacidade = estudio.getMarcaDaguaOpacidade() == null ? 35 : estudio.getMarcaDaguaOpacidade();
         int margem = estudio.getMarcaDaguaMargem() == null ? 30 : estudio.getMarcaDaguaMargem();
 
-        String transformacao = String.format(
-                "/upload/l_%s,w_%d,o_%d,g_%s,x_%d,y_%d/",
-                overlayPublicId,
-                largura,
-                opacidade,
-                gravidade,
-                margem,
-                margem
-        );
+      String transformacao;
+
+String baseTransform = "c_limit,w_1800,h_1800,q_auto";
+
+if ("center".equals(gravidade)) {
+    transformacao = String.format(
+            "/upload/%s/l_%s,w_%d,o_%d/fl_layer_apply,g_%s/",
+            baseTransform,
+            overlayPublicId,
+            largura,
+            opacidade,
+            gravidade
+    );
+} else {
+    transformacao = String.format(
+            "/upload/%s/l_%s,w_%d,o_%d/fl_layer_apply,g_%s,x_%d,y_%d/",
+            baseTransform,
+            overlayPublicId,
+            largura,
+            opacidade,
+            gravidade,
+            margem,
+            margem
+    );
+}
 
         return urlOriginal.replace("/upload/", transformacao);
     }

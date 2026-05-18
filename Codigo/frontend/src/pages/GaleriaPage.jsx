@@ -1,6 +1,11 @@
-import { useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { Navigate, useParams } from "react-router-dom"
-import { enviarSelecaoFotos } from "../services/albumAccessService"
+import {
+  acessarAlbumComSenha,
+  enviarSelecaoFotos,
+  validarAlbumPorToken,
+} from "../services/albumAccessService"
+
 
 const LIMITE_PADRAO = 30
 const VALOR_EXTRA_PADRAO = 35
@@ -50,18 +55,18 @@ function HeartIcon({ filled = false }) {
 export default function GaleriaPage() {
   const { token } = useParams()
 
-  const album = useMemo(() => {
-    const raw = sessionStorage.getItem(`olhari_album_${token}`)
+  const [album, setAlbum] = useState(() => {
+  const raw = sessionStorage.getItem(`olhari_album_${token}`)
 
-    if (!raw) return null
+  if (!raw) return null
 
-    try {
-      return JSON.parse(raw)
-    } catch {
-      sessionStorage.removeItem(`olhari_album_${token}`)
-      return null
-    }
-  }, [token])
+  try {
+    return JSON.parse(raw)
+  } catch {
+    sessionStorage.removeItem(`olhari_album_${token}`)
+    return null
+  }
+})
 
 const [aba, setAba] = useState("galeria")
 
@@ -81,7 +86,36 @@ const [selecaoEnviada, setSelecaoEnviada] = useState(
 )
 
 const [erroEnvio, setErroEnvio] = useState("")
+useEffect(() => {
+  async function atualizarFotosDaGaleria() {
+    const senhaTemporaria = album?.senhaAcessoTemporaria
 
+    if (!senhaTemporaria) return
+
+    try {
+      const fotosAtualizadas = await acessarAlbumComSenha(token, senhaTemporaria)
+      const dadosPublicos = await validarAlbumPorToken(token)
+
+      const albumAtualizado = {
+        ...album,
+        ...dadosPublicos,
+        fotos: fotosAtualizadas,
+      }
+
+      setAlbum(albumAtualizado)
+
+      sessionStorage.setItem(
+        `olhari_album_${token}`,
+        JSON.stringify(albumAtualizado)
+      )
+    } catch (error) {
+      console.error("Erro ao atualizar fotos da galeria:", error)
+    }
+  }
+
+  atualizarFotosDaGaleria()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [token])
 if (!album) {
   return <Navigate to={`/album/${token}`} replace />
 }

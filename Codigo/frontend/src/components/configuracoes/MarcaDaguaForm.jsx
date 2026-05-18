@@ -93,6 +93,8 @@ export default function MarcaDaguaForm({
     GRANDE: 'w-48',
   }[form.marcaDaguaTamanho]
 
+  const temMarcaDagua = Boolean(form.marcaDaguaUrl)
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
@@ -190,12 +192,13 @@ export default function MarcaDaguaForm({
   </span>
 
   <input
-    type="checkbox"
-    name="marcaDaguaAtiva"
-    checked={form.marcaDaguaAtiva}
-    onChange={handleChange}
-    className="sr-only"
-  />
+  type="checkbox"
+  name="marcaDaguaAtiva"
+  checked={form.marcaDaguaAtiva}
+  disabled={!temMarcaDagua}
+  onChange={handleChange}
+  className="sr-only"
+/>
 
   <span
     className={`relative h-7 w-12 rounded-full border transition ${
@@ -348,43 +351,38 @@ export default function MarcaDaguaForm({
               className={`absolute inset-0 flex ${posicaoPreview}`}
               style={{ padding: `${form.marcaDaguaMargem}px` }}
             >
-              {form.marcaDaguaUrl ? (
-                <img
-                  src={form.marcaDaguaUrl}
-                  alt="Prévia da marca d’água"
-                  className={`${tamanhoPreview} object-contain`}
-                  style={{ opacity: Number(form.marcaDaguaOpacidade) / 100 }}
-                />
-              ) : (
-                <div
-                  className={`${tamanhoPreview} rounded-xl border border-white/30 bg-black/30 px-4 py-3 text-center font-serif text-lg tracking-[0.18em] text-white`}
-                  style={{ opacity: Number(form.marcaDaguaOpacidade) / 100 }}
-                >
-                  OLHARI
-                </div>
-              )}
+             {form.marcaDaguaUrl && (
+  <img
+    src={form.marcaDaguaUrl}
+    alt="Prévia da marca d’água"
+    className={`${tamanhoPreview} object-contain`}
+    style={{ opacity: Number(form.marcaDaguaOpacidade) / 100 }}
+  />
+)}
             </div>
           )}
         </div>
 
-        <p className="mt-3 text-xs leading-5 text-white/35">
-          Esta prévia mostra como a marca d’água aparecerá para a cliente. A imagem original permanece preservada.
-        </p>
+      <p className="mt-3 text-xs leading-5 text-white/35">
+  {form.marcaDaguaUrl
+    ? 'Esta prévia mostra como a marca d’água aparecerá para a cliente. A imagem original permanece preservada.'
+    : 'Envie uma imagem de marca d’água para visualizar e aplicar a proteção nas fotos da galeria.'}
+</p>
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <button
-          type="submit"
-          disabled={loading}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-5 py-3 text-sm font-semibold text-black transition hover:bg-[var(--gold-light)] disabled:cursor-not-allowed disabled:opacity-60"
+       <button
+        type="submit"
+        disabled={loading || !temMarcaDagua}          
+        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-5 py-3 text-sm font-semibold text-black transition hover:bg-[var(--gold-light)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Save size={16} />
-          {loading ? 'Salvando...' : 'Salvar marca d’água'}
+          {loading ? 'Salvando...' : 'Salvar'}
         </button>
 
         <button
           type="button"
-          disabled={reprocessLoading}
+disabled={reprocessLoading || !temMarcaDagua}
           onClick={onReprocessar}
           className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-5 py-3 text-sm font-medium text-white/65 transition hover:border-[var(--gold-border)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-60"
         >
