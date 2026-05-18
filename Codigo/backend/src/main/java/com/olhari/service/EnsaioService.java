@@ -32,6 +32,7 @@ public class EnsaioService {
     private final ClienteRepository clienteRepository;
 
     
+    
 
     @Transactional
     public EnsaioResponse criar(EnsaioRequest request) {

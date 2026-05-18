@@ -2,9 +2,6 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
 
 function clearAuthData() {
@@ -45,9 +42,11 @@ function redirectToLogin() {
 // ── Interceptor de REQUEST: injeta o token JWT ──
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+
   return config
 })
 
@@ -55,7 +54,6 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // 🚨 erro sem resposta (API caiu, CORS, etc.)
     if (!error.response) {
       console.error('Erro de rede ou servidor indisponível')
       return Promise.reject(error)

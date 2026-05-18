@@ -28,6 +28,7 @@ public class ConfiguracoesService {
     private final PreferenciasSistemaRepository preferenciasSistemaRepository;
     private final PasswordEncoder passwordEncoder;
     private final CloudinaryService cloudinaryService;
+    private final MarcaDaguaService marcaDaguaService;
 
     @Transactional
     public ConfiguracoesResponseDTO buscarConfiguracoes() {
@@ -35,11 +36,12 @@ public class ConfiguracoesService {
         ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
         PreferenciasSistema preferencias = getOuCriarPreferencias(fotografa);
 
-        return ConfiguracoesResponseDTO.builder()
-                .fotografa(toFotografaDTO(fotografa))
-                .estudio(toEstudioDTO(estudio))
-                .preferencias(toPreferenciasDTO(preferencias))
-                .build();
+       return ConfiguracoesResponseDTO.builder()
+        .fotografa(toFotografaDTO(fotografa))
+        .estudio(toEstudioDTO(estudio))
+        .preferencias(toPreferenciasDTO(preferencias))
+        .marcaDagua(marcaDaguaService.buscarMarcaDagua())
+        .build();
     }
 
     @Transactional
