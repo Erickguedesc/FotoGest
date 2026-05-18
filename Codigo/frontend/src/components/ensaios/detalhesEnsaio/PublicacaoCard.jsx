@@ -156,7 +156,7 @@ export default function PublicacaoCard({
 
         <div className="mt-4 grid grid-cols-3 gap-2 text-center">
           <Stat label="Fotos" value={totalFotos} />
-          <Stat label="Views" value="0" />
+          <Stat label="Views" value={album?.views ?? 0} />
           <Stat label="Seguro" value={albumPublicado ? 'Sim' : temAlbum ? 'Pausado' : 'Não'} />
         </div>
       </div>

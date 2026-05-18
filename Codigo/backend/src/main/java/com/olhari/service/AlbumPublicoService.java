@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
@@ -33,6 +34,7 @@ public class AlbumPublicoService {
         private final PasswordEncoder passwordEncoder;
 
         // 🔐 ACESSAR ÁLBUM (CLIENTE)
+        @Transactional
         public List<FotoPublicaResponse> acessarAlbum(String token, String senha) {
 
                 Album album = albumRepository.findByTokenUrl(token)
@@ -50,6 +52,8 @@ public class AlbumPublicoService {
                 if (!passwordEncoder.matches(senha, album.getSenhaHash())) {
                         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Senha incorreta");
                 }
+
+                album.setViews(album.getViews() == null ? 1 : album.getViews() + 1);
 
                 return fotoRepository.findByEnsaioId(album.getEnsaio().getId())
                                 .stream()
