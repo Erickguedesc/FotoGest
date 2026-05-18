@@ -152,7 +152,8 @@ private final PasswordEncoder passwordEncoder;
                 album.getAtivo(),
                 album.getAcessoLiberado(),
                 album.getPublicadoEm(),
-                album.getExpiraEm()
+                album.getExpiraEm(),
+                album.getViews()
         );
     }
 

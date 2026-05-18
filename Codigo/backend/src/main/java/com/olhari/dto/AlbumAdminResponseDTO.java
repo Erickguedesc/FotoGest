@@ -20,4 +20,5 @@ public class AlbumAdminResponseDTO {
     private Boolean acessoLiberado;
     private OffsetDateTime publicadoEm;
     private OffsetDateTime expiraEm;
+    private Integer views;
 }
