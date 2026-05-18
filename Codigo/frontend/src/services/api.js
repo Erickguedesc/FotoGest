@@ -7,6 +7,41 @@ const api = axios.create({
   },
 })
 
+function clearAuthData() {
+  localStorage.removeItem('token')
+  localStorage.removeItem('fotografaNome')
+  localStorage.removeItem('fotografaEmail')
+}
+
+function getRequestPath(config = {}) {
+  try {
+    return new URL(config.url || '', config.baseURL || api.defaults.baseURL).pathname
+  } catch {
+    return config.url || ''
+  }
+}
+
+function isPublicRequest(config = {}) {
+  const path = getRequestPath(config)
+
+  if (
+    path.startsWith('/auth/') ||
+    path.startsWith('/solicitacoes') ||
+    path === '/homepage-config' ||
+    path === '/homepage/cursos'
+  ) {
+    return true
+  }
+
+  return /^\/album\/[^/]+(\/acessar|\/selecao)?$/.test(path)
+}
+
+function redirectToLogin() {
+  if (window.location.pathname !== '/login') {
+    window.location.href = '/login'
+  }
+}
+
 // ── Interceptor de REQUEST: injeta o token JWT ──
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
@@ -37,15 +72,18 @@ api.interceptors.response.use(
 
       case 401:
         console.warn('Não autorizado:', message)
-        const isPublicGallery = error.config?.url?.includes('/album')
-        if (!isPublicGallery) {
-          localStorage.removeItem('token')
-          window.location.href = '/login'
+        if (!isPublicRequest(error.config)) {
+          clearAuthData()
+          redirectToLogin()
         }
         break
 
       case 403:
         console.warn('Acesso negado:', message)
+        if (!isPublicRequest(error.config)) {
+          clearAuthData()
+          redirectToLogin()
+        }
         break
 
       case 404:
