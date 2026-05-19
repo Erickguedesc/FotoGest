@@ -10,6 +10,7 @@ import MarcaDaguaForm from '../components/configuracoes/MarcaDaguaForm'
 import PreferenciasSistemaForm from '../components/configuracoes/PreferenciasSistemaForm'
 import AlterarSenhaForm from '../components/configuracoes/AlterarSenhaForm'
 import { configuracoesService } from '../services/configuracoesService'
+import ConfirmActionModal from '../components/ui/ConfirmActionModal'
 
 export default function ConfiguracoesPage() {
   const [activeTab, setActiveTab] = useState('fotografa')
@@ -24,6 +25,7 @@ export default function ConfiguracoesPage() {
   const [reprocessLoading, setReprocessLoading] = useState(false)
 
   const [toast, setToast] = useState(null)
+  const [alertModal, setAlertModal] = useState(null)
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
@@ -168,8 +170,13 @@ export default function ConfiguracoesPage() {
         marcaDagua: data,
       }))
 
-      showToast('Configurações da marca d’água salvas com sucesso.')
-    } catch (error) {
+setAlertModal({
+  type: 'success',
+  title: 'Marca d’água salva!',
+  description:
+    'A configuração foi salva com sucesso. As próximas fotos enviadas já usarão essa marca d’água. Para atualizar fotos antigas, clique em “Reprocessar fotos já enviadas”.',
+  confirmText: 'Entendi',
+})    } catch (error) {
       console.error('[ConfiguracoesPage] Erro ao salvar marca d’água:', error)
 
       const message =
@@ -403,12 +410,24 @@ export default function ConfiguracoesPage() {
           </section>
         </div>
       </main>
-
       {toast && (
         <Toast
           message={toast.message}
           type={toast.type}
           onClose={() => setToast(null)}
+        />
+      )}
+
+      {alertModal && (
+        <ConfirmActionModal
+          open={Boolean(alertModal)}
+          type={alertModal.type}
+          title={alertModal.title}
+          description={alertModal.description}
+          confirmText={alertModal.confirmText}
+          showCancel={false}
+          onClose={() => setAlertModal(null)}
+          onConfirm={() => setAlertModal(null)}
         />
       )}
     </>

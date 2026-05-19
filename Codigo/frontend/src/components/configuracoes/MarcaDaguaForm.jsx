@@ -1,6 +1,6 @@
 import { Image as ImageIcon, RotateCcw, Save, Trash2, Upload } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-
+import ConfirmActionModal from '../ui/ConfirmActionModal'
 const posicoes = [
   { value: 'SUPERIOR_ESQUERDA', label: 'Superior esquerda' },
   { value: 'SUPERIOR_DIREITA', label: 'Superior direita' },
@@ -64,6 +64,7 @@ export default function MarcaDaguaForm({
   const [form, setForm] = useState(emptyForm)
   const fileInputRef = useRef(null)
   const [textoForm, setTextoForm] = useState(emptyTextoForm)
+  const [confirmModal, setConfirmModal] = useState(null)
 
   useEffect(() => {
     setForm({
@@ -184,7 +185,7 @@ function handleGerarTexto() {
               className="h-full w-full object-contain p-2"
             />
           ) : (
-            'MARCA'
+            'ENVIAR MARCA'
           )}
         </div>
 
@@ -221,7 +222,7 @@ function handleGerarTexto() {
             <button
               type="button"
               disabled={uploadLoading}
-              onClick={onRemoverImagem}
+              onClick={() => setConfirmModal('remover')}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-400/25 px-4 py-2 text-sm text-red-200 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Trash2 size={15} />
@@ -347,8 +348,11 @@ function handleGerarTexto() {
             </p>
           </div>
 
-         <label className="flex cursor-pointer items-center gap-3">
-  <span
+<label
+  className={`flex items-center gap-3 ${
+    temMarcaDagua ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+  }`}
+>  <span
     className={`text-sm ${
       form.marcaDaguaAtiva ? 'text-emerald-300' : 'text-white/50'
     }`}
@@ -548,13 +552,45 @@ function handleGerarTexto() {
         <button
           type="button"
 disabled={reprocessLoading || !temMarcaDagua}
-          onClick={onReprocessar}
+          onClick={() => setConfirmModal('reprocessar')}
           className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-5 py-3 text-sm font-medium text-white/65 transition hover:border-[var(--gold-border)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <RotateCcw size={16} />
           {reprocessLoading ? 'Reprocessando...' : 'Reprocessar fotos já enviadas'}
         </button>
       </div>
+
+      <ConfirmActionModal
+  open={confirmModal === 'remover'}
+  type="danger"
+  title="Remover marca d’água?"
+  description="A marca atual será removida das configurações. As fotos novas deixarão de receber essa proteção até que uma nova marca seja enviada ou criada por texto."
+  confirmText="Remover"
+  cancelText="Cancelar"
+  loading={uploadLoading}
+  onClose={() => setConfirmModal(null)}
+  onConfirm={() => {
+    setConfirmModal(null)
+    onRemoverImagem?.()
+  }}
+/>
+
+<ConfirmActionModal
+  open={confirmModal === 'reprocessar'}
+  type="gold"
+  title="Reprocessar fotos?"
+  description="As fotos já enviadas serão atualizadas com a configuração atual da marca d’água. Isso pode alterar a visualização da galeria da cliente."
+  confirmText="Reprocessar"
+  cancelText="Cancelar"
+  loading={reprocessLoading}
+  onClose={() => setConfirmModal(null)}
+  onConfirm={() => {
+    setConfirmModal(null)
+    onReprocessar?.()
+  }}
+/>
+
+      
     </form>
   )
 }
