@@ -50,4 +50,18 @@ public Map<String, Object> uploadConfiguracao(MultipartFile multipartFile, Strin
                     )
             );
 }
+
+@SuppressWarnings("unchecked")
+public Map<String, Object> uploadBytes(byte[] bytes, String pasta) throws IOException {
+    return (Map<String, Object>) cloudinary
+            .uploader()
+            .upload(
+                    bytes,
+                    ObjectUtils.asMap(
+                            "folder", "olhari/configuracoes/" + pasta,
+                            "resource_type", "image"
+                    )
+            );
+}
+
 }

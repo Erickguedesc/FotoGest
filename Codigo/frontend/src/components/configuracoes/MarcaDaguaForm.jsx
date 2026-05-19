@@ -15,6 +15,31 @@ const tamanhos = [
   { value: 'GRANDE', label: 'Grande' },
 ]
 
+const fontesTexto = [
+  { value: 'MODERNA', label: 'Moderna' },
+  { value: 'ELEGANTE', label: 'Elegante' },
+  { value: 'CLASSICA', label: 'Clássica' },
+]
+
+const coresTexto = [
+  { value: 'BRANCO', label: 'Branco' },
+  { value: 'PRETO', label: 'Preto' },
+  { value: 'DOURADO', label: 'Dourado' },
+]
+
+const estilosTexto = [
+  { value: 'NORMAL', label: 'Normal' },
+  { value: 'NEGRITO', label: 'Negrito' },
+  { value: 'ITALICO', label: 'Itálico' },
+]
+
+const emptyTextoForm = {
+  texto: '',
+  fonte: 'MODERNA',
+  cor: 'BRANCO',
+  estilo: 'NORMAL',
+}
+
 const emptyForm = {
   marcaDaguaUrl: '',
   marcaDaguaAtiva: false,
@@ -28,14 +53,17 @@ export default function MarcaDaguaForm({
   data,
   loading,
   uploadLoading,
+  gerarTextoLoading,
   reprocessLoading,
   onSubmit,
   onUploadImagem,
+  onGerarTexto,
   onRemoverImagem,
   onReprocessar,
 }) {
   const [form, setForm] = useState(emptyForm)
   const fileInputRef = useRef(null)
+  const [textoForm, setTextoForm] = useState(emptyTextoForm)
 
   useEffect(() => {
     setForm({
@@ -46,6 +74,14 @@ export default function MarcaDaguaForm({
       marcaDaguaTamanho: data?.marcaDaguaTamanho || 'MEDIA',
       marcaDaguaMargem: data?.marcaDaguaMargem ?? 30,
     })
+
+    setTextoForm({
+  texto: data?.marcaDaguaTexto || '',
+  fonte: data?.marcaDaguaFonte || 'MODERNA',
+  cor: data?.marcaDaguaCor || 'BRANCO',
+  estilo: data?.marcaDaguaEstilo || 'NORMAL',
+})
+
   }, [data])
 
   function handleChange(event) {
@@ -79,6 +115,28 @@ export default function MarcaDaguaForm({
     event.target.value = ''
   }
 
+  function handleTextoChange(event) {
+  const { name, value } = event.target
+
+  setTextoForm((current) => ({
+    ...current,
+    [name]: value,
+  }))
+}
+
+function handleGerarTexto() {
+  const texto = textoForm.texto.trim()
+
+  if (!texto) return
+
+  onGerarTexto?.({
+    texto,
+    fonte: textoForm.fonte,
+    cor: textoForm.cor,
+    estilo: textoForm.estilo,
+  })
+}
+
   const posicaoPreview = {
     SUPERIOR_ESQUERDA: 'items-start justify-start',
     SUPERIOR_DIREITA: 'items-start justify-end',
@@ -102,16 +160,19 @@ export default function MarcaDaguaForm({
           Sobre a marca d’água
         </h3>
 
-        <p className="mt-2 text-sm leading-6 text-white/45">
-          Configure a marca aplicada nas fotos exibidas na galeria da cliente.
-          A imagem original continua preservada, e a cliente visualiza apenas a versão protegida.
-        </p>
+       <p className="mt-2 text-sm leading-6 text-white/45">
+  Configure a marca aplicada nas fotos exibidas na galeria da cliente.
+  Você pode enviar uma imagem/logo (preferencialmente PNG) ou criar uma marca d’água por texto.
+  A imagem original continua preservada, e a cliente visualiza apenas a versão protegida.
+</p>
 
-        <ul className="mt-4 grid gap-2 text-sm text-white/45">
-          <li>• Protege as fotos antes da entrega final.</li>
-          <li>• Será aplicada nas novas fotos enviadas.</li>
-          <li>• Fotos antigas podem ser reprocessadas com a nova configuração.</li>
-        </ul>
+<ul className="mt-4 grid gap-2 text-sm text-white/45">
+  <li>• Protege as fotos antes da entrega final.</li>
+  <li>• Permite usar uma imagem/logo como marca d’água.</li>
+  <li>• Permite criar uma marca d’água digitando um texto personalizado.</li>
+  <li>• Será aplicada nas novas fotos enviadas.</li>
+  <li>• Fotos antigas podem ser reprocessadas com a nova configuração de marca d'água.</li>
+</ul>
       </div>
 
       <div className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-black/20 p-5 md:flex-row md:items-center">
@@ -169,6 +230,110 @@ export default function MarcaDaguaForm({
           )}
         </div>
       </div>
+
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+  <div className="mb-5">
+    <h3 className="text-sm font-medium text-white">
+      Criar marca d’água por texto
+    </h3>
+
+    <p className="mt-1 text-sm text-white/40">
+      Digite um texto para o sistema gerar uma imagem transparente e usar como marca d’água.
+    </p>
+
+    {data?.marcaDaguaTipo === 'TEXTO' && data?.marcaDaguaTexto && (
+      <p className="mt-3 inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300">
+        Marca atual criada por texto: {data.marcaDaguaTexto}
+      </p>
+    )}
+  </div>
+
+  <div className="grid gap-4 md:grid-cols-2">
+    <div className="md:col-span-2">
+      <label className="mb-2 block text-xs uppercase tracking-[0.14em] text-white/35">
+        Texto da marca d’água
+      </label>
+
+      <input
+        type="text"
+        name="texto"
+        value={textoForm.texto}
+        onChange={handleTextoChange}
+        placeholder="Ex: © Olhari Fotografia"
+        maxLength={200}
+        className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-[var(--gold-border)]"
+      />
+    </div>
+
+    <div>
+      <label className="mb-2 block text-xs uppercase tracking-[0.14em] text-white/35">
+        Fonte
+      </label>
+
+      <select
+        name="fonte"
+        value={textoForm.fonte}
+        onChange={handleTextoChange}
+        className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-[var(--gold-border)]"
+      >
+        {fontesTexto.map((fonte) => (
+          <option key={fonte.value} value={fonte.value}>
+            {fonte.label}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    <div>
+      <label className="mb-2 block text-xs uppercase tracking-[0.14em] text-white/35">
+        Cor
+      </label>
+
+      <select
+        name="cor"
+        value={textoForm.cor}
+        onChange={handleTextoChange}
+        className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-[var(--gold-border)]"
+      >
+        {coresTexto.map((cor) => (
+          <option key={cor.value} value={cor.value}>
+            {cor.label}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    <div>
+      <label className="mb-2 block text-xs uppercase tracking-[0.14em] text-white/35">
+        Estilo
+      </label>
+
+      <select
+        name="estilo"
+        value={textoForm.estilo}
+        onChange={handleTextoChange}
+        className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-[var(--gold-border)]"
+      >
+        {estilosTexto.map((estilo) => (
+          <option key={estilo.value} value={estilo.value}>
+            {estilo.label}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    <div className="flex items-end">
+      <button
+        type="button"
+        disabled={gerarTextoLoading || !textoForm.texto.trim()}
+        onClick={handleGerarTexto}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--gold-border)] bg-[var(--gold-dim)] px-5 py-3 text-sm font-medium text-[var(--gold)] transition hover:bg-[var(--gold)] hover:text-black disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/30"
+      >
+        {gerarTextoLoading ? 'Gerando...' : 'Gerar marca por texto'}
+      </button>
+    </div>
+  </div>
+</div>
 
       <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
         <div className="mb-5 flex items-center justify-between gap-4 border-b border-white/10 pb-5">

@@ -421,3 +421,22 @@ ADD COLUMN IF NOT EXISTS marca_dagua_tamanho VARCHAR(20) DEFAULT 'MEDIA';
 
 ALTER TABLE configuracao_estudio
 ADD COLUMN IF NOT EXISTS marca_dagua_margem INTEGER DEFAULT 30;
+
+----------------------------------------------------
+-- MARCA D'ÁGUA POR TEXTO
+----------------------------------------------------
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_tipo VARCHAR(20) DEFAULT 'IMAGEM';
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_texto VARCHAR(200);
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_fonte VARCHAR(30) DEFAULT 'MODERNA';
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_cor VARCHAR(20) DEFAULT 'BRANCO';
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_estilo VARCHAR(20) DEFAULT 'NORMAL';

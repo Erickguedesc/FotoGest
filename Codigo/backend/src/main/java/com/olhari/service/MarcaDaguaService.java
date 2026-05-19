@@ -23,6 +23,17 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import com.olhari.dto.MarcaDaguaTextoRequest;
+import com.olhari.enums.MarcaDaguaCor;
+import com.olhari.enums.MarcaDaguaEstilo;
+import com.olhari.enums.MarcaDaguaFonte;
+import com.olhari.enums.MarcaDaguaTipo;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+
 @Service
 @RequiredArgsConstructor
 public class MarcaDaguaService {
@@ -90,9 +101,16 @@ public class MarcaDaguaService {
             String url = String.valueOf(uploadResult.get("secure_url"));
             String publicId = String.valueOf(uploadResult.get("public_id"));
 
+            
+
             estudio.setMarcaDaguaUrl(url);
             estudio.setMarcaDaguaPublicId(publicId);
             estudio.setMarcaDaguaAtiva(true);
+            estudio.setMarcaDaguaTipo(MarcaDaguaTipo.IMAGEM);
+            estudio.setMarcaDaguaTexto(null);
+            estudio.setMarcaDaguaFonte(null);
+            estudio.setMarcaDaguaCor(null);
+            estudio.setMarcaDaguaEstilo(null);
 
             garantirPadroes(estudio);
 
@@ -337,6 +355,139 @@ if ("center".equals(gravidade)) {
                 .marcaDaguaOpacidade(estudio.getMarcaDaguaOpacidade())
                 .marcaDaguaTamanho(estudio.getMarcaDaguaTamanho())
                 .marcaDaguaMargem(estudio.getMarcaDaguaMargem())
+                .marcaDaguaTipo(estudio.getMarcaDaguaTipo())
+                .marcaDaguaTexto(estudio.getMarcaDaguaTexto())
+                .marcaDaguaFonte(estudio.getMarcaDaguaFonte())
+                .marcaDaguaCor(estudio.getMarcaDaguaCor())
+                .marcaDaguaEstilo(estudio.getMarcaDaguaEstilo())
                 .build();
+                
     }
+
+
+
+    @Transactional
+public MarcaDaguaConfigDTO gerarMarcaDaguaTexto(MarcaDaguaTextoRequest request) {
+    Fotografa fotografa = getFotografaLogada();
+    ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
+
+    String texto = request.getTexto() == null ? "" : request.getTexto().trim();
+
+    if (texto.isBlank()) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Informe o texto da marca d'água"
+        );
+    }
+
+    try {
+        if (estudio.getMarcaDaguaPublicId() != null && !estudio.getMarcaDaguaPublicId().isBlank()) {
+            cloudinaryService.deletar(estudio.getMarcaDaguaPublicId());
+        }
+
+        byte[] imagemTexto = gerarPngTextoTransparente(
+                texto,
+                request.getFonte(),
+                request.getCor(),
+                request.getEstilo()
+        );
+
+        Map<String, Object> uploadResult =
+                cloudinaryService.uploadBytes(imagemTexto, "marca-dagua");
+
+        String url = String.valueOf(uploadResult.get("secure_url"));
+        String publicId = String.valueOf(uploadResult.get("public_id"));
+
+        estudio.setMarcaDaguaUrl(url);
+        estudio.setMarcaDaguaPublicId(publicId);
+        estudio.setMarcaDaguaAtiva(true);
+
+        estudio.setMarcaDaguaTipo(MarcaDaguaTipo.TEXTO);
+        estudio.setMarcaDaguaTexto(texto);
+        estudio.setMarcaDaguaFonte(request.getFonte() != null ? request.getFonte() : MarcaDaguaFonte.MODERNA);
+        estudio.setMarcaDaguaCor(request.getCor() != null ? request.getCor() : MarcaDaguaCor.BRANCO);
+        estudio.setMarcaDaguaEstilo(request.getEstilo() != null ? request.getEstilo() : MarcaDaguaEstilo.NORMAL);
+
+        garantirPadroes(estudio);
+
+        configuracaoEstudioRepository.save(estudio);
+
+        return toDTO(estudio);
+    } catch (IOException e) {
+        throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Não foi possível gerar a marca d'água por texto"
+        );
+    }
+}
+
+
+private byte[] gerarPngTextoTransparente(
+        String texto,
+        MarcaDaguaFonte fonte,
+        MarcaDaguaCor cor,
+        MarcaDaguaEstilo estilo
+) throws IOException {
+    int fontStyle = Font.PLAIN;
+
+    if (estilo == MarcaDaguaEstilo.NEGRITO) {
+        fontStyle = Font.BOLD;
+    } else if (estilo == MarcaDaguaEstilo.ITALICO) {
+        fontStyle = Font.ITALIC;
+    }
+
+    String fontFamily = switch (fonte != null ? fonte : MarcaDaguaFonte.MODERNA) {
+        case ELEGANTE -> "Serif";
+        case CLASSICA -> "Serif";
+        case MODERNA -> "SansSerif";
+    };
+
+    Font font = new Font(fontFamily, fontStyle, 96);
+
+    BufferedImage temp = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+    Graphics2D tempGraphics = temp.createGraphics();
+    tempGraphics.setFont(font);
+
+    FontMetrics metrics = tempGraphics.getFontMetrics();
+
+    int paddingX = 80;
+    int paddingY = 60;
+
+    int width = metrics.stringWidth(texto) + paddingX * 2;
+    int height = metrics.getHeight() + paddingY * 2;
+
+    tempGraphics.dispose();
+
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    Graphics2D graphics = image.createGraphics();
+
+    graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+    graphics.setFont(font);
+
+    int x = paddingX;
+    int y = paddingY + metrics.getAscent();
+
+    Color textColor = switch (cor != null ? cor : MarcaDaguaCor.BRANCO) {
+        case BRANCO -> Color.WHITE;
+        case PRETO -> Color.BLACK;
+        case DOURADO -> new Color(212, 175, 55);
+    };
+
+    graphics.setColor(new Color(0, 0, 0, 80));
+    graphics.drawString(texto, x + 4, y + 4);
+
+    graphics.setColor(textColor);
+    graphics.drawString(texto, x, y);
+
+    graphics.dispose();
+
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    ImageIO.write(image, "png", output);
+
+    return output.toByteArray();
+}
+
+
 }

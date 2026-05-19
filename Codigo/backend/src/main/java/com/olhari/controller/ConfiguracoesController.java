@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
+import com.olhari.dto.MarcaDaguaTextoRequest;
 
 
 @RestController
@@ -92,6 +93,13 @@ public ResponseEntity<MarcaDaguaConfigDTO> uploadImagemMarcaDagua(
         @RequestParam("arquivo") MultipartFile arquivo
 ) {
     return ResponseEntity.ok(marcaDaguaService.uploadImagemMarcaDagua(arquivo));
+}
+
+@PostMapping("/marca-dagua/texto")
+public ResponseEntity<MarcaDaguaConfigDTO> gerarMarcaDaguaTexto(
+        @RequestBody @Valid MarcaDaguaTextoRequest request
+) {
+    return ResponseEntity.ok(marcaDaguaService.gerarMarcaDaguaTexto(request));
 }
 
 @DeleteMapping("/marca-dagua/imagem")

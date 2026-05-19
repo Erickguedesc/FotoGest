@@ -9,6 +9,11 @@ import java.util.UUID;
 import com.olhari.enums.MarcaDaguaPosicao;
 import com.olhari.enums.MarcaDaguaTamanho;
 
+import com.olhari.enums.MarcaDaguaTipo;
+import com.olhari.enums.MarcaDaguaFonte;
+import com.olhari.enums.MarcaDaguaCor;
+import com.olhari.enums.MarcaDaguaEstilo;
+
 @Entity
 @Table(name = "configuracao_estudio")
 @Getter
@@ -92,6 +97,29 @@ public class ConfiguracaoEstudio {
     protected void onUpdate() {
         atualizadoEm = OffsetDateTime.now();
     }
+
+
+@Builder.Default
+@Enumerated(EnumType.STRING)
+@Column(name = "marca_dagua_tipo", length = 20)
+private MarcaDaguaTipo marcaDaguaTipo = MarcaDaguaTipo.IMAGEM;
+
+@Builder.Default
+@Enumerated(EnumType.STRING)
+@Column(name = "marca_dagua_fonte", length = 30)
+private MarcaDaguaFonte marcaDaguaFonte = MarcaDaguaFonte.MODERNA;
+
+@Builder.Default
+@Enumerated(EnumType.STRING)
+@Column(name = "marca_dagua_cor", length = 20)
+private MarcaDaguaCor marcaDaguaCor = MarcaDaguaCor.BRANCO;
+
+@Builder.Default
+@Enumerated(EnumType.STRING)
+@Column(name = "marca_dagua_estilo", length = 20)
+private MarcaDaguaEstilo marcaDaguaEstilo = MarcaDaguaEstilo.NORMAL;
+
+
 }
 
 // para alterar configuraçes do perfil 

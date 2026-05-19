@@ -72,4 +72,9 @@ export const configuracoesService = {
     const response = await api.patch('/configuracoes/senha', dados)
     return response.data
   },
+
+  gerarMarcaDaguaTexto: async (dados) => {
+  const response = await api.post('/configuracoes/marca-dagua/texto', dados)
+  return response.data
+},
 }
