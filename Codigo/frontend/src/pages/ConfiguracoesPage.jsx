@@ -29,6 +29,8 @@ export default function ConfiguracoesPage() {
     setToast({ message, type })
   }
 
+  const [gerarTextoLoading, setGerarTextoLoading] = useState(false)
+
   async function carregarConfiguracoes() {
     try {
       setLoading(true)
@@ -209,6 +211,33 @@ export default function ConfiguracoesPage() {
     }
   }
 
+
+  async function handleGerarMarcaDaguaTexto(dados) {
+  try {
+    setGerarTextoLoading(true)
+
+    const data = await configuracoesService.gerarMarcaDaguaTexto(dados)
+
+    setConfiguracoes((current) => ({
+      ...(current || {}),
+      marcaDagua: data,
+    }))
+
+    showToast('Marca d’água por texto gerada com sucesso.')
+  } catch (error) {
+    console.error('[ConfiguracoesPage] Erro ao gerar marca d’água por texto:', error)
+
+    const message =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      'Não foi possível gerar a marca d’água por texto.'
+
+    showToast(message, 'error')
+  } finally {
+    setGerarTextoLoading(false)
+  }
+}
+
   async function handleRemoverMarcaDagua() {
     try {
       setUploadMarcaLoading(true)
@@ -350,6 +379,8 @@ export default function ConfiguracoesPage() {
                     onUploadImagem={handleUploadMarcaDagua}
                     onRemoverImagem={handleRemoverMarcaDagua}
                     onReprocessar={handleReprocessarMarcaDagua}
+                    gerarTextoLoading={gerarTextoLoading}
+                    onGerarTexto={handleGerarMarcaDaguaTexto}
                   />
                 )}
 
