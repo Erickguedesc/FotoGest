@@ -14,6 +14,31 @@ const TYPE_STYLES = {
     confirm:
       'bg-[var(--gold)] text-[#1A1200] hover:bg-[var(--gold-light)]',
   },
+
+  success: {
+  icon: 'text-emerald-300 border-emerald-400/30 bg-emerald-400/10',
+  confirm:
+    'bg-emerald-400 text-[#1A1200] hover:bg-emerald-300',
+},
+}
+
+function CheckCircleIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <path d="m9 11 3 3L22 4" />
+    </svg>
+  )
 }
 
 function AlertTriangleIcon() {
@@ -62,12 +87,14 @@ export default function ConfirmActionModal({
   cancelText = 'Cancelar',
   type = 'warning',
   loading = false,
+  showCancel = true,
   onConfirm,
   onClose,
 }) {
   if (!open) return null
 
   const style = TYPE_STYLES[type] || TYPE_STYLES.warning
+  const Icon = type === 'success' ? CheckCircleIcon : AlertTriangleIcon
 
   return (
     <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
@@ -77,7 +104,7 @@ export default function ConfirmActionModal({
             <div
               className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border ${style.icon}`}
             >
-              <AlertTriangleIcon />
+                <Icon />
             </div>
 
             <div>
@@ -102,25 +129,27 @@ export default function ConfirmActionModal({
           </button>
         </div>
 
-        <div className="flex justify-end gap-3 p-5">
-          <button
-            type="button"
-            disabled={loading}
-            onClick={onClose}
-            className="rounded-lg border border-white/[0.10] px-5 py-2.5 text-[12px] font-medium tracking-[0.08em] text-white/55 transition hover:border-white/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {cancelText}
-          </button>
+     <div className="flex justify-end gap-3 p-5">
+  {showCancel && (
+    <button
+      type="button"
+      disabled={loading}
+      onClick={onClose}
+      className="rounded-lg border border-white/[0.10] px-5 py-2.5 text-[12px] font-medium tracking-[0.08em] text-white/55 transition hover:border-white/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      {cancelText}
+    </button>
+  )}
 
-          <button
-            type="button"
-            disabled={loading}
-            onClick={onConfirm}
-            className={`rounded-lg px-5 py-2.5 text-[12px] font-semibold tracking-[0.08em] transition disabled:cursor-not-allowed disabled:opacity-60 ${style.confirm}`}
-          >
-            {loading ? 'Processando...' : confirmText}
-          </button>
-        </div>
+  <button
+    type="button"
+    disabled={loading}
+    onClick={onConfirm}
+    className={`rounded-lg px-5 py-2.5 text-[12px] font-semibold tracking-[0.08em] transition disabled:cursor-not-allowed disabled:opacity-60 ${style.confirm}`}
+  >
+    {loading ? 'Processando...' : confirmText}
+  </button>
+</div>
       </div>
     </div>
   )
