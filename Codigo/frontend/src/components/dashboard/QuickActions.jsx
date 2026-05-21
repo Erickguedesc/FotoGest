@@ -5,6 +5,7 @@ import {
     ClipboardList,
     FileBarChart2,
     Images,
+    Users,
 } from 'lucide-react'
 
 export default function QuickActions() {
@@ -31,6 +32,14 @@ export default function QuickActions() {
                 >
                     <Images size={18} />
                     Ver ensaios
+                </Link>
+
+                <Link
+                    to="/clientes"
+                    className="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-[#171717] px-5 py-4 text-sm text-white transition hover:border-[#D4AF37]/40"
+                >
+                    <Users size={18} />
+                    Clientes
                 </Link>
 
                 <Link

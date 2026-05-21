@@ -45,7 +45,7 @@ export default function RelatoriosPage() {
         return
       }
 
-      setErro('Não foi possível carregar o relatório de faturamento.')
+      setErro('Não foi possível carregar o relatório de valores.')
     } finally {
       setLoading(false)
     }

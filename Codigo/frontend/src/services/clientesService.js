@@ -5,5 +5,7 @@ export const clientesService = {
   listar: ()      => api.get('/clientes'),
   buscarPorId: (id) => api.get(`/clientes/${id}`),
   atualizar: (id, dados) => api.put(`/clientes/${id}`, dados),
+  arquivar: (id) => api.patch(`/clientes/${id}/arquivar`),
+  reativar: (id) => api.patch(`/clientes/${id}/reativar`),
   excluir: (id)   => api.delete(`/clientes/${id}`),
 }

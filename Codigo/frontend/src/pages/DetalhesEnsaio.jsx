@@ -71,6 +71,30 @@
       album?.acessoLiberado !== false
     )
 
+    useEffect(() => {
+      if (!albumToken || !albumPublicado) {
+        setSelecao(null)
+        return
+      }
+
+      let cancelado = false
+
+      const carregarSelecaoSilenciosa = async () => {
+        try {
+          const response = await albumService.buscarSelecao(albumToken)
+          if (!cancelado) setSelecao(response.data)
+        } catch {
+          if (!cancelado) setSelecao(null)
+        }
+      }
+
+      carregarSelecaoSilenciosa()
+
+      return () => {
+        cancelado = true
+      }
+    }, [albumToken, albumPublicado])
+
     const showToast = (message, type = 'success') => {
       setToast({ message, type })
     }
@@ -654,6 +678,16 @@ const texto =
             <span className="text-white/70">{ensaio.clienteNome}</span>
           </div>
 
+          <div className="mb-5 flex justify-end">
+            <button
+              type="button"
+              onClick={() => navigate(`/clientes/${ensaio.clienteId}`)}
+              className="rounded-lg border border-[var(--gold-border)] px-4 py-2 text-[12px] text-[var(--gold)] transition hover:bg-[var(--gold-dim)]"
+            >
+              Ver histórico da cliente
+            </button>
+          </div>
+
           <EnsaioHero
             ensaio={ensaio}
             fotos={fotos}
@@ -670,6 +704,7 @@ const texto =
   />
               <InformacoesCard
                 ensaio={ensaio}
+                selecao={selecao}
                 onEdit={() => setEditModalOpen(true)}
               />
 

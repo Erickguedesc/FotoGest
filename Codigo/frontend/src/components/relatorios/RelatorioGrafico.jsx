@@ -17,18 +17,18 @@ export default function RelatorioGrafico({ periodos = [], loading }) {
       <div className="mb-6 flex flex-col justify-between gap-3 md:flex-row md:items-center">
         <div>
           <h2 className="font-serif text-2xl font-light text-white">
-            Faturamento por período
+            Valores por período
           </h2>
 
           <p className="mt-1 text-sm text-white/40">
-            Comparação entre total líquido e quantidade de ensaios.
+            Comparação entre total previsto e quantidade de ensaios.
           </p>
         </div>
 
         <div className="flex gap-4 text-xs text-white/50">
           <span className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-[var(--gold)]" />
-            Faturamento
+            Valor previsto
           </span>
 
           <span className="flex items-center gap-2">

@@ -19,38 +19,37 @@ import java.util.UUID;
 @AllArgsConstructor
 public class EnsaioRequest {
 
-    @NotNull(message = "Cliente é obrigatório")
+    @NotNull(message = "Cliente e obrigatorio")
     private UUID clienteId;
 
-    // Dados opcionais da cliente para edição junto com o ensaio
-    @Size(max = 200, message = "Nome da cliente deve ter no máximo 200 caracteres")
+    @Size(max = 200, message = "Nome da cliente deve ter no maximo 200 caracteres")
     private String clienteNome;
 
-    @Size(max = 200, message = "E-mail da cliente deve ter no máximo 200 caracteres")
+    @Size(max = 200, message = "E-mail da cliente deve ter no maximo 200 caracteres")
     private String clienteEmail;
 
-    @Size(max = 30, message = "Telefone da cliente deve ter no máximo 30 caracteres")
+    @Size(max = 30, message = "Telefone da cliente deve ter no maximo 30 caracteres")
     private String clienteTelefone;
 
-    @Size(max = 20, message = "CPF da cliente deve ter no máximo 20 caracteres")
+    @Size(max = 20, message = "CPF da cliente deve ter no maximo 20 caracteres")
     private String clienteCpf;
 
-    @Size(max = 120, message = "Cidade deve ter no máximo 120 caracteres")
+    @Size(max = 120, message = "Cidade deve ter no maximo 120 caracteres")
     private String clienteCidade;
 
-    @Size(max = 120, message = "Indicação deve ter no máximo 120 caracteres")
+    @Size(max = 120, message = "Indicacao deve ter no maximo 120 caracteres")
     private String clienteIndicacao;
 
-    @NotNull(message = "Tipo do ensaio é obrigatório")
+    @NotNull(message = "Tipo do ensaio e obrigatorio")
     private TipoEnsaio tipo;
 
-    @NotNull(message = "Data do ensaio é obrigatória")
+    @NotNull(message = "Data do ensaio e obrigatoria")
     private OffsetDateTime dataEnsaio;
 
-    @NotBlank(message = "Local é obrigatório")
+    @NotBlank(message = "Local e obrigatorio")
     private String local;
 
-    @NotNull(message = "Quantidade de fotos do pacote é obrigatória")
+    @NotNull(message = "Quantidade de fotos do pacote e obrigatoria")
     @Min(value = 1, message = "Deve ter pelo menos 1 foto no pacote")
     private Integer qtdFotosPacote;
 
@@ -62,6 +61,14 @@ public class EnsaioRequest {
     @NotNull(message = "Informe se cobra foto extra")
     private Boolean cobrarFotoExtra;
 
-    @Size(max = 400, message = "Observações deve ter no máximo 400 caracteres")
+    private BigDecimal valorFinalEnsaio;
+
+    @Size(max = 30, message = "Status de valores deve ter no maximo 30 caracteres")
+    private String statusValores;
+
+    @Size(max = 500, message = "Observacao de valores deve ter no maximo 500 caracteres")
+    private String observacaoValores;
+
+    @Size(max = 400, message = "Observacoes deve ter no maximo 400 caracteres")
     private String observacoes;
 }

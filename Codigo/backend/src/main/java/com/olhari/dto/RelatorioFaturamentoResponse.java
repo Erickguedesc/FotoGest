@@ -26,6 +26,7 @@ public class RelatorioFaturamentoResponse {
 
     private BigDecimal faturamentoBruto;
     private BigDecimal excedentesCobrados;
+    private BigDecimal ajustesManuais;
     private BigDecimal totalLiquido;
 
     private RelatorioDestaqueResponse destaques;

@@ -21,6 +21,7 @@ public class RelatorioPeriodoResponse {
 
     private BigDecimal faturamento;
     private BigDecimal excedentesCobrados;
+    private BigDecimal ajustesManuais;
     private BigDecimal totalLiquido;
 
     private Integer quantidadeEnsaios;

@@ -70,9 +70,10 @@ public class RelatorioService {
                                                 totalSelecoesPorAlbum))
                                 .toList();
 
-           BigDecimal faturamentoBruto = somar(periodos, RelatorioPeriodoResponse::getFaturamento);
+BigDecimal faturamentoBruto = somar(periodos, RelatorioPeriodoResponse::getFaturamento);
 BigDecimal excedentesCobrados = somar(periodos, RelatorioPeriodoResponse::getExcedentesCobrados);
-BigDecimal totalLiquido = faturamentoBruto.add(excedentesCobrados);
+BigDecimal ajustesManuais = somar(periodos, RelatorioPeriodoResponse::getAjustesManuais);
+BigDecimal totalLiquido = faturamentoBruto.add(excedentesCobrados).add(ajustesManuais);
 
 int ensaiosRealizados = periodos.stream()
         .map(RelatorioPeriodoResponse::getQuantidadeEnsaios)
@@ -121,6 +122,7 @@ RelatorioComparativoResponse comparativo = montarComparativo(
         .ensaiosRealizados(ensaiosRealizados)
         .faturamentoBruto(faturamentoBruto)
         .excedentesCobrados(excedentesCobrados)
+        .ajustesManuais(ajustesManuais)
         .totalLiquido(totalLiquido)
         .destaques(destaques)
         .comparativo(comparativo)
@@ -150,7 +152,14 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                                                 totalSelecoesPorAlbum))
                                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                BigDecimal totalLiquido = faturamento.add(excedentes);
+                BigDecimal ajustesManuais = ensaiosDoPeriodo.stream()
+                                .map(ensaio -> calcularAjusteManualDoEnsaio(
+                                                ensaio,
+                                                albumPorEnsaio,
+                                                totalSelecoesPorAlbum))
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                BigDecimal totalLiquido = faturamento.add(excedentes).add(ajustesManuais);
 
                 return RelatorioPeriodoResponse.builder()
                                 .label(periodo.getLabel())
@@ -158,6 +167,7 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                                 .fim(periodo.getFim())
                                 .faturamento(faturamento)
                                 .excedentesCobrados(excedentes)
+                                .ajustesManuais(ajustesManuais)
                                 .totalLiquido(totalLiquido)
                                 .quantidadeEnsaios(ensaiosDoPeriodo.size())
                                 .build();
@@ -208,6 +218,26 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                 int excedentes = Math.max(0, totalSelecionadas - ensaio.getQtdFotosPacote());
 
                 return ensaio.getValorFotoExtra().multiply(BigDecimal.valueOf(excedentes));
+        }
+
+        private BigDecimal calcularAjusteManualDoEnsaio(
+                        Ensaio ensaio,
+                        Map<UUID, Album> albumPorEnsaio,
+                        Map<UUID, Integer> totalSelecoesPorAlbum) {
+                if (ensaio.getValorFinalEnsaio() == null) {
+                        return BigDecimal.ZERO;
+                }
+
+                BigDecimal valorPacote = ensaio.getValorPacote() == null
+                                ? BigDecimal.ZERO
+                                : ensaio.getValorPacote();
+
+                BigDecimal valorAutomatico = valorPacote.add(calcularExcedenteDoEnsaio(
+                                ensaio,
+                                albumPorEnsaio,
+                                totalSelecoesPorAlbum));
+
+                return ensaio.getValorFinalEnsaio().subtract(valorAutomatico);
         }
 
         private List<PeriodoRelatorioInterno> gerarPeriodos(TipoPeriodoRelatorio tipo, int ano) {
@@ -374,7 +404,7 @@ private String montarDescricaoFaturamento(
             return "Sem base em " + anoComparado;
         }
 
-        return "Sem faturamento em " + anoComparado;
+        return "Sem valores em " + anoComparado;
     }
 
     if (percentual.compareTo(BigDecimal.ZERO) == 0) {

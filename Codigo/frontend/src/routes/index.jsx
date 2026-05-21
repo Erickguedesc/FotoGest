@@ -5,6 +5,8 @@ import HomePage from '../pages/HomePage'
 import LoginPage from '../pages/LoginPage'
 import NovoEnsaioPage from '../pages/NovoEnsaioPage'
 import EnsaiosPage from '../pages/EnsaiosPage'
+import ClientesPage from '../pages/ClientesPage'
+import ClienteHistoricoPage from '../pages/ClienteHistoricoPage'
 import AlbumAccessPage from "../pages/AlbumAccessPage"
 import SolicitacoesPage from '../pages/SolicitacoesPage'
 import PreContratoPage from '../pages/PreContratoPage'
@@ -63,6 +65,24 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute>
         <EnsaiosPage />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    path: '/clientes',
+    element: (
+      <PrivateRoute>
+        <ClientesPage />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    path: '/clientes/:id',
+    element: (
+      <PrivateRoute>
+        <ClienteHistoricoPage />
       </PrivateRoute>
     ),
   },

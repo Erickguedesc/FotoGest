@@ -64,8 +64,19 @@ public class DashboardService {
                 .filter(ensaio -> ensaio.getStatus() != StatusEnsaio.CANCELADO)
                 .toList();
 
+        Map<UUID, Integer> totalSelecoesPorAlbum = albumPorEnsaio.values()
+                .stream()
+                .collect(Collectors.toMap(
+                        Album::getId,
+                        album -> selecaoFotoRepository.findByAlbumId(album.getId()).size()
+                ));
+
         BigDecimal receitaEstimada = ensaiosEsteMes.stream()
-                .map(Ensaio::getValorPacote)
+                .map(ensaio -> calcularValorPrevistoDoEnsaio(
+                        ensaio,
+                        albumPorEnsaio,
+                        totalSelecoesPorAlbum
+                ))
                 .filter(valor -> valor != null)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -253,6 +264,51 @@ if (ensaio.getStatus() == StatusEnsaio.EM_SELECAO
         return ensaio.getStatus() == StatusEnsaio.REALIZADO
                 || ensaio.getStatus() == StatusEnsaio.EM_SELECAO
                 || ensaio.getStatus() == StatusEnsaio.EM_EDICAO;
+    }
+
+    private BigDecimal calcularValorPrevistoDoEnsaio(
+            Ensaio ensaio,
+            Map<UUID, Album> albumPorEnsaio,
+            Map<UUID, Integer> totalSelecoesPorAlbum
+    ) {
+        if (ensaio.getValorFinalEnsaio() != null) {
+            return ensaio.getValorFinalEnsaio();
+        }
+
+        BigDecimal valorPacote = ensaio.getValorPacote() == null
+                ? BigDecimal.ZERO
+                : ensaio.getValorPacote();
+
+        return valorPacote.add(calcularValorExcedenteDoEnsaio(
+                ensaio,
+                albumPorEnsaio,
+                totalSelecoesPorAlbum
+        ));
+    }
+
+    private BigDecimal calcularValorExcedenteDoEnsaio(
+            Ensaio ensaio,
+            Map<UUID, Album> albumPorEnsaio,
+            Map<UUID, Integer> totalSelecoesPorAlbum
+    ) {
+        if (!Boolean.TRUE.equals(ensaio.getCobrarFotoExtra())) {
+            return BigDecimal.ZERO;
+        }
+
+        if (ensaio.getValorFotoExtra() == null || ensaio.getQtdFotosPacote() == null) {
+            return BigDecimal.ZERO;
+        }
+
+        Album album = albumPorEnsaio.get(ensaio.getId());
+
+        if (album == null) {
+            return BigDecimal.ZERO;
+        }
+
+        int totalSelecionadas = totalSelecoesPorAlbum.getOrDefault(album.getId(), 0);
+        int excedentes = Math.max(0, totalSelecionadas - ensaio.getQtdFotosPacote());
+
+        return ensaio.getValorFotoExtra().multiply(BigDecimal.valueOf(excedentes));
     }
 
     private boolean temSelecaoEnviada(

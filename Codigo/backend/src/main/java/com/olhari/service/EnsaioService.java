@@ -37,6 +37,7 @@ public class EnsaioService {
     @Transactional
     public EnsaioResponse criar(EnsaioRequest request) {
         Cliente cliente = buscarCliente(request.getClienteId());
+        atualizarDadosCliente(cliente, request);
         
 
 boolean cobrar = Boolean.TRUE.equals(request.getCobrarFotoExtra());
@@ -68,6 +69,9 @@ Ensaio ensaio = Ensaio.builder()
         .valorPacote(request.getValorPacote())
         .cobrarFotoExtra(cobrar)
          .valorFotoExtra(cobrar ? request.getValorFotoExtra() : null)
+        .valorFinalEnsaio(request.getValorFinalEnsaio())
+        .statusValores(normalizarStatusValores(request.getStatusValores()))
+        .observacaoValores(normalizarTexto(request.getObservacaoValores()))
         .observacoes(request.getObservacoes())
         .progresso(resolverProgresso(StatusEnsaio.AGENDADO))
         .build();
@@ -127,6 +131,9 @@ if (request.getValorPacote() == null ||
 }
 ensaio.setCobrarFotoExtra(cobrar);
 ensaio.setValorFotoExtra(cobrar ? request.getValorFotoExtra() : null);
+ensaio.setValorFinalEnsaio(request.getValorFinalEnsaio());
+ensaio.setStatusValores(normalizarStatusValores(request.getStatusValores()));
+ensaio.setObservacaoValores(normalizarTexto(request.getObservacaoValores()));
 
         return toResponse(ensaioRepository.save(ensaio));
     }
@@ -221,6 +228,16 @@ private String normalizarTexto(String valor) {
     return texto.isEmpty() ? null : texto;
 }
 
+private String normalizarStatusValores(String valor) {
+    String status = normalizarTexto(valor);
+
+    if (status == null) {
+        return "NAO_INFORMADO";
+    }
+
+    return status;
+}
+
     private EnsaioResponse toResponse(Ensaio ensaio) {
     return EnsaioResponse.builder()
             .id(ensaio.getId())
@@ -242,6 +259,9 @@ private String normalizarTexto(String valor) {
             .valorPacote(ensaio.getValorPacote())
             .valorFotoExtra(ensaio.getValorFotoExtra())
             .cobrarFotoExtra(ensaio.getCobrarFotoExtra())
+            .valorFinalEnsaio(ensaio.getValorFinalEnsaio())
+            .statusValores(ensaio.getStatusValores())
+            .observacaoValores(ensaio.getObservacaoValores())
 
             .observacoes(ensaio.getObservacoes())
             .progresso(ensaio.getProgresso())

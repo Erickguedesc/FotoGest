@@ -5,7 +5,7 @@ export default function RelatorioKpiGrid({ relatorio }) {
   return (
     <div className="grid gap-4 md:grid-cols-3">
       <KpiCard
-        title="Faturamento total"
+        title="Valor previsto total"
         value={formatMoney(relatorio?.faturamentoTotal)}
         description={relatorio?.comparativo?.descricaoFaturamento || 'Sem base comparativa'}
         tendencia={relatorio?.comparativo?.tendenciaFaturamento}

@@ -34,6 +34,10 @@ public class EnsaioResponse {
     private BigDecimal valorFotoExtra;
     private Boolean cobrarFotoExtra;
 
+    private BigDecimal valorFinalEnsaio;
+    private String statusValores;
+    private String observacaoValores;
+
     private String observacoes;
     private Short progresso;
 
