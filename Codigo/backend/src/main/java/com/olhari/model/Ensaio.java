@@ -64,6 +64,16 @@ private BigDecimal valorPacote;
 @Column(name = "cobrar_foto_extra")
 private Boolean cobrarFotoExtra;
 
+    @Column(name = "valor_final_ensaio", precision = 10, scale = 2)
+    private BigDecimal valorFinalEnsaio;
+
+    @Builder.Default
+    @Column(name = "status_valores", length = 30)
+    private String statusValores = "NAO_INFORMADO";
+
+    @Column(name = "observacao_valores", columnDefinition = "TEXT")
+    private String observacaoValores;
+
     @Column(columnDefinition = "TEXT")
     private String observacoes;
 

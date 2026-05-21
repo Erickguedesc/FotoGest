@@ -52,6 +52,7 @@ export default function NovoEnsaioPage() {
   const [errors, setErrors]   = useState({})
   const [loading, setLoading] = useState(false)
   const [toast, setToast]     = useState(null)
+  const clienteIdExistente = searchParams.get('clienteId')
 
   useEffect(() => {
   const dataUrl = searchParams.get('data')
@@ -90,6 +91,35 @@ export default function NovoEnsaioPage() {
   carregarPreferencias()
 }, [searchParams])
 
+  useEffect(() => {
+    if (!clienteIdExistente) return
+
+    let cancelado = false
+
+    async function carregarClienteExistente() {
+      try {
+        const response = await clientesService.buscarPorId(clienteIdExistente)
+        const cliente = response.data
+
+        if (cancelado || !cliente) return
+
+        setForm((prev) => ({
+          ...prev,
+          cliente: prev.cliente || cliente.nome || '',
+        }))
+      } catch (error) {
+        console.error('[NovoEnsaio] Erro ao carregar cliente existente:', error?.response?.data || error)
+        setToast({ message: 'Nao foi possivel preencher a cliente selecionada.', type: 'error' })
+      }
+    }
+
+    carregarClienteExistente()
+
+    return () => {
+      cancelado = true
+    }
+  }, [clienteIdExistente])
+
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: '' }))
@@ -126,19 +156,23 @@ export default function NovoEnsaioPage() {
     setLoading(true)
     try {
       // ── Passo 1: criar o cliente ──────────────────────────────────────────
-      const clientePayload = {
-        nome:      form.cliente.trim(),
-        telefone:  form.telefone?.trim()           || null,
-        email:     form.email?.trim()              || null,
-        cpf:       form.cpf?.replace(/\D/g, '')    || null,
-        cidade:    form.cidade?.trim()             || null,
-        indicacao: form.indicacao                  || null,
-      }
+      let clienteId = clienteIdExistente
 
-      console.log('[NovoEnsaio] Criando cliente:', clientePayload)
-      const clienteRes = await clientesService.criar(clientePayload)
-      const clienteId  = clienteRes.data.id
-      console.log('[NovoEnsaio] Cliente criado, id:', clienteId)
+      if (!clienteId) {
+        const clientePayload = {
+          nome:      form.cliente.trim(),
+          telefone:  form.telefone?.trim()           || null,
+          email:     form.email?.trim()              || null,
+          cpf:       form.cpf?.replace(/\D/g, '')    || null,
+          cidade:    form.cidade?.trim()             || null,
+          indicacao: form.indicacao                  || null,
+        }
+
+        console.log('[NovoEnsaio] Criando cliente:', clientePayload)
+        const clienteRes = await clientesService.criar(clientePayload)
+        clienteId = clienteRes.data.id
+        console.log('[NovoEnsaio] Cliente criado, id:', clienteId)
+      }
 
       // ── Passo 2: criar o ensaio ───────────────────────────────────────────
       const tipoEnum =
@@ -148,6 +182,12 @@ export default function NovoEnsaioPage() {
 
       const ensaioPayload = {
         clienteId,
+        clienteNome: form.cliente.trim(),
+        clienteTelefone: form.telefone?.trim() || null,
+        clienteEmail: form.email?.trim() || null,
+        clienteCpf: form.cpf?.replace(/\D/g, '') || null,
+        clienteCidade: form.cidade?.trim() || null,
+        clienteIndicacao: form.indicacao || null,
         tipo:            tipoEnum,
         dataEnsaio: new Date(`${form.data}T${form.hora}:00`).toISOString(),
         local:           form.local.trim(),

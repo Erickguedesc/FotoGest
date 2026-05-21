@@ -42,4 +42,14 @@ public class ClienteController {
     public void deletar(@PathVariable UUID id) {
         service.deletar(id);
     }
+
+    @PatchMapping("/{id}/arquivar")
+    public ClienteResponse arquivar(@PathVariable UUID id) {
+        return service.arquivar(id);
+    }
+
+    @PatchMapping("/{id}/reativar")
+    public ClienteResponse reativar(@PathVariable UUID id) {
+        return service.reativar(id);
+    }
 }

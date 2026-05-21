@@ -20,19 +20,24 @@ export default function RelatorioResumoConsolidado({ relatorio, tituloFallback }
 
         <div className="min-w-full rounded-xl border border-white/10 bg-black/20 p-5 md:min-w-[280px]">
           <DetailRow
-            label="Faturamento bruto"
+            label="Pacotes"
             value={formatMoney(relatorio?.faturamentoBruto)}
           />
 
           <DetailRow
-            label="Excedentes cobrados"
+            label="Fotos extras"
             value={formatMoney(relatorio?.excedentesCobrados)}
+          />
+
+          <DetailRow
+            label="Ajustes manuais"
+            value={formatMoney(relatorio?.ajustesManuais)}
           />
 
           <div className="my-3 h-px bg-white/10" />
 
           <DetailRow
-            label="Total líquido"
+            label="Total previsto"
             value={formatMoney(relatorio?.totalLiquido)}
             strong
           />

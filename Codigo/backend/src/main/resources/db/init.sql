@@ -73,9 +73,13 @@ CREATE TABLE IF NOT EXISTS cliente (
   cpf VARCHAR(20) UNIQUE,
   cidade VARCHAR(120),
   indicacao VARCHAR(120),
+  ativo BOOLEAN NOT NULL DEFAULT true,
   criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE cliente
+ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT true;
 
 CREATE TABLE IF NOT EXISTS ensaio (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -88,6 +92,9 @@ CREATE TABLE IF NOT EXISTS ensaio (
   valor_pacote NUMERIC(10,2) NOT NULL DEFAULT 0,
   valor_foto_extra NUMERIC(10,2) DEFAULT 35.00,
   cobrar_foto_extra BOOLEAN NOT NULL DEFAULT false,
+  valor_final_ensaio NUMERIC(10,2),
+  status_valores VARCHAR(30) DEFAULT 'NAO_INFORMADO',
+  observacao_valores TEXT,
   observacoes TEXT,
   progresso SMALLINT NOT NULL DEFAULT 0 CHECK(progresso BETWEEN 0 AND 100),
   criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -166,6 +173,15 @@ CREATE TABLE IF NOT EXISTS selecao_foto (
   observacao TEXT,
   UNIQUE(album_id, foto_id)
 );
+
+ALTER TABLE ensaio
+ADD COLUMN IF NOT EXISTS valor_final_ensaio NUMERIC(10,2);
+
+ALTER TABLE ensaio
+ADD COLUMN IF NOT EXISTS status_valores VARCHAR(30) DEFAULT 'NAO_INFORMADO';
+
+ALTER TABLE ensaio
+ADD COLUMN IF NOT EXISTS observacao_valores TEXT;
 
 ALTER TABLE selecao_foto
 ADD COLUMN IF NOT EXISTS observacao TEXT;

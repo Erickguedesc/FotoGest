@@ -19,6 +19,7 @@ const OlhariIcon = () => (
 const navLinks = [
   { label: 'Dashboard', to: '/dashboard' },
   { label: 'Ensaios', to: '/ensaios' },
+  { label: 'Clientes', to: '/clientes' },
   { label: 'Novo Ensaio', to: '/novo-ensaio' },
   { label: 'Relatórios', to: '/relatorios' },
   { label: 'Solicitações', to: '/solicitacoes' },
@@ -76,6 +77,8 @@ export default function Header() {
   const isActive = (to) =>
     to === '/ensaios'
       ? location.pathname.startsWith('/ensaios')
+      : to === '/clientes'
+        ? location.pathname.startsWith('/clientes')
       : location.pathname === to
 
   const handleLogout = () => {

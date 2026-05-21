@@ -47,6 +47,10 @@ public class Cliente {
     @Column(length = 120)
     private String indicacao;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean ativo = true;
+
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Ensaio> ensaios = new ArrayList<>();
