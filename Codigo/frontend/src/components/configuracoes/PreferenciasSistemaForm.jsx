@@ -1,5 +1,5 @@
-import { Save } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Save, Upload } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { FormField, TextareaField } from './FormField'
 import InfoBox from './InfoBox'
 
@@ -10,10 +10,12 @@ const emptyForm = {
   cidadePadrao: '',
   mensagemEnvioAlbum: '',
   mensagemSelecaoRecebida: '',
+  capaAlbumPadraoUrl: '',
 }
 
-export default function PreferenciasSistemaForm({ data, loading, onSubmit }) {
+export default function PreferenciasSistemaForm({ data, loading, uploadCapaLoading, onSubmit,onUploadCapaAlbum, }) {
   const [form, setForm] = useState(emptyForm)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     setForm({
@@ -23,6 +25,7 @@ export default function PreferenciasSistemaForm({ data, loading, onSubmit }) {
       cidadePadrao: data?.cidadePadrao || '',
       mensagemEnvioAlbum: data?.mensagemEnvioAlbum || '',
       mensagemSelecaoRecebida: data?.mensagemSelecaoRecebida || '',
+      capaAlbumPadraoUrl: data?.capaAlbumPadraoUrl || '',
     })
   }, [data])
 
@@ -30,6 +33,16 @@ export default function PreferenciasSistemaForm({ data, loading, onSubmit }) {
     const { name, value } = event.target
     setForm((current) => ({ ...current, [name]: value }))
   }
+
+  function handleSelectCapa(event) {
+  const arquivo = event.target.files?.[0]
+
+  if (!arquivo) return
+
+  onUploadCapaAlbum?.(arquivo)
+
+  event.target.value = ''
+}
 
   function handleSubmit(event) {
     event.preventDefault()
@@ -53,6 +66,55 @@ export default function PreferenciasSistemaForm({ data, loading, onSubmit }) {
         <FormField label="Valor padrão por foto extra" name="valorFotoExtraPadrao" value={form.valorFotoExtraPadrao} onChange={handleChange} />
         <FormField label="Expiração padrão do álbum em dias" name="prazoExpiracaoAlbumDias" value={form.prazoExpiracaoAlbumDias} onChange={handleChange} />
         <FormField label="Cidade padrão" name="cidadePadrao" value={form.cidadePadrao} onChange={handleChange} />
+<div className="md:col-span-2 rounded-2xl border border-white/10 bg-black/20 p-5">
+  <div className="flex flex-col gap-5 md:flex-row md:items-center">
+    <div className="h-28 w-44 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]">
+      {form.capaAlbumPadraoUrl ? (
+        <img
+          src={form.capaAlbumPadraoUrl}
+          alt="Capa padrão do álbum"
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center text-xs uppercase tracking-[0.14em] text-white/30">
+          Sem capa
+        </div>
+      )}
+    </div>
+
+    <div className="flex-1">
+      <h3 className="text-sm font-medium text-white">
+        Capa padrão do álbum
+      </h3>
+
+      <p className="mt-1 text-sm leading-relaxed text-white/40">
+        Essa imagem será usada na capa dos albuns enquanto não tiver fotos oficiais do ensaio. Será vista na tela Dashboard.
+      </p>
+
+      <p className="mt-2 break-all text-xs text-white/30">
+        {form.capaAlbumPadraoUrl || 'Nenhuma imagem enviada'}
+      </p>
+    </div>
+
+    <input
+      ref={fileInputRef}
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      onChange={handleSelectCapa}
+      className="hidden"
+    />
+
+    <button
+      type="button"
+      disabled={uploadCapaLoading}
+      onClick={() => fileInputRef.current?.click()}
+      className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-white/70 transition hover:border-[var(--gold-border)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      <Upload size={15} />
+      {uploadCapaLoading ? 'Enviando...' : 'Enviar capa'}
+    </button>
+  </div>
+</div>
       </div>
 
       <TextareaField

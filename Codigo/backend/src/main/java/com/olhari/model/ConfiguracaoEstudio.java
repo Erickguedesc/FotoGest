@@ -64,23 +64,30 @@ public class ConfiguracaoEstudio {
     @Column(name = "marca_dagua_public_id", columnDefinition = "TEXT")
     private String marcaDaguaPublicId;
 
+    @Column(name = "marca_dagua_texto", columnDefinition = "TEXT")
+private String marcaDaguaTexto;
+
     @Builder.Default
     @Column(name = "marca_dagua_ativa", nullable = false)
     private Boolean marcaDaguaAtiva = false;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "marca_dagua_posicao", length = 40)
-    private MarcaDaguaPosicao marcaDaguaPosicao = MarcaDaguaPosicao.INFERIOR_DIREITA;
+@Builder.Default
+@Enumerated(EnumType.STRING)
+@Column(name = "marca_dagua_posicao", length = 40)
+private MarcaDaguaPosicao marcaDaguaPosicao = MarcaDaguaPosicao.INFERIOR_DIREITA;
 
-    @Column(name = "marca_dagua_opacidade")
-    private Integer marcaDaguaOpacidade = 35;
+@Builder.Default
+@Column(name = "marca_dagua_opacidade")
+private Integer marcaDaguaOpacidade = 35;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "marca_dagua_tamanho", length = 20)
-    private MarcaDaguaTamanho marcaDaguaTamanho = MarcaDaguaTamanho.MEDIA;
+@Builder.Default
+@Enumerated(EnumType.STRING)
+@Column(name = "marca_dagua_tamanho", length = 20)
+private MarcaDaguaTamanho marcaDaguaTamanho = MarcaDaguaTamanho.MEDIA;
 
-    @Column(name = "marca_dagua_margem")
-    private Integer marcaDaguaMargem = 30;
+@Builder.Default
+@Column(name = "marca_dagua_margem")
+private Integer marcaDaguaMargem = 30;
 
     @Column(name = "criado_em", updatable = false)
     private OffsetDateTime criadoEm;

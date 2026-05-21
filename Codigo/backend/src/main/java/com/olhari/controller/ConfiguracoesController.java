@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
-import com.olhari.dto.MarcaDaguaTextoRequest;
 
 
 @RestController
@@ -112,6 +111,14 @@ public ResponseEntity<MarcaDaguaReprocessarResponse> reprocessarFotosMarcaDagua(
     return ResponseEntity.ok(marcaDaguaService.reprocessarFotosExistentes());
 }
 
-
+@PatchMapping(
+        value = "/preferencias/capa-album",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+)
+public ResponseEntity<PreferenciasConfigDTO> uploadCapaAlbumPadrao(
+        @RequestParam("arquivo") MultipartFile arquivo
+) {
+    return ResponseEntity.ok(configuracoesService.uploadCapaAlbumPadrao(arquivo));
+}
 
 }

@@ -68,6 +68,15 @@ export const configuracoesService = {
     return response.data
   },
 
+  uploadCapaAlbumPadrao: async (arquivo) => {
+  const formData = new FormData()
+  formData.append('arquivo', arquivo)
+
+  const response = await api.patch('/configuracoes/preferencias/capa-album', formData)
+
+  return response.data
+},
+
   alterarSenha: async (dados) => {
     const response = await api.patch('/configuracoes/senha', dados)
     return response.data

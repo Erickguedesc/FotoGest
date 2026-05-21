@@ -13,9 +13,10 @@ export async function acessarAlbumComSenha(token, senha) {
   return response.data
 }
 
-export async function enviarSelecaoFotos(token, fotosIds) {
+export async function enviarSelecaoFotos(token, fotosIds, observacoesPorFoto = {}) {
   const response = await api.post(`/album/${token}/selecao`, {
     fotosIds,
+    observacoesPorFoto,
   })
 
   return response.data

@@ -16,4 +16,6 @@ public class PreferenciasUpdateRequest {
     private String cidadePadrao;
     private String mensagemEnvioAlbum;
     private String mensagemSelecaoRecebida;
+    private String capaAlbumPadraoUrl;
+
 }

@@ -9,6 +9,7 @@ import com.olhari.model.Foto;
 import com.olhari.model.SelecaoFoto;
 import com.olhari.repository.AlbumRepository;
 import com.olhari.repository.FotoRepository;
+import com.olhari.repository.PreferenciasSistemaRepository;
 import com.olhari.repository.SelecaoFotoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -32,6 +34,7 @@ public class AlbumPublicoService {
         private final FotoRepository fotoRepository;
         private final SelecaoFotoRepository selecaoRepository;
         private final PasswordEncoder passwordEncoder;
+        private final PreferenciasSistemaRepository preferenciasSistemaRepository;
 
         // 🔐 ACESSAR ÁLBUM (CLIENTE)
         @Transactional
@@ -64,7 +67,10 @@ public class AlbumPublicoService {
         }
 
         // SELECIONAR FOTOS
-        public SelecaoResponse selecionarFotos(String token, List<UUID> fotosIds) {
+        public SelecaoResponse selecionarFotos(
+                        String token,
+                        List<UUID> fotosIds,
+                        Map<UUID, String> observacoesPorFoto) {
 
                 Album album = albumRepository.findByTokenUrl(token)
                                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -78,7 +84,16 @@ public class AlbumPublicoService {
                         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Seleção já enviada");
                 }
 
-                List<Foto> fotos = fotoRepository.findAllById(fotosIds);
+                List<UUID> idsRecebidos = fotosIds == null ? List.of() : fotosIds;
+                Map<UUID, String> observacoesRecebidas = observacoesPorFoto == null
+                                ? Map.of()
+                                : observacoesPorFoto;
+
+                List<Foto> fotos = fotoRepository.findAllById(idsRecebidos);
+
+                if (fotos.size() != idsRecebidos.size()) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecao contem fotos invalidas");
+                }
 
                 // valida se todas as fotos pertencem ao ensaio
                 UUID ensaioId = album.getEnsaio().getId();
@@ -94,12 +109,14 @@ public class AlbumPublicoService {
                                 .map(foto -> SelecaoFoto.builder()
                                                 .album(album)
                                                 .foto(foto)
+                                                .observacao(normalizarObservacao(
+                                                                observacoesRecebidas.get(foto.getId())))
                                                 .build())
                                 .toList();
 
                 selecaoRepository.saveAll(selecoes);
 
-                int total = fotosIds.size();
+                int total = idsRecebidos.size();
 
                 int limite = album.getEnsaio().getQtdFotosPacote();
 
@@ -115,12 +132,19 @@ public class AlbumPublicoService {
                                         .multiply(BigDecimal.valueOf(excedente));
                 }
 
+                Map<UUID, String> observacoesNormalizadas = selecoes.stream()
+                                .filter(selecao -> selecao.getObservacao() != null)
+                                .collect(Collectors.toMap(
+                                                selecao -> selecao.getFoto().getId(),
+                                                SelecaoFoto::getObservacao));
+
                 return new SelecaoResponse(
-                                fotosIds,
+                                idsRecebidos,
                                 total,
                                 limite,
                                 excedente,
-                                valorExcedente.doubleValue());
+                                valorExcedente.doubleValue(),
+                                observacoesNormalizadas);
         }
 
         // 👩‍💼 CONSULTA SELEÇÃO
@@ -135,6 +159,13 @@ public class AlbumPublicoService {
                 List<UUID> ids = selecoes.stream()
                                 .map(s -> s.getFoto().getId())
                                 .collect(Collectors.toList());
+
+                Map<UUID, String> observacoesPorFoto = selecoes.stream()
+                                .filter(selecao -> selecao.getObservacao() != null
+                                                && !selecao.getObservacao().isBlank())
+                                .collect(Collectors.toMap(
+                                                selecao -> selecao.getFoto().getId(),
+                                                SelecaoFoto::getObservacao));
 
                 int total = ids.size();
                 int limite = album.getEnsaio().getQtdFotosPacote();
@@ -156,10 +187,30 @@ public class AlbumPublicoService {
                                 total,
                                 limite,
                                 excedente,
-                                valorExcedente.doubleValue());
+                                valorExcedente.doubleValue(),
+                                observacoesPorFoto);
         }
 
   // 🌐 DADOS PÚBLICOS
+        private String normalizarObservacao(String observacao) {
+                if (observacao == null) {
+                        return null;
+                }
+
+                String valor = observacao.trim();
+
+                if (valor.isBlank()) {
+                        return null;
+                }
+
+                if (valor.length() > 500) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                        "Observacao deve ter no maximo 500 caracteres");
+                }
+
+                return valor;
+        }
+
 public AlbumPublicoResponse dadosPublicos(String token) {
 
     Album album = albumRepository.findByTokenUrl(token)
@@ -171,14 +222,24 @@ public AlbumPublicoResponse dadosPublicos(String token) {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Álbum desativado");
     }
 
-    return new AlbumPublicoResponse(
+      return new AlbumPublicoResponse(
         album.getEnsaio().getCliente().getNome(),
         album.getEnsaio().getTipo().name(),
         album.getEnsaio().getQtdFotosPacote(),
         album.getEnsaio().getDataEnsaio(),
         album.getEnsaio().getLocal(),
         album.getEnsaio().getCobrarFotoExtra(),
-        album.getEnsaio().getValorFotoExtra()
-);
+        album.getEnsaio().getValorFotoExtra(),
+        buscarCapaAlbumPadrao()
+    );
 }
+
+private String buscarCapaAlbumPadrao() {
+    return preferenciasSistemaRepository.findAll()
+            .stream()
+            .findFirst()
+            .map(preferencias -> preferencias.getCapaAlbumPadraoUrl())
+            .orElse(null);
+}
+
 }

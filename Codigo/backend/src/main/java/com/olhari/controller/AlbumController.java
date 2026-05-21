@@ -52,7 +52,10 @@ public class AlbumController {
             @PathVariable String token,
             @RequestBody SelecaoRequest request) {
         return ResponseEntity.ok(
-                albumPublicoService.selecionarFotos(token, request.getFotosIds()));
+                albumPublicoService.selecionarFotos(
+                        token,
+                        request.getFotosIds(),
+                        request.getObservacoesPorFoto()));
     }
 
     @GetMapping("/{token}/selecao")
