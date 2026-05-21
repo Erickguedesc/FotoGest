@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
+import com.olhari.repository.PreferenciasSistemaRepository;
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
@@ -39,6 +39,7 @@ public class DashboardService {
     private final AlbumRepository albumRepository;
     private final SelecaoFotoRepository selecaoFotoRepository;
     private final SolicitacaoRepository solicitacaoRepository;
+    private final PreferenciasSistemaRepository preferenciasSistemaRepository;
 
     @Transactional(readOnly = true)
     public DashboardResumoResponse buscarResumo() {
@@ -263,22 +264,34 @@ if (ensaio.getStatus() == StatusEnsaio.EM_SELECAO
         return album != null && selecaoFotoRepository.existsByAlbumId(album.getId());
     }
 
-    private String buscarCapaUrl(UUID ensaioId) {
-        List<Foto> fotos = fotoRepository.findByEnsaioIdOrderByOrdemAscEnviadaEmAsc(ensaioId);
+  private String buscarCapaUrl(UUID ensaioId) {
+    List<Foto> fotos = fotoRepository.findByEnsaioIdOrderByOrdemAscEnviadaEmAsc(ensaioId);
 
-        if (fotos.isEmpty()) {
-            return null;
-        }
+    if (fotos.isEmpty()) {
+        return buscarCapaAlbumPadrao();
+    }
 
-        Foto capa = fotos.stream()
-                .filter(foto -> Boolean.TRUE.equals(foto.getEhCapa()))
-                .findFirst()
-                .orElse(fotos.get(0));
+    Foto capa = fotos.stream()
+            .filter(foto -> Boolean.TRUE.equals(foto.getEhCapa()))
+            .findFirst()
+            .orElse(fotos.get(0));
 
-        if (capa.getUrlWatermark() != null && !capa.getUrlWatermark().isBlank()) {
-            return capa.getUrlWatermark();
-        }
+    if (capa.getUrlWatermark() != null && !capa.getUrlWatermark().isBlank()) {
+        return capa.getUrlWatermark();
+    }
 
+    if (capa.getUrlOriginal() != null && !capa.getUrlOriginal().isBlank()) {
         return capa.getUrlOriginal();
     }
+
+    return buscarCapaAlbumPadrao();
+}
+
+private String buscarCapaAlbumPadrao() {
+    return preferenciasSistemaRepository.findAll()
+            .stream()
+            .findFirst()
+            .map(preferencias -> preferencias.getCapaAlbumPadraoUrl())
+            .orElse(null);
+}
 }

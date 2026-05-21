@@ -29,6 +29,7 @@ export default function EnsaioDashboardCard({ ensaio }) {
   }
 
   const hasImage = ensaio.capaUrl && !imageError
+  const isCapaPadrao = Number(ensaio.totalFotos || 0) === 0
 
   return (
     <Link
@@ -37,12 +38,16 @@ export default function EnsaioDashboardCard({ ensaio }) {
     >
       <div className="relative h-56 overflow-hidden bg-[#111111]">
         {hasImage ? (
-          <img
-            src={ensaio.capaUrl}
-            alt={ensaio.clienteNome}
-            onError={() => setImageError(true)}
-            className="h-full w-full object-cover transition duration-500 hover:scale-105"
-          />
+         <img
+  src={ensaio.capaUrl}
+  alt={ensaio.clienteNome}
+  onError={() => setImageError(true)}
+  className={`h-full w-full transition duration-500 hover:scale-[1.02] ${
+    isCapaPadrao
+      ? 'object-contain bg-[#0b0b0b] p-6'
+      : 'object-cover hover:scale-105'
+  }`}
+/>
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center bg-[#111111] px-6 text-center">
             <img

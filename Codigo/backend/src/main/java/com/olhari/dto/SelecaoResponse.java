@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -17,5 +18,6 @@ public class SelecaoResponse {
     private Integer limitePlano;
     private Integer excedente;
     private Double valorExcedente;
+    private Map<UUID, String> observacoesPorFoto;
 
 }

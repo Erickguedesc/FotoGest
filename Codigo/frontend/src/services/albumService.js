@@ -21,8 +21,8 @@ export const albumService = {
     return api.post(`/album/${token}/acessar`, { senha })
   },
 
-  selecionar: (token, fotosIds) => {
-    return api.post(`/album/${token}/selecao`, { fotosIds })
+  selecionar: (token, fotosIds, observacoesPorFoto = {}) => {
+    return api.post(`/album/${token}/selecao`, { fotosIds, observacoesPorFoto })
   },
 
   buscarSelecao: (token) => {

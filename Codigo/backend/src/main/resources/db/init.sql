@@ -163,8 +163,12 @@ CREATE TABLE IF NOT EXISTS selecao_foto (
   selecionada_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   total_selecionadas INTEGER NOT NULL DEFAULT 0,
   valor_excedente NUMERIC(10,2) DEFAULT 0,
+  observacao TEXT,
   UNIQUE(album_id, foto_id)
 );
+
+ALTER TABLE selecao_foto
+ADD COLUMN IF NOT EXISTS observacao TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_selecao_foto_album_id
 ON selecao_foto(album_id);
@@ -285,6 +289,37 @@ AFTER INSERT OR UPDATE OF status ON ensaio
 FOR EACH ROW
 EXECUTE FUNCTION fn_registra_historico_status_ensaio();
 
+
+----------------------------------------------------
+-- PREFERÊNCIAS DO SISTEMA
+----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS preferencias_sistema (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  fotografa_id UUID NOT NULL UNIQUE REFERENCES fotografa(id) ON DELETE CASCADE,
+  qtd_fotos_padrao INTEGER DEFAULT 20,
+  valor_foto_extra_padrao NUMERIC(10,2),
+  prazo_expiracao_album_dias INTEGER DEFAULT 30,
+  cidade_padrao VARCHAR(120),
+  mensagem_envio_album TEXT,
+  mensagem_selecao_recebida TEXT,
+  capa_album_padrao_url TEXT,
+  capa_album_padrao_public_id TEXT,
+  criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE preferencias_sistema
+ADD COLUMN IF NOT EXISTS capa_album_padrao_url TEXT;
+
+ALTER TABLE preferencias_sistema
+ADD COLUMN IF NOT EXISTS capa_album_padrao_public_id TEXT;
+
+DROP TRIGGER IF EXISTS trg_preferencias_sistema_ts ON preferencias_sistema;
+CREATE TRIGGER trg_preferencias_sistema_ts
+BEFORE UPDATE ON preferencias_sistema
+FOR EACH ROW
+EXECUTE FUNCTION fn_atualiza_timestamp();
 ------------------------------------
 --   DADOS DE EXEMPLO
 ------------------------------------

@@ -74,6 +74,12 @@ const [favoritas, setFavoritas] = useState(
   Array.isArray(album?.fotosSelecionadas) ? album.fotosSelecionadas : []
 )
 
+const [observacoesPorFoto, setObservacoesPorFoto] = useState(
+  album?.observacoesPorFoto && typeof album.observacoesPorFoto === "object"
+    ? album.observacoesPorFoto
+    : {}
+)
+
 const [lightboxIndex, setLightboxIndex] = useState(null)
 const [lightboxOrigem, setLightboxOrigem] = useState("galeria")
 
@@ -121,6 +127,7 @@ if (!album) {
 }
 
   const fotos = Array.isArray(album.fotos) ? album.fotos : []
+  const capaAlbumUrl = getFotoUrl(fotos[0]) || album?.capaAlbumPadraoUrl || ''
 
 
   const nomeCliente =
@@ -175,6 +182,15 @@ const progresso =limite > 0
     })
   }
 
+  function handleObservacaoChange(fotoId, observacao) {
+    if (selecaoEnviada) return
+
+    setObservacoesPorFoto((atual) => ({
+      ...atual,
+      [fotoId]: observacao.slice(0, 500),
+    }))
+  }
+
   function abrirLightbox(index, origem = "galeria") {
   setLightboxOrigem(origem)
   setLightboxIndex(index)
@@ -206,7 +222,17 @@ async function confirmarSelecao() {
     setEnviando(true)
     setErroEnvio("")
 
-    await enviarSelecaoFotos(token, favoritas)
+    const observacoesSelecionadas = favoritas.reduce((acc, fotoId) => {
+      const observacao = observacoesPorFoto[fotoId]?.trim()
+
+      if (observacao) {
+        acc[fotoId] = observacao
+      }
+
+      return acc
+    }, {})
+
+    await enviarSelecaoFotos(token, favoritas, observacoesSelecionadas)
 
     setSelecaoEnviada(true)
     setModalAberto(false)
@@ -218,6 +244,7 @@ async function confirmarSelecao() {
         ...album,
         selecaoEnviada: true,
         fotosSelecionadas: favoritas,
+        observacoesPorFoto: observacoesSelecionadas,
       })
     )
   } catch (error) {
@@ -239,13 +266,16 @@ async function confirmarSelecao() {
   
 const fotosLightbox = lightboxOrigem === "favoritas" ? fotosFavoritas : fotos
 const fotoLightbox = lightboxIndex !== null ? fotosLightbox[lightboxIndex] : null
+const fotoLightboxSelecionada = fotoLightbox
+  ? favoritas.includes(fotoLightbox.id)
+  : false
   return (
     <main className="min-h-screen bg-[#f5f0e8] text-[#1a1610]">
       <section className="relative flex min-h-[76vh] items-center justify-center overflow-hidden px-6 py-20 text-center text-white">
         <div className="absolute inset-0 bg-[#110e0b]">
-          {getFotoUrl(fotos[0]) ? (
-            <img
-              src={getFotoUrl(fotos[0])}
+         {capaAlbumUrl ? (
+  <img
+    src={capaAlbumUrl}
               alt=""
               className="h-full w-full object-cover opacity-60 brightness-75 saturate-75"
             />
@@ -520,8 +550,33 @@ onClick={() => abrirLightbox(index, "favoritas")}                            cla
                             ×
                           </button>
 
-                          <div className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full border border-[#bf5c68]/40 bg-[#bf5c68]/15 text-[#bf5c68] backdrop-blur">
+                          <div className="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full border border-[#bf5c68]/40 bg-[#bf5c68]/15 text-[#bf5c68] backdrop-blur">
                             <HeartIcon filled />
+                          </div>
+
+                          <div className="border-t border-[#d7cbb9] bg-[#faf8f4] p-3">
+                            <label
+                              htmlFor={`observacao-${foto.id}`}
+                              className="mb-2 block text-[10px] uppercase tracking-[0.16em] text-[#a8783a]"
+                            >
+                              Observação
+                            </label>
+
+                            <textarea
+                              id={`observacao-${foto.id}`}
+                              value={observacoesPorFoto[foto.id] || ""}
+                              onChange={(event) =>
+                                handleObservacaoChange(foto.id, event.target.value)
+                              }
+                              maxLength={500}
+                              rows={3}
+                              placeholder="Ex.: gostei da expressão, ajustar cabelo, preferir em PB..."
+                              className="min-h-[84px] w-full resize-none rounded-xl border border-[#ddd5c5] bg-white/70 px-3 py-2 text-sm leading-5 text-[#1a1610] outline-none transition placeholder:text-[#998f83] focus:border-[#a8783a]"
+                            />
+
+                            <p className="mt-1 text-right text-[10px] text-[#998f83]">
+                              {(observacoesPorFoto[foto.id] || "").length} / 500
+                            </p>
                           </div>
                         </article>
                       )
@@ -689,7 +744,7 @@ onClick={() => abrirLightbox(index, "favoritas")}                            cla
 
       {fotoLightbox ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a0806]/95 p-4"
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#0a0806]/95 p-4 pt-16 xl:items-center xl:overflow-hidden"
           onClick={fecharLightbox}
         >
           <button
@@ -709,19 +764,19 @@ onClick={() => abrirLightbox(index, "favoritas")}                            cla
               event.stopPropagation()
               moverLightbox(-1)
             }}
-            className="absolute left-5 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white/60 hover:text-white md:flex"
+            className="absolute left-5 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/70 text-3xl leading-none text-white shadow-[0_10px_30px_rgba(0,0,0,0.45)] backdrop-blur transition hover:border-white/70 hover:bg-black/85 md:flex"
           >
             ‹
           </button>
 
           <div
-            className="relative max-h-[82vh] max-w-[86vw] overflow-hidden rounded-lg shadow-2xl"
+            className="relative max-h-[52vh] max-w-[92vw] overflow-hidden rounded-lg shadow-2xl xl:max-h-[82vh] xl:max-w-[calc(86vw-380px)]"
             onClick={(event) => event.stopPropagation()}
           >
             <img
               src={getFotoUrl(fotoLightbox)}
               alt="Foto ampliada"
-              className="max-h-[82vh] max-w-[86vw] object-contain"
+              className="max-h-[52vh] max-w-[92vw] object-contain xl:max-h-[82vh] xl:max-w-[calc(86vw-380px)]"
             />
 
             <div className="pointer-events-none absolute inset-0 grid grid-cols-4 opacity-70">
@@ -742,31 +797,74 @@ onClick={() => abrirLightbox(index, "favoritas")}                            cla
               event.stopPropagation()
               moverLightbox(1)
             }}
-            className="absolute right-5 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white/60 hover:text-white md:flex"
+            className="absolute right-5 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/70 text-3xl leading-none text-white shadow-[0_10px_30px_rgba(0,0,0,0.45)] backdrop-blur transition hover:border-white/70 hover:bg-black/85 xl:right-[370px] md:flex"
           >
             ›
           </button>
 
-          <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-4">
+          <aside
+            className="absolute left-4 right-4 top-[calc(52vh+5rem)] max-h-[36vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#15110d] p-5 text-[#e8dfd4] shadow-2xl xl:bottom-6 xl:left-auto xl:right-6 xl:top-20 xl:w-[340px] xl:max-h-none"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <p className="text-[10px] uppercase tracking-[0.18em] text-[#887e74]">
+              Foto {(lightboxIndex || 0) + 1} / {fotosLightbox.length}
+            </p>
+
+            <h2 className="mt-2 font-serif text-2xl font-light">
+              Observação da foto
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-[#887e74]">
+              Se desejar, use este espaço para indicar ajustes, preferências ou detalhes importantes para a fotógrafa.
+            </p>
+
             <button
               type="button"
-              onClick={(event) => {
-                event.stopPropagation()
-                toggleFavorita(fotoLightbox.id)
-              }}
-              className={`flex items-center gap-2 rounded-full border px-6 py-3 text-xs uppercase tracking-[0.14em] ${
-                favoritas.includes(fotoLightbox.id)
-                  ? "border-[#bf5c68]/40 bg-[#bf5c68]/15 text-[#bf5c68]"
-                  : "border-white/10 bg-white/10 text-white/70"
+              onClick={() => toggleFavorita(fotoLightbox.id)}
+              className={`mt-5 flex w-full items-center justify-center gap-2 rounded-full border px-6 py-3 text-xs uppercase tracking-[0.14em] transition ${
+                fotoLightboxSelecionada
+                  ? "border-[#bf5c68]/40 bg-[#bf5c68]/15 text-[#df8b96]"
+                  : "border-white/10 bg-white/10 text-white/70 hover:text-white"
               }`}
             >
-              <HeartIcon filled={favoritas.includes(fotoLightbox.id)} />
-              {favoritas.includes(fotoLightbox.id) ? "Favoritada" : "Favoritar"}
+              <HeartIcon filled={fotoLightboxSelecionada} />
+              {fotoLightboxSelecionada ? "Favoritada" : "Favoritar foto"}
             </button>
 
-            <span className="text-xs uppercase tracking-[0.18em] text-white/30">
-{(lightboxIndex || 0) + 1} / {fotosLightbox.length}            </span>
-          </div>
+            <label
+              htmlFor={`lightbox-observacao-${fotoLightbox.id}`}
+              className="mt-5 block text-[10px] uppercase tracking-[0.16em] text-[#c9a96e]"
+            >
+              Observação
+            </label>
+
+            <textarea
+              id={`lightbox-observacao-${fotoLightbox.id}`}
+              value={observacoesPorFoto[fotoLightbox.id] || ""}
+              onChange={(event) =>
+                handleObservacaoChange(fotoLightbox.id, event.target.value)
+              }
+              disabled={!fotoLightboxSelecionada || selecaoEnviada}
+              maxLength={500}
+              rows={7}
+              placeholder={
+                fotoLightboxSelecionada
+                  ? "Ex.: gostei da expressão, ajustar cabelo, preferir em PB..."
+                  : "Favorite esta foto para adicionar uma observação."
+              }
+              className="mt-2 min-h-[150px] w-full resize-none rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm leading-6 text-[#e8dfd4] outline-none transition placeholder:text-[#887e74] focus:border-[#c9a96e] disabled:cursor-not-allowed disabled:opacity-55"
+            />
+
+            <p className="mt-2 text-right text-[10px] text-[#887e74]">
+              {(observacoesPorFoto[fotoLightbox.id] || "").length} / 500
+            </p>
+
+            {selecaoEnviada ? (
+              <p className="mt-4 rounded-xl border border-[#5a9468]/20 bg-[#5a9468]/10 px-4 py-3 text-sm leading-6 text-[#7db88a]">
+                Seleção já enviada. As observações não podem mais ser alteradas.
+              </p>
+            ) : null}
+          </aside>
         </div>
       ) : null}
 

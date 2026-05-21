@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import SectionTitle from './SectionTitle'
 
+const LIMITE_PREVIA = 6
+
 const getNomeFoto = (foto) => {
   if (!foto) return 'foto-nao-encontrada.jpg'
 
@@ -24,10 +26,17 @@ export default function SelecaoClienteCard({
 }) {
   const [jaConsultouSelecao, setJaConsultouSelecao] = useState(false)
   const [erroConsulta, setErroConsulta] = useState(null)
+  const [modalAberto, setModalAberto] = useState(false)
 
   const fotosSelecionadas = selecao?.fotosIds
     ? fotos.filter((foto) => selecao.fotosIds.includes(foto.id))
     : []
+
+  const fotosPrevias = fotosSelecionadas.slice(0, LIMITE_PREVIA)
+  const temMaisFotos = fotosSelecionadas.length > LIMITE_PREVIA
+
+  const getObservacao = (fotoId) =>
+    selecao?.observacoesPorFoto?.[fotoId]?.trim() || ''
 
   const semSelecao =
     !selecao || !selecao.totalSelecionadas || selecao.totalSelecionadas === 0
@@ -45,9 +54,9 @@ export default function SelecaoClienteCard({
   }
 
   const baixarLista = () => {
-  const conteudo = fotosSelecionadas
-  .map((foto) => `"${getNomeFoto(foto)}"`)
-  .join(' OR ')
+    const conteudo = fotosSelecionadas
+      .map((foto) => `"${getNomeFoto(foto)}"`)
+      .join(' OR ')
 
     const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
@@ -58,6 +67,40 @@ export default function SelecaoClienteCard({
     link.click()
 
     URL.revokeObjectURL(url)
+  }
+
+  const renderFotoSelecionada = (foto) => {
+    const observacao = getObservacao(foto.id)
+
+    return (
+      <article
+        key={foto.id}
+        className="overflow-hidden rounded-xl border border-white/[0.08] bg-black/20"
+      >
+        <img
+          src={foto.urlWatermark || foto.urlOriginal}
+          alt={getNomeFoto(foto)}
+          className="h-36 w-full object-cover"
+        />
+
+        <div className="p-3">
+          <p className="truncate text-[12px] text-white/70">
+            {getNomeFoto(foto)}
+          </p>
+
+          {observacao ? (
+            <div className="mt-3 rounded-lg border border-[var(--gold-border)] bg-[var(--gold-dim)] p-3">
+              <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-[var(--gold)]">
+                Observação da cliente
+              </p>
+              <p className="text-[12px] leading-5 text-white/75">
+                {observacao}
+              </p>
+            </div>
+          ) : null}
+        </div>
+      </article>
+    )
   }
 
   return (
@@ -138,25 +181,24 @@ export default function SelecaoClienteCard({
           )}
 
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-            {fotosSelecionadas.map((foto) => (
-              <article
-                key={foto.id}
-                className="overflow-hidden rounded-xl border border-white/[0.08] bg-black/20"
-              >
-                <img
-                  src={foto.urlWatermark || foto.urlOriginal}
-                  alt={getNomeFoto(foto)}
-                  className="h-36 w-full object-cover"
-                />
-
-                <div className="p-3">
-                  <p className="truncate text-[12px] text-white/70">
-                    {getNomeFoto(foto)}
-                  </p>
-                </div>
-              </article>
-            ))}
+            {fotosPrevias.map(renderFotoSelecionada)}
           </div>
+
+          {temMaisFotos && (
+            <div className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-black/20 p-4 max-sm:flex-col max-sm:items-start">
+              <p className="text-[13px] text-white/45">
+                Exibindo {LIMITE_PREVIA} de {fotosSelecionadas.length} fotos selecionadas.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setModalAberto(true)}
+                className="rounded-lg border border-[var(--gold-border)] px-4 py-2 text-[12px] text-[var(--gold)] transition hover:bg-[var(--gold-dim)]"
+              >
+                Ver seleção completa
+              </button>
+            </div>
+          )}
 
           <button
             type="button"
@@ -165,6 +207,45 @@ export default function SelecaoClienteCard({
           >
             Baixar lista para filtro
           </button>
+
+          {modalAberto && (
+            <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-8 backdrop-blur max-sm:p-4">
+              <div className="flex max-h-[84vh] w-full max-w-5xl flex-col rounded-2xl border border-[var(--gold-border)] bg-[#121212] shadow-2xl">
+                <div className="flex items-center justify-between gap-4 border-b border-white/[0.08] px-7 py-6 max-sm:px-5">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--gold)]">
+                      Seleção da cliente
+                    </p>
+                    <h3 className="mt-1 font-serif text-2xl font-light text-white">
+                      Todas as fotos selecionadas
+                    </h3>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setModalAberto(false)}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-xl text-white/55 transition hover:border-white/25 hover:text-white"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="overflow-y-auto px-7 py-6 max-sm:px-5">
+                  <div className="grid grid-cols-2 gap-5 md:grid-cols-3">
+                    {fotosSelecionadas.map(renderFotoSelecionada)}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={baixarLista}
+                    className="mt-5 rounded-lg border border-[var(--gold-border)] px-4 py-2 text-[12px] text-[var(--gold)] transition hover:bg-[var(--gold-dim)]"
+                  >
+                    Baixar lista para filtro
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </section>

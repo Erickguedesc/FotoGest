@@ -32,6 +32,7 @@ export default function ConfiguracoesPage() {
   }
 
   const [gerarTextoLoading, setGerarTextoLoading] = useState(false)
+  const [uploadCapaAlbumLoading, setUploadCapaAlbumLoading] = useState(false)
 
   async function carregarConfiguracoes() {
     try {
@@ -50,6 +51,36 @@ export default function ConfiguracoesPage() {
   useEffect(() => {
     carregarConfiguracoes()
   }, [])
+
+
+async function handleUploadCapaAlbumPadrao(arquivo) {
+  if (!arquivo) return
+
+  try {
+    setUploadCapaAlbumLoading(true)
+
+    const data = await configuracoesService.uploadCapaAlbumPadrao(arquivo)
+
+    setConfiguracoes((current) => ({
+      ...(current || {}),
+      preferencias: data,
+    }))
+
+    showToast('Capa padrão do álbum atualizada com sucesso.')
+  } catch (error) {
+    console.error('[ConfiguracoesPage] Erro ao enviar capa padrão do álbum:', error)
+
+    const message =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      'Não foi possível enviar a capa padrão do álbum.'
+
+    showToast(message, 'error')
+  } finally {
+    setUploadCapaAlbumLoading(false)
+  }
+}
+
 
   async function handleSalvarFotografa(dados) {
     try {
@@ -395,7 +426,10 @@ setAlertModal({
                   <PreferenciasSistemaForm
                     data={configuracoes?.preferencias}
                     loading={saving}
+                      uploadCapaLoading={uploadCapaAlbumLoading}
                     onSubmit={handleSalvarPreferencias}
+                      onUploadCapaAlbum={handleUploadCapaAlbumPadrao}
+
                   />
                 )}
 

@@ -45,6 +45,9 @@ public class SelecaoFoto {
     @Column(name = "valor_excedente", precision = 10, scale = 2)
     private BigDecimal valorExcedente = BigDecimal.ZERO;
 
+    @Column(name = "observacao", columnDefinition = "TEXT")
+    private String observacao;
+
     @PrePersist
     protected void onCreate() {
         selecionadaEm = OffsetDateTime.now();
