@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import Header from '../components/layout/Header'
 import Toast from '../components/ui/Toast'
@@ -47,12 +47,23 @@ const INITIAL_FORM = {
 
 export default function NovoEnsaioPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [form, setForm]       = useState(INITIAL_FORM)
   const [errors, setErrors]   = useState({})
   const [loading, setLoading] = useState(false)
   const [toast, setToast]     = useState(null)
 
   useEffect(() => {
+  const dataUrl = searchParams.get('data')
+  const dataValida = /^\d{4}-\d{2}-\d{2}$/.test(dataUrl || '')
+
+  if (dataValida) {
+    setForm((prev) => ({
+      ...prev,
+      data: prev.data || dataUrl,
+    }))
+  }
+
   async function carregarPreferencias() {
     try {
       const configuracoes = await configuracoesService.buscar()
@@ -62,6 +73,7 @@ export default function NovoEnsaioPage() {
 
       setForm((prev) => ({
         ...prev,
+        data: dataValida ? dataUrl : prev.data,
         fotos: preferencias.qtdFotosPadrao ?? prev.fotos,
         extra:
           preferencias.valorFotoExtraPadrao !== null &&
@@ -76,7 +88,7 @@ export default function NovoEnsaioPage() {
   }
 
   carregarPreferencias()
-}, [])
+}, [searchParams])
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
