@@ -118,14 +118,14 @@ export default function ListaSolicitacoes() {
 
   return (
     <>
-      <main className="relative z-[1] mx-auto max-w-[1200px] px-[5%] pb-14 pt-[110px] max-md:px-4">
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-5 border-b border-white/10 pb-5">
+      <main className="theme-page relative z-[1] mx-auto max-w-[1200px] px-[5%] pb-14 pt-[110px] max-md:px-4">
+        <div className="theme-divider mb-8 flex flex-wrap items-center justify-between gap-5 border-b pb-5">
           <div>
-            <h1 className="font-serif text-[32px] font-light tracking-[0.02em] text-white">
+            <h1 className="theme-title font-serif text-[32px] font-light tracking-[0.02em]">
               Gerenciamento de <span className="italic text-[var(--gold)]">Solicitações</span>
             </h1>
 
-            <p className="mt-1 text-xs text-white/40">
+            <p className="theme-muted mt-1 text-xs">
               {countLabel}
             </p>
           </div>
@@ -135,14 +135,14 @@ export default function ListaSolicitacoes() {
               Acesso Administrativo
             </p>
 
-            <p className="mt-1 text-xs text-white/45">
+            <p className="theme-muted mt-1 text-xs">
               Bem-vinda, Fotógrafa Olhari
             </p>
 
             <button
               type="button"
               onClick={loadSolicitacoes}
-              className="mt-3 rounded-lg border border-white/10 bg-transparent px-4 py-2 text-xs font-medium uppercase tracking-[0.08em] text-white/55 transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]"
+              className="mt-3 rounded-lg border border-[var(--border)] bg-transparent px-4 py-2 text-xs font-medium uppercase tracking-[0.08em] text-[var(--text-muted)] transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]"
             >
               Atualizar
             </button>

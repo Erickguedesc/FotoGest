@@ -9,11 +9,11 @@ export default function ConfiguracoesHeader() {
           Configurações
         </div>
 
-        <h1 className="font-serif text-4xl font-light text-white">
+        <h1 className="theme-title font-serif text-4xl font-light">
           Minha conta
         </h1>
 
-        <p className="mt-3 max-w-2xl text-sm text-white/45">
+        <p className="theme-muted mt-3 max-w-2xl text-sm">
           Gerencie os dados da fotógrafa, informações do estúdio, segurança da
           conta e preferências usadas no sistema.
         </p>

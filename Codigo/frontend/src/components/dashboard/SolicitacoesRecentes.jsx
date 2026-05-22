@@ -8,7 +8,7 @@ export default function SolicitacoesRecentes({
             <section className="space-y-5">
                 <div className="border-b border-white/10 pb-4">
                     <h2 className="text-xs uppercase tracking-[0.25em] text-white/60">
-                        Solicitações recentes
+                        Solicitações em Aberto
                     </h2>
                 </div>
 

@@ -270,7 +270,7 @@ const fotoLightboxSelecionada = fotoLightbox
   ? favoritas.includes(fotoLightbox.id)
   : false
   return (
-    <main className="min-h-screen bg-[#f5f0e8] text-[#1a1610]">
+    <main className="theme-static min-h-screen bg-[#f5f0e8] text-[#1a1610]">
       <section className="relative flex min-h-[76vh] items-center justify-center overflow-hidden px-6 py-20 text-center text-white">
         <div className="absolute inset-0 bg-[#110e0b]">
          {capaAlbumUrl ? (

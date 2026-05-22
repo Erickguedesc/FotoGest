@@ -1,11 +1,10 @@
 import FormInput from '../ui/FormInput'
 
 const inputClass = `
-  w-full bg-white/[0.025] border border-white/[0.11]
-  px-3.5 py-[11px] text-[13.5px] font-light text-white
+  theme-input w-full border
+  px-3.5 py-[11px] text-[13.5px] font-light
   outline-none transition-all duration-200
   focus:border-[var(--gold-border)] focus:bg-[var(--gold-dim)]
-  placeholder:text-white/20
 `
 
 const errorInputClass = 'border-[rgba(201,123,123,0.5)] bg-[rgba(201,123,123,0.07)]'
@@ -17,16 +16,16 @@ export default function FormPacoteSection({ form, errors, onChange }) {
     set('fotos', Math.max(1, parseInt(form.fotos || 0) + delta))
 
   return (
-    <div className="bg-[#171717] border border-white/[0.07] rounded-[14px] overflow-hidden mb-4">
+    <div className="theme-card mb-4 overflow-hidden rounded-[14px] border">
 
-      <div className="flex items-center gap-2.5 px-5 py-4 border-b border-white/[0.07]">
+      <div className="theme-divider flex items-center gap-2.5 border-b px-5 py-4">
         <div className="w-7 h-7 rounded-lg bg-[var(--gold-dim)] border border-[var(--gold-border)] flex items-center justify-center flex-shrink-0">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A459" strokeWidth="1.8">
             <line x1="12" y1="1" x2="12" y2="23" />
             <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
           </svg>
         </div>
-        <span className="text-[11px] tracking-[0.16em] uppercase text-white/80">
+        <span className="theme-text text-[11px] uppercase tracking-[0.16em]">
           Pacote
         </span>
       </div>
@@ -37,14 +36,13 @@ export default function FormPacoteSection({ form, errors, onChange }) {
 
           {/* Nº de fotos */}
           <FormInput label="Nº de fotos incluídas" required error={errors.fotos}>
-            <div className="flex items-center">
+            <div className="theme-input flex h-[42px] items-center overflow-hidden rounded-[9px] border">
               <button
                 type="button"
                 onClick={() => stepFotos(-5)}
                 className="
-                  w-9 h-[42px] flex items-center justify-center flex-shrink-0
-                  bg-white/[0.025] border border-white/[0.11] text-white/45
-                  rounded-l-[9px] border-r-0 text-lg cursor-pointer
+                  h-full w-9 flex-shrink-0 cursor-pointer
+                  flex items-center justify-center text-lg text-[var(--text-muted)]
                   hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]
                   transition-all duration-200
                 "
@@ -56,15 +54,14 @@ export default function FormPacoteSection({ form, errors, onChange }) {
                 value={form.fotos}
                 min={1}
                 onChange={(e) => set('fotos', e.target.value)}
-                className={`${inputClass} rounded-none border-l-0 border-r-0 text-center`}
+                className="h-full min-w-0 flex-1 border-0 bg-transparent px-3.5 text-center text-[13.5px] font-light text-[var(--text)] outline-none"
               />
               <button
                 type="button"
                 onClick={() => stepFotos(5)}
                 className="
-                  w-9 h-[42px] flex items-center justify-center flex-shrink-0
-                  bg-white/[0.025] border border-white/[0.11] text-white/45
-                  rounded-r-[9px] border-l-0 text-lg cursor-pointer
+                  h-full w-9 flex-shrink-0 cursor-pointer
+                  flex items-center justify-center text-lg text-[var(--text-muted)]
                   hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]
                   transition-all duration-200
                 "
@@ -77,7 +74,7 @@ export default function FormPacoteSection({ form, errors, onChange }) {
           {/* Valor do pacote */}
           <FormInput label="Valor do pacote (R$)" required error={errors.valor}>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-white/35 pointer-events-none">
+              <span className="theme-muted pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px]">
                 R$
               </span>
               <input
@@ -94,8 +91,8 @@ export default function FormPacoteSection({ form, errors, onChange }) {
         </div>
 
         {/* Toggle foto extra */}
-        <div className="flex items-center justify-between py-3 border-b border-white/[0.07]">
-          <span className="text-[13px] text-white/80">Cobrar foto extra avulsa?</span>
+        <div className="theme-divider flex items-center justify-between border-b py-3">
+          <span className="theme-text text-[13px]">Cobrar foto extra avulsa?</span>
           <button
             type="button"
             onClick={() => set('extraAtivo', !form.extraAtivo)}
@@ -104,7 +101,7 @@ export default function FormPacoteSection({ form, errors, onChange }) {
               border transition-all duration-300
               ${form.extraAtivo
                 ? 'bg-[var(--gold-dim)] border-[var(--gold-border)]'
-                : 'bg-white/[0.08] border-white/[0.11]'}
+                : 'bg-[var(--input-bg)] border-[var(--input-border)]'}
             `}
           >
             <span
@@ -113,7 +110,7 @@ export default function FormPacoteSection({ form, errors, onChange }) {
                 transition-all duration-300
                 ${form.extraAtivo
                   ? 'left-[21px] bg-[var(--gold)]'
-                  : 'left-[3px] bg-white/45'}
+                  : 'left-[3px] bg-[var(--text-muted)]'}
               `}
             />
           </button>
@@ -123,7 +120,7 @@ export default function FormPacoteSection({ form, errors, onChange }) {
         {form.extraAtivo && (
           <FormInput label="Valor por foto extra (R$)">
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-white/35 pointer-events-none">
+              <span className="theme-muted pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px]">
                 R$
               </span>
               <input

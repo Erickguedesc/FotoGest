@@ -9,16 +9,16 @@ export default function BaseModal({
 
   return (
     <div className="fixed inset-0 z-[400] flex items-center justify-center bg-black/70 px-4 py-8 backdrop-blur-sm">
-      <div className="flex max-h-[90vh] w-full max-w-[720px] flex-col overflow-hidden rounded-2xl border border-white/[0.10] bg-[#151515] shadow-2xl">
-        <div className="flex items-center justify-between border-b border-white/[0.08] px-7 py-5">
-          <h2 className="font-serif text-[28px] font-light tracking-[0.04em] text-white">
+      <div className="theme-card flex max-h-[90vh] w-full max-w-[720px] flex-col overflow-hidden rounded-2xl border shadow-2xl">
+        <div className="theme-divider flex items-center justify-between border-b px-7 py-5">
+          <h2 className="theme-title font-serif text-[28px] font-light tracking-[0.04em]">
             {title}
           </h2>
 
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.08] text-xl text-white/35 transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]"
+            className="theme-icon-button flex h-10 w-10 items-center justify-center rounded-lg border text-xl transition hover:bg-[var(--gold-dim)]"
           >
             ×
           </button>
@@ -29,7 +29,7 @@ export default function BaseModal({
         </div>
 
         {footer && (
-          <div className="flex justify-end gap-3 border-t border-white/[0.08] bg-[#151515] px-7 py-5">
+          <div className="theme-divider flex justify-end gap-3 border-t bg-[var(--card)] px-7 py-5">
             {footer}
           </div>
         )}

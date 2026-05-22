@@ -6,8 +6,11 @@ import com.olhari.dto.EnsaioStatusRequest;
 import com.olhari.enums.StatusEnsaio;
 import com.olhari.model.Cliente;
 import com.olhari.model.Ensaio;
+import com.olhari.model.Foto;
 import com.olhari.repository.ClienteRepository;
 import com.olhari.repository.EnsaioRepository;
+import com.olhari.repository.FotoRepository;
+import com.olhari.repository.PreferenciasSistemaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +33,8 @@ public class EnsaioService {
 
     private final EnsaioRepository ensaioRepository;
     private final ClienteRepository clienteRepository;
+    private final FotoRepository fotoRepository;
+    private final PreferenciasSistemaRepository preferenciasSistemaRepository;
 
     
     
@@ -265,9 +270,42 @@ private String normalizarStatusValores(String valor) {
 
             .observacoes(ensaio.getObservacoes())
             .progresso(ensaio.getProgresso())
+            .totalFotos(fotoRepository.countByEnsaioId(ensaio.getId()))
+            .capaUrl(buscarCapaUrl(ensaio.getId()))
 
             .criadoEm(ensaio.getCriadoEm())
             .atualizadoEm(ensaio.getAtualizadoEm())
             .build();
+}
+
+private String buscarCapaUrl(UUID ensaioId) {
+    List<Foto> fotos = fotoRepository.findByEnsaioIdOrderByOrdemAscEnviadaEmAsc(ensaioId);
+
+    if (fotos.isEmpty()) {
+        return buscarCapaAlbumPadrao();
+    }
+
+    Foto capa = fotos.stream()
+            .filter(foto -> Boolean.TRUE.equals(foto.getEhCapa()))
+            .findFirst()
+            .orElse(fotos.get(0));
+
+    if (capa.getUrlWatermark() != null && !capa.getUrlWatermark().isBlank()) {
+        return capa.getUrlWatermark();
+    }
+
+    if (capa.getUrlOriginal() != null && !capa.getUrlOriginal().isBlank()) {
+        return capa.getUrlOriginal();
+    }
+
+    return buscarCapaAlbumPadrao();
+}
+
+private String buscarCapaAlbumPadrao() {
+    return preferenciasSistemaRepository.findAll()
+            .stream()
+            .findFirst()
+            .map(preferencias -> preferencias.getCapaAlbumPadraoUrl())
+            .orElse(null);
 }
 }

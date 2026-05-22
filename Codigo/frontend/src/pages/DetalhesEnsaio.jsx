@@ -623,8 +623,8 @@ const texto =
         <>
           <Header />
 
-          <main className="mx-auto max-w-[1200px] px-8 pt-[110px] text-white max-md:px-4">
-            <div className="rounded-2xl border border-white/[0.08] bg-[#141414] p-8 text-white/50">
+          <main className="theme-page mx-auto max-w-[1200px] px-8 pt-[110px] max-md:px-4">
+            <div className="theme-card rounded-2xl border p-8 text-[var(--text-muted)]">
               Carregando detalhes do ensaio...
             </div>
           </main>
@@ -637,13 +637,13 @@ const texto =
         <>
           <Header />
 
-          <main className="mx-auto max-w-[1200px] px-8 pt-[110px] text-white max-md:px-4">
-            <div className="rounded-2xl border border-white/[0.08] bg-[#141414] p-8">
-              <h1 className="font-serif text-2xl text-white">
+          <main className="theme-page mx-auto max-w-[1200px] px-8 pt-[110px] max-md:px-4">
+            <div className="theme-card rounded-2xl border p-8">
+              <h1 className="theme-title font-serif text-2xl">
                 Ensaio não encontrado
               </h1>
 
-              <p className="mt-2 text-sm text-white/45">
+              <p className="theme-muted mt-2 text-sm">
                 Não foi possível encontrar os dados deste ensaio.
               </p>
 
@@ -664,8 +664,8 @@ const texto =
       <>
         <Header />
 
-        <main className="mx-auto max-w-[1200px] px-8 pb-16 pt-[92px] text-white max-md:px-4">
-          <div className="mb-5 text-[11px] text-white/40">
+        <main className="theme-page mx-auto max-w-[1200px] px-8 pb-16 pt-[92px] max-md:px-4">
+          <div className="theme-muted mb-5 text-[11px]">
             <button
               type="button"
               onClick={() => navigate('/ensaios')}
@@ -675,7 +675,7 @@ const texto =
             </button>
 
             <span className="mx-2 text-white/20">›</span>
-            <span className="text-white/70">{ensaio.clienteNome}</span>
+            <span className="theme-text">{ensaio.clienteNome}</span>
           </div>
 
           <div className="mb-5 flex justify-end">

@@ -250,7 +250,7 @@ export default function ClientesPage() {
                     <button
                       type="button"
                       onClick={() => abrirWhatsApp(telefone)}
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.10] text-white/45 transition hover:border-emerald-400/40 hover:text-emerald-300"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300"
                       title="Chamar no WhatsApp"
                     >
                       <MessageCircle size={16} />

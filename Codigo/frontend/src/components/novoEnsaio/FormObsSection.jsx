@@ -1,8 +1,8 @@
 export default function FormObsSection({ form, onChange }) {
   return (
-    <div className="bg-[#171717] border border-white/[0.07] rounded-[14px] overflow-hidden mb-4">
+    <div className="theme-card mb-4 overflow-hidden rounded-[14px] border">
 
-      <div className="flex items-center gap-2.5 px-5 py-4 border-b border-white/[0.07]">
+      <div className="theme-divider flex items-center gap-2.5 border-b px-5 py-4">
         <div className="w-7 h-7 rounded-lg bg-[var(--gold-dim)] border border-[var(--gold-border)] flex items-center justify-center flex-shrink-0">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A459" strokeWidth="1.8">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -11,7 +11,7 @@ export default function FormObsSection({ form, onChange }) {
             <line x1="16" y1="17" x2="8" y2="17" />
           </svg>
         </div>
-        <span className="text-[11px] tracking-[0.16em] uppercase text-white/80">
+        <span className="theme-text text-[11px] uppercase tracking-[0.16em]">
           Observações
         </span>
       </div>
@@ -27,15 +27,14 @@ export default function FormObsSection({ form, onChange }) {
           value={form.obs}
           onChange={(e) => onChange('obs', e.target.value)}
           className="
-            w-full bg-white/[0.025] border border-white/[0.11] rounded-[9px]
-            px-3.5 py-[11px] text-[13.5px] font-light text-white
+            theme-input w-full rounded-[9px] border
+            px-3.5 py-[11px] text-[13.5px] font-light
             outline-none transition-all duration-200 resize-y min-h-[108px] leading-relaxed
             focus:border-[var(--gold-border)] focus:bg-[var(--gold-dim)]
-            placeholder:text-white/20
           "
         />
 
-        <p className={`text-[11px] text-right mt-1.5 ${form.obs.length > 350 ? 'text-[var(--gold)]' : 'text-white/30'}`}>
+        <p className={`mt-1.5 text-right text-[11px] ${form.obs.length > 350 ? 'text-[var(--gold)]' : 'theme-muted'}`}>
           {form.obs.length} / 400
         </p>
       </div>

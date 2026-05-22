@@ -31,7 +31,7 @@ export default function HomePage() {
   }
 
   return (
-    <>
+    <div className="theme-static bg-[#0b0b0b] text-white">
       <Navbar />
       <HeroSection config={config} onEdit={() => handleEdit('hero')} />
       <AboutSection config={config} onEdit={() => handleEdit('about')} />
@@ -52,6 +52,6 @@ export default function HomePage() {
         onClose={() => setEditingSection(null)}
         onSave={atualizarConfig}
       />
-    </>
+    </div>
   )
 }

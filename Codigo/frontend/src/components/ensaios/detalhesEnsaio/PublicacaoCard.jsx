@@ -56,7 +56,7 @@ export default function PublicacaoCard({
         : 'Publicar álbum'
 
   return (
-    <section className="rounded-2xl border border-[var(--gold-border)] bg-[#121212]">
+    <section className="theme-card rounded-2xl border border-[var(--gold-border)]">
       <SectionTitle title="Publicação" />
 
       <div className="p-5">
@@ -74,19 +74,19 @@ export default function PublicacaoCard({
             type="button"
             disabled={loading}
             onClick={onReabrir}
-            className="mt-3 w-full rounded-lg border border-orange-400/35 bg-orange-400/10 px-5 py-3 text-[12px] font-medium tracking-[0.10em] text-orange-200 transition hover:bg-orange-400/15 disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-3 w-full rounded-lg border border-orange-400/40 bg-orange-400/10 px-5 py-3 text-[12px] font-semibold tracking-[0.10em] text-orange-300 transition hover:bg-orange-400/15 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Reabrir álbum para edição
           </button>
         )}
 
         {temAlbum && (
-          <div className="mt-4 rounded-xl border border-white/[0.08] bg-black/10 p-4">
-            <p className="mb-1 text-[10px] uppercase tracking-[0.16em] text-white/35">
+          <div className="theme-panel mt-4 rounded-xl border p-4">
+            <p className="theme-muted mb-1 text-[10px] uppercase tracking-[0.16em]">
               Link gerado
             </p>
 
-            <p className="break-all text-[12px] text-white/70">
+            <p className="theme-text break-all text-[12px]">
               {album.urlAcesso}
             </p>
 
@@ -95,12 +95,12 @@ export default function PublicacaoCard({
     className={`mt-3 flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-[11px] ${
       expirado
         ? 'border-red-400/25 bg-red-400/10'
-        : 'border-white/[0.08] bg-black/10'
+        : 'border-[var(--border)] bg-[var(--card)]'
     }`}
   >
     <span
       className={`uppercase tracking-[0.14em] ${
-        expirado ? 'text-red-200/70' : 'text-white/35'
+        expirado ? 'text-red-300' : 'text-[var(--text-muted)]'
       }`}
     >
       {expirado ? 'Expirado em' : 'link válido até'}
@@ -118,7 +118,7 @@ export default function PublicacaoCard({
 
             {album?.senhaAcesso && (
               <>
-                <p className="mb-1 mt-4 text-[10px] uppercase tracking-[0.16em] text-white/35">
+                <p className="theme-muted mb-1 mt-4 text-[10px] uppercase tracking-[0.16em]">
                   Senha
                 </p>
 
@@ -149,7 +149,7 @@ export default function PublicacaoCard({
         )}
 
         {!albumPublicado && temAlbum && (
-          <div className="mt-4 rounded-xl border border-orange-400/25 bg-orange-400/10 p-4 text-[12px] leading-5 text-orange-200">
+          <div className="mt-4 rounded-xl border border-orange-400/35 bg-orange-400/10 p-4 text-[12px] font-medium leading-5 text-orange-300">
             Álbum reaberto para edição. O acesso da cliente está pausado até a próxima publicação.
           </div>
         )}
@@ -166,10 +166,10 @@ export default function PublicacaoCard({
 
 function Stat({ label, value }) {
   return (
-    <div className="rounded-lg border border-white/[0.08] bg-black/10 px-2 py-3">
-      <p className="text-[13px] text-white">{value}</p>
+    <div className="theme-panel rounded-lg border px-2 py-3">
+      <p className="theme-title text-[13px]">{value}</p>
 
-      <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-white/30">
+      <p className="theme-muted mt-1 text-[10px] uppercase tracking-[0.14em]">
         {label}
       </p>
     </div>
