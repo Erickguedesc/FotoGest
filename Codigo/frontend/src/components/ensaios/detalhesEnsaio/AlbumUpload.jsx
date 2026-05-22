@@ -8,6 +8,7 @@ export default function AlbumUpload({
   disabled,
   uploadProgress = 0,
   uploadTotal = 0,
+  uploadStatus = '',
   onUpload,
 }) {
   const inputRef = useRef(null)
@@ -97,9 +98,10 @@ export default function AlbumUpload({
             {disabled
               ? 'Álbum publicado'
               : loading
-                ? isFinalizando
-                  ? 'Finalizando envio de fotos...Aguarde!!'
-                  : `Enviando ${uploadTotal || ''} foto${uploadTotal === 1 ? '' : 's'}...`
+                ? uploadStatus ||
+                  (isFinalizando
+                    ? 'Finalizando envio de fotos...Aguarde!!'
+                    : `Enviando ${uploadTotal || ''} foto${uploadTotal === 1 ? '' : 's'}...`)
                 : 'Arraste fotos aqui'}
           </p>
 
@@ -115,7 +117,7 @@ export default function AlbumUpload({
             <div className="mt-5 w-full max-w-[420px]">
               <div className="mb-2 flex items-center justify-between text-[11px] text-white/35">
                 <span>
-                  {isFinalizando ? 'Processando imagens' : 'Progresso do upload'}
+                  {isFinalizando ? 'Processando imagens' : 'Progresso total do upload'}
                 </span>
 
                 <span className="text-[var(--gold)]">
