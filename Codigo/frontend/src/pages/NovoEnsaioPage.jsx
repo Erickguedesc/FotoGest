@@ -231,12 +231,12 @@ export default function NovoEnsaioPage() {
     <>
       <Header />
 
-      <main className="pt-[88px] pb-16 px-8 max-w-[980px] mx-auto animate-[fadeUp_0.55s_cubic-bezier(0.22,1,0.36,1)_both]">
+      <main className="theme-page mx-auto max-w-[980px] px-8 pb-16 pt-[88px] animate-[fadeUp_0.55s_cubic-bezier(0.22,1,0.36,1)_both]">
 
-        <div className="flex items-center gap-2 mb-6">
+        <div className="mb-6 flex items-center gap-2">
           <button
             onClick={() => navigate('/ensaios')}
-            className="text-[12px] text-white/45 cursor-pointer hover:text-[var(--gold)] transition-colors"
+            className="theme-muted cursor-pointer text-[12px] transition-colors hover:text-[var(--gold)]"
           >
             Ensaios
           </button>
@@ -245,16 +245,16 @@ export default function NovoEnsaioPage() {
         </div>
 
         <div className="mb-8">
-          <h1 className="font-serif text-[32px] font-light tracking-[0.04em]">
+          <h1 className="theme-title font-serif text-[32px] font-light tracking-[0.04em]">
             Novo Ensaio
           </h1>
-          <p className="text-[13px] text-white/45 mt-1">
+          <p className="theme-muted mt-1 text-[13px]">
             Preencha os dados do cliente e do ensaio para registrar.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className="grid grid-cols-[1fr_340px] gap-5 items-start">
+          <div className="grid grid-cols-[1fr_340px] items-start gap-5">
             <div>
               <FormInfoSection   form={form} errors={errors} onChange={handleChange} />
               <FormObsSection    form={form} onChange={handleChange} />

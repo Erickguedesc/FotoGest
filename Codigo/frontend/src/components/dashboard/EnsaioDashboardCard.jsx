@@ -6,17 +6,17 @@ import logoOlhari from '../../assets/logo.jpg'
 const STATUS_CONFIG = {
   EM_EDICAO: {
     label: 'Em edição',
-    color: 'border-blue-300/40 bg-black/75 text-blue-200 shadow-lg shadow-black/40',
+    color: 'border-[#7dd3fc]/55 bg-black/80 text-[#7dd3fc] shadow-lg shadow-black/45',
   },
 
   EM_SELECAO: {
     label: 'Em seleção',
-    color: 'border-amber-300/40 bg-black/75 text-amber-200 shadow-lg shadow-black/40',
+    color: 'border-[#fbbf24]/60 bg-black/80 text-[#fbbf24] shadow-lg shadow-black/45',
   },
 
   REALIZADO: {
     label: 'Realizado',
-    color: 'border-emerald-300/40 bg-black/75 text-emerald-200 shadow-lg shadow-black/40',
+    color: 'border-[#34d399]/60 bg-black/80 text-[#34d399] shadow-lg shadow-black/45',
   },
 }
 
@@ -34,9 +34,9 @@ export default function EnsaioDashboardCard({ ensaio }) {
   return (
     <Link
       to={`/ensaios/${ensaio.id}`}
-      className="block overflow-hidden rounded-3xl border border-white/10 bg-[#171717] transition hover:-translate-y-1 hover:border-[#D4AF37]/40"
+      className="theme-card block overflow-hidden rounded-3xl border transition hover:-translate-y-1 hover:border-[var(--gold-border)]"
     >
-      <div className="relative h-56 overflow-hidden bg-[#111111]">
+      <div className="theme-panel relative h-56 overflow-hidden">
         {hasImage ? (
          <img
   src={ensaio.capaUrl}
@@ -66,7 +66,7 @@ export default function EnsaioDashboardCard({ ensaio }) {
 
         <div className="absolute right-4 top-4">
           <span
-            className={`rounded-full border px-4 py-2 text-sm font-medium ${status.color}`}
+            className={`rounded-full border px-4 py-2 text-sm font-semibold ${status.color}`}
           >
             {status.label}
           </span>
@@ -75,16 +75,16 @@ export default function EnsaioDashboardCard({ ensaio }) {
 
       <div className="space-y-5 p-5">
         <div>
-          <h3 className="text-2xl font-medium text-white">
+          <h3 className="theme-title text-2xl font-medium">
             {ensaio.clienteNome}
           </h3>
 
-          <p className="mt-1 text-sm text-white/50">
+          <p className="theme-muted mt-1 text-sm">
             {ensaio.tipo}
           </p>
         </div>
 
-        <div className="space-y-2 text-sm text-white/60">
+        <div className="theme-text space-y-2 text-sm">
           <div className="flex items-center gap-2">
             <CalendarDays size={16} />
 
@@ -98,14 +98,14 @@ export default function EnsaioDashboardCard({ ensaio }) {
         </div>
 
         <div>
-          <div className="mb-2 flex items-center justify-between text-xs text-white/50">
+          <div className="theme-muted mb-2 flex items-center justify-between text-xs">
             <span>Progresso</span>
             <span>{ensaio.progresso || 0}%</span>
           </div>
 
-          <div className="h-2 overflow-hidden rounded-full bg-white/10">
+          <div className="theme-soft h-2 overflow-hidden rounded-full">
             <div
-              className="h-full rounded-full bg-[#D4AF37]"
+              className="h-full rounded-full bg-[var(--gold)]"
               style={{
                 width: `${ensaio.progresso || 0}%`,
               }}

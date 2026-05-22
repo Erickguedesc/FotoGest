@@ -40,6 +40,8 @@ public class EnsaioResponse {
 
     private String observacoes;
     private Short progresso;
+    private Integer totalFotos;
+    private String capaUrl;
 
     private OffsetDateTime criadoEm;
     private OffsetDateTime atualizadoEm;

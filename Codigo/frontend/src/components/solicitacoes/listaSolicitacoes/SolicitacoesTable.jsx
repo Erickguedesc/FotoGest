@@ -9,11 +9,11 @@ export default function SolicitacoesTable({
   actionId
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#1C1C1E] shadow-[0_4px_20px_rgba(0,0,0,0.20)]">
+    <div className="theme-card overflow-hidden rounded-2xl border">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[860px] border-collapse text-left">
           <thead>
-            <tr className="border-b border-white/10 bg-white/[0.02]">
+            <tr className="theme-divider border-b bg-[var(--card-hover)]">
               <th className="px-5 py-5 text-[11px] font-medium uppercase tracking-[0.1em] text-[var(--gold)]">
                 Data
               </th>

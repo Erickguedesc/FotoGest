@@ -31,6 +31,14 @@ export default function ConfiguracoesPage() {
     setToast({ message, type })
   }
 
+  const notificarFotografaAtualizada = (fotografa) => {
+    window.dispatchEvent(
+      new CustomEvent('olhari:fotografa-atualizada', {
+        detail: fotografa,
+      }),
+    )
+  }
+
   const [gerarTextoLoading, setGerarTextoLoading] = useState(false)
   const [uploadCapaAlbumLoading, setUploadCapaAlbumLoading] = useState(false)
 
@@ -93,6 +101,7 @@ async function handleUploadCapaAlbumPadrao(arquivo) {
         fotografa: data,
       }))
 
+      notificarFotografaAtualizada(data)
       showToast('Dados da fotógrafa atualizados com sucesso.')
     } catch (error) {
       console.error('[ConfiguracoesPage] Erro ao salvar fotógrafa:', error)
@@ -121,6 +130,7 @@ async function handleUploadCapaAlbumPadrao(arquivo) {
         fotografa: data,
       }))
 
+      notificarFotografaAtualizada(data)
       showToast('Foto de perfil atualizada com sucesso.')
     } catch (error) {
       console.error('[ConfiguracoesPage] Erro ao enviar foto de perfil:', error)
@@ -374,15 +384,15 @@ setAlertModal({
     <>
       <Header />
 
-      <main className="mx-auto max-w-[1200px] px-8 pb-16 pt-[96px] text-white max-md:px-4">
+      <main className="theme-page mx-auto max-w-[1200px] px-8 pb-16 pt-[96px] max-md:px-4">
         <ConfiguracoesHeader />
 
         <div className="grid gap-6 lg:grid-cols-[310px_1fr]">
           <ConfiguracoesMenu activeTab={activeTab} onChange={setActiveTab} />
 
-          <section className="rounded-3xl border border-[var(--gold-border)] bg-[#111111] p-6 shadow-2xl shadow-black/30">
+          <section className="theme-card rounded-3xl border border-[var(--gold-border)] p-6">
             {loading ? (
-              <div className="rounded-2xl border border-white/10 bg-black/20 p-6 text-sm text-white/45">
+              <div className="theme-panel rounded-2xl border p-6 text-sm">
                 Carregando configurações...
               </div>
             ) : (

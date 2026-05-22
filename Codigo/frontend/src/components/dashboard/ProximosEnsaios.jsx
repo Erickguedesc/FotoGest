@@ -12,20 +12,20 @@ export default function ProximosEnsaios({ ensaios }) {
 
     if (!ensaios?.length) {
         return (
-            <section className="rounded-3xl border border-white/10 bg-[#171717] p-6">
-                <div className="border-b border-white/10 pb-4">
-                    <h2 className="text-xs uppercase tracking-[0.25em] text-white/60">
+            <section className="theme-card rounded-3xl border p-6">
+                <div className="theme-divider border-b pb-4">
+                    <h2 className="theme-muted text-xs uppercase tracking-[0.25em]">
                         Próximos ensaios
                     </h2>
                 </div>
 
                 <div className="flex min-h-[260px] items-center justify-center text-center">
                     <div>
-                        <h3 className="text-lg font-medium text-white">
+                        <h3 className="theme-title text-lg font-medium">
                             Nenhum ensaio agendado
                         </h3>
 
-                        <p className="mt-2 text-sm text-white/50">
+                        <p className="theme-muted mt-2 text-sm">
                             Os próximos ensaios aparecerão aqui.
                         </p>
                     </div>
@@ -47,23 +47,23 @@ export default function ProximosEnsaios({ ensaios }) {
     }
 
     return (
-        <section className="overflow-hidden rounded-3xl border border-white/10 bg-[#171717] p-6">
-            <div className="mb-6 flex items-center justify-between border-b border-white/10 pb-4">
-                <h2 className="text-xs uppercase tracking-[0.25em] text-white/60">
+        <section className="theme-card overflow-hidden rounded-3xl border p-6">
+            <div className="theme-divider mb-6 flex items-center justify-between border-b pb-4">
+                <h2 className="theme-muted text-xs uppercase tracking-[0.25em]">
                     Próximos ensaios
                 </h2>
 
                 <div className="flex items-center gap-2">
                     <button
                         onClick={anterior}
-                        className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-[#1D1D1D] text-white/60 transition hover:border-[#D4AF37]/40 hover:text-[#D4AF37]"
+                        className="theme-icon-button flex h-9 w-9 items-center justify-center rounded-full border transition"
                     >
                         <ChevronLeft size={18} />
                     </button>
 
                     <button
                         onClick={proximo}
-                        className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-[#1D1D1D] text-white/60 transition hover:border-[#D4AF37]/40 hover:text-[#D4AF37]"
+                        className="theme-icon-button flex h-9 w-9 items-center justify-center rounded-full border transition"
                     >
                         <ChevronRight size={18} />
                     </button>
@@ -82,22 +82,22 @@ export default function ProximosEnsaios({ ensaios }) {
                             key={ensaio.id}
                             className="min-w-full"
                         >
-                            <div className="rounded-2xl border border-white/10 bg-[#1D1D1D] p-5">
+                            <div className="theme-panel rounded-2xl border p-5">
                                 <div className="mb-4 flex items-center justify-between">
                                     <span className="rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/10 px-3 py-1 text-xs uppercase tracking-wide text-[#D4AF37]">
                                         {ensaio.status}
                                     </span>
 
-                                    <span className="text-xs uppercase tracking-wide text-white/40">
+                                    <span className="theme-muted text-xs uppercase tracking-wide">
                                         {ensaio.tipo}
                                     </span>
                                 </div>
 
-                                <h3 className="font-serif text-4xl font-light text-white">
+                                <h3 className="theme-title font-serif text-4xl font-light">
                                     {ensaio.clienteNome}
                                 </h3>
 
-                                <div className="mt-6 space-y-3 text-sm text-white/60">
+                                <div className="theme-text mt-6 space-y-3 text-sm">
                                     <div className="flex items-center gap-2">
                                         <CalendarDays size={16} />
 
@@ -123,8 +123,8 @@ export default function ProximosEnsaios({ ensaios }) {
                         key={index}
                         onClick={() => setIndexAtual(index)}
                         className={`h-2 rounded-full transition-all ${index === indexAtual
-                            ? 'w-8 bg-[#D4AF37]'
-                            : 'w-2 bg-white/20'
+                            ? 'w-8 bg-[var(--gold)]'
+                            : 'w-2 bg-[var(--border)]'
                             }`}
                     />
                 ))}

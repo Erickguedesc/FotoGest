@@ -62,7 +62,7 @@ export default function DashboardPage() {
         <>
             <Header />
 
-            <main className="min-h-screen bg-[#0A0A0A] px-4 pt-24 pb-8 text-white md:px-8">
+            <main className="theme-page min-h-screen px-4 pt-24 pb-8 md:px-8">
                 <div className="mx-auto max-w-7xl space-y-10">
                     <DashboardHeader />
 

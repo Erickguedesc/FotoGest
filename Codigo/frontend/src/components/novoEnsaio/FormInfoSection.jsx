@@ -6,11 +6,10 @@ const TIPOS = [
 ]
 
 const inputClass = `
-  w-full bg-white/[0.025] border border-white/[0.11] rounded-[9px]
-  px-3.5 py-[11px] text-[13.5px] font-light text-white
+  theme-input w-full border rounded-[9px]
+  px-3.5 py-[11px] text-[13.5px] font-light
   outline-none transition-all duration-200
   focus:border-[var(--gold-border)] focus:bg-[var(--gold-dim)]
-  placeholder:text-white/20
 `
 
 const errorInputClass = 'border-[rgba(201,123,123,0.5)] bg-[rgba(201,123,123,0.07)]'
@@ -18,11 +17,11 @@ const errorInputClass = 'border-[rgba(201,123,123,0.5)] bg-[rgba(201,123,123,0.0
 // ── Ícone de seção reutilizável ──────────────────────────────────────────────
 function SectionHeader({ icon, label }) {
   return (
-    <div className="flex items-center gap-2.5 px-5 py-4 border-b border-white/[0.07]">
+    <div className="theme-divider flex items-center gap-2.5 border-b px-5 py-4">
       <div className="w-7 h-7 rounded-lg bg-[var(--gold-dim)] border border-[var(--gold-border)] flex items-center justify-center flex-shrink-0">
         {icon}
       </div>
-      <span className="text-[11px] tracking-[0.16em] uppercase text-white/80">
+      <span className="theme-text text-[11px] uppercase tracking-[0.16em]">
         {label}
       </span>
     </div>
@@ -35,7 +34,7 @@ export default function FormInfoSection({ form, errors, onChange }) {
   return (
     <>
       {/* ── CARD 1: Dados do cliente ───────────────────────────────────────── */}
-      <div className="bg-[#171717] border border-white/[0.07] rounded-[14px] overflow-hidden mb-4">
+      <div className="theme-card mb-4 overflow-hidden rounded-[14px] border">
 
         <SectionHeader
           label="Dados do cliente"
@@ -53,7 +52,7 @@ export default function FormInfoSection({ form, errors, onChange }) {
           <FormInput label="Nome completo" required error={errors.cliente}>
             <input
               type="text"
-              placeholder="Ex: Ana Clara Mendes"
+              placeholder="Ex: Nome Completo do Cliente"
               value={form.cliente}
               onChange={(e) => set('cliente', e.target.value)}
               className={`${inputClass} ${errors.cliente ? errorInputClass : ''}`}
@@ -75,7 +74,7 @@ export default function FormInfoSection({ form, errors, onChange }) {
             <FormInput label="E-mail" error={errors.email}>
               <input
                 type="email"
-                placeholder="ana@email.com"
+                placeholder="cliente@email.com"
                 value={form.email}
                 onChange={(e) => set('email', e.target.value)}
                 className={`${inputClass} ${errors.email ? errorInputClass : ''}`}
@@ -107,7 +106,7 @@ export default function FormInfoSection({ form, errors, onChange }) {
             <FormInput label="Cidade" error={errors.cidade}>
               <input
                 type="text"
-                placeholder="Belo Horizonte, MG"
+                placeholder="digite a cidade"
                 value={form.cidade}
                 onChange={(e) => set('cidade', e.target.value)}
                 className={`${inputClass} ${errors.cidade ? errorInputClass : ''}`}
@@ -134,7 +133,7 @@ export default function FormInfoSection({ form, errors, onChange }) {
               <svg
                 width="11" height="11" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" strokeWidth="2"
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 opacity-40 pointer-events-none text-white"
+                className="theme-muted pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 opacity-70"
               >
                 <polyline points="6 9 12 15 18 9" />
               </svg>
@@ -145,7 +144,7 @@ export default function FormInfoSection({ form, errors, onChange }) {
       </div>
 
       {/* ── CARD 2: Informações do ensaio ─────────────────────────────────── */}
-      <div className="bg-[#171717] border border-white/[0.07] rounded-[14px] overflow-hidden mb-4">
+      <div className="theme-card mb-4 overflow-hidden rounded-[14px] border">
 
         <SectionHeader
           label="Informações do ensaio"
@@ -181,7 +180,7 @@ export default function FormInfoSection({ form, errors, onChange }) {
                     border transition-all duration-200 cursor-pointer font-light
                     ${form.tipo === t
                       ? 'bg-[var(--gold-dim)] border-[var(--gold-border)] text-[var(--gold)]'
-                      : 'bg-transparent border-white/[0.11] text-white/70 hover:border-[var(--gold-border)] hover:text-white'}
+                      : 'border-[var(--border)] bg-transparent text-[var(--text-muted)] hover:border-[var(--gold-border)] hover:text-[var(--text)]'}
                   `}
                 >
                   {t}
@@ -231,14 +230,14 @@ export default function FormInfoSection({ form, errors, onChange }) {
               <svg
                 width="14" height="14" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" strokeWidth="1.8"
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-35 pointer-events-none text-white"
+                className="theme-muted pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 opacity-70"
               >
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
                 <circle cx="12" cy="10" r="3" />
               </svg>
               <input
                 type="text"
-                placeholder="Ex: Studio Olhari, BH"
+                placeholder="Local do ensaio aqui"
                 value={form.local}
                 onChange={(e) => set('local', e.target.value)}
                 className={`${inputClass} pl-10 ${errors.local ? errorInputClass : ''}`}

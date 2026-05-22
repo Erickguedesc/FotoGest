@@ -52,12 +52,12 @@ export default function ResumeSidebar({ form, loading }) {
   ]
 
   return (
-    <div className="flex flex-col gap-4 sticky top-20">
+    <div className="sticky top-20 flex flex-col gap-4">
 
       {/* ── Stepper ─────────────────────────────────────────────────────────── */}
-      <div className="bg-[#171717] border border-white/[0.07] rounded-[14px] overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-white/[0.07]">
-          <span className="text-[10.5px] tracking-[0.16em] uppercase text-white/45">
+      <div className="theme-card overflow-hidden rounded-[14px] border">
+        <div className="theme-divider border-b px-5 py-3.5">
+          <span className="theme-muted text-[10.5px] uppercase tracking-[0.16em]">
             Progresso do formulário
           </span>
         </div>
@@ -73,13 +73,13 @@ export default function ResumeSidebar({ form, loading }) {
                         ? 'bg-[#7EB89A] border-[#7EB89A]'
                         : i === step
                           ? 'bg-[var(--gold)] border-[var(--gold)] shadow-[0_0_0_3px_rgba(201,164,89,0.18)]'
-                          : 'bg-transparent border-white/[0.12]'}
+                          : 'bg-transparent border-[var(--border)]'}
                     `}
                   />
                   <span
                     className={`
                       text-[9.5px] tracking-[0.06em] mt-1.5 text-center whitespace-nowrap
-                      ${i === step ? 'text-[var(--gold)]' : 'text-white/35'}
+                      ${i === step ? 'text-[var(--gold)]' : 'text-[var(--text-muted)]'}
                     `}
                   >
                     {label}
@@ -89,66 +89,66 @@ export default function ResumeSidebar({ form, loading }) {
                   <div
                     className={`
                       flex-1 h-px mx-0.5 mb-3.5 transition-colors duration-300
-                      ${i < step ? 'bg-[rgba(126,184,154,0.4)]' : 'bg-white/[0.07]'}
+                      ${i < step ? 'bg-[rgba(126,184,154,0.4)]' : 'bg-[var(--border)]'}
                     `}
                   />
                 )}
               </div>
             ))}
           </div>
-          <p className="text-[12px] text-white/35 text-center">{STEP_HINTS[step]}</p>
+          <p className="theme-muted text-center text-[12px]">{STEP_HINTS[step]}</p>
         </div>
       </div>
 
       {/* ── Resumo do cliente ────────────────────────────────────────────────── */}
-      <div className="bg-[#171717] border border-white/[0.07] rounded-[14px] overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-white/[0.07] flex items-center gap-2">
+      <div className="theme-card overflow-hidden rounded-[14px] border">
+        <div className="theme-divider flex items-center gap-2 border-b px-5 py-3.5">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#C9A459" strokeWidth="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
-          <span className="text-[10.5px] tracking-[0.16em] uppercase text-white/45">
+          <span className="theme-muted text-[10.5px] uppercase tracking-[0.16em]">
             Cliente
           </span>
         </div>
         <div className="px-5 py-4 flex flex-col">
           {clienteRows.map(({ key, val }) => (
-            <div key={key} className="flex justify-between items-center py-2 border-b border-white/[0.07] last:border-0">
-              <span className="text-[12px] text-white/45 flex-shrink-0">{key}</span>
-              <span className="text-[13px] text-white text-right max-w-[160px] break-words truncate">{val}</span>
+            <div key={key} className="theme-divider flex items-center justify-between border-b py-2 last:border-0">
+              <span className="theme-muted flex-shrink-0 text-[12px]">{key}</span>
+              <span className="theme-title max-w-[160px] truncate break-words text-right text-[13px]">{val}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* ── Resumo do ensaio ─────────────────────────────────────────────────── */}
-      <div className="bg-[#171717] border border-white/[0.07] rounded-[14px] overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-white/[0.07] flex items-center gap-2">
+      <div className="theme-card overflow-hidden rounded-[14px] border">
+        <div className="theme-divider flex items-center gap-2 border-b px-5 py-3.5">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#C9A459" strokeWidth="2">
             <rect x="3" y="3" width="18" height="18" rx="2"/>
             <circle cx="8.5" cy="8.5" r="1.5"/>
             <polyline points="21 15 16 10 5 21"/>
           </svg>
-          <span className="text-[10.5px] tracking-[0.16em] uppercase text-white/45">
+          <span className="theme-muted text-[10.5px] uppercase tracking-[0.16em]">
             Ensaio
           </span>
         </div>
         <div className="px-5 py-4 flex flex-col">
           {ensaioRows.map(({ key, val }) => (
-            <div key={key} className="flex justify-between items-center py-2 border-b border-white/[0.07]">
-              <span className="text-[12px] text-white/45">{key}</span>
-              <span className="text-[13px] text-white text-right max-w-[160px] break-words">{val}</span>
+            <div key={key} className="theme-divider flex items-center justify-between border-b py-2">
+              <span className="theme-muted text-[12px]">{key}</span>
+              <span className="theme-title max-w-[160px] break-words text-right text-[13px]">{val}</span>
             </div>
           ))}
 
-          <div className="h-px bg-white/[0.07] my-1" />
+          <div className="my-1 h-px bg-[var(--border)]" />
 
-          <div className="flex justify-between items-center py-2 border-b border-white/[0.07]">
+          <div className="theme-divider flex items-center justify-between border-b py-2">
             <span className="text-[12px] text-white/45">Fotos incluídas</span>
             <span className="text-[13px] text-white">{form.fotos || '—'}</span>
           </div>
 
-          <div className="flex justify-between items-center py-2 border-b border-white/[0.07]">
+          <div className="theme-divider flex items-center justify-between border-b py-2">
             <span className="text-[12px] text-white/45">Foto extra</span>
             <span className="text-[13px] text-white">
               {form.extraAtivo && form.extra
@@ -157,9 +157,9 @@ export default function ResumeSidebar({ form, loading }) {
             </span>
           </div>
 
-          <div className="h-px bg-white/[0.07] my-1" />
+          <div className="my-1 h-px bg-[var(--border)]" />
 
-          <div className="flex justify-between items-center py-2">
+          <div className="flex items-center justify-between py-2">
             <span className="text-[12px] text-white/45">Valor total</span>
             <span className="font-serif text-[18px] font-light text-[var(--gold)]">
               {fmtMoney(form.valor)}

@@ -11,28 +11,28 @@ export default function SolicitacaoRow({
   loading
 }) {
   return (
-    <tr className="border-b border-white/10 transition hover:bg-white/[0.02] last:border-b-0">
-      <td className="px-5 py-5 align-middle text-[13px] text-white/45">
+    <tr className="theme-divider border-b transition hover:bg-[var(--card-hover)] last:border-b-0">
+      <td className="theme-muted px-5 py-5 align-middle text-[13px]">
         <div>{formatDate(solicitacao.recebidoEm)}</div>
 
         {solicitacao.dataDesejada && (
-          <div className="mt-1 text-[11px] text-white/30">
+          <div className="theme-faint mt-1 text-[11px]">
             Desejada: {formatDate(solicitacao.dataDesejada)}
           </div>
         )}
       </td>
 
       <td className="px-5 py-5 align-middle">
-        <div className="text-sm font-medium text-white">
+        <div className="theme-title text-sm font-medium">
           {solicitacao.nomeCliente}
         </div>
 
-        <div className="mt-1 font-mono text-[11px] text-white/45">
+        <div className="theme-muted mt-1 font-mono text-[11px]">
           {formatPhone(solicitacao.whatsapp)}
         </div>
       </td>
 
-      <td className="px-5 py-5 align-middle text-[13px] text-white/70">
+      <td className="theme-text px-5 py-5 align-middle text-[13px]">
         {normalizeTipo(solicitacao.tipoEnsaio)}
       </td>
 
