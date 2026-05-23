@@ -67,6 +67,7 @@ export default function ListaEnsaios() {
 
   const [ensaios, setEnsaios] = useState([])
   const [filters, setFilters] = useState(INITIAL_FILTERS)
+  const [filtersResetKey, setFiltersResetKey] = useState(0)
   const [viewMode, setViewMode] = useState('table')
   const [sort, setSort] = useState({ key: 'dataEnsaio', direction: 'desc' })
   const [page, setPage] = useState(1)
@@ -132,7 +133,8 @@ export default function ListaEnsaios() {
   }
 
   const handleClearFilters = () => {
-    setFilters(INITIAL_FILTERS)
+    setFilters({ ...INITIAL_FILTERS })
+    setFiltersResetKey((current) => current + 1)
     setPage(1)
   }
 
@@ -280,6 +282,7 @@ export default function ListaEnsaios() {
 
         <EnsaiosToolbar
           filters={filters}
+          resetKey={filtersResetKey}
           onFilterChange={handleFilterChange}
           viewMode={viewMode}
           onViewModeChange={setViewMode}

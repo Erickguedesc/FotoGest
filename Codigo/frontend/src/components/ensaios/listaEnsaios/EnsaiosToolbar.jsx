@@ -1,7 +1,14 @@
 import Icon from './Icon'
 import { TIPO_OPTIONS } from './ensaioHelpers'
 
-export default function EnsaiosToolbar({ filters, onFilterChange, viewMode, onViewModeChange, onClear }) {
+export default function EnsaiosToolbar({
+  filters,
+  resetKey = 0,
+  onFilterChange,
+  viewMode,
+  onViewModeChange,
+  onClear,
+}) {
   return (
     <div className="mb-5 flex flex-wrap items-center gap-3">
       <div className="relative min-w-[220px] flex-1 max-w-[360px]">
@@ -28,6 +35,7 @@ export default function EnsaiosToolbar({ filters, onFilterChange, viewMode, onVi
       <div className="flex items-center gap-2 rounded-lg border border-white/[0.10] bg-[#181818] px-3 py-2 text-white/55">
         <Icon name="calendar" size={13} />
         <input
+          key={`data-inicio-${resetKey}`}
           type="date"
           value={filters.dataInicio}
           onChange={(event) => onFilterChange('dataInicio', event.target.value)}
@@ -36,6 +44,7 @@ export default function EnsaiosToolbar({ filters, onFilterChange, viewMode, onVi
         />
         <span className="text-white/25">—</span>
         <input
+          key={`data-fim-${resetKey}`}
           type="date"
           value={filters.dataFim}
           onChange={(event) => onFilterChange('dataFim', event.target.value)}
