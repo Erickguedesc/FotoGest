@@ -438,6 +438,11 @@
         acessoLiberado: adminAlbum?.acessoLiberado ?? true,
       })
 
+      await Promise.all([
+        loadEnsaio(),
+        loadHistoricoStatus(),
+      ])
+
       showToast(
         album?.urlAcesso
           ? 'Nova senha gerada com sucesso. Envie a senha atualizada para a cliente.'

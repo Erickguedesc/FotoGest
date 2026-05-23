@@ -2,10 +2,13 @@ package com.olhari.service;
 
 import com.olhari.dto.AlbumAdminResponseDTO;
 import com.olhari.dto.AlbumResponseDTO;
+import com.olhari.enums.StatusEnsaio;
 import com.olhari.model.Album;
 import com.olhari.model.Ensaio;
+import com.olhari.model.HistoricoStatusEnsaio;
 import com.olhari.repository.AlbumRepository;
 import com.olhari.repository.EnsaioRepository;
+import com.olhari.repository.HistoricoStatusEnsaioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -28,6 +31,7 @@ public class AlbumService {
 private final AlbumRepository albumRepository;
 private final EnsaioRepository ensaioRepository;
 private final PreferenciasSistemaRepository preferenciasSistemaRepository;
+private final HistoricoStatusEnsaioRepository historicoStatusEnsaioRepository;
 private final PasswordEncoder passwordEncoder;
 
     @Value("${app.frontend-url:http://localhost:5173}")
@@ -60,6 +64,7 @@ private final PasswordEncoder passwordEncoder;
       album.setExpiraEm(OffsetDateTime.now().plusDays(prazoExpiracaoDias));
 
         albumRepository.save(album);
+        atualizarStatusParaEmSelecaoSeNecessario(ensaio);
 
         String urlCompleta = frontendUrl + "/album/" + album.getTokenUrl();
 
@@ -190,5 +195,30 @@ private final PasswordEncoder passwordEncoder;
             .map(PreferenciasSistema::getPrazoExpiracaoAlbumDias)
             .filter(dias -> dias != null && dias > 0)
             .orElse(30);
+}
+
+private void atualizarStatusParaEmSelecaoSeNecessario(Ensaio ensaio) {
+    StatusEnsaio statusAtual = ensaio.getStatus();
+
+    boolean podeAvancarParaSelecao =
+            statusAtual == StatusEnsaio.AGENDADO ||
+            statusAtual == StatusEnsaio.REALIZADO ||
+            statusAtual == StatusEnsaio.EM_EDICAO;
+
+    if (!podeAvancarParaSelecao) {
+        return;
+    }
+
+    ensaio.setStatus(StatusEnsaio.EM_SELECAO);
+    ensaio.setProgresso((short) 50);
+    ensaioRepository.save(ensaio);
+
+    historicoStatusEnsaioRepository.save(
+            HistoricoStatusEnsaio.builder()
+                    .ensaio(ensaio)
+                    .status(StatusEnsaio.EM_SELECAO)
+                    .alteradoEm(OffsetDateTime.now())
+                    .build()
+    );
 }
 }
