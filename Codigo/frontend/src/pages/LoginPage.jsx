@@ -1,14 +1,19 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import api from '../services/api'
 // tela de login da fotografa //
 export default function LoginPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [form, setForm]         = useState({ email: '', senha: '' })
   const [errors, setErrors]     = useState({})
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading]   = useState(false)
-  const [apiError, setApiError] = useState('')
+  const [apiError, setApiError] = useState(
+    searchParams.get('motivo') === 'sessao-expirada'
+      ? 'Sua sessão expirou ou ficou inválida. Faça login novamente.'
+      : '',
+  )
 
   const set = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -32,6 +37,9 @@ export default function LoginPage() {
 
     setLoading(true)
     setApiError('')
+    localStorage.removeItem('token')
+    localStorage.removeItem('fotografaNome')
+    localStorage.removeItem('fotografaEmail')
 
     try {
       const res = await api.post('/auth/login', {
@@ -47,7 +55,7 @@ export default function LoginPage() {
       localStorage.setItem('fotografaEmail', email)
 
       // Redireciona para o dashboard
-      navigate('/dashboard')
+      navigate('/dashboard', { replace: true })
 
     } catch (err) {
       const status = err?.response?.status

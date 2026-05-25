@@ -19,6 +19,8 @@ public class HomepageCursoRequest {
     @NotBlank(message = "Imagem é obrigatória")
     private String imagemUrl;
 
+    private String imagemPublicId;
+
     private String precoTexto;
 
     @NotBlank(message = "Link externo é obrigatório")

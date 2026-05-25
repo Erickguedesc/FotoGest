@@ -22,6 +22,7 @@ const normalizarCurso = (curso) => ({
   titulo: curso.titulo?.trim(),
   descricao: curso.descricao?.trim(),
   imagemUrl: curso.imagemUrl?.trim(),
+  imagemPublicId: curso.imagemPublicId?.trim() || null,
   precoTexto: curso.precoTexto?.trim() || null,
   linkExterno: curso.linkExterno?.trim(),
   textoBotao: curso.textoBotao?.trim() || 'Conhecer produto',

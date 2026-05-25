@@ -28,6 +28,9 @@ public class HomepageCurso {
     @Column(name = "imagem_url", nullable = false, columnDefinition = "TEXT")
     private String imagemUrl;
 
+    @Column(name = "imagem_public_id", columnDefinition = "TEXT")
+    private String imagemPublicId;
+
     @Column(name = "preco_texto", length = 80)
     private String precoTexto;
 

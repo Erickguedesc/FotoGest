@@ -56,9 +56,17 @@ export const DEFAULT_HOMEPAGE_CONFIG = {
   contatoTexto: 'Dê o primeiro passo para eternizar seus momentos.\nRetornaremos no WhatsApp em até 24h.',
   whatsappNumero: '553199646207',
 
+  footerEstudioNome: 'OLHARI',
+  footerSlogan: 'Fotografia afetiva para famílias, gestantes e recém-nascidos.',
+  footerEmail: 'contato@olhari.com',
+  footerWhatsapp: '553199646207',
+  footerInstagram: '@olhari.fotografia',
+  footerCidade: 'Belo Horizonte, MG',
+
   footerTexto: '© 2026 OLHARI - TODOS OS DIREITOS RESERVADOS',
   footerAdminTexto: 'Área Administrativa',
   footerAdminLink: '/Login',
+  sobreImagemPublicId: null,
 }
 
 const normalizeArray = (value, fallback) => {

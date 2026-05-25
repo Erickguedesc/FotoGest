@@ -17,6 +17,7 @@ public class HomepageCursoResponse {
     private String titulo;
     private String descricao;
     private String imagemUrl;
+    private String imagemPublicId;
     private String precoTexto;
     private String linkExterno;
     private String textoBotao;

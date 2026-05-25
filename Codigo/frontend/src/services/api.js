@@ -35,11 +35,10 @@ function isPublicRequest(config = {}) {
 
 function redirectToLogin() {
   if (window.location.pathname !== '/login') {
-    window.location.href = '/login'
+    window.location.href = '/login?motivo=sessao-expirada'
   }
 }
 
-// ── Interceptor de REQUEST: injeta o token JWT ──
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
 
@@ -50,7 +49,6 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// ── Interceptor de RESPONSE: trata erros globais ──
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -60,8 +58,7 @@ api.interceptors.response.use(
     }
 
     const status = error.response.status
-    const message =
-      error.response.data?.message || 'Erro inesperado'
+    const message = error.response.data?.message || 'Erro inesperado'
 
     switch (status) {
       case 400:
@@ -78,10 +75,6 @@ api.interceptors.response.use(
 
       case 403:
         console.warn('Acesso negado:', message)
-        if (!isPublicRequest(error.config)) {
-          clearAuthData()
-          redirectToLogin()
-        }
         break
 
       case 404:
@@ -97,7 +90,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error)
-  }
+  },
 )
 
 export default api
