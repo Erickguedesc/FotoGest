@@ -22,4 +22,5 @@ public class AlbumPublicoResponse {
     private Boolean cobrarFotoExtra;
     private BigDecimal valorFotoExtra;
     private String capaAlbumPadraoUrl;
+    private OffsetDateTime expiraEm;
 }

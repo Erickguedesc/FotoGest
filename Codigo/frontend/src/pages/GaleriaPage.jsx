@@ -38,6 +38,22 @@ function formatDate(value) {
   })
 }
 
+function formatarDataExpiracao(value) {
+  if (!value) return ""
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return ""
+  }
+
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
+}
+
 function HeartIcon({ filled = false }) {
   return (
     <svg
@@ -56,75 +72,126 @@ export default function GaleriaPage() {
   const { token } = useParams()
 
   const [album, setAlbum] = useState(() => {
-  const raw = sessionStorage.getItem(`olhari_album_${token}`)
+    const raw = sessionStorage.getItem(`olhari_album_${token}`)
 
-  if (!raw) return null
-
-  try {
-    return JSON.parse(raw)
-  } catch {
-    sessionStorage.removeItem(`olhari_album_${token}`)
-    return null
-  }
-})
-
-const [aba, setAba] = useState("galeria")
-
-const [favoritas, setFavoritas] = useState(
-  Array.isArray(album?.fotosSelecionadas) ? album.fotosSelecionadas : []
-)
-
-const [observacoesPorFoto, setObservacoesPorFoto] = useState(
-  album?.observacoesPorFoto && typeof album.observacoesPorFoto === "object"
-    ? album.observacoesPorFoto
-    : {}
-)
-
-const [lightboxIndex, setLightboxIndex] = useState(null)
-const [lightboxOrigem, setLightboxOrigem] = useState("galeria")
-
-const [modalAberto, setModalAberto] = useState(false)
-const [modalSucessoAberto, setModalSucessoAberto] = useState(false)
-const [enviando, setEnviando] = useState(false)
-
-const [selecaoEnviada, setSelecaoEnviada] = useState(
-  Boolean(album?.selecaoEnviada || album?.selecaoFinalizada)
-)
-
-const [erroEnvio, setErroEnvio] = useState("")
-useEffect(() => {
-  async function atualizarFotosDaGaleria() {
-    const senhaTemporaria = album?.senhaAcessoTemporaria
-
-    if (!senhaTemporaria) return
+    if (!raw) return null
 
     try {
-      const fotosAtualizadas = await acessarAlbumComSenha(token, senhaTemporaria)
-      const dadosPublicos = await validarAlbumPorToken(token)
-
-      const albumAtualizado = {
-        ...album,
-        ...dadosPublicos,
-        fotos: fotosAtualizadas,
-      }
-
-      setAlbum(albumAtualizado)
-
-      sessionStorage.setItem(
-        `olhari_album_${token}`,
-        JSON.stringify(albumAtualizado)
-      )
-    } catch (error) {
-      console.error("Erro ao atualizar fotos da galeria:", error)
+      return JSON.parse(raw)
+    } catch {
+      sessionStorage.removeItem(`olhari_album_${token}`)
+      return null
     }
+  })
+
+  const [aba, setAba] = useState("galeria")
+
+  const [favoritas, setFavoritas] = useState(
+    Array.isArray(album?.fotosSelecionadas) ? album.fotosSelecionadas : []
+  )
+
+  const [observacoesPorFoto, setObservacoesPorFoto] = useState(
+    album?.observacoesPorFoto && typeof album.observacoesPorFoto === "object"
+      ? album.observacoesPorFoto
+      : {}
+  )
+
+  const [lightboxIndex, setLightboxIndex] = useState(null)
+  const [lightboxOrigem, setLightboxOrigem] = useState("galeria")
+
+  const [modalAberto, setModalAberto] = useState(false)
+  const [modalSucessoAberto, setModalSucessoAberto] = useState(false)
+  const [enviando, setEnviando] = useState(false)
+
+  const [selecaoEnviada, setSelecaoEnviada] = useState(
+    Boolean(album?.selecaoEnviada || album?.selecaoFinalizada)
+  )
+
+  const [tempoRestante, setTempoRestante] = useState(null)
+  const [albumExpirado, setAlbumExpirado] = useState(false)
+
+  const [erroEnvio, setErroEnvio] = useState("")
+  useEffect(() => {
+    async function atualizarFotosDaGaleria() {
+      const senhaTemporaria = album?.senhaAcessoTemporaria
+
+      if (!senhaTemporaria) return
+
+      try {
+        const fotosAtualizadas = await acessarAlbumComSenha(token, senhaTemporaria)
+        const dadosPublicos = await validarAlbumPorToken(token)
+
+        const albumAtualizado = {
+          ...album,
+          ...dadosPublicos,
+          fotos: fotosAtualizadas,
+        }
+
+        setAlbum(albumAtualizado)
+
+        sessionStorage.setItem(
+          `olhari_album_${token}`,
+          JSON.stringify(albumAtualizado)
+        )
+      } catch (error) {
+        console.error("Erro ao atualizar fotos da galeria:", error)
+      }
+    }
+
+    atualizarFotosDaGaleria()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token])
+
+  if (!album) {
+    return <Navigate to={`/album/${token}`} replace />
   }
 
-  atualizarFotosDaGaleria()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [token])
-if (!album) {
-  return <Navigate to={`/album/${token}`} replace />
-}
+  useEffect(() => {
+    if (!album?.expiraEm) return
+
+    const atualizarContador = () => {
+      const agora = new Date()
+      const expiracao = new Date(
+        album.expiraEm.replace(" ", "T")
+      )
+
+      const diferenca =
+        expiracao.getTime() - agora.getTime()
+
+      if (diferenca <= 0) {
+        setAlbumExpirado(true)
+        setTempoRestante(null)
+        return
+      }
+
+      const dias = Math.floor(
+        diferenca / (1000 * 60 * 60 * 24)
+      )
+
+      const horas = Math.floor(
+        (diferenca % (1000 * 60 * 60 * 24)) /
+        (1000 * 60 * 60)
+      )
+
+      const minutos = Math.floor(
+        (diferenca % (1000 * 60 * 60)) /
+        (1000 * 60)
+      )
+
+      setTempoRestante({
+        dias,
+        horas,
+        minutos,
+      })
+    }
+
+    atualizarContador()
+
+    const interval = setInterval(atualizarContador, 1000)
+
+    return () => clearInterval(interval)
+
+  }, [album])
 
   const fotos = Array.isArray(album.fotos) ? album.fotos : []
   const capaAlbumUrl = getFotoUrl(fotos[0]) || album?.capaAlbumPadraoUrl || ''
@@ -165,7 +232,7 @@ if (!album) {
   const totalSelecionadas = favoritas.length
   const excedente = Math.max(0, totalSelecionadas - limite)
   const valorExcedente = cobraFotoExtra ? excedente * valorFotoExtra : 0
-const progresso =limite > 0
+  const progresso = limite > 0
     ? Math.min(100, Math.round((totalSelecionadas / limite) * 100))
     : 0
   const fotosFavoritas = fotos.filter((foto) => favoritas.includes(foto.id))
@@ -192,90 +259,113 @@ const progresso =limite > 0
   }
 
   function abrirLightbox(index, origem = "galeria") {
-  setLightboxOrigem(origem)
-  setLightboxIndex(index)
-}
+    setLightboxOrigem(origem)
+    setLightboxIndex(index)
+  }
 
   function fecharLightbox() {
     setLightboxIndex(null)
   }
 
-function moverLightbox(direcao) {
-  setLightboxIndex((indexAtual) => {
-    if (indexAtual === null || fotosLightbox.length === 0) return null
+  function moverLightbox(direcao) {
+    setLightboxIndex((indexAtual) => {
+      if (indexAtual === null || fotosLightbox.length === 0) return null
 
-    return (
-      (indexAtual + direcao + fotosLightbox.length) %
-      fotosLightbox.length
-    )
-  })
-}
-
-async function confirmarSelecao() {
-  if (selecaoEnviada) {
-    setModalAberto(false)
-    setErroEnvio("Esta seleção já foi finalizada e não pode ser alterada.")
-    return
+      return (
+        (indexAtual + direcao + fotosLightbox.length) %
+        fotosLightbox.length
+      )
+    })
   }
 
-  try {
-    setEnviando(true)
-    setErroEnvio("")
-
-    const observacoesSelecionadas = favoritas.reduce((acc, fotoId) => {
-      const observacao = observacoesPorFoto[fotoId]?.trim()
-
-      if (observacao) {
-        acc[fotoId] = observacao
-      }
-
-      return acc
-    }, {})
-
-    await enviarSelecaoFotos(token, favoritas, observacoesSelecionadas)
-
-    setSelecaoEnviada(true)
-    setModalAberto(false)
-    setModalSucessoAberto(true)
-
-    sessionStorage.setItem(
-      `olhari_album_${token}`,
-      JSON.stringify({
-        ...album,
-        selecaoEnviada: true,
-        fotosSelecionadas: favoritas,
-        observacoesPorFoto: observacoesSelecionadas,
-      })
-    )
-  } catch (error) {
-    const status = error?.response?.status
-
-    setModalAberto(false)
-
-    if (status === 400) {
-      setErroEnvio("Esta seleção já foi enviada ou contém fotos inválidas.")
-    } else if (status === 403) {
-      setErroEnvio("Acesso não autorizado ao álbum.")
-    } else {
-      setErroEnvio("Não foi possível enviar sua seleção. Tente novamente.")
+  async function confirmarSelecao() {
+    if (selecaoEnviada) {
+      setModalAberto(false)
+      setErroEnvio("Esta seleção já foi finalizada e não pode ser alterada.")
+      return
     }
-  } finally {
-    setEnviando(false)
+
+    try {
+      setEnviando(true)
+      setErroEnvio("")
+
+      const observacoesSelecionadas = favoritas.reduce((acc, fotoId) => {
+        const observacao = observacoesPorFoto[fotoId]?.trim()
+
+        if (observacao) {
+          acc[fotoId] = observacao
+        }
+
+        return acc
+      }, {})
+
+      await enviarSelecaoFotos(token, favoritas, observacoesSelecionadas)
+
+      setSelecaoEnviada(true)
+      setModalAberto(false)
+      setModalSucessoAberto(true)
+
+      sessionStorage.setItem(
+        `olhari_album_${token}`,
+        JSON.stringify({
+          ...album,
+          selecaoEnviada: true,
+          fotosSelecionadas: favoritas,
+          observacoesPorFoto: observacoesSelecionadas,
+        })
+      )
+    } catch (error) {
+      const status = error?.response?.status
+
+      setModalAberto(false)
+
+      if (status === 400) {
+        setErroEnvio("Esta seleção já foi enviada ou contém fotos inválidas.")
+      } else if (status === 403) {
+        setErroEnvio("Acesso não autorizado ao álbum.")
+      } else {
+        setErroEnvio("Não foi possível enviar sua seleção. Tente novamente.")
+      }
+    } finally {
+      setEnviando(false)
+    }
   }
-}
-  
-const fotosLightbox = lightboxOrigem === "favoritas" ? fotosFavoritas : fotos
-const fotoLightbox = lightboxIndex !== null ? fotosLightbox[lightboxIndex] : null
-const fotoLightboxSelecionada = fotoLightbox
-  ? favoritas.includes(fotoLightbox.id)
-  : false
+
+  const fotosLightbox = lightboxOrigem === "favoritas" ? fotosFavoritas : fotos
+  const fotoLightbox = lightboxIndex !== null ? fotosLightbox[lightboxIndex] : null
+  const fotoLightboxSelecionada = fotoLightbox
+    ? favoritas.includes(fotoLightbox.id)
+    : false
+
+  if (albumExpirado) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#110e0b] px-6 text-white">
+        <div className="max-w-xl text-center">
+          <p className="mb-4 text-xs uppercase tracking-[0.3em] text-red-300/70">
+            Álbum expirado
+          </p>
+
+          <h1 className="font-serif text-5xl font-light">
+            Este álbum não está mais disponível
+          </h1>
+
+          <p className="mt-6 text-sm leading-8 text-white/60">
+            O prazo de acesso deste álbum foi encerrado.
+            Entre em contato com a fotógrafa para solicitar
+            uma nova liberação.
+          </p>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main className="theme-static min-h-screen bg-[#f5f0e8] text-[#1a1610]">
       <section className="relative flex min-h-[76vh] items-center justify-center overflow-hidden px-6 py-20 text-center text-white">
         <div className="absolute inset-0 bg-[#110e0b]">
-         {capaAlbumUrl ? (
-  <img
-    src={capaAlbumUrl}
+          {capaAlbumUrl ? (
+            <img
+              src={capaAlbumUrl}
               alt=""
               className="h-full w-full object-cover opacity-60 brightness-75 saturate-75"
             />
@@ -317,6 +407,30 @@ const fotoLightboxSelecionada = fotoLightbox
               Até {limite} no pacote
             </div>
           </div>
+
+          {album?.expiraEm && !albumExpirado && (
+            <div
+              className={`mt-8 mx-auto max-w-xl rounded-2xl border px-6 py-5 backdrop-blur-xl ${tempoRestante?.dias <= 3
+                ? "border-red-400/40 bg-red-500/10"
+                : "border-white/15 bg-white/10"
+                }`}
+            >
+              <p className="text-[11px] uppercase tracking-[0.22em] text-white/50">
+                Álbum disponível por tempo limitado
+              </p>
+
+              <h3 className="mt-2 font-serif text-3xl font-light text-white">
+                Expira em {tempoRestante?.dias} dias,{" "}
+                {String(tempoRestante?.horas).padStart(2, "0")}h e{" "}
+                {String(tempoRestante?.minutos).padStart(2, "0")}min
+              </h3>
+
+              <p className="mt-2 text-sm text-white/60">
+                Disponível até{" "}
+                {formatarDataExpiracao(album.expiraEm)}
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -325,11 +439,10 @@ const fotoLightboxSelecionada = fotoLightbox
           <button
             type="button"
             onClick={() => setAba("galeria")}
-            className={`flex items-center gap-2 border-b-2 px-4 py-4 text-xs uppercase tracking-[0.16em] transition md:px-6 ${
-              aba === "galeria"
-                ? "border-[#a8783a] text-[#a8783a]"
-                : "border-transparent text-[#998f83] hover:text-[#1a1610]"
-            }`}
+            className={`flex items-center gap-2 border-b-2 px-4 py-4 text-xs uppercase tracking-[0.16em] transition md:px-6 ${aba === "galeria"
+              ? "border-[#a8783a] text-[#a8783a]"
+              : "border-transparent text-[#998f83] hover:text-[#1a1610]"
+              }`}
           >
             Galeria
             <span className="rounded-full border border-[#ddd5c5] bg-[#ede6d8] px-2 py-0.5 text-[11px] text-[#5c5248]">
@@ -340,11 +453,10 @@ const fotoLightboxSelecionada = fotoLightbox
           <button
             type="button"
             onClick={() => setAba("favoritas")}
-            className={`flex items-center gap-2 border-b-2 px-4 py-4 text-xs uppercase tracking-[0.16em] transition md:px-6 ${
-              aba === "favoritas"
-                ? "border-[#a8783a] text-[#a8783a]"
-                : "border-transparent text-[#998f83] hover:text-[#1a1610]"
-            }`}
+            className={`flex items-center gap-2 border-b-2 px-4 py-4 text-xs uppercase tracking-[0.16em] transition md:px-6 ${aba === "favoritas"
+              ? "border-[#a8783a] text-[#a8783a]"
+              : "border-transparent text-[#998f83] hover:text-[#1a1610]"
+              }`}
           >
             Minhas favoritas
             <span className="rounded-full border border-[#ddd5c5] bg-[#ede6d8] px-2 py-0.5 text-[11px] text-[#5c5248]">
@@ -360,31 +472,31 @@ const fotoLightboxSelecionada = fotoLightbox
         </div>
       </nav>
 
-{modalSucessoAberto ? (
-  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#0a0806]/85 p-5 backdrop-blur">
-    <div className="w-full max-w-md rounded-3xl border border-[#2a2420] bg-[#1a1612] p-8 text-center text-[#e8dfd4] shadow-2xl">
-      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#5a9468]/15 text-3xl text-[#7db88a]">
-        ✓
-      </div>
+      {modalSucessoAberto ? (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#0a0806]/85 p-5 backdrop-blur">
+          <div className="w-full max-w-md rounded-3xl border border-[#2a2420] bg-[#1a1612] p-8 text-center text-[#e8dfd4] shadow-2xl">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#5a9468]/15 text-3xl text-[#7db88a]">
+              ✓
+            </div>
 
-      <h2 className="font-serif text-3xl font-light">
-        Seleção confirmada!
-      </h2>
+            <h2 className="font-serif text-3xl font-light">
+              Seleção confirmada!
+            </h2>
 
-      <p className="mt-3 text-sm leading-7 text-[#887e74]">
-        Suas fotos favoritas foram enviadas para a fotógrafa. A seleção não poderá mais ser alterada por aqui.
-      </p>
+            <p className="mt-3 text-sm leading-7 text-[#887e74]">
+              Suas fotos favoritas foram enviadas para a fotógrafa. A seleção não poderá mais ser alterada por aqui.
+            </p>
 
-      <button
-        type="button"
-        onClick={() => setModalSucessoAberto(false)}
-        className="mt-7 w-full rounded-full bg-[#a8783a] px-6 py-4 text-xs font-medium uppercase tracking-[0.18em] text-white transition hover:opacity-90"
-      >
-        Entendi
-      </button>
-    </div>
-  </div>
-) : null}
+            <button
+              type="button"
+              onClick={() => setModalSucessoAberto(false)}
+              className="mt-7 w-full rounded-full bg-[#a8783a] px-6 py-4 text-xs font-medium uppercase tracking-[0.18em] text-white transition hover:opacity-90"
+            >
+              Entendi
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {selecaoEnviada ? (
         <section className="mx-auto max-w-4xl px-6 py-10">
@@ -422,16 +534,15 @@ const fotoLightboxSelecionada = fotoLightbox
                 return (
                   <article
                     key={foto.id}
-                    className={`group relative mb-2 break-inside-avoid overflow-hidden rounded-md bg-[#ede6d8] shadow-sm transition hover:shadow-2xl ${
-                      selecionada
-                        ? "outline outline-[3px] outline-[#bf5c68] outline-offset-[-3px]"
-                        : ""
-                    }`}
+                    className={`group relative mb-2 break-inside-avoid overflow-hidden rounded-md bg-[#ede6d8] shadow-sm transition hover:shadow-2xl ${selecionada
+                      ? "outline outline-[3px] outline-[#bf5c68] outline-offset-[-3px]"
+                      : ""
+                      }`}
                   >
                     <button
                       type="button"
-onClick={() => abrirLightbox(index, "galeria")}                      
-className="block w-full cursor-zoom-in"
+                      onClick={() => abrirLightbox(index, "galeria")}
+                      className="block w-full cursor-zoom-in"
                     >
                       <img
                         src={url}
@@ -455,19 +566,19 @@ className="block w-full cursor-zoom-in"
                     <span className="absolute left-3 top-3 text-[10px] tracking-[0.12em] text-white/50 opacity-0 transition group-hover:opacity-100">
                       #{String(index + 1).padStart(3, "0")}
                     </span>
-<div className="pointer-events-none absolute inset-0 flex items-end justify-end bg-gradient-to-b from-transparent to-black/45 p-3 opacity-0 transition group-hover:opacity-100">
-  <button
-    type="button"
-    onClick={(event) => {
-      event.stopPropagation()
-      toggleFavorita(foto.id)
-    }}
-    className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#faf8f4]/95 text-[#bf5c68] transition hover:scale-110"
-    title="Favoritar"
-  >
-    <HeartIcon filled={selecionada} />
-  </button>
-</div>
+                    <div className="pointer-events-none absolute inset-0 flex items-end justify-end bg-gradient-to-b from-transparent to-black/45 p-3 opacity-0 transition group-hover:opacity-100">
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          toggleFavorita(foto.id)
+                        }}
+                        className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#faf8f4]/95 text-[#bf5c68] transition hover:scale-110"
+                        title="Favoritar"
+                      >
+                        <HeartIcon filled={selecionada} />
+                      </button>
+                    </div>
                   </article>
                 )
               })}
@@ -523,15 +634,15 @@ className="block w-full cursor-zoom-in"
                   </div>
 
                   <div className="columns-2 gap-2 md:columns-3">
-                  {fotosFavoritas.map((foto, index) => {
-                     return (
+                    {fotosFavoritas.map((foto, index) => {
+                      return (
                         <article
                           key={foto.id}
                           className="group relative mb-2 break-inside-avoid overflow-hidden rounded-md border-2 border-[#bf5c68]/45 bg-[#ede6d8]"
                         >
                           <button
                             type="button"
-onClick={() => abrirLightbox(index, "favoritas")}                            className="block w-full"
+                            onClick={() => abrirLightbox(index, "favoritas")} className="block w-full"
                           >
                             <img
                               src={getFotoUrl(foto)}
@@ -592,13 +703,12 @@ onClick={() => abrirLightbox(index, "favoritas")}                            cla
                   Resumo da seleção
                 </h3>
                 <span
-                  className={`rounded-full border px-4 py-2 text-[11px] uppercase tracking-[0.12em] ${
-                    totalSelecionadas === 0
-                      ? "border-white/10 bg-white/5 text-[#887e74]"
-                      : excedente > 0
-                        ? "border-[#df7070]/30 bg-[#df7070]/10 text-[#df7070]"
-                        : "border-[#7db88a]/30 bg-[#7db88a]/10 text-[#7db88a]"
-                  }`}
+                  className={`rounded-full border px-4 py-2 text-[11px] uppercase tracking-[0.12em] ${totalSelecionadas === 0
+                    ? "border-white/10 bg-white/5 text-[#887e74]"
+                    : excedente > 0
+                      ? "border-[#df7070]/30 bg-[#df7070]/10 text-[#df7070]"
+                      : "border-[#7db88a]/30 bg-[#7db88a]/10 text-[#7db88a]"
+                    }`}
                 >
                   {totalSelecionadas === 0
                     ? "Nenhuma foto"
@@ -632,9 +742,8 @@ onClick={() => abrirLightbox(index, "favoritas")}                            cla
                     Excedente
                   </span>
                   <strong
-                    className={`font-serif text-3xl font-light ${
-                      excedente > 0 ? "text-[#df7070]" : ""
-                    }`}
+                    className={`font-serif text-3xl font-light ${excedente > 0 ? "text-[#df7070]" : ""
+                      }`}
                   >
                     {excedente > 0 ? `+${excedente}` : "—"}
                   </strong>
@@ -648,9 +757,8 @@ onClick={() => abrirLightbox(index, "favoritas")}                            cla
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-[#2a2420]">
                   <div
-                    className={`h-full rounded-full transition-all ${
-                      excedente > 0 ? "bg-[#df7070]" : "bg-[#c9a96e]"
-                    }`}
+                    className={`h-full rounded-full transition-all ${excedente > 0 ? "bg-[#df7070]" : "bg-[#c9a96e]"
+                      }`}
                     style={{ width: `${progresso}%` }}
                   />
                 </div>
@@ -691,18 +799,18 @@ onClick={() => abrirLightbox(index, "favoritas")}                            cla
                   </p>
                 ) : null}
 
-<button
-  type="button"
-  disabled={totalSelecionadas === 0 || enviando || selecaoEnviada}
-  onClick={() => {
-    setErroEnvio("")
+                <button
+                  type="button"
+                  disabled={totalSelecionadas === 0 || enviando || selecaoEnviada}
+                  onClick={() => {
+                    setErroEnvio("")
 
-    setModalAberto(true)
-  }}
-  className="w-full rounded-full bg-[#a8783a] px-6 py-4 text-xs font-medium uppercase tracking-[0.18em] text-white shadow-lg shadow-[#a8783a]/20 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
->
-  {selecaoEnviada ? "Seleção já enviada" : "Confirmar seleção"}
-</button>
+                    setModalAberto(true)
+                  }}
+                  className="w-full rounded-full bg-[#a8783a] px-6 py-4 text-xs font-medium uppercase tracking-[0.18em] text-white shadow-lg shadow-[#a8783a]/20 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  {selecaoEnviada ? "Seleção já enviada" : "Confirmar seleção"}
+                </button>
 
                 <p className="mt-3 text-center text-xs text-[#887e74]">
                   {totalSelecionadas === 0
@@ -821,11 +929,10 @@ onClick={() => abrirLightbox(index, "favoritas")}                            cla
             <button
               type="button"
               onClick={() => toggleFavorita(fotoLightbox.id)}
-              className={`mt-5 flex w-full items-center justify-center gap-2 rounded-full border px-6 py-3 text-xs uppercase tracking-[0.14em] transition ${
-                fotoLightboxSelecionada
-                  ? "border-[#bf5c68]/40 bg-[#bf5c68]/15 text-[#df8b96]"
-                  : "border-white/10 bg-white/10 text-white/70 hover:text-white"
-              }`}
+              className={`mt-5 flex w-full items-center justify-center gap-2 rounded-full border px-6 py-3 text-xs uppercase tracking-[0.14em] transition ${fotoLightboxSelecionada
+                ? "border-[#bf5c68]/40 bg-[#bf5c68]/15 text-[#df8b96]"
+                : "border-white/10 bg-white/10 text-white/70 hover:text-white"
+                }`}
             >
               <HeartIcon filled={fotoLightboxSelecionada} />
               {fotoLightboxSelecionada ? "Favoritada" : "Favoritar foto"}

@@ -191,7 +191,7 @@ public class AlbumPublicoService {
                                 observacoesPorFoto);
         }
 
-  // 🌐 DADOS PÚBLICOS
+        // 🌐 DADOS PÚBLICOS
         private String normalizarObservacao(String observacao) {
                 if (observacao == null) {
                         return null;
@@ -211,35 +211,37 @@ public class AlbumPublicoService {
                 return valor;
         }
 
-public AlbumPublicoResponse dadosPublicos(String token) {
+        public AlbumPublicoResponse dadosPublicos(String token) {
 
-    Album album = albumRepository.findByTokenUrl(token)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Álbum não encontrado"));
+                Album album = albumRepository.findByTokenUrl(token)
+                                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                                "Álbum não encontrado"));
 
-                    // 🛑 ADICIONE ESTA TRAVA AQUI:
-    if (!Boolean.TRUE.equals(album.getAtivo())) {
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Álbum desativado");
-    }
+                // 🛑 ADICIONE ESTA TRAVA AQUI:
+                /*
+                 * if (!Boolean.TRUE.equals(album.getAtivo())) {
+                 * throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Álbum desativado");
+                 * }
+                 */
 
-      return new AlbumPublicoResponse(
-        album.getEnsaio().getCliente().getNome(),
-        album.getEnsaio().getTipo().name(),
-        album.getEnsaio().getQtdFotosPacote(),
-        album.getEnsaio().getDataEnsaio(),
-        album.getEnsaio().getLocal(),
-        album.getEnsaio().getCobrarFotoExtra(),
-        album.getEnsaio().getValorFotoExtra(),
-        buscarCapaAlbumPadrao()
-    );
-}
+                return new AlbumPublicoResponse(
+                                album.getEnsaio().getCliente().getNome(),
+                                album.getEnsaio().getTipo().name(),
+                                album.getEnsaio().getQtdFotosPacote(),
+                                album.getEnsaio().getDataEnsaio(),
+                                album.getEnsaio().getLocal(),
+                                album.getEnsaio().getCobrarFotoExtra(),
+                                album.getEnsaio().getValorFotoExtra(),
+                                buscarCapaAlbumPadrao(),
+                                album.getExpiraEm());
+        }
 
-private String buscarCapaAlbumPadrao() {
-    return preferenciasSistemaRepository.findAll()
-            .stream()
-            .findFirst()
-            .map(preferencias -> preferencias.getCapaAlbumPadraoUrl())
-            .orElse(null);
-}
+        private String buscarCapaAlbumPadrao() {
+                return preferenciasSistemaRepository.findAll()
+                                .stream()
+                                .findFirst()
+                                .map(preferencias -> preferencias.getCapaAlbumPadraoUrl())
+                                .orElse(null);
+        }
 
 }
