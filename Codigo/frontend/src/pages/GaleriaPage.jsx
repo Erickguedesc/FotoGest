@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 
+import AlbumExpiredState from '../components/album/galeria/AlbumExpiredState'
 import ConfirmSelectionModal from '../components/album/galeria/ConfirmSelectionModal'
 import FavoritesView from '../components/album/galeria/FavoritesView'
 import FloatingSelectionBar from '../components/album/galeria/FloatingSelectionBar'
@@ -13,15 +14,20 @@ import SelectionSuccessModal from '../components/album/galeria/SelectionSuccessM
 import {
   LIMITE_PADRAO,
   VALOR_EXTRA_PADRAO,
+  calcularTempoRestante,
   formatDate,
   getFotoUrl,
 } from '../services/galeriaUtils'
-import { enviarSelecaoFotos } from '../services/albumAccessService'
+import {
+  acessarAlbumComSenha,
+  enviarSelecaoFotos,
+  validarAlbumPorToken,
+} from '../services/albumAccessService'
 
 export default function GaleriaPage() {
   const { token } = useParams()
 
-  const album = useMemo(() => {
+  const [album, setAlbum] = useState(() => {
     const raw = sessionStorage.getItem(`olhari_album_${token}`)
 
     if (!raw) return null
@@ -32,11 +38,16 @@ export default function GaleriaPage() {
       sessionStorage.removeItem(`olhari_album_${token}`)
       return null
     }
-  }, [token])
+  })
 
   const [aba, setAba] = useState('galeria')
   const [favoritas, setFavoritas] = useState(
     Array.isArray(album?.fotosSelecionadas) ? album.fotosSelecionadas : [],
+  )
+  const [observacoesPorFoto, setObservacoesPorFoto] = useState(
+    album?.observacoesPorFoto && typeof album.observacoesPorFoto === 'object'
+      ? album.observacoesPorFoto
+      : {},
   )
   const [lightboxIndex, setLightboxIndex] = useState(null)
   const [lightboxOrigem, setLightboxOrigem] = useState('galeria')
@@ -46,18 +57,92 @@ export default function GaleriaPage() {
   const [selecaoEnviada, setSelecaoEnviada] = useState(
     Boolean(album?.selecaoEnviada || album?.selecaoFinalizada),
   )
+  const [tempoRestante, setTempoRestante] = useState(null)
+  const [albumExpirado, setAlbumExpirado] = useState(false)
   const [erroEnvio, setErroEnvio] = useState('')
+
+  useEffect(() => {
+    const senhaTemporaria = album?.senhaAcessoTemporaria
+
+    if (!senhaTemporaria) return undefined
+
+    let ativo = true
+
+    async function atualizarFotosDaGaleria() {
+      try {
+        const fotosAtualizadas = await acessarAlbumComSenha(
+          token,
+          senhaTemporaria,
+        )
+        const dadosPublicos = await validarAlbumPorToken(token)
+
+        if (!ativo) return
+
+        setAlbum((albumAtual) => {
+          const albumAtualizado = {
+            ...(albumAtual || {}),
+            ...dadosPublicos,
+            fotos: fotosAtualizadas,
+            senhaAcessoTemporaria: senhaTemporaria,
+          }
+
+          sessionStorage.setItem(
+            `olhari_album_${token}`,
+            JSON.stringify(albumAtualizado),
+          )
+
+          return albumAtualizado
+        })
+      } catch (error) {
+        console.error('Erro ao atualizar fotos da galeria:', error)
+      }
+    }
+
+    atualizarFotosDaGaleria()
+
+    return () => {
+      ativo = false
+    }
+  }, [album?.senhaAcessoTemporaria, token])
+
+  useEffect(() => {
+    if (!album?.expiraEm) {
+      setAlbumExpirado(false)
+      setTempoRestante(null)
+      return undefined
+    }
+
+    function atualizarContador() {
+      const { expirado, tempo } = calcularTempoRestante(album.expiraEm)
+
+      setAlbumExpirado(expirado)
+      setTempoRestante(tempo)
+    }
+
+    atualizarContador()
+
+    const interval = setInterval(atualizarContador, 1000)
+
+    return () => clearInterval(interval)
+  }, [album?.expiraEm])
 
   if (!album) {
     return <Navigate to={`/album/${token}`} replace />
   }
 
+  if (albumExpirado) {
+    return <AlbumExpiredState />
+  }
+
   const fotos = Array.isArray(album.fotos) ? album.fotos : []
+  const capaAlbumUrl = getFotoUrl(fotos[0]) || album?.capaAlbumPadraoUrl || ''
   const fotosFavoritas = fotos.filter((foto) => favoritas.includes(foto.id))
   const fotosLightbox = lightboxOrigem === 'favoritas' ? fotosFavoritas : fotos
-  const fotoLightbox = lightboxIndex !== null ? fotosLightbox[lightboxIndex] : null
+  const fotoLightbox =
+    lightboxIndex !== null ? fotosLightbox[lightboxIndex] : null
 
-  const nomeCliente = album.nomeCliente || album.clienteNome || album.nome || 'Cliente'
+  const nomeCliente =
+    album.nomeCliente || album.clienteNome || album.nome || 'Cliente'
   const tipoEnsaio = album.tipoEnsaio || album.tipo || 'Ensaio fotográfico'
   const limite =
     album.qtdFotosPacote ||
@@ -68,13 +153,17 @@ export default function GaleriaPage() {
   const localEnsaio = album.local || album.localEnsaio || 'Local não informado'
   const dataFormatada = formatDate(album.dataEnsaio)
   const cobraFotoExtra = album.cobrarFotoExtra === true
-  const valorFotoExtra = cobraFotoExtra ? Number(album.valorFotoExtra || VALOR_EXTRA_PADRAO) : 0
+  const valorFotoExtra = cobraFotoExtra
+    ? Number(album.valorFotoExtra || VALOR_EXTRA_PADRAO)
+    : 0
 
   const totalSelecionadas = favoritas.length
   const excedente = Math.max(0, totalSelecionadas - limite)
   const valorExcedente = cobraFotoExtra ? excedente * valorFotoExtra : 0
   const progresso =
-    limite > 0 ? Math.min(100, Math.round((totalSelecionadas / limite) * 100)) : 0
+    limite > 0
+      ? Math.min(100, Math.round((totalSelecionadas / limite) * 100))
+      : 0
 
   function toggleFavorita(fotoId) {
     if (selecaoEnviada) return
@@ -86,6 +175,15 @@ export default function GaleriaPage() {
 
       return [...atual, fotoId]
     })
+  }
+
+  function handleObservacaoChange(fotoId, observacao) {
+    if (selecaoEnviada) return
+
+    setObservacoesPorFoto((atual) => ({
+      ...atual,
+      [fotoId]: observacao.slice(0, 500),
+    }))
   }
 
   function abrirLightbox(index, origem = 'galeria') {
@@ -121,7 +219,17 @@ export default function GaleriaPage() {
       setEnviando(true)
       setErroEnvio('')
 
-      await enviarSelecaoFotos(token, favoritas)
+      const observacoesSelecionadas = favoritas.reduce((acc, fotoId) => {
+        const observacao = observacoesPorFoto[fotoId]?.trim()
+
+        if (observacao) {
+          acc[fotoId] = observacao
+        }
+
+        return acc
+      }, {})
+
+      await enviarSelecaoFotos(token, favoritas, observacoesSelecionadas)
 
       setSelecaoEnviada(true)
       setModalAberto(false)
@@ -133,6 +241,7 @@ export default function GaleriaPage() {
           ...album,
           selecaoEnviada: true,
           fotosSelecionadas: favoritas,
+          observacoesPorFoto: observacoesSelecionadas,
         }),
       )
     } catch (error) {
@@ -153,15 +262,17 @@ export default function GaleriaPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f5f0e8] text-[#1a1610]">
+    <main className="theme-static min-h-screen bg-[#f5f0e8] text-[#1a1610]">
       <GalleryHero
-        coverUrl={getFotoUrl(fotos[0])}
+        coverUrl={capaAlbumUrl}
         nomeCliente={nomeCliente}
         tipoEnsaio={tipoEnsaio}
         dataFormatada={dataFormatada}
         localEnsaio={localEnsaio}
         totalFotos={fotos.length}
         limite={limite}
+        expiraEm={album.expiraEm}
+        tempoRestante={tempoRestante}
       />
 
       <GalleryTabs
@@ -202,10 +313,12 @@ export default function GaleriaPage() {
           erroEnvio={erroEnvio}
           enviando={enviando}
           selecaoEnviada={selecaoEnviada}
+          observacoesPorFoto={observacoesPorFoto}
           onExploreGallery={() => setAba('galeria')}
           onOpenLightbox={abrirLightbox}
           onToggleFavorita={toggleFavorita}
           onOpenConfirm={abrirModalConfirmacao}
+          onObservacaoChange={handleObservacaoChange}
         />
       ) : null}
 
@@ -221,9 +334,12 @@ export default function GaleriaPage() {
         fotos={fotosLightbox}
         index={lightboxIndex}
         favoritas={favoritas}
+        observacoesPorFoto={observacoesPorFoto}
+        selecaoEnviada={selecaoEnviada}
         onClose={fecharLightbox}
         onMove={moverLightbox}
         onToggleFavorita={toggleFavorita}
+        onObservacaoChange={handleObservacaoChange}
       />
 
       <ConfirmSelectionModal

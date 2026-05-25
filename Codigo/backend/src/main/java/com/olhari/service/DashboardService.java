@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
+import com.olhari.repository.PreferenciasSistemaRepository;
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
@@ -39,6 +39,7 @@ public class DashboardService {
     private final AlbumRepository albumRepository;
     private final SelecaoFotoRepository selecaoFotoRepository;
     private final SolicitacaoRepository solicitacaoRepository;
+    private final PreferenciasSistemaRepository preferenciasSistemaRepository;
 
     @Transactional(readOnly = true)
     public DashboardResumoResponse buscarResumo() {
@@ -63,8 +64,19 @@ public class DashboardService {
                 .filter(ensaio -> ensaio.getStatus() != StatusEnsaio.CANCELADO)
                 .toList();
 
+        Map<UUID, Integer> totalSelecoesPorAlbum = albumPorEnsaio.values()
+                .stream()
+                .collect(Collectors.toMap(
+                        Album::getId,
+                        album -> selecaoFotoRepository.findByAlbumId(album.getId()).size()
+                ));
+
         BigDecimal receitaEstimada = ensaiosEsteMes.stream()
-                .map(Ensaio::getValorPacote)
+                .map(ensaio -> calcularValorPrevistoDoEnsaio(
+                        ensaio,
+                        albumPorEnsaio,
+                        totalSelecoesPorAlbum
+                ))
                 .filter(valor -> valor != null)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -254,6 +266,51 @@ if (ensaio.getStatus() == StatusEnsaio.EM_SELECAO
                 || ensaio.getStatus() == StatusEnsaio.EM_EDICAO;
     }
 
+    private BigDecimal calcularValorPrevistoDoEnsaio(
+            Ensaio ensaio,
+            Map<UUID, Album> albumPorEnsaio,
+            Map<UUID, Integer> totalSelecoesPorAlbum
+    ) {
+        if (ensaio.getValorFinalEnsaio() != null) {
+            return ensaio.getValorFinalEnsaio();
+        }
+
+        BigDecimal valorPacote = ensaio.getValorPacote() == null
+                ? BigDecimal.ZERO
+                : ensaio.getValorPacote();
+
+        return valorPacote.add(calcularValorExcedenteDoEnsaio(
+                ensaio,
+                albumPorEnsaio,
+                totalSelecoesPorAlbum
+        ));
+    }
+
+    private BigDecimal calcularValorExcedenteDoEnsaio(
+            Ensaio ensaio,
+            Map<UUID, Album> albumPorEnsaio,
+            Map<UUID, Integer> totalSelecoesPorAlbum
+    ) {
+        if (!Boolean.TRUE.equals(ensaio.getCobrarFotoExtra())) {
+            return BigDecimal.ZERO;
+        }
+
+        if (ensaio.getValorFotoExtra() == null || ensaio.getQtdFotosPacote() == null) {
+            return BigDecimal.ZERO;
+        }
+
+        Album album = albumPorEnsaio.get(ensaio.getId());
+
+        if (album == null) {
+            return BigDecimal.ZERO;
+        }
+
+        int totalSelecionadas = totalSelecoesPorAlbum.getOrDefault(album.getId(), 0);
+        int excedentes = Math.max(0, totalSelecionadas - ensaio.getQtdFotosPacote());
+
+        return ensaio.getValorFotoExtra().multiply(BigDecimal.valueOf(excedentes));
+    }
+
     private boolean temSelecaoEnviada(
             Ensaio ensaio,
             Map<UUID, Album> albumPorEnsaio
@@ -263,22 +320,34 @@ if (ensaio.getStatus() == StatusEnsaio.EM_SELECAO
         return album != null && selecaoFotoRepository.existsByAlbumId(album.getId());
     }
 
-    private String buscarCapaUrl(UUID ensaioId) {
-        List<Foto> fotos = fotoRepository.findByEnsaioIdOrderByOrdemAscEnviadaEmAsc(ensaioId);
+  private String buscarCapaUrl(UUID ensaioId) {
+    List<Foto> fotos = fotoRepository.findByEnsaioIdOrderByOrdemAscEnviadaEmAsc(ensaioId);
 
-        if (fotos.isEmpty()) {
-            return null;
-        }
+    if (fotos.isEmpty()) {
+        return buscarCapaAlbumPadrao();
+    }
 
-        Foto capa = fotos.stream()
-                .filter(foto -> Boolean.TRUE.equals(foto.getEhCapa()))
-                .findFirst()
-                .orElse(fotos.get(0));
+    Foto capa = fotos.stream()
+            .filter(foto -> Boolean.TRUE.equals(foto.getEhCapa()))
+            .findFirst()
+            .orElse(fotos.get(0));
 
-        if (capa.getUrlWatermark() != null && !capa.getUrlWatermark().isBlank()) {
-            return capa.getUrlWatermark();
-        }
+    if (capa.getUrlWatermark() != null && !capa.getUrlWatermark().isBlank()) {
+        return capa.getUrlWatermark();
+    }
 
+    if (capa.getUrlOriginal() != null && !capa.getUrlOriginal().isBlank()) {
         return capa.getUrlOriginal();
     }
+
+    return buscarCapaAlbumPadrao();
+}
+
+private String buscarCapaAlbumPadrao() {
+    return preferenciasSistemaRepository.findAll()
+            .stream()
+            .findFirst()
+            .map(preferencias -> preferencias.getCapaAlbumPadraoUrl())
+            .orElse(null);
+}
 }

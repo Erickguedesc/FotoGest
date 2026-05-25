@@ -11,4 +11,5 @@ public class ConfiguracoesResponseDTO {
     private FotografaConfigDTO fotografa;
     private EstudioConfigDTO estudio;
     private PreferenciasConfigDTO preferencias;
+    private MarcaDaguaConfigDTO marcaDagua;
 }

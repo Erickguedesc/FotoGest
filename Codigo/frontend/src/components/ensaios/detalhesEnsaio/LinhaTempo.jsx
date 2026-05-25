@@ -31,7 +31,7 @@ export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
   const isCancelado = statusAtual === 'CANCELADO'
 
   return (
-    <section className="rounded-2xl border border-[var(--gold-border)] bg-[#121212]">
+    <section className="theme-card rounded-2xl border border-[var(--gold-border)]">
       <SectionTitle title="Linha do tempo" />
 
       {isCancelado ? (
@@ -45,7 +45,7 @@ export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
               Ensaio cancelado
             </p>
 
-            <p className="mt-1 text-[12px] text-white/35">
+              <p className="theme-muted mt-1 text-[12px]">
               A linha do tempo foi interrompida porque o ensaio foi cancelado.
             </p>
           </div>
@@ -73,7 +73,7 @@ export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
                           ? 'bg-emerald-400/70'
                           : isCurrent
                             ? 'bg-[var(--gold)]'
-                            : 'bg-white/[0.14]'
+                            : 'bg-[var(--border)]'
                       }`}
                     />
                   )}
@@ -84,7 +84,7 @@ export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
                         ? 'border-emerald-400/50 bg-emerald-400/10 text-emerald-300'
                         : isCurrent
                           ? 'border-[var(--gold-border)] bg-[rgba(201,164,89,0.12)] text-[var(--gold)]'
-                          : 'border-white/[0.14] bg-white/[0.03] text-white/35'
+                          : 'border-[var(--border)] bg-[var(--card-hover)] text-[var(--text-muted)]'
                     }`}
                   >
                     {isDone ? '✓' : index + 1}
@@ -97,18 +97,18 @@ export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
                           ? 'text-emerald-300'
                           : isCurrent
                             ? 'text-[var(--gold)]'
-                            : 'text-white/55'
+                            : 'text-[var(--text-muted)]'
                       }`}
                     >
                       {step.label}
                     </p>
 
                     {isActive && dataStatus ? (
-                      <p className="mt-1 text-[10px] text-white/35">
+                      <p className="theme-muted mt-1 text-[10px]">
                         {dataStatus}
                       </p>
                     ) : (
-                      <p className="mt-1 text-[10px] text-white/20">
+                      <p className="theme-faint mt-1 text-[10px]">
                         Aguardando
                       </p>
                     )}

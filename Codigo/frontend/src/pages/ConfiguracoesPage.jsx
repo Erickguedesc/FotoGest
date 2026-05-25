@@ -6,9 +6,11 @@ import ConfiguracoesHeader from '../components/configuracoes/ConfiguracoesHeader
 import ConfiguracoesMenu from '../components/configuracoes/ConfiguracoesMenu'
 import DadosFotografaForm from '../components/configuracoes/DadosFotografaForm'
 import DadosEstudioForm from '../components/configuracoes/DadosEstudioForm'
+import MarcaDaguaForm from '../components/configuracoes/MarcaDaguaForm'
 import PreferenciasSistemaForm from '../components/configuracoes/PreferenciasSistemaForm'
 import AlterarSenhaForm from '../components/configuracoes/AlterarSenhaForm'
 import { configuracoesService } from '../services/configuracoesService'
+import ConfirmActionModal from '../components/ui/ConfirmActionModal'
 
 export default function ConfiguracoesPage() {
   const [activeTab, setActiveTab] = useState('fotografa')
@@ -19,12 +21,26 @@ export default function ConfiguracoesPage() {
 
   const [uploadFotoLoading, setUploadFotoLoading] = useState(false)
   const [uploadLogoLoading, setUploadLogoLoading] = useState(false)
+  const [uploadMarcaLoading, setUploadMarcaLoading] = useState(false)
+  const [reprocessLoading, setReprocessLoading] = useState(false)
 
   const [toast, setToast] = useState(null)
+  const [alertModal, setAlertModal] = useState(null)
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
   }
+
+  const notificarFotografaAtualizada = (fotografa) => {
+    window.dispatchEvent(
+      new CustomEvent('olhari:fotografa-atualizada', {
+        detail: fotografa,
+      }),
+    )
+  }
+
+  const [gerarTextoLoading, setGerarTextoLoading] = useState(false)
+  const [uploadCapaAlbumLoading, setUploadCapaAlbumLoading] = useState(false)
 
   async function carregarConfiguracoes() {
     try {
@@ -44,6 +60,36 @@ export default function ConfiguracoesPage() {
     carregarConfiguracoes()
   }, [])
 
+
+async function handleUploadCapaAlbumPadrao(arquivo) {
+  if (!arquivo) return
+
+  try {
+    setUploadCapaAlbumLoading(true)
+
+    const data = await configuracoesService.uploadCapaAlbumPadrao(arquivo)
+
+    setConfiguracoes((current) => ({
+      ...(current || {}),
+      preferencias: data,
+    }))
+
+    showToast('Capa padrão do álbum atualizada com sucesso.')
+  } catch (error) {
+    console.error('[ConfiguracoesPage] Erro ao enviar capa padrão do álbum:', error)
+
+    const message =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      'Não foi possível enviar a capa padrão do álbum.'
+
+    showToast(message, 'error')
+  } finally {
+    setUploadCapaAlbumLoading(false)
+  }
+}
+
+
   async function handleSalvarFotografa(dados) {
     try {
       setSaving(true)
@@ -55,6 +101,7 @@ export default function ConfiguracoesPage() {
         fotografa: data,
       }))
 
+      notificarFotografaAtualizada(data)
       showToast('Dados da fotógrafa atualizados com sucesso.')
     } catch (error) {
       console.error('[ConfiguracoesPage] Erro ao salvar fotógrafa:', error)
@@ -83,6 +130,7 @@ export default function ConfiguracoesPage() {
         fotografa: data,
       }))
 
+      notificarFotografaAtualizada(data)
       showToast('Foto de perfil atualizada com sucesso.')
     } catch (error) {
       console.error('[ConfiguracoesPage] Erro ao enviar foto de perfil:', error)
@@ -109,14 +157,14 @@ export default function ConfiguracoesPage() {
         estudio: data,
       }))
 
-      showToast('Dados atualizados com sucesso.')
+      showToast('Dados do estúdio/empresa atualizados com sucesso.')
     } catch (error) {
       console.error('[ConfiguracoesPage] Erro ao salvar estúdio:', error)
 
       const message =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
-        'Não foi possível salvar os dados do estúdio.'
+        'Não foi possível salvar os dados do estúdio/empresa.'
 
       showToast(message, 'error')
     } finally {
@@ -137,18 +185,151 @@ export default function ConfiguracoesPage() {
         estudio: data,
       }))
 
-      showToast('Logo do estúdio atualizada com sucesso.')
+      showToast('Logo do estúdio/empresa atualizada com sucesso.')
     } catch (error) {
-      console.error('[ConfiguracoesPage] Erro ao enviar logo do estúdio:', error)
+      console.error('[ConfiguracoesPage] Erro ao enviar logo:', error)
 
       const message =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
-        'Não foi possível enviar a logo do estúdio.'
+        'Não foi possível enviar a logo do estúdio/empresa.'
 
       showToast(message, 'error')
     } finally {
       setUploadLogoLoading(false)
+    }
+  }
+
+  async function handleSalvarMarcaDagua(dados) {
+    try {
+      setSaving(true)
+
+      const data = await configuracoesService.atualizarMarcaDagua(dados)
+
+      setConfiguracoes((current) => ({
+        ...(current || {}),
+        marcaDagua: data,
+      }))
+
+setAlertModal({
+  type: 'success',
+  title: 'Marca d’água salva!',
+  description:
+    'A configuração foi salva com sucesso. As próximas fotos enviadas já usarão essa marca d’água. Para atualizar fotos antigas, clique em “Reprocessar fotos já enviadas”.',
+  confirmText: 'Entendi',
+})    } catch (error) {
+      console.error('[ConfiguracoesPage] Erro ao salvar marca d’água:', error)
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Não foi possível salvar a marca d’água.'
+
+      showToast(message, 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleUploadMarcaDagua(arquivo) {
+    if (!arquivo) return
+
+    try {
+      setUploadMarcaLoading(true)
+
+      const data = await configuracoesService.uploadMarcaDagua(arquivo)
+
+      setConfiguracoes((current) => ({
+        ...(current || {}),
+        marcaDagua: data,
+      }))
+
+      showToast('Marca d’água enviada com sucesso.')
+    } catch (error) {
+      console.error('[ConfiguracoesPage] Erro ao enviar marca d’água:', error)
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Não foi possível enviar a marca d’água.'
+
+      showToast(message, 'error')
+    } finally {
+      setUploadMarcaLoading(false)
+    }
+  }
+
+
+  async function handleGerarMarcaDaguaTexto(dados) {
+  try {
+    setGerarTextoLoading(true)
+
+    const data = await configuracoesService.gerarMarcaDaguaTexto(dados)
+
+    setConfiguracoes((current) => ({
+      ...(current || {}),
+      marcaDagua: data,
+    }))
+
+    showToast('Marca d’água por texto gerada com sucesso.')
+  } catch (error) {
+    console.error('[ConfiguracoesPage] Erro ao gerar marca d’água por texto:', error)
+
+    const message =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      'Não foi possível gerar a marca d’água por texto.'
+
+    showToast(message, 'error')
+  } finally {
+    setGerarTextoLoading(false)
+  }
+}
+
+  async function handleRemoverMarcaDagua() {
+    try {
+      setUploadMarcaLoading(true)
+
+      const data = await configuracoesService.removerMarcaDagua()
+
+      setConfiguracoes((current) => ({
+        ...(current || {}),
+        marcaDagua: data,
+      }))
+
+      showToast('Marca d’água removida com sucesso.')
+    } catch (error) {
+      console.error('[ConfiguracoesPage] Erro ao remover marca d’água:', error)
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Não foi possível remover a marca d’água.'
+
+      showToast(message, 'error')
+    } finally {
+      setUploadMarcaLoading(false)
+    }
+  }
+
+  async function handleReprocessarMarcaDagua() {
+    try {
+      setReprocessLoading(true)
+
+      const data = await configuracoesService.reprocessarMarcaDagua()
+
+      showToast(data?.mensagem || 'Fotos reprocessadas com sucesso.')
+    } catch (error) {
+      console.error('[ConfiguracoesPage] Erro ao reprocessar fotos:', error)
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Não foi possível reprocessar as fotos.'
+
+      showToast(message, 'error')
+    } finally {
+      setReprocessLoading(false)
     }
   }
 
@@ -203,15 +384,15 @@ export default function ConfiguracoesPage() {
     <>
       <Header />
 
-      <main className="mx-auto max-w-[1200px] px-8 pb-16 pt-[96px] text-white max-md:px-4">
+      <main className="theme-page mx-auto max-w-[1200px] px-8 pb-16 pt-[96px] max-md:px-4">
         <ConfiguracoesHeader />
 
         <div className="grid gap-6 lg:grid-cols-[310px_1fr]">
           <ConfiguracoesMenu activeTab={activeTab} onChange={setActiveTab} />
 
-          <section className="rounded-3xl border border-[var(--gold-border)] bg-[#111111] p-6 shadow-2xl shadow-black/30">
+          <section className="theme-card rounded-3xl border border-[var(--gold-border)] p-6">
             {loading ? (
-              <div className="rounded-2xl border border-white/10 bg-black/20 p-6 text-sm text-white/45">
+              <div className="theme-panel rounded-2xl border p-6 text-sm">
                 Carregando configurações...
               </div>
             ) : (
@@ -236,11 +417,29 @@ export default function ConfiguracoesPage() {
                   />
                 )}
 
+                {activeTab === 'marcaDagua' && (
+                  <MarcaDaguaForm
+                    data={configuracoes?.marcaDagua}
+                    loading={saving}
+                    uploadLoading={uploadMarcaLoading}
+                    reprocessLoading={reprocessLoading}
+                    onSubmit={handleSalvarMarcaDagua}
+                    onUploadImagem={handleUploadMarcaDagua}
+                    onRemoverImagem={handleRemoverMarcaDagua}
+                    onReprocessar={handleReprocessarMarcaDagua}
+                    gerarTextoLoading={gerarTextoLoading}
+                    onGerarTexto={handleGerarMarcaDaguaTexto}
+                  />
+                )}
+
                 {activeTab === 'preferencias' && (
                   <PreferenciasSistemaForm
                     data={configuracoes?.preferencias}
                     loading={saving}
+                      uploadCapaLoading={uploadCapaAlbumLoading}
                     onSubmit={handleSalvarPreferencias}
+                      onUploadCapaAlbum={handleUploadCapaAlbumPadrao}
+
                   />
                 )}
 
@@ -255,12 +454,24 @@ export default function ConfiguracoesPage() {
           </section>
         </div>
       </main>
-
       {toast && (
         <Toast
           message={toast.message}
           type={toast.type}
           onClose={() => setToast(null)}
+        />
+      )}
+
+      {alertModal && (
+        <ConfirmActionModal
+          open={Boolean(alertModal)}
+          type={alertModal.type}
+          title={alertModal.title}
+          description={alertModal.description}
+          confirmText={alertModal.confirmText}
+          showCancel={false}
+          onClose={() => setAlertModal(null)}
+          onConfirm={() => setAlertModal(null)}
         />
       )}
     </>

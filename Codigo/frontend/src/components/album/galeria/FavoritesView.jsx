@@ -14,10 +14,12 @@ export default function FavoritesView({
   erroEnvio,
   enviando,
   selecaoEnviada,
+  observacoesPorFoto,
   onExploreGallery,
   onOpenLightbox,
   onToggleFavorita,
   onOpenConfirm,
+  onObservacaoChange,
 }) {
   return (
     <section className="mx-auto max-w-[1300px] px-5 py-12 pb-28">
@@ -42,7 +44,8 @@ export default function FavoritesView({
                 Nenhuma favorita ainda
               </h3>
               <p className="mt-3 max-w-sm text-sm leading-7 text-[#998f83]">
-                Volte à galeria e toque no coração das fotos que mais tocaram você.
+                Volte à galeria e toque no coração das fotos que mais tocaram
+                você.
               </p>
               <button
                 type="button"
@@ -93,8 +96,34 @@ export default function FavoritesView({
                       ×
                     </button>
 
-                    <div className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full border border-[#bf5c68]/40 bg-[#bf5c68]/15 text-[#bf5c68] backdrop-blur">
+                    <div className="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full border border-[#bf5c68]/40 bg-[#bf5c68]/15 text-[#bf5c68] backdrop-blur">
                       <HeartIcon filled />
+                    </div>
+
+                    <div className="border-t border-[#d7cbb9] bg-[#faf8f4] p-3">
+                      <label
+                        htmlFor={`observacao-${foto.id}`}
+                        className="mb-2 block text-[10px] uppercase tracking-[0.16em] text-[#a8783a]"
+                      >
+                        Observação
+                      </label>
+
+                      <textarea
+                        id={`observacao-${foto.id}`}
+                        value={observacoesPorFoto[foto.id] || ''}
+                        onChange={(event) =>
+                          onObservacaoChange(foto.id, event.target.value)
+                        }
+                        disabled={selecaoEnviada}
+                        maxLength={500}
+                        rows={3}
+                        placeholder="Ex.: gostei da expressão, ajustar cabelo, preferir em PB..."
+                        className="min-h-[84px] w-full resize-none rounded-xl border border-[#ddd5c5] bg-white/70 px-3 py-2 text-sm leading-5 text-[#1a1610] outline-none transition placeholder:text-[#998f83] focus:border-[#a8783a] disabled:cursor-not-allowed disabled:opacity-55"
+                      />
+
+                      <p className="mt-1 text-right text-[10px] text-[#998f83]">
+                        {(observacoesPorFoto[foto.id] || '').length} / 500
+                      </p>
                     </div>
                   </article>
                 ))}

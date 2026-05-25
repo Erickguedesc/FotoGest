@@ -6,8 +6,11 @@ import com.olhari.dto.EnsaioStatusRequest;
 import com.olhari.enums.StatusEnsaio;
 import com.olhari.model.Cliente;
 import com.olhari.model.Ensaio;
+import com.olhari.model.Foto;
 import com.olhari.repository.ClienteRepository;
 import com.olhari.repository.EnsaioRepository;
+import com.olhari.repository.FotoRepository;
+import com.olhari.repository.PreferenciasSistemaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,12 +33,16 @@ public class EnsaioService {
 
     private final EnsaioRepository ensaioRepository;
     private final ClienteRepository clienteRepository;
+    private final FotoRepository fotoRepository;
+    private final PreferenciasSistemaRepository preferenciasSistemaRepository;
 
+    
     
 
     @Transactional
     public EnsaioResponse criar(EnsaioRequest request) {
         Cliente cliente = buscarCliente(request.getClienteId());
+        atualizarDadosCliente(cliente, request);
         
 
 boolean cobrar = Boolean.TRUE.equals(request.getCobrarFotoExtra());
@@ -67,6 +74,9 @@ Ensaio ensaio = Ensaio.builder()
         .valorPacote(request.getValorPacote())
         .cobrarFotoExtra(cobrar)
          .valorFotoExtra(cobrar ? request.getValorFotoExtra() : null)
+        .valorFinalEnsaio(request.getValorFinalEnsaio())
+        .statusValores(normalizarStatusValores(request.getStatusValores()))
+        .observacaoValores(normalizarTexto(request.getObservacaoValores()))
         .observacoes(request.getObservacoes())
         .progresso(resolverProgresso(StatusEnsaio.AGENDADO))
         .build();
@@ -126,6 +136,9 @@ if (request.getValorPacote() == null ||
 }
 ensaio.setCobrarFotoExtra(cobrar);
 ensaio.setValorFotoExtra(cobrar ? request.getValorFotoExtra() : null);
+ensaio.setValorFinalEnsaio(request.getValorFinalEnsaio());
+ensaio.setStatusValores(normalizarStatusValores(request.getStatusValores()));
+ensaio.setObservacaoValores(normalizarTexto(request.getObservacaoValores()));
 
         return toResponse(ensaioRepository.save(ensaio));
     }
@@ -220,6 +233,16 @@ private String normalizarTexto(String valor) {
     return texto.isEmpty() ? null : texto;
 }
 
+private String normalizarStatusValores(String valor) {
+    String status = normalizarTexto(valor);
+
+    if (status == null) {
+        return "NAO_INFORMADO";
+    }
+
+    return status;
+}
+
     private EnsaioResponse toResponse(Ensaio ensaio) {
     return EnsaioResponse.builder()
             .id(ensaio.getId())
@@ -241,12 +264,48 @@ private String normalizarTexto(String valor) {
             .valorPacote(ensaio.getValorPacote())
             .valorFotoExtra(ensaio.getValorFotoExtra())
             .cobrarFotoExtra(ensaio.getCobrarFotoExtra())
+            .valorFinalEnsaio(ensaio.getValorFinalEnsaio())
+            .statusValores(ensaio.getStatusValores())
+            .observacaoValores(ensaio.getObservacaoValores())
 
             .observacoes(ensaio.getObservacoes())
             .progresso(ensaio.getProgresso())
+            .totalFotos(fotoRepository.countByEnsaioId(ensaio.getId()))
+            .capaUrl(buscarCapaUrl(ensaio.getId()))
 
             .criadoEm(ensaio.getCriadoEm())
             .atualizadoEm(ensaio.getAtualizadoEm())
             .build();
+}
+
+private String buscarCapaUrl(UUID ensaioId) {
+    List<Foto> fotos = fotoRepository.findByEnsaioIdOrderByOrdemAscEnviadaEmAsc(ensaioId);
+
+    if (fotos.isEmpty()) {
+        return buscarCapaAlbumPadrao();
+    }
+
+    Foto capa = fotos.stream()
+            .filter(foto -> Boolean.TRUE.equals(foto.getEhCapa()))
+            .findFirst()
+            .orElse(fotos.get(0));
+
+    if (capa.getUrlWatermark() != null && !capa.getUrlWatermark().isBlank()) {
+        return capa.getUrlWatermark();
+    }
+
+    if (capa.getUrlOriginal() != null && !capa.getUrlOriginal().isBlank()) {
+        return capa.getUrlOriginal();
+    }
+
+    return buscarCapaAlbumPadrao();
+}
+
+private String buscarCapaAlbumPadrao() {
+    return preferenciasSistemaRepository.findAll()
+            .stream()
+            .findFirst()
+            .map(preferencias -> preferencias.getCapaAlbumPadraoUrl())
+            .orElse(null);
 }
 }

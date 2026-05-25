@@ -21,7 +21,7 @@ export default function SolicitacaoActions({
       <button
         type="button"
         onClick={() => onWhatsApp(solicitacao.whatsapp)}
-        className="rounded-lg border border-white/10 bg-transparent px-5 py-2 text-xs font-medium text-white/60 transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]"
+        className="rounded-lg border border-[var(--border)] bg-transparent px-5 py-2 text-xs font-medium text-[var(--text-muted)] transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]"
       >
         WhatsApp
       </button>
@@ -30,7 +30,7 @@ export default function SolicitacaoActions({
         type="button"
         disabled={loading}
         onClick={() => onStatusChange(solicitacao, nextStatus)}
-        className="rounded-lg border border-white/10 bg-transparent px-5 py-2 text-xs font-medium text-white/60 transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-45"
+        className="rounded-lg border border-[var(--border)] bg-transparent px-5 py-2 text-xs font-medium text-[var(--text-muted)] transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-45"
       >
         {loading ? 'Salvando...' : buttonLabel}
       </button>

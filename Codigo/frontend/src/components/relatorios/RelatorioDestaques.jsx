@@ -18,14 +18,14 @@ export default function RelatorioDestaques({ destaques }) {
 
         <DestaqueItem
           icon={<TrendingUp size={18} />}
-          label="Maior receita"
+          label="Maior valor"
           value={formatMoney(destaques?.maiorReceita)}
           variant="green"
         />
 
         <DestaqueItem
           icon={<TrendingDown size={18} />}
-          label="Menor receita"
+          label="Menor valor"
           value={formatMoney(destaques?.menorReceita)}
           variant="red"
         />

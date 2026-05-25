@@ -28,6 +28,7 @@ public class ConfiguracoesService {
     private final PreferenciasSistemaRepository preferenciasSistemaRepository;
     private final PasswordEncoder passwordEncoder;
     private final CloudinaryService cloudinaryService;
+    private final MarcaDaguaService marcaDaguaService;
 
     @Transactional
     public ConfiguracoesResponseDTO buscarConfiguracoes() {
@@ -35,11 +36,12 @@ public class ConfiguracoesService {
         ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
         PreferenciasSistema preferencias = getOuCriarPreferencias(fotografa);
 
-        return ConfiguracoesResponseDTO.builder()
-                .fotografa(toFotografaDTO(fotografa))
-                .estudio(toEstudioDTO(estudio))
-                .preferencias(toPreferenciasDTO(preferencias))
-                .build();
+       return ConfiguracoesResponseDTO.builder()
+        .fotografa(toFotografaDTO(fotografa))
+        .estudio(toEstudioDTO(estudio))
+        .preferencias(toPreferenciasDTO(preferencias))
+        .marcaDagua(marcaDaguaService.buscarMarcaDagua())
+        .build();
     }
 
     @Transactional
@@ -101,6 +103,7 @@ public class ConfiguracoesService {
         preferencias.setCidadePadrao(request.getCidadePadrao());
         preferencias.setMensagemEnvioAlbum(request.getMensagemEnvioAlbum());
         preferencias.setMensagemSelecaoRecebida(request.getMensagemSelecaoRecebida());
+        preferencias.setCapaAlbumPadraoUrl(request.getCapaAlbumPadraoUrl());
 
         preferenciasSistemaRepository.save(preferencias);
 
@@ -211,6 +214,8 @@ public class ConfiguracoesService {
                 .cidadePadrao(preferencias.getCidadePadrao())
                 .mensagemEnvioAlbum(preferencias.getMensagemEnvioAlbum())
                 .mensagemSelecaoRecebida(preferencias.getMensagemSelecaoRecebida())
+                .capaAlbumPadraoUrl(preferencias.getCapaAlbumPadraoUrl())
+                .capaAlbumPadraoPublicId(preferencias.getCapaAlbumPadraoPublicId())
                 .build();
     }
     @Transactional
@@ -283,5 +288,44 @@ private void validarImagem(MultipartFile arquivo) {
         );
     }
 }
+@Transactional
+public PreferenciasConfigDTO uploadCapaAlbumPadrao(MultipartFile arquivo) {
+    validarImagem(arquivo);
+
+    Fotografa fotografa = getFotografaLogada();
+    PreferenciasSistema preferencias = getOuCriarPreferencias(fotografa);
+
+    String publicIdAntigo = preferencias.getCapaAlbumPadraoPublicId();
+
+    try {
+        Map<String, Object> uploadResult =
+                cloudinaryService.uploadConfiguracao(arquivo, "album-capa");
+
+        String url = String.valueOf(uploadResult.get("secure_url"));
+        String publicId = String.valueOf(uploadResult.get("public_id"));
+
+        preferencias.setCapaAlbumPadraoUrl(url);
+        preferencias.setCapaAlbumPadraoPublicId(publicId);
+
+        preferenciasSistemaRepository.save(preferencias);
+
+        if (publicIdAntigo != null && !publicIdAntigo.isBlank()) {
+            try {
+                cloudinaryService.deletar(publicIdAntigo);
+            } catch (IOException ignored) {
+                // Não quebra o fluxo se a imagem antiga não puder ser removida.
+            }
+        }
+
+        return toPreferenciasDTO(preferencias);
+    } catch (IOException e) {
+        throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Não foi possível enviar a capa padrão do álbum"
+        );
+    }
+}
+
+
     
 }

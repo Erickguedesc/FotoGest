@@ -15,4 +15,5 @@ public class ClienteResponse {
     private String cpf;
     private String cidade;
     private String indicacao;
+    private Boolean ativo;
 }

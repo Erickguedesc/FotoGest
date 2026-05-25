@@ -50,6 +50,10 @@ public class Album {
     @Column(nullable = false)
     private Boolean ativo = true;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer views = 0;
+
     /** Fotos que o cliente favoritou (RF06, RF07) */
     @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

@@ -33,9 +33,9 @@ export default function DashboardStats({ dashboard }) {
             />
 
             <StatCard
-                titulo="Receita estimada"
+                titulo="Valor previsto"
                 valor={formatarMoeda(dashboard?.receitaEstimada || 0)}
-                descricao="receita do mês"
+                descricao="referência do mês"
                 icon={Wallet}
                 destaque
             />

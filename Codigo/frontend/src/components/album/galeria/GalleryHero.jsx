@@ -1,3 +1,5 @@
+import { formatarDataExpiracao } from '../../../services/galeriaUtils'
+
 export default function GalleryHero({
   coverUrl,
   nomeCliente,
@@ -6,6 +8,8 @@ export default function GalleryHero({
   localEnsaio,
   totalFotos,
   limite,
+  expiraEm,
+  tempoRestante,
 }) {
   return (
     <section className="relative flex min-h-[76vh] items-center justify-center overflow-hidden px-6 py-20 text-center text-white">
@@ -54,6 +58,30 @@ export default function GalleryHero({
             Até {limite} no pacote
           </div>
         </div>
+
+        {expiraEm && tempoRestante ? (
+          <div
+            className={`mx-auto mt-8 max-w-xl rounded-2xl border px-6 py-5 backdrop-blur-xl ${
+              tempoRestante.dias <= 3
+                ? 'border-red-400/40 bg-red-500/10'
+                : 'border-white/15 bg-white/10'
+            }`}
+          >
+            <p className="text-[11px] uppercase tracking-[0.22em] text-white/50">
+              Álbum disponível por tempo limitado
+            </p>
+
+            <h3 className="mt-2 font-serif text-3xl font-light text-white">
+              Expira em {tempoRestante.dias} dias,{' '}
+              {String(tempoRestante.horas).padStart(2, '0')}h e{' '}
+              {String(tempoRestante.minutos).padStart(2, '0')}min
+            </h3>
+
+            <p className="mt-2 text-sm text-white/60">
+              Disponível até {formatarDataExpiracao(expiraEm)}
+            </p>
+          </div>
+        ) : null}
       </div>
     </section>
   )

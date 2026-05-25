@@ -47,11 +47,11 @@ export default function Navbar() {
 
         {isLogged && (
           <a
-            href="/solicitacoes"
+            href="/dashboard"
             className="no-underline px-4 py-2 rounded-full border border-white/15 text-[11px] uppercase tracking-[0.15em] font-semibold transition-all duration-300 hover:border-[var(--gold)] hover:text-[var(--gold)]"
             style={{ color: 'var(--text-muted)' }}
           >
-            Solicitações
+            Acessar Sistema
           </a>
         )}
 
@@ -95,12 +95,12 @@ export default function Navbar() {
 
           {isLogged && (
             <a
-              href="/solicitacoes"
+              href="/dashboard"
               onClick={() => setMenuOpen(false)}
               className="no-underline text-center px-5 py-3 rounded-full border border-white/15 text-[11px] uppercase tracking-[0.15em] font-semibold transition-colors hover:border-[var(--gold)] hover:text-[var(--gold)]"
               style={{ color: 'var(--text-muted)' }}
             >
-              Solicitações
+              Acessar Sistema
             </a>
           )}
 

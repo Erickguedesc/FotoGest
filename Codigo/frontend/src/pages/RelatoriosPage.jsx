@@ -45,7 +45,7 @@ export default function RelatoriosPage() {
         return
       }
 
-      setErro('Não foi possível carregar o relatório de faturamento.')
+      setErro('Não foi possível carregar o relatório de valores.')
     } finally {
       setLoading(false)
     }
@@ -61,7 +61,7 @@ return (
   <>
     <Header />
 
-    <main className="min-h-screen bg-[#0A0A0A] px-4 pt-24 pb-8 text-white md:px-8">
+    <main className="theme-page min-h-screen px-4 pt-24 pb-8 md:px-8">
       <div className="mx-auto max-w-7xl">
   <RelatorioHeader
   tipo={tipo}

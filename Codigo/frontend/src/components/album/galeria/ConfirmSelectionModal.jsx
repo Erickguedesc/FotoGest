@@ -16,12 +16,13 @@ export default function ConfirmSelectionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a0806]/85 p-5 backdrop-blur">
       <div className="w-full max-w-md rounded-3xl border border-[#2a2420] bg-[#1a1612] p-8 text-center text-[#e8dfd4] shadow-2xl">
-        <div className="mb-3 text-4xl">▣</div>
+        <div className="mb-3 text-4xl">□</div>
         <h2 className="font-serif text-3xl font-light">
           Deseja finalizar?
         </h2>
         <p className="mt-3 text-sm leading-7 text-[#887e74]">
-          Após confirmar, sua seleção será enviada à fotógrafa e não poderá ser alterada.
+          Após confirmar, sua seleção será enviada à fotógrafa e não poderá ser
+          alterada.
         </p>
 
         <div className="my-6 rounded-2xl border border-[#2a2420] bg-white/[0.03] p-4">

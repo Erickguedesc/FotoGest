@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LogOut, Settings } from 'lucide-react'
+import { LogOut, Moon, Settings, Sun } from 'lucide-react'
 
 import { configuracoesService } from '../../services/configuracoesService'
 
@@ -19,6 +19,7 @@ const OlhariIcon = () => (
 const navLinks = [
   { label: 'Dashboard', to: '/dashboard' },
   { label: 'Ensaios', to: '/ensaios' },
+  { label: 'Clientes', to: '/clientes' },
   { label: 'Novo Ensaio', to: '/novo-ensaio' },
   { label: 'Relatórios', to: '/relatorios' },
   { label: 'Solicitações', to: '/solicitacoes' },
@@ -43,18 +44,47 @@ export default function Header() {
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [fotografa, setFotografa] = useState(null)
+  const [theme, setTheme] = useState(() => localStorage.getItem('olhari-theme') || 'dark')
 
   useEffect(() => {
+    const nextTheme = theme === 'light' ? 'light' : 'dark'
+    document.documentElement.dataset.theme = nextTheme
+    localStorage.setItem('olhari-theme', nextTheme)
+  }, [theme])
+
+  useEffect(() => {
+    let isMounted = true
+
     async function carregarFotografa() {
       try {
         const data = await configuracoesService.buscar()
-        setFotografa(data?.fotografa || null)
+        if (isMounted) {
+          setFotografa(data?.fotografa || null)
+        }
       } catch {
-        setFotografa(null)
+        if (isMounted) {
+          setFotografa(null)
+        }
       }
     }
 
+    function handleFotografaAtualizada(event) {
+      if (event.detail) {
+        setFotografa(event.detail)
+        return
+      }
+
+      carregarFotografa()
+    }
+
     carregarFotografa()
+
+    window.addEventListener('olhari:fotografa-atualizada', handleFotografaAtualizada)
+
+    return () => {
+      isMounted = false
+      window.removeEventListener('olhari:fotografa-atualizada', handleFotografaAtualizada)
+    }
   }, [])
 
   useEffect(() => {
@@ -76,16 +106,24 @@ export default function Header() {
   const isActive = (to) =>
     to === '/ensaios'
       ? location.pathname.startsWith('/ensaios')
+      : to === '/clientes'
+        ? location.pathname.startsWith('/clientes')
       : location.pathname === to
 
   const handleLogout = () => {
+    const currentTheme = localStorage.getItem('olhari-theme')
     localStorage.clear()
+    if (currentTheme) localStorage.setItem('olhari-theme', currentTheme)
     setMenuOpen(false)
     navigate('/login')
   }
 
+  const toggleTheme = () => {
+    setTheme((current) => (current === 'light' ? 'dark' : 'light'))
+  }
+
   return (
-    <header className="fixed left-0 right-0 top-0 z-[100] flex h-[60px] items-center gap-0 border-b border-[rgba(255,255,255,0.07)] bg-[rgba(14,14,14,0.94)] px-8 backdrop-blur-[14px]">
+    <header className="fixed left-0 right-0 top-0 z-[100] flex h-[60px] items-center gap-0 border-b border-[var(--border)] bg-[var(--header-bg)] px-8 backdrop-blur-[14px]">
       <Link to="/" className="flex flex-shrink-0 items-center gap-2.5 no-underline">
         <OlhariIcon />
 
@@ -94,29 +132,55 @@ export default function Header() {
         </span>
       </Link>
 
-      <nav className="mx-auto flex items-center gap-0.5">
+      <nav className="theme-soft mx-auto flex items-center gap-1 rounded-full border px-1.5 py-1 shadow-[0_10px_30px_rgba(0,0,0,0.12)]">
         {navLinks.map((link) => (
           <Link
             key={link.to}
             to={link.to}
             className={`
-              relative rounded-md px-4 py-1.5 text-[12px] tracking-[0.08em] no-underline
-              transition-colors duration-200
+              rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] no-underline
+              transition-all duration-200
               ${
                 isActive(link.to)
-                  ? 'bg-[var(--gold-dim)] text-[var(--gold)]'
-                  : 'text-white/70 hover:bg-white/[0.04] hover:text-white'
+                  ? 'bg-[var(--card)] text-[var(--gold)] shadow-[0_6px_18px_rgba(0,0,0,0.10)]'
+                  : 'text-[var(--text-muted)] hover:bg-[var(--card-hover)] hover:text-[var(--text)]'
               }
             `}
           >
             {link.label}
-
-            {isActive(link.to) && (
-              <span className="absolute bottom-[-1px] left-4 right-4 h-[1.5px] rounded-sm bg-[var(--gold)]" />
-            )}
           </Link>
         ))}
       </nav>
+
+      <button
+        type="button"
+        onClick={toggleTheme}
+        title={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'}
+        aria-label={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'}
+        className={`relative mr-3 flex h-8 w-[62px] flex-shrink-0 items-center rounded-full border p-1 transition-all duration-300 ${
+          theme === 'light'
+            ? 'border-[#d8ccba] bg-[#f3eee6] shadow-[inset_0_1px_2px_rgba(92,82,72,0.12)]'
+            : 'border-white/10 bg-[#1b1b1b] shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]'
+        }`}
+      >
+        <span
+          className={`absolute top-1/2 h-6 w-6 -translate-y-1/2 rounded-full transition-all duration-300 ${
+            theme === 'light'
+              ? 'left-[33px] bg-[#1d1d1d] shadow-[0_4px_12px_rgba(0,0,0,0.22)]'
+              : 'left-1 bg-[#faf8f4] shadow-[0_4px_12px_rgba(0,0,0,0.35)]'
+          }`}
+        />
+
+        <span
+          className={`absolute top-1/2 -translate-y-1/2 transition-all duration-300 ${
+            theme === 'light'
+              ? 'left-3 text-[#1a1610]'
+              : 'right-3 text-[#f5f0e8]'
+          }`}
+        >
+          {theme === 'light' ? <Sun size={15} /> : <Moon size={15} />}
+        </span>
+      </button>
 
       <div ref={menuRef} className="relative flex-shrink-0">
         <button

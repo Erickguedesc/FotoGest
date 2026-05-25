@@ -30,6 +30,18 @@
     return partes[partes.length - 1] || ''
   }
 
+  const UPLOAD_BATCH_SIZE = 10
+
+  const dividirEmLotes = (arquivos, tamanhoLote = UPLOAD_BATCH_SIZE) => {
+    const lotes = []
+
+    for (let index = 0; index < arquivos.length; index += tamanhoLote) {
+      lotes.push(arquivos.slice(index, index + tamanhoLote))
+    }
+
+    return lotes
+  }
+
   export default function DetalhesEnsaio() {
     const { id } = useParams()
     const navigate = useNavigate()
@@ -58,6 +70,7 @@
 
     const [uploadProgress, setUploadProgress] = useState(0)
     const [uploadTotal, setUploadTotal] = useState(0)
+    const [uploadStatus, setUploadStatus] = useState('')
     const [configuracoes, setConfiguracoes] = useState(null)
 
     const albumToken = useMemo(() => {
@@ -70,6 +83,45 @@
       album?.ativo !== false &&
       album?.acessoLiberado !== false
     )
+
+    useEffect(() => {
+      if (!uploadLoading) return undefined
+
+      const handleBeforeUnload = (event) => {
+        event.preventDefault()
+        event.returnValue = ''
+      }
+
+      window.addEventListener('beforeunload', handleBeforeUnload)
+
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload)
+      }
+    }, [uploadLoading])
+
+    useEffect(() => {
+      if (!albumToken || !albumPublicado) {
+        setSelecao(null)
+        return
+      }
+
+      let cancelado = false
+
+      const carregarSelecaoSilenciosa = async () => {
+        try {
+          const response = await albumService.buscarSelecao(albumToken)
+          if (!cancelado) setSelecao(response.data)
+        } catch {
+          if (!cancelado) setSelecao(null)
+        }
+      }
+
+      carregarSelecaoSilenciosa()
+
+      return () => {
+        cancelado = true
+      }
+    }, [albumToken, albumPublicado])
 
     const showToast = (message, type = 'success') => {
       setToast({ message, type })
@@ -216,25 +268,56 @@
   setUploadLoading(true)
   setUploadProgress(0)
   setUploadTotal(arquivos.length)
+  setUploadStatus(`Preparando ${arquivos.length} foto${arquivos.length === 1 ? '' : 's'} para envio...`)
 
   try {
-    await fotosService.upload(id, arquivos, setUploadProgress)
+    const lotes = dividirEmLotes(arquivos)
+    let fotosEnviadas = 0
 
+    for (let index = 0; index < lotes.length; index += 1) {
+      const lote = lotes[index]
+      const loteAtual = index + 1
+
+      setUploadStatus(
+        `Enviando lote ${loteAtual} de ${lotes.length} - ${fotosEnviadas} de ${arquivos.length} fotos concluídas.`,
+      )
+
+      await fotosService.upload(id, lote, (progressoLote) => {
+        const fotosDoLoteEnviadas = Math.floor((progressoLote / 100) * lote.length)
+        const progressoTotal = Math.round(
+          ((fotosEnviadas + fotosDoLoteEnviadas) * 100) / arquivos.length,
+        )
+
+        setUploadProgress(Math.min(progressoTotal, 99))
+      })
+
+      fotosEnviadas += lote.length
+      setUploadProgress(Math.min(Math.round((fotosEnviadas * 100) / arquivos.length), 99))
+    }
+
+    setUploadStatus('Finalizando e atualizando a galeria...')
     setUploadProgress(100)
-    showToast('Fotos enviadas com sucesso.')
+    showToast(`${arquivos.length} foto${arquivos.length === 1 ? '' : 's'} enviada${arquivos.length === 1 ? '' : 's'} com sucesso.`)
     await loadFotos()
   } catch (error) {
     const msg =
       error?.response?.data?.message ||
-      'Não foi possível enviar as fotos.'
+      'Não foi possível enviar todas as fotos. As fotos já concluídas permanecem salvas.'
 
     showToast(msg, 'error')
+
+    try {
+      await loadFotos()
+    } catch {
+      // Se a atualização falhar, a próxima abertura da tela buscará o estado salvo.
+    }
   } finally {
     setUploadLoading(false)
 
     setTimeout(() => {
       setUploadProgress(0)
       setUploadTotal(0)
+      setUploadStatus('')
     }, 1200)
   }
 }
@@ -247,8 +330,13 @@
 
       try {
         await fotosService.definirCapa(fotoId)
+        setFotos((current) =>
+          current.map((foto) => ({
+            ...foto,
+            ehCapa: foto.id === fotoId,
+          })),
+        )
         showToast('Capa atualizada com sucesso.')
-        await loadFotos()
       } catch (error) {
         const msg =
           error?.response?.data?.message ||
@@ -349,6 +437,11 @@
         ativo: adminAlbum?.ativo ?? true,
         acessoLiberado: adminAlbum?.acessoLiberado ?? true,
       })
+
+      await Promise.all([
+        loadEnsaio(),
+        loadHistoricoStatus(),
+      ])
 
       showToast(
         album?.urlAcesso
@@ -599,8 +692,8 @@ const texto =
         <>
           <Header />
 
-          <main className="mx-auto max-w-[1200px] px-8 pt-[110px] text-white max-md:px-4">
-            <div className="rounded-2xl border border-white/[0.08] bg-[#141414] p-8 text-white/50">
+          <main className="theme-page mx-auto max-w-[1200px] px-8 pt-[110px] max-md:px-4">
+            <div className="theme-card rounded-2xl border p-8 text-[var(--text-muted)]">
               Carregando detalhes do ensaio...
             </div>
           </main>
@@ -613,13 +706,13 @@ const texto =
         <>
           <Header />
 
-          <main className="mx-auto max-w-[1200px] px-8 pt-[110px] text-white max-md:px-4">
-            <div className="rounded-2xl border border-white/[0.08] bg-[#141414] p-8">
-              <h1 className="font-serif text-2xl text-white">
+          <main className="theme-page mx-auto max-w-[1200px] px-8 pt-[110px] max-md:px-4">
+            <div className="theme-card rounded-2xl border p-8">
+              <h1 className="theme-title font-serif text-2xl">
                 Ensaio não encontrado
               </h1>
 
-              <p className="mt-2 text-sm text-white/45">
+              <p className="theme-muted mt-2 text-sm">
                 Não foi possível encontrar os dados deste ensaio.
               </p>
 
@@ -640,8 +733,8 @@ const texto =
       <>
         <Header />
 
-        <main className="mx-auto max-w-[1200px] px-8 pb-16 pt-[92px] text-white max-md:px-4">
-          <div className="mb-5 text-[11px] text-white/40">
+        <main className="theme-page mx-auto max-w-[1200px] px-8 pb-16 pt-[92px] max-md:px-4">
+          <div className="theme-muted mb-5 text-[11px]">
             <button
               type="button"
               onClick={() => navigate('/ensaios')}
@@ -651,7 +744,17 @@ const texto =
             </button>
 
             <span className="mx-2 text-white/20">›</span>
-            <span className="text-white/70">{ensaio.clienteNome}</span>
+            <span className="theme-text">{ensaio.clienteNome}</span>
+          </div>
+
+          <div className="mb-5 flex justify-end">
+            <button
+              type="button"
+              onClick={() => navigate(`/clientes/${ensaio.clienteId}`)}
+              className="rounded-lg border border-[var(--gold-border)] px-4 py-2 text-[12px] text-[var(--gold)] transition hover:bg-[var(--gold-dim)]"
+            >
+              Ver histórico da cliente
+            </button>
           </div>
 
           <EnsaioHero
@@ -670,6 +773,7 @@ const texto =
   />
               <InformacoesCard
                 ensaio={ensaio}
+                selecao={selecao}
                 onEdit={() => setEditModalOpen(true)}
               />
 
@@ -683,6 +787,7 @@ const texto =
                 disabled={albumPublicado}
                 uploadProgress={uploadProgress}
                 uploadTotal={uploadTotal}
+                uploadStatus={uploadStatus}
                 onUpload={handleUploadFotos}
               />
 

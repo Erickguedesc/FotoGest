@@ -2,6 +2,8 @@ package com.olhari.controller;
 
 import com.olhari.dto.*;
 import com.olhari.service.ConfiguracoesService;
+import com.olhari.service.MarcaDaguaService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -9,13 +11,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
+
 @RestController
 @RequestMapping("/configuracoes")
 @RequiredArgsConstructor
 public class ConfiguracoesController {
 
     private final ConfiguracoesService configuracoesService;
-
+    private final MarcaDaguaService marcaDaguaService;
     @GetMapping
     public ResponseEntity<ConfiguracoesResponseDTO> buscarConfiguracoes() {
         return ResponseEntity.ok(configuracoesService.buscarConfiguracoes());
@@ -67,4 +70,55 @@ public ResponseEntity<EstudioConfigDTO> uploadLogoEstudio(
         configuracoesService.alterarSenha(request);
         return ResponseEntity.noContent().build();
     }
+
+
+    @GetMapping("/marca-dagua")
+public ResponseEntity<MarcaDaguaConfigDTO> buscarMarcaDagua() {
+    return ResponseEntity.ok(marcaDaguaService.buscarMarcaDagua());
+}
+
+@PutMapping("/marca-dagua")
+public ResponseEntity<MarcaDaguaConfigDTO> atualizarMarcaDagua(
+        @RequestBody MarcaDaguaUpdateRequest request
+) {
+    return ResponseEntity.ok(marcaDaguaService.atualizarMarcaDagua(request));
+}
+
+@PatchMapping(
+        value = "/marca-dagua/imagem",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+)
+public ResponseEntity<MarcaDaguaConfigDTO> uploadImagemMarcaDagua(
+        @RequestParam("arquivo") MultipartFile arquivo
+) {
+    return ResponseEntity.ok(marcaDaguaService.uploadImagemMarcaDagua(arquivo));
+}
+
+@PostMapping("/marca-dagua/texto")
+public ResponseEntity<MarcaDaguaConfigDTO> gerarMarcaDaguaTexto(
+        @RequestBody @Valid MarcaDaguaTextoRequest request
+) {
+    return ResponseEntity.ok(marcaDaguaService.gerarMarcaDaguaTexto(request));
+}
+
+@DeleteMapping("/marca-dagua/imagem")
+public ResponseEntity<MarcaDaguaConfigDTO> removerImagemMarcaDagua() {
+    return ResponseEntity.ok(marcaDaguaService.removerImagemMarcaDagua());
+}
+
+@PostMapping("/marca-dagua/reprocessar")
+public ResponseEntity<MarcaDaguaReprocessarResponse> reprocessarFotosMarcaDagua() {
+    return ResponseEntity.ok(marcaDaguaService.reprocessarFotosExistentes());
+}
+
+@PatchMapping(
+        value = "/preferencias/capa-album",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+)
+public ResponseEntity<PreferenciasConfigDTO> uploadCapaAlbumPadrao(
+        @RequestParam("arquivo") MultipartFile arquivo
+) {
+    return ResponseEntity.ok(configuracoesService.uploadCapaAlbumPadrao(arquivo));
+}
+
 }

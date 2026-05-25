@@ -11,8 +11,55 @@ export const configuracoesService = {
     return response.data
   },
 
+  uploadFotoPerfil: async (arquivo) => {
+    const formData = new FormData()
+    formData.append('arquivo', arquivo)
+
+    const response = await api.patch('/configuracoes/fotografa/foto', formData)
+
+    return response.data
+  },
+
   atualizarEstudio: async (dados) => {
     const response = await api.put('/configuracoes/estudio', dados)
+    return response.data
+  },
+
+  uploadLogoEstudio: async (arquivo) => {
+    const formData = new FormData()
+    formData.append('arquivo', arquivo)
+
+    const response = await api.patch('/configuracoes/estudio/logo', formData)
+
+    return response.data
+  },
+
+  buscarMarcaDagua: async () => {
+    const response = await api.get('/configuracoes/marca-dagua')
+    return response.data
+  },
+
+  atualizarMarcaDagua: async (dados) => {
+    const response = await api.put('/configuracoes/marca-dagua', dados)
+    return response.data
+  },
+
+  uploadMarcaDagua: async (arquivo) => {
+    const formData = new FormData()
+    formData.append('arquivo', arquivo)
+
+    const response = await api.patch('/configuracoes/marca-dagua/imagem', formData)
+
+    return response.data
+  },
+
+  removerMarcaDagua: async () => {
+    const response = await api.delete('/configuracoes/marca-dagua/imagem')
+    return response.data
+  },
+
+  reprocessarMarcaDagua: async () => {
+    const response = await api.post('/configuracoes/marca-dagua/reprocessar')
     return response.data
   },
 
@@ -21,34 +68,22 @@ export const configuracoesService = {
     return response.data
   },
 
+  uploadCapaAlbumPadrao: async (arquivo) => {
+  const formData = new FormData()
+  formData.append('arquivo', arquivo)
+
+  const response = await api.patch('/configuracoes/preferencias/capa-album', formData)
+
+  return response.data
+},
+
   alterarSenha: async (dados) => {
     const response = await api.patch('/configuracoes/senha', dados)
     return response.data
   },
 
-  uploadFotoPerfil: async (arquivo) => {
-  const formData = new FormData()
-  formData.append('arquivo', arquivo)
-
-  const response = await api.patch('/configuracoes/fotografa/foto', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
-
-  return response.data
-},
-
-uploadLogoEstudio: async (arquivo) => {
-  const formData = new FormData()
-  formData.append('arquivo', arquivo)
-
-  const response = await api.patch('/configuracoes/estudio/logo', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
-
+  gerarMarcaDaguaTexto: async (dados) => {
+  const response = await api.post('/configuracoes/marca-dagua/texto', dados)
   return response.data
 },
 }

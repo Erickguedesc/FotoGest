@@ -6,6 +6,14 @@ import lombok.*;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import com.olhari.enums.MarcaDaguaPosicao;
+import com.olhari.enums.MarcaDaguaTamanho;
+
+import com.olhari.enums.MarcaDaguaTipo;
+import com.olhari.enums.MarcaDaguaFonte;
+import com.olhari.enums.MarcaDaguaCor;
+import com.olhari.enums.MarcaDaguaEstilo;
+
 @Entity
 @Table(name = "configuracao_estudio")
 @Getter
@@ -50,6 +58,37 @@ public class ConfiguracaoEstudio {
     @Column(name = "logo_url", columnDefinition = "TEXT")
     private String logoUrl;
 
+        @Column(name = "marca_dagua_url", columnDefinition = "TEXT")
+    private String marcaDaguaUrl;
+
+    @Column(name = "marca_dagua_public_id", columnDefinition = "TEXT")
+    private String marcaDaguaPublicId;
+
+    @Column(name = "marca_dagua_texto", columnDefinition = "TEXT")
+private String marcaDaguaTexto;
+
+    @Builder.Default
+    @Column(name = "marca_dagua_ativa", nullable = false)
+    private Boolean marcaDaguaAtiva = false;
+
+@Builder.Default
+@Enumerated(EnumType.STRING)
+@Column(name = "marca_dagua_posicao", length = 40)
+private MarcaDaguaPosicao marcaDaguaPosicao = MarcaDaguaPosicao.INFERIOR_DIREITA;
+
+@Builder.Default
+@Column(name = "marca_dagua_opacidade")
+private Integer marcaDaguaOpacidade = 35;
+
+@Builder.Default
+@Enumerated(EnumType.STRING)
+@Column(name = "marca_dagua_tamanho", length = 20)
+private MarcaDaguaTamanho marcaDaguaTamanho = MarcaDaguaTamanho.MEDIA;
+
+@Builder.Default
+@Column(name = "marca_dagua_margem")
+private Integer marcaDaguaMargem = 30;
+
     @Column(name = "criado_em", updatable = false)
     private OffsetDateTime criadoEm;
 
@@ -65,6 +104,29 @@ public class ConfiguracaoEstudio {
     protected void onUpdate() {
         atualizadoEm = OffsetDateTime.now();
     }
+
+
+@Builder.Default
+@Enumerated(EnumType.STRING)
+@Column(name = "marca_dagua_tipo", length = 20)
+private MarcaDaguaTipo marcaDaguaTipo = MarcaDaguaTipo.IMAGEM;
+
+@Builder.Default
+@Enumerated(EnumType.STRING)
+@Column(name = "marca_dagua_fonte", length = 30)
+private MarcaDaguaFonte marcaDaguaFonte = MarcaDaguaFonte.MODERNA;
+
+@Builder.Default
+@Enumerated(EnumType.STRING)
+@Column(name = "marca_dagua_cor", length = 20)
+private MarcaDaguaCor marcaDaguaCor = MarcaDaguaCor.BRANCO;
+
+@Builder.Default
+@Enumerated(EnumType.STRING)
+@Column(name = "marca_dagua_estilo", length = 20)
+private MarcaDaguaEstilo marcaDaguaEstilo = MarcaDaguaEstilo.NORMAL;
+
+
 }
 
 // para alterar configuraçes do perfil 

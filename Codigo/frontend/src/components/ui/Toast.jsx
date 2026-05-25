@@ -25,7 +25,7 @@ export default function Toast({ message, type = 'gold', onClose }) {
         flex items-center gap-2.5
         bg-[#1E1E1E] border border-[rgba(201,164,89,0.45)]
         rounded-[10px] px-4 py-3
-        text-[13px] text-white
+        text-[13px] text-[#F8F3E9]
         pointer-events-none
         transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]
         ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}

@@ -6,6 +6,7 @@ import { ensaiosService } from '../../../services/ensaiosService'
 import ConfirmDeleteModal from './ConfirmDeleteModal'
 import EditEnsaioModal from './EditEnsaioModal'
 import EmptyState from './EmptyState'
+import CalendarioEnsaios from './CalendarioEnsaios'
 import EnsaiosGrid from './EnsaiosGrid'
 import EnsaiosTable from './EnsaiosTable'
 import EnsaiosToolbar from './EnsaiosToolbar'
@@ -66,6 +67,7 @@ export default function ListaEnsaios() {
 
   const [ensaios, setEnsaios] = useState([])
   const [filters, setFilters] = useState(INITIAL_FILTERS)
+  const [filtersResetKey, setFiltersResetKey] = useState(0)
   const [viewMode, setViewMode] = useState('table')
   const [sort, setSort] = useState({ key: 'dataEnsaio', direction: 'desc' })
   const [page, setPage] = useState(1)
@@ -131,7 +133,8 @@ export default function ListaEnsaios() {
   }
 
   const handleClearFilters = () => {
-    setFilters(INITIAL_FILTERS)
+    setFilters({ ...INITIAL_FILTERS })
+    setFiltersResetKey((current) => current + 1)
     setPage(1)
   }
 
@@ -230,6 +233,10 @@ export default function ListaEnsaios() {
     navigate(`/ensaios/${ensaio.id}/pre-contrato`)
   }
 
+  const handleCreateForDate = (date) => {
+    navigate(`/novo-ensaio?data=${date}`)
+  }
+
   const countLabel = `${ensaios.length} ensaio${
     ensaios.length === 1 ? '' : 's'
   } cadastrado${ensaios.length === 1 ? '' : 's'}`
@@ -275,6 +282,7 @@ export default function ListaEnsaios() {
 
         <EnsaiosToolbar
           filters={filters}
+          resetKey={filtersResetKey}
           onFilterChange={handleFilterChange}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
@@ -292,7 +300,13 @@ export default function ListaEnsaios() {
           <EmptyState onCreate={() => navigate('/novo-ensaio')} />
         ) : (
           <>
-            {viewMode === 'table' ? (
+            {viewMode === 'calendar' ? (
+              <CalendarioEnsaios
+                ensaios={sortedEnsaios}
+                onView={handleOpenDetails}
+                onCreateForDate={handleCreateForDate}
+              />
+            ) : viewMode === 'table' ? (
               <EnsaiosTable
                 ensaios={paginatedEnsaios}
                 sort={sort}
@@ -314,17 +328,19 @@ export default function ListaEnsaios() {
               />
             )}
 
-            <Pagination
-              page={page}
-              totalPages={totalPages}
-              pageSize={pageSize}
-              total={sortedEnsaios.length}
-              onPageChange={setPage}
-              onPageSizeChange={(size) => {
-                setPageSize(size)
-                setPage(1)
-              }}
-            />
+            {viewMode !== 'calendar' && (
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                total={sortedEnsaios.length}
+                onPageChange={setPage}
+                onPageSizeChange={(size) => {
+                  setPageSize(size)
+                  setPage(1)
+                }}
+              />
+            )}
           </>
         )}
       </main>

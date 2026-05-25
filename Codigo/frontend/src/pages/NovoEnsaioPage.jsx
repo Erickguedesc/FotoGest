@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import Header from '../components/layout/Header'
 import Toast from '../components/ui/Toast'
@@ -47,12 +47,24 @@ const INITIAL_FORM = {
 
 export default function NovoEnsaioPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [form, setForm]       = useState(INITIAL_FORM)
   const [errors, setErrors]   = useState({})
   const [loading, setLoading] = useState(false)
   const [toast, setToast]     = useState(null)
+  const clienteIdExistente = searchParams.get('clienteId')
 
   useEffect(() => {
+  const dataUrl = searchParams.get('data')
+  const dataValida = /^\d{4}-\d{2}-\d{2}$/.test(dataUrl || '')
+
+  if (dataValida) {
+    setForm((prev) => ({
+      ...prev,
+      data: prev.data || dataUrl,
+    }))
+  }
+
   async function carregarPreferencias() {
     try {
       const configuracoes = await configuracoesService.buscar()
@@ -62,6 +74,7 @@ export default function NovoEnsaioPage() {
 
       setForm((prev) => ({
         ...prev,
+        data: dataValida ? dataUrl : prev.data,
         fotos: preferencias.qtdFotosPadrao ?? prev.fotos,
         extra:
           preferencias.valorFotoExtraPadrao !== null &&
@@ -76,7 +89,36 @@ export default function NovoEnsaioPage() {
   }
 
   carregarPreferencias()
-}, [])
+}, [searchParams])
+
+  useEffect(() => {
+    if (!clienteIdExistente) return
+
+    let cancelado = false
+
+    async function carregarClienteExistente() {
+      try {
+        const response = await clientesService.buscarPorId(clienteIdExistente)
+        const cliente = response.data
+
+        if (cancelado || !cliente) return
+
+        setForm((prev) => ({
+          ...prev,
+          cliente: prev.cliente || cliente.nome || '',
+        }))
+      } catch (error) {
+        console.error('[NovoEnsaio] Erro ao carregar cliente existente:', error?.response?.data || error)
+        setToast({ message: 'Nao foi possivel preencher a cliente selecionada.', type: 'error' })
+      }
+    }
+
+    carregarClienteExistente()
+
+    return () => {
+      cancelado = true
+    }
+  }, [clienteIdExistente])
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -114,19 +156,23 @@ export default function NovoEnsaioPage() {
     setLoading(true)
     try {
       // ── Passo 1: criar o cliente ──────────────────────────────────────────
-      const clientePayload = {
-        nome:      form.cliente.trim(),
-        telefone:  form.telefone?.trim()           || null,
-        email:     form.email?.trim()              || null,
-        cpf:       form.cpf?.replace(/\D/g, '')    || null,
-        cidade:    form.cidade?.trim()             || null,
-        indicacao: form.indicacao                  || null,
-      }
+      let clienteId = clienteIdExistente
 
-      console.log('[NovoEnsaio] Criando cliente:', clientePayload)
-      const clienteRes = await clientesService.criar(clientePayload)
-      const clienteId  = clienteRes.data.id
-      console.log('[NovoEnsaio] Cliente criado, id:', clienteId)
+      if (!clienteId) {
+        const clientePayload = {
+          nome:      form.cliente.trim(),
+          telefone:  form.telefone?.trim()           || null,
+          email:     form.email?.trim()              || null,
+          cpf:       form.cpf?.replace(/\D/g, '')    || null,
+          cidade:    form.cidade?.trim()             || null,
+          indicacao: form.indicacao                  || null,
+        }
+
+        console.log('[NovoEnsaio] Criando cliente:', clientePayload)
+        const clienteRes = await clientesService.criar(clientePayload)
+        clienteId = clienteRes.data.id
+        console.log('[NovoEnsaio] Cliente criado, id:', clienteId)
+      }
 
       // ── Passo 2: criar o ensaio ───────────────────────────────────────────
       const tipoEnum =
@@ -136,6 +182,12 @@ export default function NovoEnsaioPage() {
 
       const ensaioPayload = {
         clienteId,
+        clienteNome: form.cliente.trim(),
+        clienteTelefone: form.telefone?.trim() || null,
+        clienteEmail: form.email?.trim() || null,
+        clienteCpf: form.cpf?.replace(/\D/g, '') || null,
+        clienteCidade: form.cidade?.trim() || null,
+        clienteIndicacao: form.indicacao || null,
         tipo:            tipoEnum,
         dataEnsaio: new Date(`${form.data}T${form.hora}:00`).toISOString(),
         local:           form.local.trim(),
@@ -179,12 +231,12 @@ export default function NovoEnsaioPage() {
     <>
       <Header />
 
-      <main className="pt-[88px] pb-16 px-8 max-w-[980px] mx-auto animate-[fadeUp_0.55s_cubic-bezier(0.22,1,0.36,1)_both]">
+      <main className="theme-page mx-auto max-w-[980px] px-8 pb-16 pt-[88px] animate-[fadeUp_0.55s_cubic-bezier(0.22,1,0.36,1)_both]">
 
-        <div className="flex items-center gap-2 mb-6">
+        <div className="mb-6 flex items-center gap-2">
           <button
             onClick={() => navigate('/ensaios')}
-            className="text-[12px] text-white/45 cursor-pointer hover:text-[var(--gold)] transition-colors"
+            className="theme-muted cursor-pointer text-[12px] transition-colors hover:text-[var(--gold)]"
           >
             Ensaios
           </button>
@@ -193,16 +245,16 @@ export default function NovoEnsaioPage() {
         </div>
 
         <div className="mb-8">
-          <h1 className="font-serif text-[32px] font-light tracking-[0.04em]">
+          <h1 className="theme-title font-serif text-[32px] font-light tracking-[0.04em]">
             Novo Ensaio
           </h1>
-          <p className="text-[13px] text-white/45 mt-1">
+          <p className="theme-muted mt-1 text-[13px]">
             Preencha os dados do cliente e do ensaio para registrar.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className="grid grid-cols-[1fr_340px] gap-5 items-start">
+          <div className="grid grid-cols-[1fr_340px] items-start gap-5">
             <div>
               <FormInfoSection   form={form} errors={errors} onChange={handleChange} />
               <FormObsSection    form={form} onChange={handleChange} />

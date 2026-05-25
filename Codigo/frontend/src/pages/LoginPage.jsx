@@ -75,7 +75,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-6"
+      className="theme-static flex min-h-screen items-center justify-center px-6"
       style={{ background: '#0A0A0A' }}
     >
       {/* Grain */}

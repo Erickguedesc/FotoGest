@@ -42,7 +42,26 @@ public class ClienteService {
                 .cpf(request.getCpf())
                 .cidade(request.getCidade())
                 .indicacao(request.getIndicacao())
+                .ativo(true)
                 .build();
+
+        return toResponse(repository.save(cliente));
+    }
+
+    public ClienteResponse arquivar(UUID id) {
+        Cliente cliente = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente nÃ£o encontrado"));
+
+        cliente.setAtivo(false);
+
+        return toResponse(repository.save(cliente));
+    }
+
+    public ClienteResponse reativar(UUID id) {
+        Cliente cliente = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente nÃ£o encontrado"));
+
+        cliente.setAtivo(true);
 
         return toResponse(repository.save(cliente));
     }
@@ -114,6 +133,7 @@ public class ClienteService {
                 .cpf(cliente.getCpf())
                 .cidade(cliente.getCidade())
                 .indicacao(cliente.getIndicacao())
+                .ativo(cliente.getAtivo())
                 .build();
     }
 }

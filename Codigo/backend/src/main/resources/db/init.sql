@@ -73,9 +73,13 @@ CREATE TABLE IF NOT EXISTS cliente (
   cpf VARCHAR(20) UNIQUE,
   cidade VARCHAR(120),
   indicacao VARCHAR(120),
+  ativo BOOLEAN NOT NULL DEFAULT true,
   criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE cliente
+ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT true;
 
 CREATE TABLE IF NOT EXISTS ensaio (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -88,6 +92,9 @@ CREATE TABLE IF NOT EXISTS ensaio (
   valor_pacote NUMERIC(10,2) NOT NULL DEFAULT 0,
   valor_foto_extra NUMERIC(10,2) DEFAULT 35.00,
   cobrar_foto_extra BOOLEAN NOT NULL DEFAULT false,
+  valor_final_ensaio NUMERIC(10,2),
+  status_valores VARCHAR(30) DEFAULT 'NAO_INFORMADO',
+  observacao_valores TEXT,
   observacoes TEXT,
   progresso SMALLINT NOT NULL DEFAULT 0 CHECK(progresso BETWEEN 0 AND 100),
   criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -133,11 +140,15 @@ CREATE TABLE IF NOT EXISTS album (
   publicado_em TIMESTAMPTZ DEFAULT NOW(),
   expira_em TIMESTAMPTZ,
   ativo BOOLEAN NOT NULL DEFAULT true,
+  views INTEGER NOT NULL DEFAULT 0,
   atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 ALTER TABLE album
 ADD COLUMN IF NOT EXISTS acesso_liberado BOOLEAN NOT NULL DEFAULT false;
+
+ALTER TABLE album
+ADD COLUMN IF NOT EXISTS views INTEGER NOT NULL DEFAULT 0;
 
 UPDATE album
 SET acesso_liberado = true
@@ -159,8 +170,21 @@ CREATE TABLE IF NOT EXISTS selecao_foto (
   selecionada_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   total_selecionadas INTEGER NOT NULL DEFAULT 0,
   valor_excedente NUMERIC(10,2) DEFAULT 0,
+  observacao TEXT,
   UNIQUE(album_id, foto_id)
 );
+
+ALTER TABLE ensaio
+ADD COLUMN IF NOT EXISTS valor_final_ensaio NUMERIC(10,2);
+
+ALTER TABLE ensaio
+ADD COLUMN IF NOT EXISTS status_valores VARCHAR(30) DEFAULT 'NAO_INFORMADO';
+
+ALTER TABLE ensaio
+ADD COLUMN IF NOT EXISTS observacao_valores TEXT;
+
+ALTER TABLE selecao_foto
+ADD COLUMN IF NOT EXISTS observacao TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_selecao_foto_album_id
 ON selecao_foto(album_id);
@@ -281,6 +305,37 @@ AFTER INSERT OR UPDATE OF status ON ensaio
 FOR EACH ROW
 EXECUTE FUNCTION fn_registra_historico_status_ensaio();
 
+
+----------------------------------------------------
+-- PREFERÊNCIAS DO SISTEMA
+----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS preferencias_sistema (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  fotografa_id UUID NOT NULL UNIQUE REFERENCES fotografa(id) ON DELETE CASCADE,
+  qtd_fotos_padrao INTEGER DEFAULT 20,
+  valor_foto_extra_padrao NUMERIC(10,2),
+  prazo_expiracao_album_dias INTEGER DEFAULT 30,
+  cidade_padrao VARCHAR(120),
+  mensagem_envio_album TEXT,
+  mensagem_selecao_recebida TEXT,
+  capa_album_padrao_url TEXT,
+  capa_album_padrao_public_id TEXT,
+  criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE preferencias_sistema
+ADD COLUMN IF NOT EXISTS capa_album_padrao_url TEXT;
+
+ALTER TABLE preferencias_sistema
+ADD COLUMN IF NOT EXISTS capa_album_padrao_public_id TEXT;
+
+DROP TRIGGER IF EXISTS trg_preferencias_sistema_ts ON preferencias_sistema;
+CREATE TRIGGER trg_preferencias_sistema_ts
+BEFORE UPDATE ON preferencias_sistema
+FOR EACH ROW
+EXECUTE FUNCTION fn_atualiza_timestamp();
 ------------------------------------
 --   DADOS DE EXEMPLO
 ------------------------------------
@@ -392,3 +447,47 @@ SELECT
 FROM ensaio
 ON CONFLICT (ensaio_id, status)
 DO NOTHING;
+
+------------------------------------
+--   CONFIGURAÇÕES DE MARCA D'ÁGUA
+------------------------------------
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_url TEXT;
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_public_id TEXT;
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_ativa BOOLEAN NOT NULL DEFAULT FALSE;
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_posicao VARCHAR(40) DEFAULT 'INFERIOR_DIREITA';
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_opacidade INTEGER DEFAULT 35;
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_tamanho VARCHAR(20) DEFAULT 'MEDIA';
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_margem INTEGER DEFAULT 30;
+
+----------------------------------------------------
+-- MARCA D'ÁGUA POR TEXTO
+----------------------------------------------------
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_tipo VARCHAR(20) DEFAULT 'IMAGEM';
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_texto VARCHAR(200);
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_fonte VARCHAR(30) DEFAULT 'MODERNA';
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_cor VARCHAR(20) DEFAULT 'BRANCO';
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_estilo VARCHAR(20) DEFAULT 'NORMAL';

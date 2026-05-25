@@ -13,38 +13,38 @@ export default function RelatorioGrafico({ periodos = [], loading }) {
   )
 
   return (
-    <section className="rounded-2xl border border-[var(--gold-border)] bg-[#111111] p-6">
+    <section className="theme-card rounded-2xl border border-[var(--gold-border)] p-6">
       <div className="mb-6 flex flex-col justify-between gap-3 md:flex-row md:items-center">
         <div>
-          <h2 className="font-serif text-2xl font-light text-white">
-            Faturamento por período
+          <h2 className="theme-title font-serif text-2xl font-light">
+            Valores por período
           </h2>
 
-          <p className="mt-1 text-sm text-white/40">
-            Comparação entre total líquido e quantidade de ensaios.
+          <p className="theme-muted mt-1 text-sm">
+            Comparação entre total previsto e quantidade de ensaios.
           </p>
         </div>
 
-        <div className="flex gap-4 text-xs text-white/50">
+        <div className="theme-text flex gap-4 text-xs">
           <span className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-[var(--gold)]" />
-            Faturamento
+            Valor previsto
           </span>
 
           <span className="flex items-center gap-2">
-<span className="h-2 w-2 rounded-full bg-white/80" />            
+            <span className="h-2 w-2 rounded-full bg-[var(--chart-count)]" />
 Nº de Ensaios
           </span>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex h-64 items-center justify-center text-white/50">
+        <div className="theme-muted flex h-64 items-center justify-center">
           <Loader2 className="mr-2 animate-spin" size={20} />
           Carregando gráfico...
         </div>
       ) : periodos.length === 0 ? (
-        <div className="flex h-64 items-center justify-center rounded-xl border border-dashed border-white/10 text-sm text-white/40">
+        <div className="theme-muted flex h-64 items-center justify-center rounded-xl border border-dashed border-[var(--border)] text-sm">
           Nenhum período retornado para esse filtro.
         </div>
       ) : (
@@ -78,7 +78,7 @@ Nº de Ensaios
           </div>
 
         <div
-  className="group relative w-5 rounded-t-md bg-white/80 transition hover:bg-white"
+  className="group relative w-5 rounded-t-md bg-[var(--chart-count)] transition opacity-80 hover:opacity-100"
   style={{ height: `${alturaEnsaios}%` }}
 >
             <Tooltip
@@ -89,7 +89,7 @@ Nº de Ensaios
           </div>
         </div>
 
-        <span className="mt-3 text-xs text-white/45">
+        <span className="theme-muted mt-3 text-xs">
           {item.label}
         </span>
       </div>
@@ -103,11 +103,11 @@ Nº de Ensaios
 
 function Tooltip({ label, value, variant = 'gold' }) {
   const valueColor =
-    variant === 'gold' ? 'text-[var(--gold)]' : 'text-white'
+    variant === 'gold' ? 'text-[var(--gold)]' : 'text-[var(--chart-count)]'
 
   return (
-    <div className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-3 -translate-x-1/2 translate-y-2 whitespace-nowrap rounded-lg border border-white/10 bg-[#111111] px-3 py-2 text-xs text-white opacity-0 shadow-2xl transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
-      <span className="block text-[10px] uppercase tracking-[0.12em] text-white/40">
+    <div className="theme-card pointer-events-none absolute bottom-full left-1/2 z-30 mb-3 -translate-x-1/2 translate-y-2 whitespace-nowrap rounded-lg border px-3 py-2 text-xs opacity-0 shadow-2xl transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
+      <span className="theme-muted block text-[10px] uppercase tracking-[0.12em]">
         {label}
       </span>
 
@@ -115,7 +115,7 @@ function Tooltip({ label, value, variant = 'gold' }) {
         {value}
       </span>
 
-      <span className="absolute left-1/2 top-full h-2 w-2 -translate-x-1/2 -translate-y-1 rotate-45 border-b border-r border-white/10 bg-[#111111]" />
+      <span className="absolute left-1/2 top-full h-2 w-2 -translate-x-1/2 -translate-y-1 rotate-45 border-b border-r border-[var(--border)] bg-[var(--card)]" />
     </div>
   )
 }

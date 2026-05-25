@@ -1,7 +1,14 @@
 import Icon from './Icon'
 import { TIPO_OPTIONS } from './ensaioHelpers'
 
-export default function EnsaiosToolbar({ filters, onFilterChange, viewMode, onViewModeChange, onClear }) {
+export default function EnsaiosToolbar({
+  filters,
+  resetKey = 0,
+  onFilterChange,
+  viewMode,
+  onViewModeChange,
+  onClear,
+}) {
   return (
     <div className="mb-5 flex flex-wrap items-center gap-3">
       <div className="relative min-w-[220px] flex-1 max-w-[360px]">
@@ -28,6 +35,7 @@ export default function EnsaiosToolbar({ filters, onFilterChange, viewMode, onVi
       <div className="flex items-center gap-2 rounded-lg border border-white/[0.10] bg-[#181818] px-3 py-2 text-white/55">
         <Icon name="calendar" size={13} />
         <input
+          key={`data-inicio-${resetKey}`}
           type="date"
           value={filters.dataInicio}
           onChange={(event) => onFilterChange('dataInicio', event.target.value)}
@@ -36,6 +44,7 @@ export default function EnsaiosToolbar({ filters, onFilterChange, viewMode, onVi
         />
         <span className="text-white/25">—</span>
         <input
+          key={`data-fim-${resetKey}`}
           type="date"
           value={filters.dataFim}
           onChange={(event) => onFilterChange('dataFim', event.target.value)}
@@ -52,22 +61,33 @@ export default function EnsaiosToolbar({ filters, onFilterChange, viewMode, onVi
         Limpar
       </button>
 
-      <div className="ml-auto flex gap-1 rounded-lg border border-white/[0.10] bg-[#181818] p-1">
+      <div className="ml-auto flex gap-1 rounded-xl border border-white/[0.12] bg-[#181818] p-1.5 shadow-[0_12px_30px_rgba(0,0,0,0.24)] max-sm:w-full">
         <button
           type="button"
           onClick={() => onViewModeChange('table')}
-          className={`flex h-7 w-8 items-center justify-center rounded-md transition ${viewMode === 'table' ? 'bg-[var(--gold-dim)] text-[var(--gold)]' : 'text-white/35 hover:text-white/70'}`}
+          className={`flex h-9 items-center justify-center gap-2 rounded-lg px-3 text-[11px] font-medium uppercase tracking-[0.1em] transition max-sm:flex-1 ${viewMode === 'table' ? 'border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]' : 'border border-transparent text-white/45 hover:bg-white/[0.04] hover:text-white/75'}`}
           title="Tabela"
         >
           <Icon name="table" size={14} />
+          <span>Tabela</span>
         </button>
         <button
           type="button"
           onClick={() => onViewModeChange('grid')}
-          className={`flex h-7 w-8 items-center justify-center rounded-md transition ${viewMode === 'grid' ? 'bg-[var(--gold-dim)] text-[var(--gold)]' : 'text-white/35 hover:text-white/70'}`}
+          className={`flex h-9 items-center justify-center gap-2 rounded-lg px-3 text-[11px] font-medium uppercase tracking-[0.1em] transition max-sm:flex-1 ${viewMode === 'grid' ? 'border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]' : 'border border-transparent text-white/45 hover:bg-white/[0.04] hover:text-white/75'}`}
           title="Cards"
         >
           <Icon name="grid" size={14} />
+          <span>Cards</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onViewModeChange('calendar')}
+          className={`flex h-9 items-center justify-center gap-2 rounded-lg px-3 text-[11px] font-medium uppercase tracking-[0.1em] transition max-sm:flex-1 ${viewMode === 'calendar' ? 'border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]' : 'border border-transparent text-white/45 hover:bg-white/[0.04] hover:text-white/75'}`}
+          title="Calendário"
+        >
+          <Icon name="calendar" size={14} />
+          <span>Calendário</span>
         </button>
       </div>
     </div>

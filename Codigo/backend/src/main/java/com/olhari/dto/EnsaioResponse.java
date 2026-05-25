@@ -34,8 +34,14 @@ public class EnsaioResponse {
     private BigDecimal valorFotoExtra;
     private Boolean cobrarFotoExtra;
 
+    private BigDecimal valorFinalEnsaio;
+    private String statusValores;
+    private String observacaoValores;
+
     private String observacoes;
     private Short progresso;
+    private Integer totalFotos;
+    private String capaUrl;
 
     private OffsetDateTime criadoEm;
     private OffsetDateTime atualizadoEm;

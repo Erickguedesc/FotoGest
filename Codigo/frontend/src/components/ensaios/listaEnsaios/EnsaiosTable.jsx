@@ -1,16 +1,33 @@
-import EnsaioTableRow from './EnsaioTableRow'
-import Icon from './Icon'
+import { CalendarDays, Clock3, Images, MapPin } from 'lucide-react'
 
-const columns = [
-  { key: 'clienteNome', label: 'Cliente', sortable: true, className: 'w-[220px]' },
-  { key: 'tipo', label: 'Tipo', sortable: true, className: 'w-[100px]' },
-  { key: 'dataEnsaio', label: 'Data', sortable: true, className: 'w-[110px]' },
-  { key: 'local', label: 'Local', className: 'w-[140px]' },
-  { key: 'status', label: 'Status', sortable: true, className: 'w-[135px]' },
-  { key: 'progresso', label: 'Progresso', className: 'w-[130px]' },
-  { key: 'valorPacote', label: 'Valor', sortable: true, className: 'w-[110px]' },
-  { key: 'actions', label: '', className: 'w-[210px]' },
+import EnsaioActions from './EnsaioActions'
+import ProgressBar from './ProgressBar'
+import StatusBadge from './StatusBadge'
+import {
+  formatCurrency,
+  formatDate,
+  getInitials,
+  getTipoLabel,
+} from './ensaioHelpers'
+
+const sortOptions = [
+  { key: 'dataEnsaio', label: 'Data' },
+  { key: 'clienteNome', label: 'Cliente' },
+  { key: 'status', label: 'Status' },
+  { key: 'valorPacote', label: 'Valor' },
 ]
+
+const formatTime = (value) => {
+  if (!value) return '--:--'
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '--:--'
+
+  return date.toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 
 export default function EnsaiosTable({
   ensaios,
@@ -23,57 +40,160 @@ export default function EnsaiosTable({
   onPreContrato,
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#141414]">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[1155px] table-fixed border-collapse">
-          <thead>
-            <tr className="border-b border-white/[0.10]">
-              {columns.map((column) => (
-                <th
-                  key={column.key}
-                  className={`px-4 py-3 text-left text-[10.5px] font-normal uppercase tracking-[0.14em] text-white/30 ${column.className || ''}`}
-                >
-                  {column.sortable ? (
-                    <button
-                      type="button"
-                      onClick={() => onSort(column.key)}
-                      className="inline-flex items-center gap-1 transition hover:text-white/65"
-                    >
-                      {column.label}
+    <section className="space-y-3">
+      <div className="theme-card flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3">
+        <p className="theme-muted text-[11px] uppercase tracking-[0.16em]">
+          Lista de ensaios
+        </p>
 
-                      <span
-                        className={
-                          sort.key === column.key
-                            ? 'text-[var(--gold)]'
-                            : 'text-white/25'
-                        }
-                      >
-                        <Icon name="sort" size={10} />
-                      </span>
-                    </button>
-                  ) : (
-                    column.label
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="theme-muted text-[11px]">Ordenar por</span>
 
-          <tbody>
-            {ensaios.map((ensaio) => (
-              <EnsaioTableRow
-                key={ensaio.id}
-                ensaio={ensaio}
-                onView={onView}
-                onEdit={onEdit}
-                onStatus={onStatus}
-                onDelete={onDelete}
-                onPreContrato={onPreContrato}
-              />
-            ))}
-          </tbody>
-        </table>
+          {sortOptions.map((option) => {
+            const active = sort.key === option.key
+
+            return (
+              <button
+                key={option.key}
+                type="button"
+                onClick={() => onSort(option.key)}
+                className={`rounded-lg border px-3 py-1.5 text-[11px] transition ${
+                  active
+                    ? 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]'
+                    : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--gold-border)] hover:text-[var(--text)]'
+                }`}
+              >
+                {option.label}
+                {active ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''}
+              </button>
+            )
+          })}
+        </div>
       </div>
-    </div>
+
+      <div className="space-y-4">
+        {ensaios.map((ensaio) => (
+          <EnsaioListCard
+            key={ensaio.id}
+            ensaio={ensaio}
+            onView={onView}
+            onEdit={onEdit}
+            onStatus={onStatus}
+            onDelete={onDelete}
+            onPreContrato={onPreContrato}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function EnsaioListCard({
+  ensaio,
+  onView,
+  onEdit,
+  onStatus,
+  onDelete,
+  onPreContrato,
+}) {
+  const totalFotos = Number(ensaio.totalFotos ?? 0)
+  const valorExibido = ensaio.valorFinalEnsaio ?? ensaio.valorPacote
+  const hasImage = Boolean(ensaio.capaUrl)
+  const isCapaPadrao = hasImage && totalFotos === 0
+
+  return (
+    <article className="theme-card group grid overflow-hidden rounded-2xl border transition hover:-translate-y-0.5 hover:border-[var(--gold-border)] max-lg:grid-cols-1 lg:grid-cols-[210px_1fr_58px]">
+      <button
+        type="button"
+        onClick={() => onView(ensaio)}
+        className="theme-panel relative min-h-[140px] overflow-hidden text-left lg:min-h-[150px]"
+      >
+        {hasImage ? (
+          <img
+            src={ensaio.capaUrl}
+            alt={ensaio.clienteNome || 'Capa do ensaio'}
+            className={`h-full w-full transition duration-500 group-hover:scale-[1.03] ${
+              isCapaPadrao ? 'object-contain p-7 opacity-85' : 'object-cover'
+            }`}
+          />
+        ) : (
+          <div className="theme-panel flex h-full min-h-[140px] items-center justify-center">
+            <span className="theme-soft flex h-16 w-16 items-center justify-center rounded-full border font-serif text-xl text-[var(--text-muted)]">
+              {getInitials(ensaio.clienteNome)}
+            </span>
+          </div>
+        )}
+
+        <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/35" />
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onView(ensaio)}
+        className="flex min-w-0 flex-col justify-center px-6 py-4 text-left max-md:px-4"
+      >
+        <div className="mb-3 flex flex-wrap items-center gap-3">
+          <h3 className="theme-title max-w-full truncate text-[19px] font-medium">
+            {ensaio.clienteNome || 'Cliente sem nome'}
+          </h3>
+
+          <StatusBadge status={ensaio.status} />
+
+          <span className="theme-soft rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.12em] text-[var(--text-muted)]">
+            {getTipoLabel(ensaio.tipo)}
+          </span>
+        </div>
+
+        <div className="theme-text mb-4 flex flex-wrap gap-x-4 gap-y-2 text-[12.5px]">
+          <Meta icon={<CalendarDays size={15} />} value={formatDate(ensaio.dataEnsaio)} />
+          <Meta icon={<Clock3 size={15} />} value={formatTime(ensaio.dataEnsaio)} />
+          <Meta icon={<MapPin size={15} />} value={ensaio.local || 'Local nao informado'} />
+          <Meta
+            icon={<Images size={15} />}
+            value={totalFotos > 0 ? `${totalFotos} foto${totalFotos === 1 ? '' : 's'}` : 'Sem fotos'}
+          />
+        </div>
+
+        <div className="grid items-end gap-4 md:grid-cols-[1fr_auto]">
+          <div>
+            <div className="mb-1.5 flex items-center justify-between gap-4">
+              <span className="theme-muted text-[11.5px] font-medium">
+                Progresso do ensaio
+              </span>
+            </div>
+
+            <ProgressBar value={ensaio.progresso} compact={false} />
+          </div>
+
+          <div className="font-serif text-[24px] text-[var(--gold)]">
+            {formatCurrency(valorExibido)}
+          </div>
+        </div>
+      </button>
+
+      <div
+        className="theme-divider flex items-center justify-center border-l px-2.5 py-3 max-lg:border-l-0 max-lg:border-t"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <EnsaioActions
+          ensaio={ensaio}
+          orientation="vertical"
+          onView={onView}
+          onEdit={onEdit}
+          onStatus={onStatus}
+          onDelete={onDelete}
+          onPreContrato={onPreContrato}
+        />
+      </div>
+    </article>
+  )
+}
+
+function Meta({ icon, value }) {
+  return (
+    <span className="inline-flex min-w-0 items-center gap-1.5">
+      <span className="shrink-0 text-[var(--gold)]/80">{icon}</span>
+      <span className="truncate">{value}</span>
+    </span>
   )
 }

@@ -19,15 +19,16 @@ export default function RelatorioTabela({ periodos = [] }) {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] border-collapse">
+        <table className="w-full min-w-[860px] border-collapse">
           <thead>
             <tr className="border-b border-white/10 text-left text-xs uppercase tracking-[0.14em] text-white/40">
               <th className="py-3 pr-4">Período</th>
               <th className="py-3 pr-4">Início</th>
               <th className="py-3 pr-4">Fim</th>
-              <th className="py-3 pr-4">Bruto</th>
-              <th className="py-3 pr-4">Excedentes</th>
-              <th className="py-3 pr-4">Total líquido</th>
+              <th className="py-3 pr-4">Pacotes</th>
+              <th className="py-3 pr-4">Extras</th>
+              <th className="py-3 pr-4">Ajustes</th>
+              <th className="py-3 pr-4">Total previsto</th>
               <th className="py-3 pr-4">Ensaios</th>
             </tr>
           </thead>
@@ -36,7 +37,7 @@ export default function RelatorioTabela({ periodos = [] }) {
             {periodos.length === 0 ? (
               <tr>
                 <td
-                  colSpan="7"
+                  colSpan="8"
                   className="py-8 text-center text-sm text-white/40"
                 >
                   Nenhum dado encontrado para exibir na tabela.
@@ -56,6 +57,9 @@ export default function RelatorioTabela({ periodos = [] }) {
                   </td>
                   <td className="py-4 pr-4">
                     {formatMoney(item.excedentesCobrados)}
+                  </td>
+                  <td className="py-4 pr-4">
+                    {formatMoney(item.ajustesManuais)}
                   </td>
                   <td className="py-4 pr-4 font-medium text-[var(--gold)]">
                     {formatMoney(item.totalLiquido)}

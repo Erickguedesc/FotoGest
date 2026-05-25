@@ -48,6 +48,9 @@ public class PreferenciasSistema {
     @Column(name = "atualizado_em")
     private OffsetDateTime atualizadoEm;
 
+    @Column(name = "capa_album_padrao_public_id", columnDefinition = "TEXT")
+    private String capaAlbumPadraoPublicId;
+
     @PrePersist
     protected void onCreate() {
         criadoEm = atualizadoEm = OffsetDateTime.now();
@@ -57,4 +60,6 @@ public class PreferenciasSistema {
     protected void onUpdate() {
         atualizadoEm = OffsetDateTime.now();
     }
+    @Column(name = "capa_album_padrao_url", columnDefinition = "TEXT")
+private String capaAlbumPadraoUrl;
 }

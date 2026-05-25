@@ -38,7 +38,7 @@ export default function StatusSidebar({ ensaio, loading, onStatusChange }) {
   return (
     <section
       id="status-sidebar"
-      className="rounded-2xl border border-[var(--gold-border)] bg-[#121212]"
+      className="theme-card rounded-2xl border border-[var(--gold-border)]"
     >
       <SectionTitle title="Status atual" />
 
@@ -65,12 +65,12 @@ export default function StatusSidebar({ ensaio, loading, onStatusChange }) {
                 className={`flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left text-[13px] transition disabled:cursor-not-allowed disabled:opacity-60 ${
                   active
                     ? `${activeBg} ${textColor}`
-                    : 'border-transparent text-white/65 hover:border-white/[0.08] hover:bg-white/[0.04] hover:text-white'
+                    : 'border-transparent text-[var(--text-muted)] hover:border-[var(--border)] hover:bg-[var(--card-hover)] hover:text-[var(--text)]'
                 }`}
               >
                 <span className="flex items-center gap-3">
                   <span className={`h-2.5 w-2.5 rounded-full ${dotColor}`} />
-                  <span className={active ? textColor : 'text-white/70'}>
+                  <span className={active ? textColor : 'text-[var(--text)]'}>
                     {status.label}
                   </span>
                 </span>

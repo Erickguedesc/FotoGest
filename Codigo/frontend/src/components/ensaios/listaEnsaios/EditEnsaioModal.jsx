@@ -2,9 +2,15 @@ import { useEffect, useState } from 'react'
 import BaseModal from './BaseModal'
 import { formatDateTimeLocal, TIPO_OPTIONS, toApiDateTime } from './ensaioHelpers'
 
-const inputClass = 'w-full rounded-lg border border-white/[0.10] bg-white/[0.03] px-3.5 py-2.5 text-[13px] text-white outline-none transition placeholder:text-white/25 focus:border-[var(--gold-border)] focus:bg-[rgba(201,164,89,0.03)]'
-const labelClass = 'mb-1.5 block text-[10.5px] uppercase tracking-[0.13em] text-white/35'
-const sectionTitleClass = 'border-b border-white/[0.08] pb-2 text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--gold)]'
+const inputClass = 'theme-input w-full rounded-lg border px-3.5 py-2.5 text-[13px] outline-none transition focus:border-[var(--gold-border)] focus:bg-[var(--gold-dim)]'
+const labelClass = 'theme-muted mb-1.5 block text-[10.5px] uppercase tracking-[0.13em]'
+const sectionTitleClass = 'theme-divider border-b pb-2 text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--gold)]'
+
+const STATUS_VALORES_OPTIONS = [
+  { value: 'NAO_INFORMADO', label: 'Não informado' },
+  { value: 'PENDENTE', label: 'Pendente' },
+  { value: 'PAGO', label: 'Pago' },
+]
 
 export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave }) {
   const [form, setForm] = useState(null)
@@ -26,7 +32,10 @@ export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave
       qtdFotosPacote: ensaio.qtdFotosPacote || 1,
       valorPacote: ensaio.valorPacote || '',
       cobrarFotoExtra: Boolean(ensaio.cobrarFotoExtra),
-      valorFotoExtra: ensaio.valorFotoExtra || '',
+      valorFotoExtra: ensaio.valorFotoExtra ?? '',
+      valorFinalEnsaio: ensaio.valorFinalEnsaio ?? '',
+      statusValores: ensaio.statusValores || 'NAO_INFORMADO',
+      observacaoValores: ensaio.observacaoValores || '',
       observacoes: ensaio.observacoes || '',
     })
   }, [ensaio])
@@ -57,6 +66,9 @@ export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave
       valorPacote: Number(form.valorPacote),
       cobrarFotoExtra: Boolean(form.cobrarFotoExtra),
       valorFotoExtra: form.cobrarFotoExtra ? Number(form.valorFotoExtra || 0) : null,
+      valorFinalEnsaio: form.valorFinalEnsaio ? Number(form.valorFinalEnsaio) : null,
+      statusValores: form.statusValores || 'NAO_INFORMADO',
+      observacaoValores: form.observacaoValores?.trim() || null,
       observacoes: form.observacoes?.trim() || null,
     })
   }
@@ -72,7 +84,7 @@ export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="rounded-lg border border-white/[0.10] px-4 py-2.5 text-[12px] tracking-[0.08em] text-white/60 transition hover:text-white disabled:opacity-50"
+            className="rounded-lg border border-[var(--border)] px-4 py-2.5 text-[12px] tracking-[0.08em] text-[var(--text-muted)] transition hover:text-[var(--text)] disabled:opacity-50"
           >
             Cancelar
           </button>
@@ -229,7 +241,7 @@ export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave
               </label>
             </div>
 
-            <label className="flex items-center gap-2 text-[13px] text-white/65">
+            <label className="theme-text flex items-center gap-2 text-[13px]">
               <input
                 type="checkbox"
                 checked={form.cobrarFotoExtra}
@@ -252,6 +264,52 @@ export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave
                 />
               </label>
             )}
+
+            <div className="theme-panel space-y-4 rounded-xl border p-4">
+              <p className={sectionTitleClass}>Resumo de valores</p>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <label>
+                  <span className={labelClass}>Valor final do ensaio</span>
+                  <input
+                    min="0"
+                    step="0.01"
+                    type="number"
+                    value={form.valorFinalEnsaio}
+                    onChange={(event) => change('valorFinalEnsaio', event.target.value)}
+                    className={inputClass}
+                    placeholder="Opcional"
+                  />
+                </label>
+
+                <label>
+                  <span className={labelClass}>Status dos valores</span>
+                  <select
+                    value={form.statusValores}
+                    onChange={(event) => change('statusValores', event.target.value)}
+                    className={inputClass}
+                  >
+                    {STATUS_VALORES_OPTIONS.map((status) => (
+                      <option key={status.value} value={status.value}>
+                        {status.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <label className="block">
+                <span className={labelClass}>Observação de valores</span>
+                <textarea
+                  maxLength="500"
+                  rows="3"
+                  value={form.observacaoValores}
+                  onChange={(event) => change('observacaoValores', event.target.value)}
+                  className={`${inputClass} resize-y`}
+                  placeholder="Ex: desconto combinado, cortesia de extras, ajuste manual..."
+                />
+              </label>
+            </div>
 
             <label className="block">
               <span className={labelClass}>Observações</span>

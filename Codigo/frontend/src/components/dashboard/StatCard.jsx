@@ -6,25 +6,25 @@ export default function StatCard({
     destaque = false,
 }) {
     return (
-        <article className="rounded-3xl border border-white/10 bg-[#171717] p-6 shadow-2xl transition hover:border-[#D4AF37]/40">
+        <article className="theme-card rounded-3xl border p-6 shadow-2xl transition hover:border-[var(--gold-border)]">
             <div className="mb-5 flex items-center justify-between">
-                <p className="text-xs uppercase tracking-[0.2em] text-white/40">
+                <p className="theme-muted text-xs uppercase tracking-[0.2em]">
                     {titulo}
                 </p>
 
-                <div className="rounded-full border border-[#D4AF37]/20 bg-[#D4AF37]/10 p-2 text-[#D4AF37]">
+                <div className="rounded-full border border-[var(--gold-border)] bg-[var(--gold-dim)] p-2 text-[var(--gold)]">
                     <Icon size={18} />
                 </div>
             </div>
 
             <h2
-                className={`font-serif text-5xl font-light ${destaque ? 'text-[#D4AF37]' : 'text-white'
+                className={`font-serif text-5xl font-light ${destaque ? 'text-[var(--gold)]' : 'theme-title'
                     }`}
             >
                 {valor}
             </h2>
 
-            <p className="mt-2 text-sm text-white/50">
+            <p className="theme-muted mt-2 text-sm">
                 {descricao}
             </p>
         </article>
