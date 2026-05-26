@@ -33,6 +33,7 @@ private final EnsaioRepository ensaioRepository;
 private final PreferenciasSistemaRepository preferenciasSistemaRepository;
 private final HistoricoStatusEnsaioRepository historicoStatusEnsaioRepository;
 private final PasswordEncoder passwordEncoder;
+private final EmailService emailService;
 
     @Value("${app.frontend-url:http://localhost:5173}")
     private String frontendUrl;
@@ -67,6 +68,8 @@ private final PasswordEncoder passwordEncoder;
         atualizarStatusParaEmSelecaoSeNecessario(ensaio);
 
         String urlCompleta = frontendUrl + "/album/" + album.getTokenUrl();
+
+        emailService.enviarAlbumPublicado(ensaio, album, senhaLimpa, urlCompleta);
 
         return new AlbumResponseDTO(urlCompleta, senhaLimpa);
     }

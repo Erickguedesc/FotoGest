@@ -27,13 +27,13 @@ spring:
         jdbc.time_zone: America/Sao_Paulo
 
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: seu-email@gmail.com
-    password: sua-app-password-gmail
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
-      mail.smtp.auth: true
-      mail.smtp.starttls.enable: true
+      mail.smtp.auth: ${MAIL_SMTP_AUTH:true}
+      mail.smtp.starttls.enable: ${MAIL_SMTP_STARTTLS:true}
 
 management:
   health:
