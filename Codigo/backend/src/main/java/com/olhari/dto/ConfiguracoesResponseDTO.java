@@ -12,4 +12,5 @@ public class ConfiguracoesResponseDTO {
     private EstudioConfigDTO estudio;
     private PreferenciasConfigDTO preferencias;
     private MarcaDaguaConfigDTO marcaDagua;
+    private EmailConfigDTO email;
 }

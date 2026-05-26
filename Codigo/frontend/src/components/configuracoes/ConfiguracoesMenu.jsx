@@ -1,4 +1,4 @@
-import { Building2, Image, LockKeyhole, SlidersHorizontal, User } from 'lucide-react'
+import { Building2, Image, LockKeyhole, Mail, SlidersHorizontal, User } from 'lucide-react'
 
 const tabs = [
   {
@@ -31,6 +31,12 @@ const tabs = [
     label: 'Preferências do sistema',
     description: 'Padrões para ensaios e álbuns',
     icon: SlidersHorizontal,
+  },
+  {
+    id: 'email',
+    label: 'E-mails',
+    description: 'Notificacoes automaticas',
+    icon: Mail,
   },
 ]
 

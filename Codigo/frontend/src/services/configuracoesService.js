@@ -68,6 +68,11 @@ export const configuracoesService = {
     return response.data
   },
 
+  atualizarEmail: async (dados) => {
+    const response = await api.put('/configuracoes/email', dados)
+    return response.data
+  },
+
   uploadCapaAlbumPadrao: async (arquivo) => {
   const formData = new FormData()
   formData.append('arquivo', arquivo)

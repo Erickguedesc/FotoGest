@@ -35,6 +35,7 @@ public class EnsaioService {
     private final ClienteRepository clienteRepository;
     private final FotoRepository fotoRepository;
     private final PreferenciasSistemaRepository preferenciasSistemaRepository;
+    private final EmailService emailService;
 
     
     
@@ -168,7 +169,9 @@ public void deletar(UUID id) {
         Ensaio ensaio = buscarEnsaio(id);
         ensaio.setStatus(request.getStatus());
         ensaio.setProgresso(resolverProgresso(request.getStatus()));
-        return toResponse(ensaioRepository.save(ensaio));
+        Ensaio salvo = ensaioRepository.save(ensaio);
+        emailService.avisarStatusAlterado(salvo, request.getStatus());
+        return toResponse(salvo);
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────

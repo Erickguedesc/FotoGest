@@ -2,8 +2,10 @@ package com.olhari.service;
 
 import com.olhari.dto.*;
 import com.olhari.model.ConfiguracaoEstudio;
+import com.olhari.model.ConfiguracaoEmail;
 import com.olhari.model.Fotografa;
 import com.olhari.model.PreferenciasSistema;
+import com.olhari.repository.ConfiguracaoEmailRepository;
 import com.olhari.repository.ConfiguracaoEstudioRepository;
 import com.olhari.repository.FotografaRepository;
 import com.olhari.repository.PreferenciasSistemaRepository;
@@ -25,6 +27,7 @@ public class ConfiguracoesService {
 
     private final FotografaRepository fotografaRepository;
     private final ConfiguracaoEstudioRepository configuracaoEstudioRepository;
+    private final ConfiguracaoEmailRepository configuracaoEmailRepository;
     private final PreferenciasSistemaRepository preferenciasSistemaRepository;
     private final PasswordEncoder passwordEncoder;
     private final CloudinaryService cloudinaryService;
@@ -35,12 +38,14 @@ public class ConfiguracoesService {
         Fotografa fotografa = getFotografaLogada();
         ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
         PreferenciasSistema preferencias = getOuCriarPreferencias(fotografa);
+        ConfiguracaoEmail email = getOuCriarEmail(fotografa);
 
        return ConfiguracoesResponseDTO.builder()
         .fotografa(toFotografaDTO(fotografa))
         .estudio(toEstudioDTO(estudio))
         .preferencias(toPreferenciasDTO(preferencias))
         .marcaDagua(marcaDaguaService.buscarMarcaDagua())
+        .email(toEmailDTO(email))
         .build();
     }
 
@@ -108,6 +113,26 @@ public class ConfiguracoesService {
         preferenciasSistemaRepository.save(preferencias);
 
         return toPreferenciasDTO(preferencias);
+    }
+
+    @Transactional
+    public EmailConfigDTO atualizarEmail(EmailConfigUpdateRequest request) {
+        Fotografa fotografa = getFotografaLogada();
+        ConfiguracaoEmail email = getOuCriarEmail(fotografa);
+
+        email.setAtivo(Boolean.TRUE.equals(request.getAtivo()));
+        email.setNomeRemetente(normalizarTexto(request.getNomeRemetente()));
+        email.setEmailResposta(normalizarTexto(request.getEmailResposta()));
+        email.setEmailFotografaAvisos(normalizarTexto(request.getEmailFotografaAvisos()));
+        email.setEnviarAlbumPublicado(Boolean.TRUE.equals(request.getEnviarAlbumPublicado()));
+        email.setAvisarSelecaoRecebida(Boolean.TRUE.equals(request.getAvisarSelecaoRecebida()));
+        email.setEnviarMudancaStatus(Boolean.TRUE.equals(request.getEnviarMudancaStatus()));
+        email.setMensagemAlbumPublicado(normalizarTexto(request.getMensagemAlbumPublicado()));
+        email.setMensagemSelecaoRecebida(normalizarTexto(request.getMensagemSelecaoRecebida()));
+
+        configuracaoEmailRepository.save(email);
+
+        return toEmailDTO(email);
     }
 
     @Transactional
@@ -179,6 +204,24 @@ public class ConfiguracoesService {
                 ));
     }
 
+    private ConfiguracaoEmail getOuCriarEmail(Fotografa fotografa) {
+        return configuracaoEmailRepository.findByFotografaId(fotografa.getId())
+                .orElseGet(() -> configuracaoEmailRepository.save(
+                        ConfiguracaoEmail.builder()
+                                .fotografa(fotografa)
+                                .ativo(false)
+                                .nomeRemetente("Olhari Fotografia")
+                                .emailResposta(fotografa.getEmail())
+                                .emailFotografaAvisos(fotografa.getEmail())
+                                .enviarAlbumPublicado(true)
+                                .avisarSelecaoRecebida(true)
+                                .enviarMudancaStatus(false)
+                                .mensagemAlbumPublicado("Olá! Seu álbum já está disponível. Acesse pelo link abaixo usando a senha enviada.")
+                                .mensagemSelecaoRecebida("A cliente enviou a seleção de fotos. Acesse o sistema para conferir os detalhes.")
+                                .build()
+                ));
+    }
+
     private FotografaConfigDTO toFotografaDTO(Fotografa fotografa) {
         return FotografaConfigDTO.builder()
                 .id(fotografa.getId())
@@ -205,6 +248,16 @@ public class ConfiguracoesService {
                 .build();
     }
 
+    private String normalizarTexto(String valor) {
+        if (valor == null) {
+            return null;
+        }
+
+        String texto = valor.trim();
+
+        return texto.isEmpty() ? null : texto;
+    }
+
     private PreferenciasConfigDTO toPreferenciasDTO(PreferenciasSistema preferencias) {
         return PreferenciasConfigDTO.builder()
                 .id(preferencias.getId())
@@ -216,6 +269,21 @@ public class ConfiguracoesService {
                 .mensagemSelecaoRecebida(preferencias.getMensagemSelecaoRecebida())
                 .capaAlbumPadraoUrl(preferencias.getCapaAlbumPadraoUrl())
                 .capaAlbumPadraoPublicId(preferencias.getCapaAlbumPadraoPublicId())
+                .build();
+    }
+
+    private EmailConfigDTO toEmailDTO(ConfiguracaoEmail email) {
+        return EmailConfigDTO.builder()
+                .id(email.getId())
+                .ativo(email.getAtivo())
+                .nomeRemetente(email.getNomeRemetente())
+                .emailResposta(email.getEmailResposta())
+                .emailFotografaAvisos(email.getEmailFotografaAvisos())
+                .enviarAlbumPublicado(email.getEnviarAlbumPublicado())
+                .avisarSelecaoRecebida(email.getAvisarSelecaoRecebida())
+                .enviarMudancaStatus(email.getEnviarMudancaStatus())
+                .mensagemAlbumPublicado(email.getMensagemAlbumPublicado())
+                .mensagemSelecaoRecebida(email.getMensagemSelecaoRecebida())
                 .build();
     }
     @Transactional

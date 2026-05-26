@@ -8,6 +8,7 @@ import DadosFotografaForm from '../components/configuracoes/DadosFotografaForm'
 import DadosEstudioForm from '../components/configuracoes/DadosEstudioForm'
 import MarcaDaguaForm from '../components/configuracoes/MarcaDaguaForm'
 import PreferenciasSistemaForm from '../components/configuracoes/PreferenciasSistemaForm'
+import EmailConfigForm from '../components/configuracoes/EmailConfigForm'
 import AlterarSenhaForm from '../components/configuracoes/AlterarSenhaForm'
 import { configuracoesService } from '../services/configuracoesService'
 import ConfirmActionModal from '../components/ui/ConfirmActionModal'
@@ -359,6 +360,32 @@ setAlertModal({
     }
   }
 
+  async function handleSalvarEmail(dados) {
+    try {
+      setSaving(true)
+
+      const data = await configuracoesService.atualizarEmail(dados)
+
+      setConfiguracoes((current) => ({
+        ...(current || {}),
+        email: data,
+      }))
+
+      showToast('Configurações de e-mail atualizadas com sucesso.')
+    } catch (error) {
+      console.error('[ConfiguracoesPage] Erro ao salvar e-mail:', error)
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Não foi possível salvar as configurações de e-mail.'
+
+      showToast(message, 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   async function handleAlterarSenha(dados) {
     try {
       setSaving(true)
@@ -447,6 +474,14 @@ setAlertModal({
                   <AlterarSenhaForm
                     loading={saving}
                     onSubmit={handleAlterarSenha}
+                  />
+                )}
+
+                {activeTab === 'email' && (
+                  <EmailConfigForm
+                    data={configuracoes?.email}
+                    loading={saving}
+                    onSubmit={handleSalvarEmail}
                   />
                 )}
               </>

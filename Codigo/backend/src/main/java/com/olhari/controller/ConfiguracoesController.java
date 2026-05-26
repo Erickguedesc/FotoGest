@@ -63,6 +63,13 @@ public ResponseEntity<EstudioConfigDTO> uploadLogoEstudio(
         return ResponseEntity.ok(configuracoesService.atualizarPreferencias(request));
     }
 
+    @PutMapping("/email")
+    public ResponseEntity<EmailConfigDTO> atualizarEmail(
+            @RequestBody EmailConfigUpdateRequest request
+    ) {
+        return ResponseEntity.ok(configuracoesService.atualizarEmail(request));
+    }
+
     @PatchMapping("/senha")
     public ResponseEntity<Void> alterarSenha(
             @RequestBody @Valid AlterarSenhaRequest request

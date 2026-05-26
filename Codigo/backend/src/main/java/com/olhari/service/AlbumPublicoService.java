@@ -35,6 +35,7 @@ public class AlbumPublicoService {
         private final SelecaoFotoRepository selecaoRepository;
         private final PasswordEncoder passwordEncoder;
         private final PreferenciasSistemaRepository preferenciasSistemaRepository;
+        private final EmailService emailService;
 
         // 🔐 ACESSAR ÁLBUM (CLIENTE)
         @Transactional
@@ -138,13 +139,17 @@ public class AlbumPublicoService {
                                                 selecao -> selecao.getFoto().getId(),
                                                 SelecaoFoto::getObservacao));
 
-                return new SelecaoResponse(
+                SelecaoResponse response = new SelecaoResponse(
                                 idsRecebidos,
                                 total,
                                 limite,
                                 excedente,
                                 valorExcedente.doubleValue(),
                                 observacoesNormalizadas);
+
+                emailService.avisarSelecaoRecebida(album, total, excedente);
+
+                return response;
         }
 
         // 👩‍💼 CONSULTA SELEÇÃO
@@ -218,11 +223,9 @@ public class AlbumPublicoService {
                                                 "Álbum não encontrado"));
 
                 // 🛑 ADICIONE ESTA TRAVA AQUI:
-                /*
-                 * if (!Boolean.TRUE.equals(album.getAtivo())) {
-                 * throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Álbum desativado");
-                 * }
-                 */
+               if (!Boolean.TRUE.equals(album.getAtivo())) {
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Álbum desativado");
+                            }
 
                 return new AlbumPublicoResponse(
                                 album.getEnsaio().getCliente().getNome(),
