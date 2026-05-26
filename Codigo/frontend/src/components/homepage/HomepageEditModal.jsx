@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { normalizeHomepageConfig } from '../../hooks/useHomepageConfig'
+import { homepageConfigService } from '../../services/homepageConfigService'
 
 const sectionLabels = {
   hero: 'HeroSection',
@@ -40,15 +41,81 @@ function Field({ label, name, value, onChange, multiline = false, type = 'text' 
   )
 }
 
+function ImageField({
+  label,
+  name,
+  value,
+  onChange,
+  onUpload,
+  uploading = false,
+  error = '',
+}) {
+  const inputClass =
+    'w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-[var(--gold)] placeholder:text-white/30'
+
+  const handleFileChange = (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+
+    if (file) {
+      onUpload(file)
+    }
+  }
+
+  return (
+    <div className="block">
+      <label htmlFor={name}>
+        <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--gold)]">
+          {label}
+        </span>
+      </label>
+
+      <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+        <input
+          id={name}
+          type="url"
+          name={name}
+          value={value || ''}
+          onChange={onChange}
+          className={inputClass}
+        />
+
+        <label
+          className={`inline-flex cursor-pointer items-center justify-center rounded-xl border border-white/10 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/75 transition hover:border-[var(--gold)] hover:text-[var(--gold)] ${
+            uploading ? 'pointer-events-none opacity-60' : ''
+          }`}
+        >
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="sr-only"
+            disabled={uploading}
+            onChange={handleFileChange}
+          />
+          {uploading ? 'Enviando...' : 'Enviar imagem'}
+        </label>
+      </div>
+
+      {error ? (
+        <p className="mt-2 text-xs leading-5 text-[#FB7185]">{error}</p>
+      ) : null}
+    </div>
+  )
+}
+
 export default function HomepageEditModal({ open, section, config, onClose, onSave }) {
   const [form, setForm] = useState(() => normalizeHomepageConfig(config))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [uploadingImage, setUploadingImage] = useState('')
+  const [uploadErrors, setUploadErrors] = useState({})
 
   useEffect(() => {
     if (open) {
       setForm(normalizeHomepageConfig(config))
       setError('')
+      setUploadingImage('')
+      setUploadErrors({})
     }
   }, [config, open, section])
 
@@ -71,8 +138,49 @@ export default function HomepageEditModal({ open, section, config, onClose, onSa
     })
   }
 
+  const handleImageUrlChange = (name, publicIdName, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+      [publicIdName]: null,
+    }))
+  }
+
+  const handlePortfolioImageUrlChange = (index, value) => {
+    setForm((prev) => {
+      const fotos = [...(prev.portfolioFotos || [])]
+      fotos[index] = {
+        ...fotos[index],
+        src: value,
+        publicId: null,
+      }
+
+      return { ...prev, portfolioFotos: fotos }
+    })
+  }
+
+  const uploadHomepageImage = async (key, file, applyUpload) => {
+    setUploadingImage(key)
+    setUploadErrors((prev) => ({ ...prev, [key]: '' }))
+
+    try {
+      const uploaded = await homepageConfigService.uploadImagem(file)
+      setForm((prev) => applyUpload(prev, uploaded))
+    } catch (uploadError) {
+      console.error('[Homepage] Erro ao enviar imagem:', uploadError?.response?.data || uploadError)
+      setUploadErrors((prev) => ({
+        ...prev,
+        [key]: 'Nao foi possivel enviar. Use uma imagem JPG, PNG ou WEBP.',
+      }))
+    } finally {
+      setUploadingImage('')
+    }
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault()
+    if (uploadingImage) return
+
     setSaving(true)
     setError('')
 
@@ -120,12 +228,22 @@ export default function HomepageEditModal({ open, section, config, onClose, onSa
 
   const renderAboutFields = () => (
     <>
-      <Field
+      <ImageField
         label="Imagem"
         name="sobreImagemUrl"
         value={form.sobreImagemUrl}
-        onChange={handleChange}
-        type="url"
+        onChange={(event) =>
+          handleImageUrlChange('sobreImagemUrl', 'sobreImagemPublicId', event.target.value)
+        }
+        onUpload={(file) =>
+          uploadHomepageImage('sobreImagemUrl', file, (prev, uploaded) => ({
+            ...prev,
+            sobreImagemUrl: uploaded.url,
+            sobreImagemPublicId: uploaded.publicId,
+          }))
+        }
+        uploading={uploadingImage === 'sobreImagemUrl'}
+        error={uploadErrors.sobreImagemUrl}
       />
       <Field
         label="Texto alternativo"
@@ -205,14 +323,27 @@ export default function HomepageEditModal({ open, section, config, onClose, onSa
         </p>
         {(form.portfolioFotos || []).map((photo, index) => (
           <div key={photo.id || index} className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-            <Field
+            <ImageField
               label={`Imagem ${index + 1}`}
               name={`portfolioFotoUrl-${index}`}
               value={photo.src}
               onChange={(event) =>
-                handleArrayChange('portfolioFotos', index, 'src', event.target.value)
+                handlePortfolioImageUrlChange(index, event.target.value)
               }
-              type="url"
+              onUpload={(file) =>
+                uploadHomepageImage(`portfolioFotoUrl-${index}`, file, (prev, uploaded) => {
+                  const fotos = [...(prev.portfolioFotos || [])]
+                  fotos[index] = {
+                    ...fotos[index],
+                    src: uploaded.url,
+                    publicId: uploaded.publicId,
+                  }
+
+                  return { ...prev, portfolioFotos: fotos }
+                })
+              }
+              uploading={uploadingImage === `portfolioFotoUrl-${index}`}
+              error={uploadErrors[`portfolioFotoUrl-${index}`]}
             />
             <Field
               label="Legenda"
@@ -262,6 +393,44 @@ export default function HomepageEditModal({ open, section, config, onClose, onSa
 
   const renderFooterFields = () => (
     <>
+      <Field
+        label="Nome do estúdio/fotógrafa"
+        name="footerEstudioNome"
+        value={form.footerEstudioNome}
+        onChange={handleChange}
+      />
+      <Field
+        label="Texto curto ou slogan"
+        name="footerSlogan"
+        value={form.footerSlogan}
+        onChange={handleChange}
+        multiline
+      />
+      <Field
+        label="E-mail de contato"
+        name="footerEmail"
+        value={form.footerEmail}
+        onChange={handleChange}
+        type="email"
+      />
+      <Field
+        label="WhatsApp/telefone"
+        name="footerWhatsapp"
+        value={form.footerWhatsapp}
+        onChange={handleChange}
+      />
+      <Field
+        label="Instagram"
+        name="footerInstagram"
+        value={form.footerInstagram}
+        onChange={handleChange}
+      />
+      <Field
+        label="Cidade/estado"
+        name="footerCidade"
+        value={form.footerCidade}
+        onChange={handleChange}
+      />
       <Field label="Texto" name="footerTexto" value={form.footerTexto} onChange={handleChange} />
       <Field
         label="Texto da área administrativa"
@@ -356,10 +525,10 @@ export default function HomepageEditModal({ open, section, config, onClose, onSa
           </button>
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || Boolean(uploadingImage)}
             className="rounded-full bg-[var(--gold)] px-6 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[#1A1200] transition hover:bg-[#E2C07A] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {saving ? 'Salvando...' : 'Salvar'}
+            {uploadingImage ? 'Enviando imagem...' : saving ? 'Salvando...' : 'Salvar'}
           </button>
         </div>
       </form>

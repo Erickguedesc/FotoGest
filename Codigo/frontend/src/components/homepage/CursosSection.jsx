@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { homepageConfigService } from '../../services/homepageConfigService'
 import { homepageCursosService } from '../../services/homepageCursosService'
 
 const emptyForm = {
   titulo: '',
   descricao: '',
   imagemUrl: '',
+  imagemPublicId: null,
   precoTexto: '',
   linkExterno: '',
   textoBotao: 'Conhecer produto',
@@ -95,7 +97,26 @@ function CursoCard({ curso, isAdmin, onEdit, onHide, onActivate, onDelete }) {
   )
 }
 
-function CursoModal({ form, editingCurso, saving, onChange, onClose, onSubmit }) {
+function CursoModal({
+  form,
+  editingCurso,
+  saving,
+  imageUploading,
+  imageUploadError,
+  onChange,
+  onImageUpload,
+  onClose,
+  onSubmit,
+}) {
+  const handleFileChange = (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+
+    if (file) {
+      onImageUpload(file)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/80 px-4 py-8 backdrop-blur-sm">
       <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-white/10 bg-[#111] p-6 shadow-2xl md:p-8">
@@ -158,18 +179,39 @@ function CursoModal({ form, editingCurso, saving, onChange, onClose, onSubmit })
             />
           </label>
 
-          <label className="md:col-span-2">
+          <div className="md:col-span-2">
             <span className="mb-2 block text-[10px] uppercase tracking-[0.14em] text-[var(--gold)]">
               URL da imagem
             </span>
-            <input
-              name="imagemUrl"
-              value={form.imagemUrl}
-              onChange={onChange}
-              required
-              className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition focus:border-[var(--gold)]"
-            />
-          </label>
+            <div className="grid gap-3 md:grid-cols-[1fr_auto]">
+              <input
+                name="imagemUrl"
+                value={form.imagemUrl}
+                onChange={onChange}
+                required
+                className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition focus:border-[var(--gold)]"
+              />
+
+              <label
+                className={`inline-flex cursor-pointer items-center justify-center rounded-xl border border-white/10 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/75 transition hover:border-[var(--gold)] hover:text-[var(--gold)] ${
+                  imageUploading ? 'pointer-events-none opacity-60' : ''
+                }`}
+              >
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="sr-only"
+                  disabled={imageUploading}
+                  onChange={handleFileChange}
+                />
+                {imageUploading ? 'Enviando...' : 'Enviar imagem'}
+              </label>
+            </div>
+
+            {imageUploadError ? (
+              <p className="mt-2 text-xs leading-5 text-[#FB7185]">{imageUploadError}</p>
+            ) : null}
+          </div>
 
           <label className="md:col-span-1">
             <span className="mb-2 block text-[10px] uppercase tracking-[0.14em] text-[var(--gold)]">
@@ -233,10 +275,10 @@ function CursoModal({ form, editingCurso, saving, onChange, onClose, onSubmit })
             </button>
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || imageUploading}
               className="rounded-full bg-[var(--gold)] px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#1A1200] transition hover:bg-[#E2C07A] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {saving ? 'Salvando...' : 'Salvar produto'}
+              {imageUploading ? 'Enviando imagem...' : saving ? 'Salvando...' : 'Salvar produto'}
             </button>
           </div>
         </form>
@@ -254,6 +296,8 @@ export default function CursosSection() {
   const [editingCurso, setEditingCurso] = useState(null)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
+  const [imageUploading, setImageUploading] = useState(false)
+  const [imageUploadError, setImageUploadError] = useState('')
 
   const isAdmin = useMemo(() => hasAuthToken(), [])
 
@@ -293,12 +337,14 @@ export default function CursosSection() {
   const openCreateModal = () => {
     setEditingCurso(null)
     setForm({ ...emptyForm, ordem: (cursos?.length || 0) + 1 })
+    setImageUploadError('')
     setModalOpen(true)
   }
 
   const openEditModal = (curso) => {
     setEditingCurso(curso)
     setForm({ ...emptyForm, ...curso })
+    setImageUploadError('')
     setModalOpen(true)
   }
 
@@ -307,11 +353,33 @@ export default function CursosSection() {
     setForm((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
+      ...(name === 'imagemUrl' ? { imagemPublicId: null } : {}),
     }))
+  }
+
+  const handleImageUpload = async (file) => {
+    setImageUploading(true)
+    setImageUploadError('')
+
+    try {
+      const uploaded = await homepageConfigService.uploadImagem(file)
+      setForm((prev) => ({
+        ...prev,
+        imagemUrl: uploaded.url,
+        imagemPublicId: uploaded.publicId,
+      }))
+    } catch (err) {
+      console.error('[CursosSection] Erro ao enviar imagem:', err?.response?.data || err)
+      setImageUploadError('Nao foi possivel enviar. Use uma imagem JPG, PNG ou WEBP.')
+    } finally {
+      setImageUploading(false)
+    }
   }
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+    if (imageUploading) return
+
     setSaving(true)
     setFeedback(null)
 
@@ -471,7 +539,10 @@ export default function CursosSection() {
           form={form}
           editingCurso={editingCurso}
           saving={saving}
+          imageUploading={imageUploading}
+          imageUploadError={imageUploadError}
           onChange={handleChange}
+          onImageUpload={handleImageUpload}
           onClose={() => setModalOpen(false)}
           onSubmit={handleSubmit}
         />

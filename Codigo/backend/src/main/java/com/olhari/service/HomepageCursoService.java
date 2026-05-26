@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,7 +18,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class HomepageCursoService {
 
+    private static final String HOMEPAGE_FOLDER = "olhari/configuracoes/homepage/";
+
     private final HomepageCursoRepository repository;
+    private final CloudinaryService cloudinaryService;
 
     @Transactional(readOnly = true)
     public List<HomepageCursoResponse> listarAtivos() {
@@ -45,8 +49,14 @@ public class HomepageCursoService {
     @Transactional
     public HomepageCursoResponse atualizar(UUID id, HomepageCursoRequest request) {
         HomepageCurso curso = buscarEntidade(id);
+        String publicIdAntigo = curso.getImagemPublicId();
+
         preencher(curso, request);
-        return toResponse(repository.save(curso));
+        HomepageCurso cursoSalvo = repository.save(curso);
+
+        removerPublicIdSubstituido(publicIdAntigo, cursoSalvo.getImagemPublicId());
+
+        return toResponse(cursoSalvo);
     }
 
     @Transactional
@@ -66,7 +76,11 @@ public class HomepageCursoService {
     @Transactional
     public void deletar(UUID id) {
         HomepageCurso curso = buscarEntidade(id);
+        String publicId = curso.getImagemPublicId();
+
         repository.delete(curso);
+
+        deletarImagemSemInterromper(publicId);
     }
 
     private HomepageCurso buscarEntidade(UUID id) {
@@ -81,6 +95,7 @@ public class HomepageCursoService {
         curso.setTitulo(request.getTitulo().trim());
         curso.setDescricao(request.getDescricao().trim());
         curso.setImagemUrl(request.getImagemUrl().trim());
+        curso.setImagemPublicId(normalizarOpcional(request.getImagemPublicId()));
         curso.setPrecoTexto(normalizarOpcional(request.getPrecoTexto()));
         curso.setLinkExterno(request.getLinkExterno().trim());
         curso.setTextoBotao(
@@ -102,6 +117,7 @@ public class HomepageCursoService {
                 .titulo(curso.getTitulo())
                 .descricao(curso.getDescricao())
                 .imagemUrl(curso.getImagemUrl())
+                .imagemPublicId(curso.getImagemPublicId())
                 .precoTexto(curso.getPrecoTexto())
                 .linkExterno(curso.getLinkExterno())
                 .textoBotao(curso.getTextoBotao())
@@ -110,5 +126,29 @@ public class HomepageCursoService {
                 .criadoEm(curso.getCriadoEm())
                 .atualizadoEm(curso.getAtualizadoEm())
                 .build();
+    }
+
+    private void removerPublicIdSubstituido(String publicIdAntigo, String publicIdNovo) {
+        if (publicIdAntigo == null || publicIdAntigo.isBlank()) {
+            return;
+        }
+
+        if (publicIdAntigo.equals(publicIdNovo)) {
+            return;
+        }
+
+        deletarImagemSemInterromper(publicIdAntigo);
+    }
+
+    private void deletarImagemSemInterromper(String publicId) {
+        if (publicId == null || publicId.isBlank() || !publicId.startsWith(HOMEPAGE_FOLDER)) {
+            return;
+        }
+
+        try {
+            cloudinaryService.deletar(publicId);
+        } catch (IOException ignored) {
+            // Produto ja foi salvo/removido; falha no Cloudinary nao deve quebrar o fluxo.
+        }
     }
 }

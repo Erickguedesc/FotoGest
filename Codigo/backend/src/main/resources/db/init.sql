@@ -81,6 +81,16 @@ CREATE TABLE IF NOT EXISTS cliente (
 ALTER TABLE cliente
 ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT true;
 
+UPDATE cliente
+SET ativo = true
+WHERE ativo IS NULL;
+
+ALTER TABLE cliente
+ALTER COLUMN ativo SET DEFAULT true;
+
+ALTER TABLE cliente
+ALTER COLUMN ativo SET NOT NULL;
+
 CREATE TABLE IF NOT EXISTS ensaio (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   cliente_id UUID NOT NULL REFERENCES cliente(id) ON DELETE CASCADE,
@@ -149,6 +159,16 @@ ADD COLUMN IF NOT EXISTS acesso_liberado BOOLEAN NOT NULL DEFAULT false;
 
 ALTER TABLE album
 ADD COLUMN IF NOT EXISTS views INTEGER NOT NULL DEFAULT 0;
+
+UPDATE album
+SET views = 0
+WHERE views IS NULL;
+
+ALTER TABLE album
+ALTER COLUMN views SET DEFAULT 0;
+
+ALTER TABLE album
+ALTER COLUMN views SET NOT NULL;
 
 UPDATE album
 SET acesso_liberado = true
@@ -310,6 +330,34 @@ EXECUTE FUNCTION fn_registra_historico_status_ensaio();
 -- PREFERÊNCIAS DO SISTEMA
 ----------------------------------------------------
 
+CREATE TABLE IF NOT EXISTS configuracao_estudio (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  fotografa_id UUID NOT NULL UNIQUE REFERENCES fotografa(id) ON DELETE CASCADE,
+  nome_estudio VARCHAR(160),
+  nome_comercial VARCHAR(160),
+  email VARCHAR(200),
+  telefone VARCHAR(30),
+  instagram VARCHAR(120),
+  cidade VARCHAR(120),
+  endereco TEXT,
+  cnpj VARCHAR(20),
+  logo_url TEXT,
+  marca_dagua_url TEXT,
+  marca_dagua_public_id TEXT,
+  marca_dagua_ativa BOOLEAN NOT NULL DEFAULT false,
+  marca_dagua_posicao VARCHAR(40) DEFAULT 'INFERIOR_DIREITA',
+  marca_dagua_opacidade INTEGER DEFAULT 35,
+  marca_dagua_tamanho VARCHAR(20) DEFAULT 'MEDIA',
+  marca_dagua_margem INTEGER DEFAULT 30,
+  marca_dagua_tipo VARCHAR(20) DEFAULT 'IMAGEM',
+  marca_dagua_texto TEXT,
+  marca_dagua_fonte VARCHAR(30) DEFAULT 'MODERNA',
+  marca_dagua_cor VARCHAR(20) DEFAULT 'BRANCO',
+  marca_dagua_estilo VARCHAR(20) DEFAULT 'NORMAL',
+  criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS preferencias_sistema (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   fotografa_id UUID NOT NULL UNIQUE REFERENCES fotografa(id) ON DELETE CASCADE,
@@ -334,6 +382,12 @@ ADD COLUMN IF NOT EXISTS capa_album_padrao_public_id TEXT;
 DROP TRIGGER IF EXISTS trg_preferencias_sistema_ts ON preferencias_sistema;
 CREATE TRIGGER trg_preferencias_sistema_ts
 BEFORE UPDATE ON preferencias_sistema
+FOR EACH ROW
+EXECUTE FUNCTION fn_atualiza_timestamp();
+
+DROP TRIGGER IF EXISTS trg_configuracao_estudio_ts ON configuracao_estudio;
+CREATE TRIGGER trg_configuracao_estudio_ts
+BEFORE UPDATE ON configuracao_estudio
 FOR EACH ROW
 EXECUTE FUNCTION fn_atualiza_timestamp();
 ------------------------------------
@@ -460,6 +514,16 @@ ADD COLUMN IF NOT EXISTS marca_dagua_public_id TEXT;
 
 ALTER TABLE configuracao_estudio
 ADD COLUMN IF NOT EXISTS marca_dagua_ativa BOOLEAN NOT NULL DEFAULT FALSE;
+
+UPDATE configuracao_estudio
+SET marca_dagua_ativa = false
+WHERE marca_dagua_ativa IS NULL;
+
+ALTER TABLE configuracao_estudio
+ALTER COLUMN marca_dagua_ativa SET DEFAULT false;
+
+ALTER TABLE configuracao_estudio
+ALTER COLUMN marca_dagua_ativa SET NOT NULL;
 
 ALTER TABLE configuracao_estudio
 ADD COLUMN IF NOT EXISTS marca_dagua_posicao VARCHAR(40) DEFAULT 'INFERIOR_DIREITA';
