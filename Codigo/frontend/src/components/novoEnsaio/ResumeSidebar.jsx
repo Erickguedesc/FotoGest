@@ -175,10 +175,10 @@ export default function ResumeSidebar({ form, loading }) {
           onClick={() => navigate('/ensaios')}
           className="
             flex-1 py-3.5 bg-transparent
-            border border-white/[0.11] rounded-[9px]
-            text-[12.5px] tracking-[0.08em] text-white/80
+            border border-[var(--border)] rounded-[9px]
+            text-[12.5px] tracking-[0.08em] text-[var(--text-muted)]
             cursor-pointer transition-all duration-200
-            hover:border-white/25 hover:text-white
+            hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--text)]
           "
         >
           Cancelar

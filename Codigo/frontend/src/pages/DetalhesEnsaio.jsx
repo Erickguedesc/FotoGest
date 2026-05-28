@@ -412,7 +412,7 @@
     },
   })
 }
-  const publicarAlbum = async () => {
+  const publicarAlbum = async ({ successMessage, errorMessage } = {}) => {
     setPublicando(true)
 
     try {
@@ -444,14 +444,18 @@
       ])
 
       showToast(
-        album?.urlAcesso
+        successMessage ||
+        (album?.urlAcesso
           ? 'Nova senha gerada com sucesso. Envie a senha atualizada para a cliente.'
           : 'Álbum publicado com sucesso. As fotos foram bloqueadas para preservar a galeria enviada.'
+        )
       )
     } catch (error) {
       const msg =
         error?.response?.data?.message ||
-        'Não foi possível publicar o álbum.'
+        error?.response?.data?.error ||
+        errorMessage ||
+        'Não foi possível concluir a publicação do álbum.'
 
       showToast(msg, 'error')
     } finally {
@@ -460,11 +464,6 @@
   }
 
   const handlePublicar = async () => {
-    if (!fotos.length) {
-      showToast('Envie fotos antes de publicar o álbum.', 'error')
-      return
-    }
-
     if (albumPublicado) {
       openConfirmAction({
         type: 'warning',
@@ -474,10 +473,20 @@
         confirmText: 'Gerar nova senha',
         onConfirm: async () => {
           setConfirmAction(null)
-          await publicarAlbum()
+          await publicarAlbum({
+            successMessage: 'Nova senha gerada com sucesso. Envie a senha atualizada para a cliente.',
+            errorMessage: 'Nao foi possivel gerar uma nova senha para o album.',
+          })
         },
       })
 
+      return
+    }
+
+    const fotosAtuais = fotos.length ? fotos : await loadFotos()
+
+    if (!fotosAtuais.length) {
+      showToast('Envie fotos antes de publicar o álbum.', 'error')
       return
     }
 
@@ -490,14 +499,20 @@
         confirmText: 'Publicar novamente',
         onConfirm: async () => {
           setConfirmAction(null)
-          await publicarAlbum()
+          await publicarAlbum({
+            successMessage: 'Album publicado novamente. Envie o link e a nova senha para a cliente.',
+            errorMessage: 'Nao foi possivel publicar novamente o album.',
+          })
         },
       })
 
       return
     }
 
-    await publicarAlbum()
+    await publicarAlbum({
+      successMessage: 'Album publicado com sucesso. As fotos foram bloqueadas para preservar a galeria enviada.',
+      errorMessage: 'Nao foi possivel publicar o album.',
+    })
   }
 
     const handleReabrirAlbum = async () => {
