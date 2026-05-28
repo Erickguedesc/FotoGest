@@ -1,14 +1,14 @@
   version: '3.9'
 
   services:
-    olhari-db:
+    fotogest-db:
       image: postgres:16-alpine
-      container_name: olhari_postgres
+      container_name: fotogest_postgres
       restart: unless-stopped
       environment:
-        POSTGRES_DB:       olhari_db
-        POSTGRES_USER:     olhari_user
-        POSTGRES_PASSWORD: olhari_senha123
+        POSTGRES_DB:       fotogest_db
+        POSTGRES_USER:     fotogest_user
+        POSTGRES_PASSWORD: fotogest_senha123
       ports:
         - "5432:5432"
       volumes:
@@ -16,21 +16,21 @@
         # Executa o schema na primeira inicialização:
         - ./src/main/resources/db/init.sql:/docker-entrypoint-initdb.d/init.sql
       healthcheck:
-        test: ["CMD-SHELL", "pg_isready -U olhari_user -d olhari_db"]
+        test: ["CMD-SHELL", "pg_isready -U fotogest_user -d fotogest_db"]
         interval: 10s
         timeout:  5s
         retries:  5
 
-    olhari-api:
+    fotogest-api:
       build: .
-      container_name: olhari_api
+      container_name: fotogest_api
       depends_on:
-        olhari-db:
+        fotogest-db:
           condition: service_healthy
       environment:
-        SPRING_DATASOURCE_URL:      jdbc:postgresql://olhari-db:5432/olhari_db
-        SPRING_DATASOURCE_USERNAME: olhari_user
-        SPRING_DATASOURCE_PASSWORD: olhari_senha123
+        SPRING_DATASOURCE_URL:      jdbc:postgresql://fotogest-db:5432/fotogest_db
+        SPRING_DATASOURCE_USERNAME: fotogest_user
+        SPRING_DATASOURCE_PASSWORD: fotogest_senha123
       ports:
         - "8080:8080"
 
@@ -41,13 +41,13 @@
 
 
   # Subir apenas o banco (durante desenvolvimento local)
-  #docker compose up olhari-db -d
+  #docker compose up fotogest-db -d
 
   # Verificar se está rodando
   #docker compose ps
 
   # Acessar o banco via CLI
-  #docker exec -it olhari_postgres psql -U olhari_user -d olhari_db
+  #docker exec -it fotogest_postgres psql -U fotogest_user -d fotogest_db
 
   # Parar e remover containers (mantém os dados)
   #docker compose stop
