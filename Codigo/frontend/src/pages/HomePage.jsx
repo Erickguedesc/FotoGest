@@ -5,7 +5,6 @@ import Navbar from '../components/homepage/Navbar'
 import HeroSection from '../components/homepage/HeroSection'
 import AboutSection from '../components/homepage/AboutSection'
 import PortfolioSection from '../components/homepage/PortfolioSection'
-import CursosSection from '../components/homepage/CursosSection'
 import ContactSection from '../components/homepage/ContactSection'
 import Footer from '../components/homepage/Footer'
 import HomepageEditModal from '../components/homepage/HomepageEditModal'
@@ -36,7 +35,6 @@ export default function HomePage() {
       <HeroSection config={config} onEdit={() => handleEdit('hero')} />
       <AboutSection config={config} onEdit={() => handleEdit('about')} />
       <PortfolioSection config={config} onEdit={() => handleEdit('portfolio')} />
-      <CursosSection />
       <ContactSection config={config} onEdit={() => handleEdit('contact')} />
       <Footer config={config} onEdit={() => handleEdit('footer')} />
 
@@ -55,3 +53,4 @@ export default function HomePage() {
     </div>
   )
 }
+
