@@ -89,7 +89,7 @@ adicionarRodape(document, estudio);
     }
 
 private void adicionarCabecalho(Document document, ConfiguracaoEstudio estudio) throws Exception {
-    String nomeEstudio = valorOuTraco(estudio != null ? estudio.getNomeEstudio() : "Olhari Fotografia");
+    String nomeEstudio = valorOuTraco(estudio != null ? estudio.getNomeEstudio() : "Seu Estúdio Fotográfico");
     String email = estudio != null ? estudio.getEmail() : null;
     String telefone = estudio != null ? estudio.getTelefone() : null;
     String instagram = estudio != null ? estudio.getInstagram() : null;
@@ -251,13 +251,13 @@ private void adicionarRodape(Document document, ConfiguracaoEstudio estudio) thr
 
     String nomeEstudio = estudio != null && estudio.getNomeEstudio() != null
             ? estudio.getNomeEstudio()
-            : "Olhari Fotografia";
+            : "Seu Estúdio Fotográfico";
 
     String endereco = estudio != null ? estudio.getEndereco() : null;
     String cnpj = estudio != null ? estudio.getCnpj() : null;
 
     StringBuilder texto = new StringBuilder();
-    texto.append("Documento gerado automaticamente pelo sistema Olhari em ")
+    texto.append("Documento gerado automaticamente pelo sistema FotoGest em ")
             .append(dataGeracao)
             .append(".");
 

@@ -25,7 +25,7 @@ public class Album {
 
     /**
      * Token gerado automaticamente para a URL pública.
-     * Exemplo: olhari.com/album/ana-clara-3f8a (RF05)
+     * Exemplo: fotogest.com.br/album/ana-clara-3f8a (RF05)
      */
 
     @Column(name = "acesso_liberado")

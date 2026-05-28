@@ -23,7 +23,7 @@ import java.util.Set;
 public class HomepageConfigService {
 
     private static final String EMPTY_CONFIG = "{}";
-    private static final String HOMEPAGE_FOLDER = "olhari/configuracoes/homepage/";
+    private static final String HOMEPAGE_FOLDER = "fotogest/configuracoes/homepage/";
 
     private final HomepageConfigRepository repository;
     private final ObjectMapper objectMapper;

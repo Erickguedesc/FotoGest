@@ -23,7 +23,7 @@ public class CloudinaryService {
                 .upload(
                         multipartFile.getBytes(),
                         ObjectUtils.asMap(
-                                "folder", "olhari/ensaios/" + ensaioId,
+                                "folder", "fotogest/ensaios/" + ensaioId,
                                 "resource_type", "image"
                         )
                 );
@@ -45,7 +45,7 @@ public Map<String, Object> uploadConfiguracao(MultipartFile multipartFile, Strin
             .upload(
                     multipartFile.getBytes(),
                     ObjectUtils.asMap(
-                            "folder", "olhari/configuracoes/" + pasta,
+                            "folder", "fotogest/configuracoes/" + pasta,
                             "resource_type", "image"
                     )
             );
@@ -58,7 +58,7 @@ public Map<String, Object> uploadBytes(byte[] bytes, String pasta) throws IOExce
             .upload(
                     bytes,
                     ObjectUtils.asMap(
-                            "folder", "olhari/configuracoes/" + pasta,
+                            "folder", "fotogest/configuracoes/" + pasta,
                             "resource_type", "image"
                     )
             );

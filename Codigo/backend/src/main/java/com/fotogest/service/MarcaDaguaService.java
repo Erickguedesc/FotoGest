@@ -306,8 +306,8 @@ if ("center".equals(gravidade)) {
                 .orElseGet(() -> configuracaoEstudioRepository.save(
                         ConfiguracaoEstudio.builder()
                                 .fotografa(fotografa)
-                                .nomeEstudio("Olhari Fotografia")
-                                .nomeComercial("Olhari")
+                                .nomeEstudio("Seu Estúdio Fotográfico")
+                                .nomeComercial("Seu Estúdio")
                                 .email(fotografa.getEmail())
                                 .telefone(fotografa.getTelefone())
                                 .cnpj(fotografa.getCnpj())

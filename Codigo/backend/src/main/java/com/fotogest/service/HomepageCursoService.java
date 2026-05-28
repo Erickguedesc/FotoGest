@@ -18,7 +18,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class HomepageCursoService {
 
-    private static final String HOMEPAGE_FOLDER = "olhari/configuracoes/homepage/";
+    private static final String HOMEPAGE_FOLDER = "fotogest/configuracoes/homepage/";
 
     private final HomepageCursoRepository repository;
     private final CloudinaryService cloudinaryService;

@@ -57,7 +57,7 @@ public class EmailService {
                 "Link do álbum: " + urlAcesso,
                 "Senha: " + senha,
                 "Disponível até: " + validade,
-                "Com carinho,\n" + valorOuPadrao(config.getNomeRemetente(), "Olhari Fotografia")
+                "Com carinho,\n" + valorOuPadrao(config.getNomeRemetente(), "Seu Estúdio Fotográfico")
         );
 
         enviar(config, destino, "Seu álbum está disponível", corpo);
@@ -109,7 +109,7 @@ public class EmailService {
         String corpo = String.join("\n\n",
                 "Olá, " + ensaio.getCliente().getNome() + ".",
                 "O status do seu ensaio foi atualizado para: " + formatarStatus(status) + ".",
-                "Com carinho,\n" + valorOuPadrao(config.getNomeRemetente(), "Olhari Fotografia")
+                "Com carinho,\n" + valorOuPadrao(config.getNomeRemetente(), "Seu Estúdio Fotográfico")
         );
 
         enviar(config, destino, "Atualização do seu ensaio", corpo);
@@ -132,7 +132,7 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
 
-            String nomeRemetente = valorOuPadrao(config.getNomeRemetente(), "Olhari Fotografia");
+            String nomeRemetente = valorOuPadrao(config.getNomeRemetente(), "Seu Estúdio Fotográfico");
 
             helper.setTo(destino);
             helper.setSubject(assunto);
