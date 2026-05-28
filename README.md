@@ -117,4 +117,4 @@ Na pasta `Codigo/backend`, execute:
 
 ## Observação sobre a migração
 
-O FotoGest é mantido para permitir evolução independente, com mudanças de marca, homepage, regras de negócio e funcionalidades voltadas ao uso por diferentes fotógrafos no mercado.
+O FotoGest é mantido para permitir evolução independente, com mudanças de marca, site institucional, regras de negócio e funcionalidades voltadas ao uso por diferentes fotógrafos no mercado.

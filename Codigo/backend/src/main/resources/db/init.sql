@@ -72,19 +72,6 @@ CREATE TABLE IF NOT EXISTS cliente (
   atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-ALTER TABLE cliente
-ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT true;
-
-UPDATE cliente
-SET ativo = true
-WHERE ativo IS NULL;
-
-ALTER TABLE cliente
-ALTER COLUMN ativo SET DEFAULT true;
-
-ALTER TABLE cliente
-ALTER COLUMN ativo SET NOT NULL;
-
 CREATE TABLE IF NOT EXISTS ensaio (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   cliente_id UUID NOT NULL REFERENCES cliente(id) ON DELETE CASCADE,
@@ -148,28 +135,6 @@ CREATE TABLE IF NOT EXISTS album (
   atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-ALTER TABLE album
-ADD COLUMN IF NOT EXISTS acesso_liberado BOOLEAN NOT NULL DEFAULT false;
-
-ALTER TABLE album
-ADD COLUMN IF NOT EXISTS views INTEGER NOT NULL DEFAULT 0;
-
-UPDATE album
-SET views = 0
-WHERE views IS NULL;
-
-ALTER TABLE album
-ALTER COLUMN views SET DEFAULT 0;
-
-ALTER TABLE album
-ALTER COLUMN views SET NOT NULL;
-
-UPDATE album
-SET acesso_liberado = true
-WHERE ativo = true
-  AND publicado_em IS NOT NULL
-  AND senha_hash IS NOT NULL;
-
 CREATE INDEX IF NOT EXISTS idx_album_ensaio_id
 ON album(ensaio_id);
 
@@ -187,18 +152,6 @@ CREATE TABLE IF NOT EXISTS selecao_foto (
   observacao TEXT,
   UNIQUE(album_id, foto_id)
 );
-
-ALTER TABLE ensaio
-ADD COLUMN IF NOT EXISTS valor_final_ensaio NUMERIC(10,2);
-
-ALTER TABLE ensaio
-ADD COLUMN IF NOT EXISTS status_valores VARCHAR(30) DEFAULT 'NAO_INFORMADO';
-
-ALTER TABLE ensaio
-ADD COLUMN IF NOT EXISTS observacao_valores TEXT;
-
-ALTER TABLE selecao_foto
-ADD COLUMN IF NOT EXISTS observacao TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_selecao_foto_album_id
 ON selecao_foto(album_id);
@@ -333,12 +286,6 @@ CREATE TABLE IF NOT EXISTS preferencias_sistema (
   atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-ALTER TABLE preferencias_sistema
-ADD COLUMN IF NOT EXISTS capa_album_padrao_url TEXT;
-
-ALTER TABLE preferencias_sistema
-ADD COLUMN IF NOT EXISTS capa_album_padrao_public_id TEXT;
-
 DROP TRIGGER IF EXISTS trg_preferencias_sistema_ts ON preferencias_sistema;
 CREATE TRIGGER trg_preferencias_sistema_ts
 BEFORE UPDATE ON preferencias_sistema
@@ -445,52 +392,7 @@ DO NOTHING;
 --   CONFIGURAÇÕES DE MARCA D'ÁGUA
 ------------------------------------
 
-ALTER TABLE configuracao_estudio
-ADD COLUMN IF NOT EXISTS marca_dagua_url TEXT;
-
-ALTER TABLE configuracao_estudio
-ADD COLUMN IF NOT EXISTS marca_dagua_public_id TEXT;
-
-ALTER TABLE configuracao_estudio
-ADD COLUMN IF NOT EXISTS marca_dagua_ativa BOOLEAN NOT NULL DEFAULT FALSE;
-
-UPDATE configuracao_estudio
-SET marca_dagua_ativa = false
-WHERE marca_dagua_ativa IS NULL;
-
-ALTER TABLE configuracao_estudio
-ALTER COLUMN marca_dagua_ativa SET DEFAULT false;
-
-ALTER TABLE configuracao_estudio
-ALTER COLUMN marca_dagua_ativa SET NOT NULL;
-
-ALTER TABLE configuracao_estudio
-ADD COLUMN IF NOT EXISTS marca_dagua_posicao VARCHAR(40) DEFAULT 'INFERIOR_DIREITA';
-
-ALTER TABLE configuracao_estudio
-ADD COLUMN IF NOT EXISTS marca_dagua_opacidade INTEGER DEFAULT 35;
-
-ALTER TABLE configuracao_estudio
-ADD COLUMN IF NOT EXISTS marca_dagua_tamanho VARCHAR(20) DEFAULT 'MEDIA';
-
-ALTER TABLE configuracao_estudio
-ADD COLUMN IF NOT EXISTS marca_dagua_margem INTEGER DEFAULT 30;
-
 ----------------------------------------------------
 -- MARCA D'ÁGUA POR TEXTO
 ----------------------------------------------------
 
-ALTER TABLE configuracao_estudio
-ADD COLUMN IF NOT EXISTS marca_dagua_tipo VARCHAR(20) DEFAULT 'IMAGEM';
-
-ALTER TABLE configuracao_estudio
-ADD COLUMN IF NOT EXISTS marca_dagua_texto VARCHAR(200);
-
-ALTER TABLE configuracao_estudio
-ADD COLUMN IF NOT EXISTS marca_dagua_fonte VARCHAR(30) DEFAULT 'MODERNA';
-
-ALTER TABLE configuracao_estudio
-ADD COLUMN IF NOT EXISTS marca_dagua_cor VARCHAR(20) DEFAULT 'BRANCO';
-
-ALTER TABLE configuracao_estudio
-ADD COLUMN IF NOT EXISTS marca_dagua_estilo VARCHAR(20) DEFAULT 'NORMAL';
