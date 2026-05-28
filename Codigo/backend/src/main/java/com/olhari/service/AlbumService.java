@@ -5,10 +5,8 @@ import com.olhari.dto.AlbumResponseDTO;
 import com.olhari.enums.StatusEnsaio;
 import com.olhari.model.Album;
 import com.olhari.model.Ensaio;
-import com.olhari.model.HistoricoStatusEnsaio;
 import com.olhari.repository.AlbumRepository;
 import com.olhari.repository.EnsaioRepository;
-import com.olhari.repository.HistoricoStatusEnsaioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -31,7 +29,6 @@ public class AlbumService {
 private final AlbumRepository albumRepository;
 private final EnsaioRepository ensaioRepository;
 private final PreferenciasSistemaRepository preferenciasSistemaRepository;
-private final HistoricoStatusEnsaioRepository historicoStatusEnsaioRepository;
 private final PasswordEncoder passwordEncoder;
 private final EmailService emailService;
 
@@ -97,6 +94,7 @@ private final EmailService emailService;
         album.setAtivo(false);
 
         albumRepository.save(album);
+        atualizarStatusParaEmEdicaoSeNecessario(album.getEnsaio());
 
         return toAdminResponse(album);
     }
@@ -212,16 +210,22 @@ private void atualizarStatusParaEmSelecaoSeNecessario(Ensaio ensaio) {
         return;
     }
 
-    ensaio.setStatus(StatusEnsaio.EM_SELECAO);
-    ensaio.setProgresso((short) 50);
-    ensaioRepository.save(ensaio);
+    atualizarStatus(ensaio, StatusEnsaio.EM_SELECAO, (short) 50);
+}
 
-    historicoStatusEnsaioRepository.save(
-            HistoricoStatusEnsaio.builder()
-                    .ensaio(ensaio)
-                    .status(StatusEnsaio.EM_SELECAO)
-                    .alteradoEm(OffsetDateTime.now())
-                    .build()
-    );
+private void atualizarStatusParaEmEdicaoSeNecessario(Ensaio ensaio) {
+    StatusEnsaio statusAtual = ensaio.getStatus();
+
+    if (statusAtual == StatusEnsaio.EM_EDICAO || statusAtual == StatusEnsaio.CANCELADO) {
+        return;
+    }
+
+    atualizarStatus(ensaio, StatusEnsaio.EM_EDICAO, (short) 75);
+}
+
+private void atualizarStatus(Ensaio ensaio, StatusEnsaio status, short progresso) {
+    ensaio.setStatus(status);
+    ensaio.setProgresso(progresso);
+    ensaioRepository.save(ensaio);
 }
 }
