@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CalendarDays, MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import logoOlhari from '../../assets/logo.jpg'
+import logoFotoGest from '../../assets/logo.jpg'
 
 const STATUS_CONFIG = {
   EM_EDICAO: {
@@ -51,8 +51,8 @@ export default function EnsaioDashboardCard({ ensaio }) {
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center bg-[#111111] px-6 text-center">
             <img
-              src={logoOlhari}
-              alt="Olhari"
+              src={logoFotoGest}
+              alt="FotoGest"
               className="mb-4 w-28 opacity-80"
             />
 

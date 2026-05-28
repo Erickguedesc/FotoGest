@@ -474,7 +474,7 @@ export default function CursosSection() {
         </div>
 
         <div className="mb-10 rounded-3xl border border-[rgba(201,164,89,0.22)] bg-[linear-gradient(135deg,rgba(201,164,89,0.12),rgba(255,255,255,0.03))] p-6 text-sm leading-relaxed text-[var(--text-muted)] md:p-8">
-          <strong className="text-[var(--gold)]">Importante:</strong> o OLHARI apenas
+          <strong className="text-[var(--gold)]">Importante:</strong> o FOTOGEST apenas
           apresenta os produtos. A compra, o pagamento e o acesso ao conteúdo acontecem em
           links externos, como Hotmart, Kiwify, WhatsApp, Instagram ou outra plataforma definida
           pela fotógrafa.

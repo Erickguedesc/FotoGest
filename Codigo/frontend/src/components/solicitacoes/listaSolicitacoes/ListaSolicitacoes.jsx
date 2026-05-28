@@ -136,7 +136,7 @@ export default function ListaSolicitacoes() {
             </p>
 
             <p className="theme-muted mt-1 text-xs">
-              Bem-vinda, Fotógrafa Olhari
+              Bem-vinda, Fotógrafa FotoGest
             </p>
 
             <button

@@ -260,7 +260,7 @@ function handleGerarTexto() {
         name="texto"
         value={textoForm.texto}
         onChange={handleTextoChange}
-        placeholder="Ex: © Olhari Fotografia"
+        placeholder="Ex: © FotoGest Fotografia"
         maxLength={200}
         className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-[var(--gold-border)]"
       />

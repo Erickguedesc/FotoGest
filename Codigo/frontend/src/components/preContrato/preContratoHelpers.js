@@ -150,7 +150,7 @@ export function buildInitialDraft({ ensaio, cliente, solicitacao }) {
     cidadeAssinatura: 'Belo Horizonte',
 
     fotografaNome: 'Maria Clara Souza',
-    fotografaEmail: 'contato@olhari.com',
+    fotografaEmail: 'contato@fotogest.com.br',
     fotografaTelefone: '(31) 99000-1234',
     fotografaCidade: 'Belo Horizonte, Minas Gerais',
     fotografaDocumento: 'CNPJ 00.000.000/0001-00',

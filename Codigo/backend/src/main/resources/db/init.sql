@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  OLHARI — Schema PostgreSQL Consolidado
+--  FOTOGEST — Schema PostgreSQL Consolidado
 --  Versão: 1.3
 --  Sincronizado com Java + Histórico de Status + Álbum Reabrível
 ----------------------------------------------------------------------
@@ -403,7 +403,7 @@ INSERT INTO fotografa (
 )
 VALUES (
   'Erick Barbosa',
-  'contato@olhari.com',
+  'contato@fotogest.com.br',
   '$2a$10$uJTG.SFW7By6pq2LSEZQv.df76RPhIeINUU5k1w94FBSo3DhKZY3.',
   '(31) 99000-1234',
   '00.000.000/0001-00'
@@ -446,7 +446,7 @@ SELECT
   'NEWBORN',
   'EM_EDICAO',
   NOW(),
-  'Studio Olhari, BH',
+  'Estúdio Modelo, BH',
   40,
   1200.00,
   35.00,
@@ -460,7 +460,7 @@ WHERE c.email = 'anaclara@email.com'
     FROM ensaio e
     WHERE e.cliente_id = c.id
       AND e.tipo = 'NEWBORN'
-      AND e.local = 'Studio Olhari, BH'
+      AND e.local = 'Estúdio Modelo, BH'
   )
 LIMIT 1;
 

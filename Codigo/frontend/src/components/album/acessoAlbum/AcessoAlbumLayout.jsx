@@ -16,7 +16,7 @@ export default function AcessoAlbumLayout({ token, children }) {
             <label className="gate-label">Link do álbum</label>
 
             <div className="gate-url-row">
-              <span className="gate-url-prefix">olhari.com/album/</span>
+              <span className="gate-url-prefix">fotogest.com.br/album/</span>
               <span className="gate-token-val">{token}</span>
             </div>
 

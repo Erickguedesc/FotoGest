@@ -62,7 +62,7 @@ export default function GalleryLightbox({
               key={item}
               className="rotate-[-35deg] select-none self-center text-center font-serif text-sm italic tracking-[0.18em] text-black/15"
             >
-              © olhari fotografia
+              © FotoGest fotografia
             </span>
           ))}
         </div>

@@ -11,7 +11,7 @@ export default function AboutSection({ config, onEdit }) {
       <div className="w-full aspect-[4/5] rounded-xl border border-white/10 overflow-hidden bg-[#1a1a1a]">
         <img
           src={config?.sobreImagemUrl}
-          alt={config?.sobreImagemAlt || 'Fotógrafa Olhari'}
+          alt={config?.sobreImagemAlt || 'Fotógrafa FotoGest'}
           className="w-full h-full object-cover opacity-80 transition-all duration-700 hover:opacity-100 hover:scale-105"
         />
       </div>

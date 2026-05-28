@@ -28,14 +28,14 @@ export default function GaleriaPage() {
   const { token } = useParams()
 
   const [album, setAlbum] = useState(() => {
-    const raw = sessionStorage.getItem(`olhari_album_${token}`)
+    const raw = sessionStorage.getItem(`fotogest_album_${token}`)
 
     if (!raw) return null
 
     try {
       return JSON.parse(raw)
     } catch {
-      sessionStorage.removeItem(`olhari_album_${token}`)
+      sessionStorage.removeItem(`fotogest_album_${token}`)
       return null
     }
   })
@@ -87,7 +87,7 @@ export default function GaleriaPage() {
           }
 
           sessionStorage.setItem(
-            `olhari_album_${token}`,
+            `fotogest_album_${token}`,
             JSON.stringify(albumAtualizado),
           )
 
@@ -236,7 +236,7 @@ export default function GaleriaPage() {
       setModalSucessoAberto(true)
 
       sessionStorage.setItem(
-        `olhari_album_${token}`,
+        `fotogest_album_${token}`,
         JSON.stringify({
           ...album,
           selecaoEnviada: true,

@@ -129,7 +129,7 @@ export default function DadosEstudioForm({
   items={[
     'A logo é usada nos PDFs, documentos e materiais gerados pelo sistema.',
     'Nome, e-mail, telefone, Instagram, endereço e CNPJ aparecem em documentos do estúdio/empresa.',
-    'Essas informações representam a identidade profissional da marca Olhari.',
+    'Essas informações representam a identidade profissional da marca FotoGest.',
   ]}
 />
     </form>

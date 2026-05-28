@@ -64,7 +64,7 @@ export default function AlbumAccessPage() {
     console.log("DADOS PÚBLICOS DO ÁLBUM:", dadosPublicos)
 
    sessionStorage.setItem(
-  `olhari_album_${token}`,
+  `fotogest_album_${token}`,
   JSON.stringify({
     ...dadosPublicos,
     fotos,

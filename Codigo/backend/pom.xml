@@ -12,11 +12,11 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.olhari</groupId>
+    <groupId>com.fotogest</groupId>
     <artifactId>backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>olhari-backend</name>
-    <description>Projeto Olhari - Sprint 3</description>
+    <name>fotogest-backend</name>
+    <description>FotoGest - Sistema de gestao para fotografos</description>
 
     <properties>
         <java.version>21</java.version>

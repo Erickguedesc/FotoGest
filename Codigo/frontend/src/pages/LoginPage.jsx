@@ -125,7 +125,7 @@ export default function LoginPage() {
             className="text-[38px] font-light tracking-[0.28em] text-white leading-none mb-1.5"
             style={{ fontFamily: "'Cormorant Garamond', serif" }}
           >
-            OLHARI
+            FOTOGEST
           </div>
           <div className="text-[10.5px] tracking-[0.22em] uppercase text-white/40">
             Fotografia Profissional

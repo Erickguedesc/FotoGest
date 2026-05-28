@@ -1,7 +1,7 @@
 import { Eye, LayoutDashboard, ShieldCheck, Sparkles, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-const STORAGE_KEY = 'olhari_admin_mode_notice_seen'
+const STORAGE_KEY = 'fotogest_admin_mode_notice_seen'
 
 export default function AdminModeNoticeModal({ open, onClose }) {
   if (!open) {

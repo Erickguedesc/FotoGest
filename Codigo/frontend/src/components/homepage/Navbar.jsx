@@ -29,7 +29,7 @@ export default function Navbar() {
         className="font-serif text-2xl tracking-[0.3em] no-underline"
         style={{ color: 'var(--gold)' }}
       >
-        OLHARI
+        FOTOGEST
       </a>
 
       {/* Desktop Links + CTA */}

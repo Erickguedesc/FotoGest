@@ -26,7 +26,7 @@ export default function GalleryHero({
 
       <div className="relative z-10 max-w-4xl">
         <p className="mb-10 font-serif text-sm italic tracking-[0.28em] text-white/55">
-          Olhari · Fotografia
+          FotoGest · Fotografia
         </p>
 
         <p className="mx-auto mb-5 inline-flex rounded-full border border-white/20 px-5 py-1.5 text-[11px] uppercase tracking-[0.24em] text-white/55">
