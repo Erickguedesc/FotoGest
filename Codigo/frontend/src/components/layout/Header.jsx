@@ -22,7 +22,6 @@ const navLinks = [
   { label: 'Clientes', to: '/clientes' },
   { label: 'Novo Ensaio', to: '/novo-ensaio' },
   { label: 'Relatórios', to: '/relatorios' },
-  { label: 'Solicitações', to: '/solicitacoes' },
 ]
 
 function getInitials(nome = '') {

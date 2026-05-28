@@ -40,12 +40,6 @@ BEGIN
         );
     END IF;
 
-    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'status_lead') THEN
-        CREATE TYPE status_lead AS ENUM (
-            'EM_SOLICITACAO',
-            'ATENDIDO'
-        );
-    END IF;
 END $$;
 
 ------------------------------------
@@ -211,19 +205,6 @@ ON selecao_foto(album_id);
 
 CREATE INDEX IF NOT EXISTS idx_selecao_foto_foto_id
 ON selecao_foto(foto_id);
-
-CREATE TABLE IF NOT EXISTS solicitacao_orcamento (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  nome_cliente VARCHAR(200) NOT NULL,
-  whatsapp VARCHAR(30) NOT NULL,
-  tipo_ensaio VARCHAR(80) NOT NULL,
-  data_desejada DATE,
-  status_lead status_lead NOT NULL DEFAULT 'EM_SOLICITACAO',
-  recebido_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_solicitacao_orcamento_status_lead
-ON solicitacao_orcamento(status_lead);
 
 ------------------------------------
 --   FUNÇÕES E TRIGGERS
@@ -442,27 +423,6 @@ WHERE c.email = 'anaclara@email.com'
       AND e.local = 'Estúdio Modelo, BH'
   )
 LIMIT 1;
-
-INSERT INTO solicitacao_orcamento (
-  nome_cliente,
-  whatsapp,
-  tipo_ensaio,
-  data_desejada,
-  status_lead
-)
-SELECT
-  'Ana Clara Mendes',
-  '31988776655',
-  'Newborn',
-  '2026-05-10',
-  'EM_SOLICITACAO'
-WHERE NOT EXISTS (
-  SELECT 1
-  FROM solicitacao_orcamento
-  WHERE whatsapp = '31988776655'
-    AND tipo_ensaio = 'Newborn'
-    AND data_desejada = '2026-05-10'
-);
 
 ------------------------------------
 --   BACKFILL DO HISTÓRICO DE STATUS

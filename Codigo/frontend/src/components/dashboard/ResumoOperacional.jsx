@@ -9,7 +9,7 @@ export default function ResumoOperacional({
                 </h2>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2">
                 <div className="theme-card rounded-3xl border p-6">
                     <p className="theme-muted text-xs uppercase tracking-[0.2em]">
                         Ensaios Finalizados
@@ -17,16 +17,6 @@ export default function ResumoOperacional({
 
                     <h2 className="theme-title mt-3 font-serif text-5xl font-light">
                         {dashboard?.ensaiosFinalizadosMes || 0}
-                    </h2>
-                </div>
-
-                <div className="theme-card rounded-3xl border p-6">
-                    <p className="theme-muted text-xs uppercase tracking-[0.2em]">
-                        Solicitações totais
-                    </p>
-
-                    <h2 className="theme-title mt-3 font-serif text-5xl font-light">
-                        {dashboard?.solicitacoesRecebidasMes || 0}
                     </h2>
                 </div>
 

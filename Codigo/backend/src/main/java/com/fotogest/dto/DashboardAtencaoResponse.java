@@ -19,7 +19,6 @@ public class DashboardAtencaoResponse {
     private String descricao;
 
     private UUID ensaioId;
-    private UUID solicitacaoId;
 
     private String clienteNome;
     private OffsetDateTime dataReferencia;

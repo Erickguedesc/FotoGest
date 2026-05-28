@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 
 import {
     Camera,
-    ClipboardList,
     FileBarChart2,
     Images,
     Users,
@@ -37,11 +36,6 @@ export default function QuickActions() {
                 <Link to="/clientes" className={secondaryActionClass}>
                     <Users size={18} />
                     Clientes
-                </Link>
-
-                <Link to="/solicitacoes" className={secondaryActionClass}>
-                    <ClipboardList size={18} />
-                    Solicitações
                 </Link>
 
                 <Link to="/relatorios" className={secondaryActionClass}>

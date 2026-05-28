@@ -1,5 +1,4 @@
 import {
-    AlertTriangle,
     CheckCircle2,
     Upload,
     Clock3,
@@ -22,13 +21,6 @@ const CONFIG = {
         badge: 'bg-emerald-400',
     },
 
-    SOLICITACAO_PENDENTE: {
-        icon: AlertTriangle,
-        color: 'text-amber-300',
-        bg: 'bg-amber-400/10',
-        border: 'border-amber-400/20',
-        badge: 'bg-amber-400',
-    },
 }
 
 export default function AtencaoNecessaria({
@@ -53,7 +45,7 @@ export default function AtencaoNecessaria({
                     </h3>
 
                     <p className="mt-2 max-w-xs text-sm text-white/50">
-                        Todos os ensaios e solicitações estão em dia.
+                        Todos os ensaios estão em dia.
                     </p>
                 </div>
             </section>
@@ -72,7 +64,7 @@ export default function AtencaoNecessaria({
                 {itens.map((item, index) => {
                     const config =
                         CONFIG[item.tipo] ||
-                        CONFIG.SOLICITACAO_PENDENTE
+                        CONFIG.UPLOAD_PENDENTE
 
                     const Icon = config.icon
 
