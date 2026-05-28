@@ -17,12 +17,6 @@ spring:
       minimum-idle: 2
       connection-timeout: 30000
 
-  sql:
-    init:
-      mode: always
-      continue-on-error: true
-      schema-locations: classpath:db/runtime-migration.sql
-
   jpa:
     hibernate:
       ddl-auto: update
