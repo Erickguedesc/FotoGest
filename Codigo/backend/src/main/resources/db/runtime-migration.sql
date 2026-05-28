@@ -126,5 +126,3 @@ WHERE marca_dagua_estilo IS NULL;
 ALTER TABLE configuracao_estudio
 ALTER COLUMN marca_dagua_estilo SET DEFAULT 'NORMAL';
 
-ALTER TABLE IF EXISTS homepage_curso
-ADD COLUMN IF NOT EXISTS imagem_public_id TEXT;

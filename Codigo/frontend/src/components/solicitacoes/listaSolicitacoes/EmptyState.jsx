@@ -8,7 +8,7 @@ export default function EmptyState({ onRefresh }) {
       </div>
       <h2 className="font-serif text-2xl font-light text-white">Nenhuma solicitação recebida</h2>
       <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-white/45">
-        Quando alguém preencher o formulário de orçamento na homepage, a solicitação aparecerá aqui!
+        Novas solicitações aparecerão aqui.
       </p>
       <button
         type="button"

@@ -1,7 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 import PrivateRoute from '../components/layout/PrivateRoute'
-import HomePage from '../pages/HomePage'
 import LoginPage from '../pages/LoginPage'
 import NovoEnsaioPage from '../pages/NovoEnsaioPage'
 import EnsaiosPage from '../pages/EnsaiosPage'
@@ -27,7 +26,7 @@ const router = createBrowserRouter([
   // ── Rotas públicas ──────────────────────────────────────────────────────────
   {
     path: '/',
-    element: <HomePage />,
+    element: <Navigate to="/login" replace />,
   },
   {
     path: '/login',
