@@ -3,18 +3,14 @@ package com.fotogest.service;
 import com.fotogest.dto.DashboardAtencaoResponse;
 import com.fotogest.dto.DashboardEnsaioResumoResponse;
 import com.fotogest.dto.DashboardResumoResponse;
-import com.fotogest.dto.DashboardSolicitacaoResumoResponse;
 import com.fotogest.enums.StatusEnsaio;
-import com.fotogest.enums.StatusLead;
 import com.fotogest.model.Album;
 import com.fotogest.model.Ensaio;
 import com.fotogest.model.Foto;
-import com.fotogest.model.SolicitacaoOrcamento;
 import com.fotogest.repository.AlbumRepository;
 import com.fotogest.repository.EnsaioRepository;
 import com.fotogest.repository.FotoRepository;
 import com.fotogest.repository.SelecaoFotoRepository;
-import com.fotogest.repository.SolicitacaoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,13 +34,11 @@ public class DashboardService {
     private final FotoRepository fotoRepository;
     private final AlbumRepository albumRepository;
     private final SelecaoFotoRepository selecaoFotoRepository;
-    private final SolicitacaoRepository solicitacaoRepository;
     private final PreferenciasSistemaRepository preferenciasSistemaRepository;
 
     @Transactional(readOnly = true)
     public DashboardResumoResponse buscarResumo() {
         List<Ensaio> ensaios = ensaioRepository.findAll();
-        List<SolicitacaoOrcamento> solicitacoes = solicitacaoRepository.findAll();
 
         Map<UUID, Album> albumPorEnsaio = albumRepository.findAll()
                 .stream()
@@ -94,11 +88,6 @@ public class DashboardService {
                 .filter(ensaio -> ensaio.getStatus() == StatusEnsaio.FINALIZADO)
                 .count();
 
-        int solicitacoesRecebidasMes = (int) solicitacoes.stream()
-                .filter(solicitacao -> solicitacao.getRecebidoEm() != null)
-                .filter(solicitacao -> YearMonth.from(solicitacao.getRecebidoEm()).equals(mesAtual))
-                .count();
-
         List<DashboardEnsaioResumoResponse> proximosEnsaios = ensaios.stream()
                 .filter(ensaio -> ensaio.getStatus() == StatusEnsaio.AGENDADO)
                 .filter(ensaio -> ensaio.getDataEnsaio() != null)
@@ -120,19 +109,8 @@ public class DashboardService {
 
         List<DashboardAtencaoResponse> atencaoNecessaria = montarAtencaoNecessaria(
                 ensaios,
-                solicitacoes,
                 albumPorEnsaio
         );
-
-       List<DashboardSolicitacaoResumoResponse> solicitacoesRecentes = solicitacoes.stream()
-        .filter(solicitacao -> solicitacao.getStatusLead() == StatusLead.EM_SOLICITACAO)
-        .sorted(Comparator.comparing(
-                SolicitacaoOrcamento::getRecebidoEm,
-                Comparator.nullsLast(Comparator.reverseOrder())
-        ))
-        .limit(5)
-        .map(this::toSolicitacaoResumo)
-        .toList();
 
         return DashboardResumoResponse.builder()
                 .ensaiosEsteMes(ensaiosEsteMes.size())
@@ -140,17 +118,14 @@ public class DashboardService {
                 .ensaiosSemFotosEnviadas(ensaiosSemFotosEnviadas)
                 .receitaEstimada(receitaEstimada)
                 .ensaiosFinalizadosMes(ensaiosFinalizadosMes)
-                .solicitacoesRecebidasMes(solicitacoesRecebidasMes)
                 .proximosEnsaios(proximosEnsaios)
                 .ensaiosEmAndamento(ensaiosEmAndamento)
                 .atencaoNecessaria(atencaoNecessaria)
-                .solicitacoesRecentes(solicitacoesRecentes)
                 .build();
     }
 
     private List<DashboardAtencaoResponse> montarAtencaoNecessaria(
             List<Ensaio> ensaios,
-            List<SolicitacaoOrcamento> solicitacoes,
             Map<UUID, Album> albumPorEnsaio
     ) {
         List<DashboardAtencaoResponse> itens = new ArrayList<>();
@@ -181,22 +156,6 @@ if (ensaio.getStatus() == StatusEnsaio.EM_SELECAO
             .build());
 }
         }
-
-        solicitacoes.stream()
-                .filter(solicitacao -> solicitacao.getStatusLead() == StatusLead.EM_SOLICITACAO)
-                .sorted(Comparator.comparing(
-                        SolicitacaoOrcamento::getRecebidoEm,
-                        Comparator.nullsLast(Comparator.reverseOrder())
-                ))
-                .limit(3)
-                .forEach(solicitacao -> itens.add(DashboardAtencaoResponse.builder()
-                        .tipo("SOLICITACAO_PENDENTE")
-                        .titulo("Solicitação aguardando atendimento")
-                        .descricao("Cliente aguardando retorno pelo WhatsApp")
-                        .solicitacaoId(solicitacao.getId())
-                        .clienteNome(solicitacao.getNomeCliente())
-                        .dataReferencia(solicitacao.getRecebidoEm())
-                        .build()));
 
         return itens.stream()
                 .sorted(Comparator.comparing(
@@ -237,18 +196,6 @@ if (ensaio.getStatus() == StatusEnsaio.EM_SELECAO
                 .capaUrl(buscarCapaUrl(ensaioId))
                 .albumPublicado(albumPublicado)
                 .selecaoEnviada(selecaoEnviada)
-                .build();
-    }
-
-    private DashboardSolicitacaoResumoResponse toSolicitacaoResumo(SolicitacaoOrcamento solicitacao) {
-        return DashboardSolicitacaoResumoResponse.builder()
-                .id(solicitacao.getId())
-                .nomeCliente(solicitacao.getNomeCliente())
-                .whatsapp(solicitacao.getWhatsapp())
-                .tipoEnsaio(solicitacao.getTipoEnsaio())
-                .dataDesejada(solicitacao.getDataDesejada())
-                .statusLead(solicitacao.getStatusLead())
-                .recebidoEm(solicitacao.getRecebidoEm())
                 .build();
     }
 

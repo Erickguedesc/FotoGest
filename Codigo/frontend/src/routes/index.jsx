@@ -7,7 +7,6 @@ import EnsaiosPage from '../pages/EnsaiosPage'
 import ClientesPage from '../pages/ClientesPage'
 import ClienteHistoricoPage from '../pages/ClienteHistoricoPage'
 import AlbumAccessPage from "../pages/AlbumAccessPage"
-import SolicitacoesPage from '../pages/SolicitacoesPage'
 import PreContratoPage from '../pages/PreContratoPage'
 import DetalhesEnsaio from '../pages/DetalhesEnsaio'
 import GaleriaPage from "../pages/GaleriaPage"
@@ -19,7 +18,6 @@ import ConfiguracoesPage from '../pages/ConfiguracoesPage'
 // import DashboardPage      from '../pages/DashboardPage'
 //import DetalhesEnsaioPage from '../pages/DetalhesEnsaioPage'
 // import RelatoriosPage     from '../pages/RelatoriosPage'
-// import SolicitacoesPage   from '../pages/SolicitacoesPage'
 
 const router = createBrowserRouter([
 
@@ -98,15 +96,6 @@ const router = createBrowserRouter([
   },
 
   {
-    path: '/solicitacoes',
-    element: (
-      <PrivateRoute>
-        <SolicitacoesPage />
-      </PrivateRoute>
-    ),
-  },
-
-  {
     path: '/relatorios',
     element: (
       <PrivateRoute>
@@ -146,11 +135,6 @@ const router = createBrowserRouter([
   //   path: '/relatorios',
   //   element: <PrivateRoute><RelatoriosPage /></PrivateRoute>,
   // },
-  // {
-  //   path: '/solicitacoes',
-  //   element: <PrivateRoute><SolicitacoesPage /></PrivateRoute>,
-  // },
-
   // ── Rota não encontrada ─────────────────────────────────────────────────────
   {
     path: '*',

@@ -20,10 +20,8 @@ public class DashboardResumoResponse {
     private BigDecimal receitaEstimada;
 
     private Integer ensaiosFinalizadosMes;
-    private Integer solicitacoesRecebidasMes;
 
     private List<DashboardEnsaioResumoResponse> proximosEnsaios;
     private List<DashboardEnsaioResumoResponse> ensaiosEmAndamento;
     private List<DashboardAtencaoResponse> atencaoNecessaria;
-    private List<DashboardSolicitacaoResumoResponse> solicitacoesRecentes;
 }

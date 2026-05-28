@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
 
 import Toast from '../ui/Toast'
 import { clientesService } from '../../services/clientesService'
@@ -13,15 +13,11 @@ import '../../styles/pre-contrato.css'
 
 export default function PreContrato() {
   const { ensaioId } = useParams()
-  const location = useLocation()
-  const state = location.state || {}
 
   const [draft, setDraft] = useState(null)
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState(null)
   const [error, setError] = useState(null)
-
-  const sourceLabel = useMemo(() => (state.solicitacao ? 'da solicitação' : 'do ensaio'), [state.solicitacao])
 
   useEffect(() => {
     let active = true
@@ -30,12 +26,6 @@ export default function PreContrato() {
       setLoading(true)
       setError(null)
       try {
-        if (state.solicitacao) {
-          const initial = buildInitialDraft({ solicitacao: state.solicitacao })
-          if (active) setDraft(initial)
-          return
-        }
-
         const response = await ensaiosService.buscarPorId(ensaioId)
         const ensaio = response.data
         let cliente = null
@@ -63,7 +53,7 @@ export default function PreContrato() {
 
     load()
     return () => { active = false }
-  }, [ensaioId, state.solicitacao])
+  }, [ensaioId])
 
   const showToast = (message, type = 'success') => setToast({ message, type })
 
@@ -89,7 +79,7 @@ export default function PreContrato() {
         <PreContratoBreadcrumb clienteNome={draft.clienteNome} />
         <PreContratoTop
           clienteNome={draft.clienteNome}
-          sourceLabel={sourceLabel}
+          sourceLabel="do ensaio"
           onCopyLink={handleCopyLink}
           onExportPDF={handleExportPDF}
         />

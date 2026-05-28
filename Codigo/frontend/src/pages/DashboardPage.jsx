@@ -7,7 +7,6 @@ import DashboardStats from '../components/dashboard/DashboardStats'
 import EnsaiosEmAndamento from '../components/dashboard/EnsaiosEmAndamento'
 import ProximosEnsaios from '../components/dashboard/ProximosEnsaios'
 import AtencaoNecessaria from '../components/dashboard/AtencaoNecessaria'
-import SolicitacoesRecentes from '../components/dashboard/SolicitacoesRecentes'
 import ResumoOperacional from '../components/dashboard/ResumoOperacional'
 import DashboardLoading from '../components/dashboard/DashboardLoading'
 import DashboardError from '../components/dashboard/DashboardError'
@@ -52,8 +51,7 @@ export default function DashboardPage() {
 
     if (
         !dashboard?.ensaiosEmAndamento?.length &&
-        !dashboard?.proximosEnsaios?.length &&
-        !dashboard?.solicitacoesRecentes?.length
+        !dashboard?.proximosEnsaios?.length
     ) {
         return <DashboardEmptyState />
     }
@@ -75,10 +73,6 @@ export default function DashboardPage() {
                             />
 
                             <ResumoOperacional dashboard={dashboard} />
-
-                            <SolicitacoesRecentes
-                                solicitacoes={dashboard?.solicitacoesRecentes || []}
-                            />
 
                             <QuickActions />
                         </div>

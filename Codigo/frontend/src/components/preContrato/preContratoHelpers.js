@@ -128,7 +128,7 @@ export function buildDocumentNumber(id) {
   return `#${now.getFullYear()}-${suffix}`
 }
 
-export function buildInitialDraft({ ensaio, cliente, solicitacao }) {
+export function buildInitialDraft({ ensaio, cliente }) {
   const hoje = new Date()
   const validade = new Date(hoje)
   validade.setDate(validade.getDate() + 15)
@@ -138,11 +138,11 @@ export function buildInitialDraft({ ensaio, cliente, solicitacao }) {
   const valorFotoExtra = ensaio?.valorFotoExtra ?? ''
   const sinal = valorPacote ? Number(valorPacote) / 3 : ''
 
-  const clienteNome = cliente?.nome || ensaio?.clienteNome || solicitacao?.nomeCliente || ''
-  const tipo = ensaio?.tipo || solicitacao?.tipoEnsaio || ''
+  const clienteNome = cliente?.nome || ensaio?.clienteNome || ''
+  const tipo = ensaio?.tipo || ''
 
   const initialDraft = {
-    numeroDocumento: buildDocumentNumber(ensaio?.id || solicitacao?.id),
+    numeroDocumento: buildDocumentNumber(ensaio?.id),
     statusDocumento: 'Aguardando assinatura',
     dataEmissao: formatLongDate(hoje),
     dataEmissaoCurta: formatDate(hoje),
@@ -157,13 +157,13 @@ export function buildInitialDraft({ ensaio, cliente, solicitacao }) {
 
     clienteNome,
     clienteCpf: cliente?.cpf || '',
-    clienteTelefone: formatPhone(cliente?.telefone || solicitacao?.whatsapp || ''),
+    clienteTelefone: formatPhone(cliente?.telefone || ''),
     clienteEmail: cliente?.email || '',
     clienteCidade: cliente?.cidade || '',
     clienteIndicacao: cliente?.indicacao || '',
 
     tipoEnsaio: formatTipo(tipo),
-    dataEnsaio: formatLongDate(ensaio?.dataEnsaio || solicitacao?.dataDesejada, ''),
+    dataEnsaio: formatLongDate(ensaio?.dataEnsaio, ''),
     horario: '',
     local: ensaio?.local || '',
     observacoes: ensaio?.observacoes || '',

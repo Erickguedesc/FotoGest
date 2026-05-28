@@ -12,8 +12,8 @@ export default function DashboardEmptyState() {
                     </h1>
 
                     <p className="mt-5 text-sm leading-relaxed text-white/55">
-                        Ainda não existem ensaios, solicitações ou
-                        movimentações suficientes para gerar indicadores.
+                        Ainda não existem ensaios ou movimentações suficientes
+                        para gerar indicadores.
                     </p>
                 </div>
             </main>
