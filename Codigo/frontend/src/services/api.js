@@ -21,12 +21,7 @@ function getRequestPath(config = {}) {
 function isPublicRequest(config = {}) {
   const path = getRequestPath(config)
 
-  if (
-    path.startsWith('/auth/') ||
-    path.startsWith('/solicitacoes') ||
-    path === '/homepage-config' ||
-    path === '/homepage/cursos'
-  ) {
+  if (path.startsWith('/auth/')) {
     return true
   }
 
