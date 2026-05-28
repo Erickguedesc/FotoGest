@@ -1,7 +1,7 @@
 import ContractSection from './ContractSection'
 import DataCell from './DataCell'
 import EditableField from './EditableField'
-import OlhariIcon from './OlhariIcon'
+import FotoGestIcon from './FotoGestIcon'
 import { recalculateFinancialDraft } from './preContratoHelpers'
 
 const UserIcon = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C9A459" strokeWidth="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -19,8 +19,8 @@ export default function ContractDocument({ draft, onChange }) {
       <div className="precontrato-contract-header">
         <div className="precontrato-brand">
           <div className="precontrato-logo-row">
-            <OlhariIcon />
-            <span className="precontrato-logo-text">OLHARI</span>
+            <FotoGestIcon />
+            <span className="precontrato-logo-text">FOTOGEST</span>
           </div>
           <div className="precontrato-brand-sub">Fotografia Profissional</div>
           <div className="precontrato-brand-contact">
@@ -152,7 +152,7 @@ export default function ContractDocument({ draft, onChange }) {
               <div className="precontrato-data-key">Contratada — Fotógrafa</div>
               <div className="precontrato-sign-line" />
               <div className="precontrato-sign-name"><EditableField value={draft.fotografaNome} onChange={set('fotografaNome')} /></div>
-              <div className="precontrato-sign-role">Olhari Fotografia · <EditableField value={draft.fotografaDocumento} onChange={set('fotografaDocumento')} /></div>
+              <div className="precontrato-sign-role">FotoGest Fotografia · <EditableField value={draft.fotografaDocumento} onChange={set('fotografaDocumento')} /></div>
             </div>
             <div className="precontrato-sign-box">
               <div className="precontrato-data-key">Contratante — Cliente</div>
@@ -162,14 +162,14 @@ export default function ContractDocument({ draft, onChange }) {
             </div>
           </div>
           <div className="precontrato-sign-date">
-            <EditableField value={draft.cidadeAssinatura} onChange={set('cidadeAssinatura')} /> · <EditableField value={draft.dataEmissao} onChange={set('dataEmissao')} /> · Documento gerado automaticamente pelo sistema Olhari (RF02)
+            <EditableField value={draft.cidadeAssinatura} onChange={set('cidadeAssinatura')} /> · <EditableField value={draft.dataEmissao} onChange={set('dataEmissao')} /> · Documento gerado automaticamente pelo sistema FotoGest (RF02)
           </div>
         </ContractSection>
       </div>
 
       <footer className="precontrato-footer">
         <div>
-          Olhari Fotografia Profissional · {draft.fotografaEmail}<br />
+          FotoGest Fotografia Profissional · {draft.fotografaEmail}<br />
           {draft.fotografaCidade}, Brasil
         </div>
         <div>

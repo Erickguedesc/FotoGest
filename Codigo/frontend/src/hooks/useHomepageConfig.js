@@ -38,11 +38,11 @@ export const DEFAULT_HOMEPAGE_CONFIG = {
   heroBotaoLink: '#portfolio',
 
   sobreImagemUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600',
-  sobreImagemAlt: 'Fotógrafa Olhari',
+  sobreImagemAlt: 'Fotógrafa FotoGest',
   sobreTitulo: 'Prazer,',
   sobreTituloDestaque: 'sua fotógrafa.',
   sobreTexto1:
-    'Acredito que a fotografia vai além de um clique técnico; é sobre capturar a essência da conexão humana. Na Olhari, meu objetivo é criar um legado visual para sua família.',
+    'Acredito que a fotografia vai além de um clique técnico; é sobre capturar a essência da conexão humana. Na FotoGest, meu objetivo é criar um legado visual para sua família.',
   sobreTexto2:
     'Especialista em ensaios Newborn, Gestante e Família, busco a luz natural e a verdade em cada olhar.',
   sobreEstatisticas: defaultSobreEstatisticas,
@@ -56,14 +56,14 @@ export const DEFAULT_HOMEPAGE_CONFIG = {
   contatoTexto: 'Dê o primeiro passo para eternizar seus momentos.\nRetornaremos no WhatsApp em até 24h.',
   whatsappNumero: '553199646207',
 
-  footerEstudioNome: 'OLHARI',
+  footerEstudioNome: 'FOTOGEST',
   footerSlogan: 'Fotografia afetiva para famílias, gestantes e recém-nascidos.',
-  footerEmail: 'contato@olhari.com',
+  footerEmail: 'contato@fotogest.com.br',
   footerWhatsapp: '553199646207',
-  footerInstagram: '@olhari.fotografia',
+  footerInstagram: '@fotogest',
   footerCidade: 'Belo Horizonte, MG',
 
-  footerTexto: '© 2026 OLHARI - TODOS OS DIREITOS RESERVADOS',
+  footerTexto: '© 2026 FOTOGEST - TODOS OS DIREITOS RESERVADOS',
   footerAdminTexto: 'Área Administrativa',
   footerAdminLink: '/Login',
   sobreImagemPublicId: null,

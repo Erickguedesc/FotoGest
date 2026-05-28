@@ -1,4 +1,4 @@
-export default function OlhariIcon({ size = 32 }) {
+export default function FotoGestIcon({ size = 32 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 42 42" fill="none">
       <circle cx="21" cy="21" r="13" stroke="#C9A459" strokeWidth="1" />

@@ -52,7 +52,7 @@ export default function GalleryGrid({
                       key={item}
                       className="rotate-[-35deg] select-none self-center text-center font-serif text-[10px] italic tracking-[0.18em] text-white/20"
                     >
-                      © olhari
+                      © FotoGest
                     </span>
                   ))}
                 </div>

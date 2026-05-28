@@ -34,7 +34,7 @@ export default function ConfiguracoesPage() {
 
   const notificarFotografaAtualizada = (fotografa) => {
     window.dispatchEvent(
-      new CustomEvent('olhari:fotografa-atualizada', {
+      new CustomEvent('fotogest:fotografa-atualizada', {
         detail: fotografa,
       }),
     )

@@ -210,7 +210,7 @@ export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave
                 value={form.local}
                 onChange={(event) => change('local', event.target.value)}
                 className={inputClass}
-                placeholder="Ex: Studio Olhari, BH"
+                placeholder="Ex: Studio FotoGest, BH"
               />
             </label>
 

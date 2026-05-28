@@ -24,7 +24,7 @@ export default function DashboardHeader() {
                 <h1 className="font-serif text-5xl font-light tracking-wide text-white">
                     Dashboard{' '}
                     <span className="text-[#D4AF37]">
-                        Olhari
+                        FotoGest
                     </span>
                 </h1>
             </div>

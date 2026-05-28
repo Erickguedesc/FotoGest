@@ -48,7 +48,7 @@ export default function Footer({ config, onEdit }) {
       <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
           <p className="font-serif text-2xl tracking-[0.3em] text-[var(--gold)]">
-            {config?.footerEstudioNome || 'OLHARI'}
+            {config?.footerEstudioNome || 'FOTOGEST'}
           </p>
 
           {hasValue(config?.footerSlogan) ? (

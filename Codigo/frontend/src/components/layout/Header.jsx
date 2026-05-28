@@ -4,7 +4,7 @@ import { LogOut, Moon, Settings, Sun } from 'lucide-react'
 
 import { configuracoesService } from '../../services/configuracoesService'
 
-const OlhariIcon = () => (
+const FotoGestIcon = () => (
   <svg width="26" height="26" viewBox="0 0 42 42" fill="none">
     <circle cx="21" cy="21" r="13" stroke="#C9A459" strokeWidth="1" />
     <circle cx="21" cy="21" r="7" stroke="#C9A459" strokeWidth="0.75" opacity="0.5" />
@@ -44,12 +44,12 @@ export default function Header() {
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [fotografa, setFotografa] = useState(null)
-  const [theme, setTheme] = useState(() => localStorage.getItem('olhari-theme') || 'dark')
+  const [theme, setTheme] = useState(() => localStorage.getItem('fotogest-theme') || 'dark')
 
   useEffect(() => {
     const nextTheme = theme === 'light' ? 'light' : 'dark'
     document.documentElement.dataset.theme = nextTheme
-    localStorage.setItem('olhari-theme', nextTheme)
+    localStorage.setItem('fotogest-theme', nextTheme)
   }, [theme])
 
   useEffect(() => {
@@ -79,11 +79,11 @@ export default function Header() {
 
     carregarFotografa()
 
-    window.addEventListener('olhari:fotografa-atualizada', handleFotografaAtualizada)
+    window.addEventListener('fotogest:fotografa-atualizada', handleFotografaAtualizada)
 
     return () => {
       isMounted = false
-      window.removeEventListener('olhari:fotografa-atualizada', handleFotografaAtualizada)
+      window.removeEventListener('fotogest:fotografa-atualizada', handleFotografaAtualizada)
     }
   }, [])
 
@@ -111,9 +111,9 @@ export default function Header() {
       : location.pathname === to
 
   const handleLogout = () => {
-    const currentTheme = localStorage.getItem('olhari-theme')
+    const currentTheme = localStorage.getItem('fotogest-theme')
     localStorage.clear()
-    if (currentTheme) localStorage.setItem('olhari-theme', currentTheme)
+    if (currentTheme) localStorage.setItem('fotogest-theme', currentTheme)
     setMenuOpen(false)
     navigate('/login')
   }
@@ -125,10 +125,10 @@ export default function Header() {
   return (
     <header className="fixed left-0 right-0 top-0 z-[100] flex h-[60px] items-center gap-0 border-b border-[var(--border)] bg-[var(--header-bg)] px-8 backdrop-blur-[14px]">
       <Link to="/" className="flex flex-shrink-0 items-center gap-2.5 no-underline">
-        <OlhariIcon />
+        <FotoGestIcon />
 
         <span className="font-serif text-[20px] font-light tracking-[0.22em] text-white">
-          OLHARI
+          FOTOGEST
         </span>
       </Link>
 
