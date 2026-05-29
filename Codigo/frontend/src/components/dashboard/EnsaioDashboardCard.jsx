@@ -6,17 +6,26 @@ import logoFotoGest from '../../assets/logo.jpg'
 const STATUS_CONFIG = {
   EM_EDICAO: {
     label: 'Em edição',
+    description: 'Edição em andamento',
     color: 'border-[#7dd3fc]/55 bg-black/80 text-[#7dd3fc] shadow-lg shadow-black/45',
   },
 
   EM_SELECAO: {
     label: 'Em seleção',
+    description: 'Seleção enviada para o cliente',
     color: 'border-[#fbbf24]/60 bg-black/80 text-[#fbbf24] shadow-lg shadow-black/45',
   },
 
   REALIZADO: {
     label: 'Realizado',
+    description: 'Ensaio realizado, aguardando próximos passos',
     color: 'border-[#34d399]/60 bg-black/80 text-[#34d399] shadow-lg shadow-black/45',
+  },
+
+  FINALIZADO: {
+    label: 'Finalizado',
+    description: 'Entrega finalizada',
+    color: 'border-[#d4af37]/60 bg-black/80 text-[#d4af37] shadow-lg shadow-black/45',
   },
 }
 
@@ -25,11 +34,15 @@ export default function EnsaioDashboardCard({ ensaio }) {
 
   const status = STATUS_CONFIG[ensaio.status] || {
     label: ensaio.status,
+    description: 'Acompanhamento em andamento',
     color: 'border-white/10 bg-white/10 text-white/60',
   }
 
   const hasImage = ensaio.capaUrl && !imageError
   const isCapaPadrao = Number(ensaio.totalFotos || 0) === 0
+  const progressDescription = isCapaPadrao
+    ? 'Aguardando envio das fotos'
+    : status.description
 
   return (
     <Link
@@ -38,16 +51,16 @@ export default function EnsaioDashboardCard({ ensaio }) {
     >
       <div className="theme-panel relative h-56 overflow-hidden">
         {hasImage ? (
-         <img
-  src={ensaio.capaUrl}
-  alt={ensaio.clienteNome}
-  onError={() => setImageError(true)}
-  className={`h-full w-full transition duration-500 hover:scale-[1.02] ${
-    isCapaPadrao
-      ? 'object-contain bg-[#0b0b0b] p-6'
-      : 'object-cover hover:scale-105'
-  }`}
-/>
+          <img
+            src={ensaio.capaUrl}
+            alt={ensaio.clienteNome}
+            onError={() => setImageError(true)}
+            className={`h-full w-full transition duration-500 hover:scale-[1.02] ${
+              isCapaPadrao
+                ? 'object-contain bg-[#0b0b0b] p-6'
+                : 'object-cover hover:scale-105'
+            }`}
+          />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center bg-[#111111] px-6 text-center">
             <img
@@ -111,6 +124,10 @@ export default function EnsaioDashboardCard({ ensaio }) {
               }}
             />
           </div>
+
+          <p className="theme-muted mt-2 text-xs">
+            {progressDescription}
+          </p>
         </div>
       </div>
     </Link>

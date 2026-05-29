@@ -14,6 +14,38 @@ const inputClass = `
 
 const errorInputClass = 'border-[rgba(201,123,123,0.5)] bg-[rgba(201,123,123,0.07)]'
 
+function onlyDigits(value) {
+  return String(value || '').replace(/\D/g, '')
+}
+
+function formatTelefone(value) {
+  const digits = onlyDigits(value).slice(0, 11)
+
+  if (digits.length <= 2) return digits
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+  if (digits.length <= 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
+  }
+
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+}
+
+function formatCpf(value) {
+  const digits = onlyDigits(value).slice(0, 11)
+
+  return digits
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+}
+
+function formatConflictDate(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+}
+
 // ── Ícone de seção reutilizável ──────────────────────────────────────────────
 function SectionHeader({ icon, label }) {
   return (
@@ -28,7 +60,14 @@ function SectionHeader({ icon, label }) {
   )
 }
 
-export default function FormInfoSection({ form, errors, onChange }) {
+export default function FormInfoSection({
+  form,
+  errors,
+  clientesSugeridos = [],
+  conflitoAgenda,
+  onChange,
+  onSelectCliente,
+}) {
   const set = (field, value) => onChange(field, value)
 
   return (
@@ -50,13 +89,41 @@ export default function FormInfoSection({ form, errors, onChange }) {
 
           {/* Nome — obrigatório */}
           <FormInput label="Nome completo" required error={errors.cliente}>
-            <input
-              type="text"
-              placeholder="Ex: Nome Completo do Cliente"
-              value={form.cliente}
-              onChange={(e) => set('cliente', e.target.value)}
-              className={`${inputClass} ${errors.cliente ? errorInputClass : ''}`}
-            />
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Ex: Nome Completo do Cliente"
+                value={form.cliente}
+                onChange={(e) => set('cliente', e.target.value)}
+                autoComplete="off"
+                className={`${inputClass} ${errors.cliente ? errorInputClass : ''}`}
+              />
+
+              {clientesSugeridos.length > 0 && (
+                <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-[0_18px_36px_rgba(0,0,0,0.16)]">
+                  {clientesSugeridos.map((cliente) => (
+                    <button
+                      key={cliente.id}
+                      type="button"
+                      onClick={() => onSelectCliente(cliente)}
+                      className="theme-divider flex w-full items-center justify-between gap-3 border-b px-3.5 py-3 text-left transition last:border-b-0 hover:bg-[var(--gold-dim)]"
+                    >
+                      <span className="min-w-0">
+                        <span className="theme-title block truncate text-[13px]">
+                          {cliente.nome}
+                        </span>
+                        <span className="theme-muted mt-0.5 block truncate text-[11px]">
+                          {[cliente.telefone, cliente.email].filter(Boolean).join(' · ') || 'Cliente já cadastrado'}
+                        </span>
+                      </span>
+                      <span className="shrink-0 rounded-full border border-[var(--gold-border)] px-2.5 py-1 text-[10px] uppercase tracking-[0.1em] text-[var(--gold)]">
+                        Usar
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </FormInput>
 
           {/* Telefone + Email */}
@@ -65,8 +132,8 @@ export default function FormInfoSection({ form, errors, onChange }) {
               <input
                 type="tel"
                 placeholder="(31) 99999-0000"
-                value={form.telefone}
-                onChange={(e) => set('telefone', e.target.value)}
+                value={formatTelefone(form.telefone)}
+                onChange={(e) => set('telefone', formatTelefone(e.target.value))}
                 className={`${inputClass} ${errors.telefone ? errorInputClass : ''}`}
               />
             </FormInput>
@@ -88,17 +155,9 @@ export default function FormInfoSection({ form, errors, onChange }) {
               <input
                 type="text"
                 placeholder="000.000.000-00"
-                value={form.cpf}
+                value={formatCpf(form.cpf)}
                 maxLength={14}
-                onChange={(e) => {
-                  // Máscara automática de CPF
-                  const v = e.target.value
-                    .replace(/\D/g, '')
-                    .replace(/(\d{3})(\d)/, '$1.$2')
-                    .replace(/(\d{3})(\d)/, '$1.$2')
-                    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-                  set('cpf', v)
-                }}
+                onChange={(e) => set('cpf', formatCpf(e.target.value))}
                 className={`${inputClass} ${errors.cpf ? errorInputClass : ''}`}
               />
             </FormInput>
@@ -223,6 +282,13 @@ export default function FormInfoSection({ form, errors, onChange }) {
               />
             </FormInput>
           </div>
+
+          {conflitoAgenda && (
+            <div className="rounded-xl border border-amber-400/35 bg-amber-400/10 px-3.5 py-3 text-[12px] leading-5 text-[var(--warning-text)]">
+              Já existe um ensaio neste dia por volta de {formatConflictDate(conflitoAgenda.dataEnsaio)}
+              {conflitoAgenda.clienteNome ? ` para ${conflitoAgenda.clienteNome}` : ''}.
+            </div>
+          )}
 
           {/* Local */}
           <FormInput label="Local" required error={errors.local}>

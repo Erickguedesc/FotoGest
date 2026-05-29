@@ -19,6 +19,10 @@ export const ensaiosService = {
 
   buscarPorId: (id) => api.get(`/ensaios/${id}`),
 
+  buscarConflitoAgenda: (dataEnsaio) => api.get('/ensaios/conflitos', {
+    params: { dataEnsaio },
+  }),
+
   exportarPdf: async (id) => {
     const response = await api.get(`/ensaios/${id}/pdf`, {
       responseType: 'blob',

@@ -1,3 +1,6 @@
+import { Link } from 'react-router-dom'
+import { Camera, Settings } from 'lucide-react'
+
 import Header from '../layout/Header'
 
 export default function DashboardEmptyState() {
@@ -5,17 +8,39 @@ export default function DashboardEmptyState() {
         <>
             <Header />
 
-            <main className="flex min-h-screen items-center justify-center bg-[#0A0A0A] px-4 text-white">
-                <div className="max-w-md rounded-3xl border border-white/10 bg-[#171717] p-10 text-center">
-                    <h1 className="font-serif text-5xl font-light text-white">
-                        Dashboard vazia
+            <main className="theme-page flex min-h-screen items-center justify-center px-4 pt-20">
+                <section className="theme-card w-full max-w-3xl rounded-3xl border p-8 text-center shadow-2xl md:p-12">
+                    <p className="theme-muted text-xs uppercase tracking-[0.28em]">
+                        Primeiros passos
+                    </p>
+
+                    <h1 className="theme-title mt-4 font-serif text-5xl font-light md:text-6xl">
+                        Comece seu primeiro fluxo
                     </h1>
 
-                    <p className="mt-5 text-sm leading-relaxed text-white/55">
-                        Ainda não existem ensaios ou movimentações suficientes
-                        para gerar indicadores.
+                    <p className="theme-muted mx-auto mt-5 max-w-xl text-sm leading-7">
+                        Agende um ensaio para cadastrar o cliente e acompanhar agenda,
+                        fotos, seleção, entregas e muito mais aqui na sua Dashboard.
                     </p>
-                </div>
+
+                    <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                        <Link
+                            to="/novo-ensaio"
+                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#b7833a] px-5 py-3 text-sm font-medium text-[#fff7e6] shadow-[0_14px_30px_rgba(183,131,58,0.18)] transition hover:bg-[#a87532]"
+                        >
+                            <Camera size={17} />
+                            Novo ensaio
+                        </Link>
+
+                        <Link
+                            to="/configuracoes"
+                            className="theme-card inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition hover:border-[var(--gold-border)]"
+                        >
+                            <Settings size={17} />
+                            Configurar estúdio
+                        </Link>
+                    </div>
+                </section>
             </main>
         </>
     )

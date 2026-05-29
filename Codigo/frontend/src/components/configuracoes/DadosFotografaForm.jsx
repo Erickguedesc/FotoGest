@@ -106,7 +106,7 @@ export default function DadosFotografaForm({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <FormField label="Nome da fotógrafa" name="nome" value={form.nome} onChange={handleChange} />
+        <FormField label="Seu nome" name="nome" value={form.nome} onChange={handleChange} />
         <FormField label="E-mail de login" name="email" value={form.email} onChange={handleChange} />
         <FormField label="Telefone / WhatsApp" name="telefone" value={form.telefone} onChange={handleChange} />
         <FormField label="Cidade" name="cidade" value={form.cidade} onChange={handleChange} />
@@ -122,12 +122,12 @@ export default function DadosFotografaForm({
       </button>
 
       <InfoBox
-  title="Sobre os dados da fotógrafa"
+  title="Sobre seus dados"
   description="Use esta área para alterar os dados da sua conta administrativa."
   items={[
     'A foto aparece no canto superior direito do painel administrativo.',
     'O e-mail é usado para login no sistema.',
-    'Nome, telefone e cidade ajudam a identificar a fotógrafa dentro do painel.',
+    'Nome, telefone e cidade ajudam a identificar você dentro do painel.',
   ]}
 />
     </form>

@@ -23,8 +23,8 @@ public class ClienteController {
     }
 
     @GetMapping
-    public List<ClienteResponse> listar() {
-        return service.listar();
+    public List<ClienteResponse> listar(@RequestParam(required = false) String busca) {
+        return service.listar(busca);
     }
 
     @GetMapping("/{id}")

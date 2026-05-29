@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import Toast from '../../ui/Toast'
 import { ensaiosService } from '../../../services/ensaiosService'
@@ -14,7 +14,6 @@ import Icon from './Icon'
 import LoadingState from './LoadingState'
 import Pagination from './Pagination'
 import StatusModal from './StatusModal'
-import StatusTabs from './StatusTabs'
 
 const INITIAL_FILTERS = {
   clienteNome: '',
@@ -22,7 +21,23 @@ const INITIAL_FILTERS = {
   status: '',
   dataInicio: '',
   dataFim: '',
+  grupo: 'ativos',
 }
+
+const STATUS_EM_ANDAMENTO = ['REALIZADO', 'EM_SELECAO', 'EM_EDICAO']
+const STATUS_ATIVOS = ['AGENDADO', 'REALIZADO', 'EM_SELECAO', 'EM_EDICAO']
+
+const GRUPO_STATUS = {
+  ativos: STATUS_ATIVOS,
+}
+
+const getInitialFilters = (searchParams) => ({
+  ...INITIAL_FILTERS,
+  status: searchParams.get('status') || '',
+  dataInicio: searchParams.get('dataInicio') || '',
+  dataFim: searchParams.get('dataFim') || '',
+  grupo: searchParams.get('status') ? '' : searchParams.get('grupo') || 'ativos',
+})
 
 const buildParams = (filters) => {
   const params = {}
@@ -62,11 +77,33 @@ const sortValue = (ensaio, key) => {
   return String(ensaio[key] || '').toLowerCase()
 }
 
+const buildStatusCounts = (ensaios) => {
+  return ensaios.reduce(
+    (acc, ensaio) => {
+      acc.total += 1
+      acc[ensaio.status] = (acc[ensaio.status] || 0) + 1
+
+      return acc
+    },
+    { total: 0 }
+  )
+}
+
+const filtrarPorGrupo = (ensaios, grupo) => {
+  const statusPermitidos = GRUPO_STATUS[grupo]
+
+  if (!statusPermitidos) return ensaios
+
+  return ensaios.filter((ensaio) => statusPermitidos.includes(ensaio.status))
+}
+
 export default function ListaEnsaios() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [ensaios, setEnsaios] = useState([])
-  const [filters, setFilters] = useState(INITIAL_FILTERS)
+  const [statusCounts, setStatusCounts] = useState({ total: 0 })
+  const [filters, setFilters] = useState(() => getInitialFilters(searchParams))
   const [filtersResetKey, setFiltersResetKey] = useState(0)
   const [viewMode, setViewMode] = useState('table')
   const [sort, setSort] = useState({ key: 'dataEnsaio', direction: 'desc' })
@@ -86,8 +123,25 @@ export default function ListaEnsaios() {
     setLoading(true)
 
     try {
-      const response = await ensaiosService.listar(buildParams(filters))
-      setEnsaios(Array.isArray(response.data) ? response.data : [])
+      const [response, statusResponse] = await Promise.all([
+        ensaiosService.listar(buildParams(filters)),
+        ensaiosService.listar(buildParams({
+          ...filters,
+          status: '',
+          grupo: '',
+        })),
+      ])
+
+      const data = Array.isArray(response.data) ? response.data : []
+      const statusData = Array.isArray(statusResponse.data) ? statusResponse.data : []
+      const ensaiosFiltrados = filters.status
+        ? data
+        : filters.grupo === 'andamento'
+          ? data.filter((ensaio) => STATUS_EM_ANDAMENTO.includes(ensaio.status))
+          : filtrarPorGrupo(data, filters.grupo)
+
+      setEnsaios(ensaiosFiltrados)
+      setStatusCounts(buildStatusCounts(statusData))
     } catch (error) {
       console.error('[Ensaios] Erro ao listar:', error?.response?.data || error)
       showToast('Não foi possível carregar os ensaios.', 'error')
@@ -105,6 +159,12 @@ export default function ListaEnsaios() {
     return () => clearTimeout(timeout)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters])
+
+  useEffect(() => {
+    setFilters(getInitialFilters(searchParams))
+    setFiltersResetKey((current) => current + 1)
+    setPage(1)
+  }, [searchParams])
 
   const sortedEnsaios = useMemo(() => {
     return [...ensaios].sort((a, b) => {
@@ -125,17 +185,61 @@ export default function ListaEnsaios() {
     page * pageSize
   )
 
+  const updateUrlFilters = (nextFilters) => {
+    const params = {}
+
+    if (nextFilters.status) params.status = nextFilters.status
+    if (nextFilters.dataInicio) params.dataInicio = nextFilters.dataInicio
+    if (nextFilters.dataFim) params.dataFim = nextFilters.dataFim
+    if (nextFilters.grupo && nextFilters.grupo !== 'ativos') params.grupo = nextFilters.grupo
+
+    setSearchParams(params, { replace: true })
+  }
+
   const handleFilterChange = (field, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
+    setFilters((prev) => {
+      const next = {
+        ...prev,
+        [field]: value,
+        grupo: field === 'status' ? '' : prev.grupo,
+      }
+
+      if (['status', 'dataInicio', 'dataFim', 'grupo'].includes(field)) {
+        updateUrlFilters(next)
+      }
+
+      return next
+    })
   }
 
   const handleClearFilters = () => {
     setFilters({ ...INITIAL_FILTERS })
     setFiltersResetKey((current) => current + 1)
     setPage(1)
+    setSearchParams({}, { replace: true })
+  }
+
+  const handleFiltroPrincipalChange = (value) => {
+    const isStatus = [
+      'AGENDADO',
+      'REALIZADO',
+      'EM_SELECAO',
+      'EM_EDICAO',
+      'FINALIZADO',
+      'CANCELADO',
+    ].includes(value)
+
+    setFilters((prev) => {
+      const next = {
+        ...prev,
+        status: isStatus ? value : '',
+        grupo: isStatus ? '' : value,
+      }
+
+      updateUrlFilters(next)
+
+      return next
+    })
   }
 
   const handleSort = (key) => {
@@ -237,9 +341,52 @@ export default function ListaEnsaios() {
     navigate(`/novo-ensaio?data=${date}`)
   }
 
-  const countLabel = `${ensaios.length} ensaio${
-    ensaios.length === 1 ? '' : 's'
-  } cadastrado${ensaios.length === 1 ? '' : 's'}`
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode)
+
+    if (mode === 'calendar') {
+      setFilters((prev) => {
+        const next = {
+          ...prev,
+          status: '',
+          grupo: 'todos',
+        }
+
+        updateUrlFilters(next)
+
+        return next
+      })
+    }
+  }
+
+  const grupoCounts = {
+    ativos: STATUS_ATIVOS.reduce((sum, status) => sum + Number(statusCounts[status] || 0), 0),
+    AGENDADO: Number(statusCounts.AGENDADO || 0),
+    REALIZADO: Number(statusCounts.REALIZADO || 0),
+    EM_SELECAO: Number(statusCounts.EM_SELECAO || 0),
+    EM_EDICAO: Number(statusCounts.EM_EDICAO || 0),
+    FINALIZADO: Number(statusCounts.FINALIZADO || 0),
+    CANCELADO: Number(statusCounts.CANCELADO || 0),
+    todos: Number(statusCounts.total || 0),
+  }
+  const activeFiltroPrincipal = filters.status || filters.grupo || 'ativos'
+
+  const totalEnsaios = Number(statusCounts.total || 0)
+  const hasDisplayFilter =
+    filters.status ||
+    filters.grupo !== 'todos' ||
+    filters.clienteNome ||
+    filters.tipo ||
+    filters.dataInicio ||
+    filters.dataFim
+
+  const countLabel = hasDisplayFilter
+    ? `${ensaios.length} ensaio${ensaios.length === 1 ? '' : 's'} exibido${
+        ensaios.length === 1 ? '' : 's'
+      } · ${totalEnsaios} no total`
+    : `${totalEnsaios} ensaio${totalEnsaios === 1 ? '' : 's'} cadastrado${
+        totalEnsaios === 1 ? '' : 's'
+      }`
 
   return (
     <>
@@ -285,19 +432,23 @@ export default function ListaEnsaios() {
           resetKey={filtersResetKey}
           onFilterChange={handleFilterChange}
           viewMode={viewMode}
-          onViewModeChange={setViewMode}
+          onViewModeChange={handleViewModeChange}
           onClear={handleClearFilters}
         />
 
-        <StatusTabs
-          activeStatus={filters.status}
-          onChange={(value) => handleFilterChange('status', value)}
+        <GrupoEnsaiosTabs
+          activeGrupo={activeFiltroPrincipal}
+          counts={grupoCounts}
+          onChange={handleFiltroPrincipalChange}
         />
 
         {loading ? (
           <LoadingState />
         ) : sortedEnsaios.length === 0 ? (
-          <EmptyState onCreate={() => navigate('/novo-ensaio')} />
+          <EmptyState
+            filters={filters}
+            onCreate={() => navigate('/novo-ensaio')}
+          />
         ) : (
           <>
             {viewMode === 'calendar' ? (
@@ -377,5 +528,50 @@ export default function ListaEnsaios() {
         />
       )}
     </>
+  )
+}
+
+function GrupoEnsaiosTabs({ activeGrupo, counts, onChange }) {
+  const grupos = [
+    { value: 'ativos', label: 'Ativos' },
+    { value: 'AGENDADO', label: 'Agendado' },
+    { value: 'REALIZADO', label: 'Realizado' },
+    { value: 'EM_SELECAO', label: 'Em seleção' },
+    { value: 'EM_EDICAO', label: 'Em edição' },
+    { value: 'FINALIZADO', label: 'Entregue' },
+    { value: 'CANCELADO', label: 'Cancelado' },
+    { value: 'todos', label: 'Todos' },
+  ]
+
+  return (
+    <div className="mb-6 flex flex-wrap gap-2">
+      {grupos.map((grupo) => {
+        const active = activeGrupo === grupo.value
+
+        return (
+          <button
+            key={grupo.value}
+            type="button"
+            onClick={() => onChange(grupo.value)}
+            className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] tracking-[0.08em] transition ${
+              active
+                ? 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]'
+                : 'border-transparent bg-[var(--card)] text-[var(--text-muted)] hover:border-[var(--border)] hover:text-[var(--text)]'
+            }`}
+          >
+            <span>{grupo.label}</span>
+            <span
+              className={`min-w-5 rounded-full px-1.5 py-0.5 text-center text-[10px] font-medium leading-none ${
+                active
+                  ? 'bg-[var(--gold-dim)] text-[var(--gold)]'
+                  : 'bg-[var(--card-hover)] text-[var(--text-muted)]'
+              }`}
+            >
+              {counts[grupo.value] || 0}
+            </span>
+          </button>
+        )
+      })}
+    </div>
   )
 }

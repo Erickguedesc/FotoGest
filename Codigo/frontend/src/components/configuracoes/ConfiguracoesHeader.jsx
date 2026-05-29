@@ -14,7 +14,7 @@ export default function ConfiguracoesHeader() {
         </h1>
 
         <p className="theme-muted mt-3 max-w-2xl text-sm">
-          Gerencie os dados da fotógrafa, informações do estúdio, segurança da
+          Gerencie seus dados, informações da empresa/estúdio, segurança da
           conta e preferências usadas no sistema.
         </p>
       </div>

@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 
 const STEP_LABELS = ['Cliente', 'Ensaio', 'Pacote', 'Pronto']
 const STEP_HINTS = [
-  'Preencha os dados do cliente',
+  'Preencha os dados do cliente e ensaio',
   'Preencha as informações do ensaio',
   'Defina o pacote e valor',
   'Formulário completo — pronto para salvar!',
@@ -15,7 +15,7 @@ const fmtDate = (d) => {
 }
 
 const fmtMoney = (v) =>
-  v ? `R$ ${parseInt(v).toLocaleString('pt-BR')}` : 'R$ —'
+  v ? `R$ ${String(v)}` : 'R$ —'
 
 export default function ResumeSidebar({ form, loading }) {
   const navigate = useNavigate()
@@ -25,7 +25,7 @@ export default function ResumeSidebar({ form, loading }) {
   // Step 1 → cliente preenchido
   // Step 2 → ensaio preenchido
   // Step 3 → pacote preenchido (pronto)
-  const clienteDone = !!(form.cliente)
+  const clienteDone = form.cliente.trim().length >= 3
   const ensaioDone  = !!(form.tipo && form.data && form.hora && form.local)
   const pacoteDone  = !!(form.valor && form.fotos)
 
@@ -152,7 +152,7 @@ export default function ResumeSidebar({ form, loading }) {
             <span className="text-[12px] text-white/45">Foto extra</span>
             <span className="text-[13px] text-white">
               {form.extraAtivo && form.extra
-                ? `R$ ${parseInt(form.extra).toLocaleString('pt-BR')} / foto`
+                ? `R$ ${form.extra} / foto`
                 : '—'}
             </span>
           </div>

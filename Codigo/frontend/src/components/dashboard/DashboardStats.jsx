@@ -1,43 +1,67 @@
 import {
+    Activity,
     CalendarDays,
     CheckCircle2,
-    Image,
     Wallet,
 } from 'lucide-react'
 
 import StatCard from './StatCard'
 import { formatarMoeda } from '../../utils/dashboardFormatters'
 
+function getMesAtualParams() {
+    const hoje = new Date()
+    const ano = hoje.getFullYear()
+    const mes = hoje.getMonth()
+    const inicio = new Date(ano, mes, 1)
+    const fim = new Date(ano, mes + 1, 0)
+
+    const format = (date) => {
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+
+        return `${year}-${month}-${day}`
+    }
+
+    return `dataInicio=${format(inicio)}&dataFim=${format(fim)}`
+}
+
 export default function DashboardStats({ dashboard }) {
+    const receitaEstimada = Number(dashboard?.receitaEstimada || 0)
+    const mesAtualParams = getMesAtualParams()
+
     return (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <StatCard
-                titulo="Ensaios este mês"
+                titulo="Ensaios no mês"
                 valor={dashboard?.ensaiosEsteMes || 0}
-                descricao="ensaios agendados"
+                descricao="agendados e realizados"
                 icon={CalendarDays}
+                to={`/ensaios?${mesAtualParams}`}
             />
 
             <StatCard
-                titulo="Seleções enviadas"
+                titulo="Em andamento"
+                valor={dashboard?.ensaiosEmAndamentoTotal || 0}
+                descricao="realizados, seleção e edição"
+                icon={Activity}
+                to="/ensaios?grupo=ativos"
+            />
+
+            <StatCard
+                titulo="Seleções recebidas"
                 valor={dashboard?.selecoesEnviadas || 0}
-                descricao="clientes aguardando Edição"
+                descricao="aguardando revisão"
                 icon={CheckCircle2}
-            />
-
-            <StatCard
-                titulo="Sem fotos enviadas"
-                valor={dashboard?.ensaiosSemFotosEnviadas || 0}
-                descricao="upload pendente"
-                icon={Image}
+                to="/ensaios?status=EM_SELECAO"
             />
 
             <StatCard
                 titulo="Valor previsto"
-                valor={formatarMoeda(dashboard?.receitaEstimada || 0)}
-                descricao="referência do mês"
+                valor={receitaEstimada > 0 ? formatarMoeda(receitaEstimada) : 'Sem previsão'}
+                descricao={receitaEstimada > 0 ? 'pacotes e fotos extras do mês' : 'sem valores previstos no mês'}
                 icon={Wallet}
-                destaque
+                destaque={receitaEstimada > 0}
             />
         </section>
     )
