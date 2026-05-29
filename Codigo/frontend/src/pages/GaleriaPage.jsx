@@ -135,7 +135,8 @@ export default function GaleriaPage() {
   }
 
   const fotos = Array.isArray(album.fotos) ? album.fotos : []
-  const capaAlbumUrl = getFotoUrl(fotos[0]) || album?.capaAlbumPadraoUrl || ''
+  const fotoCapa = fotos.find((foto) => foto.ehCapa) || fotos[0]
+  const capaAlbumUrl = getFotoUrl(fotoCapa) || album?.capaAlbumPadraoUrl || ''
   const fotosFavoritas = fotos.filter((foto) => favoritas.includes(foto.id))
   const fotosLightbox = lightboxOrigem === 'favoritas' ? fotosFavoritas : fotos
   const fotoLightbox =

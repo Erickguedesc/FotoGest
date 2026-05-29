@@ -13,5 +13,6 @@ public class FotoPublicaResponse {
 
     private UUID id;
     private String url;
+    private Boolean ehCapa;
 
 }
