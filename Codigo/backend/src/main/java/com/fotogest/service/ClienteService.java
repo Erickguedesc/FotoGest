@@ -2,11 +2,15 @@ package com.fotogest.service;
 
 import com.fotogest.dto.ClienteRequest;
 import com.fotogest.dto.ClienteResponse;
+import com.fotogest.enums.SituacaoCliente;
+import com.fotogest.enums.StatusEnsaio;
 import com.fotogest.model.Cliente;
+import com.fotogest.model.Ensaio;
 import com.fotogest.repository.ClienteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -18,110 +22,124 @@ public class ClienteService {
 
     private final ClienteRepository repository;
 
+    @Transactional
     public ClienteResponse criar(ClienteRequest request) {
+        String nome = normalizarTexto(request.getNome());
+        String email = normalizarEmail(request.getEmail());
+        String telefone = normalizarTelefone(request.getTelefone());
+        String cpf = normalizarCpf(request.getCpf());
 
-        // Nome obrigatório → 400 Bad Request
-        if (request.getNome() == null || request.getNome().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O nome do cliente é obrigatório");
+        if (nome == null || nome.length() < 3) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe o nome completo do cliente");
         }
 
-        // E-mail duplicado → 409 Conflict
-        if (request.getEmail() != null && repository.existsByEmail(request.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado para outro cliente");
+        if (email != null && repository.existsByEmail(email)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail ja cadastrado para outro cliente");
         }
 
-        // CPF duplicado → 409 Conflict
-        if (request.getCpf() != null && repository.existsByCpf(request.getCpf())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado para outro cliente");
+        if (cpf != null && repository.existsByCpf(cpf)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF ja cadastrado para outro cliente");
         }
 
         Cliente cliente = Cliente.builder()
-                .nome(request.getNome())
-                .email(request.getEmail())
-                .telefone(request.getTelefone())
-                .cpf(request.getCpf())
-                .cidade(request.getCidade())
-                .indicacao(request.getIndicacao())
+                .nome(nome)
+                .email(email)
+                .telefone(telefone)
+                .cpf(cpf)
+                .cidade(normalizarTexto(request.getCidade()))
+                .indicacao(normalizarTexto(request.getIndicacao()))
                 .ativo(true)
                 .build();
 
         return toResponse(repository.save(cliente));
     }
 
+    @Transactional
     public ClienteResponse arquivar(UUID id) {
-        Cliente cliente = repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente nÃ£o encontrado"));
-
+        Cliente cliente = buscarCliente(id);
         cliente.setAtivo(false);
-
         return toResponse(repository.save(cliente));
     }
 
+    @Transactional
     public ClienteResponse reativar(UUID id) {
-        Cliente cliente = repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente nÃ£o encontrado"));
-
+        Cliente cliente = buscarCliente(id);
         cliente.setAtivo(true);
-
         return toResponse(repository.save(cliente));
     }
 
-    public List<ClienteResponse> listar() {
-        return repository.findAll()
-                .stream()
+    @Transactional(readOnly = true)
+    public List<ClienteResponse> listar(String busca) {
+        String termo = normalizarTexto(busca);
+        List<Cliente> clientes = termo == null
+                ? repository.findAll()
+                : repository.buscarPorTermo(termo, somenteDigitos(termo));
+
+        return clientes.stream()
                 .map(this::toResponse)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public ClienteResponse buscarPorId(UUID id) {
-        Cliente cliente = repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
-        return toResponse(cliente);
+        return toResponse(buscarCliente(id));
     }
 
+    @Transactional
     public ClienteResponse atualizar(UUID id, ClienteRequest request) {
+        Cliente cliente = buscarCliente(id);
+        String nome = normalizarTexto(request.getNome());
+        String email = normalizarEmail(request.getEmail());
+        String telefone = normalizarTelefone(request.getTelefone());
+        String cpf = normalizarCpf(request.getCpf());
 
-        Cliente cliente = repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
+        if (nome == null || nome.length() < 3) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe o nome completo do cliente");
+        }
 
-        // E-mail duplicado em outro cliente → 409 Conflict
-        repository.findByEmail(request.getEmail()).ifPresent(existente -> {
-            if (!existente.getId().equals(id)) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado em outro cliente");
-            }
-        });
+        if (email != null) {
+            repository.findByEmail(email).ifPresent(existente -> {
+                if (!existente.getId().equals(id)) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail ja cadastrado em outro cliente");
+                }
+            });
+        }
 
-        // CPF duplicado em outro cliente → 409 Conflict
-        repository.findByCpf(request.getCpf()).ifPresent(existente -> {
-            if (!existente.getId().equals(id)) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado em outro cliente");
-            }
-        });
+        if (cpf != null) {
+            repository.findByCpf(cpf).ifPresent(existente -> {
+                if (!existente.getId().equals(id)) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF ja cadastrado em outro cliente");
+                }
+            });
+        }
 
-        cliente.setNome(request.getNome());
-        cliente.setEmail(request.getEmail());
-        cliente.setTelefone(request.getTelefone());
-        cliente.setCpf(request.getCpf());
-        cliente.setCidade(request.getCidade());
-        cliente.setIndicacao(request.getIndicacao());
+        cliente.setNome(nome);
+        cliente.setEmail(email);
+        cliente.setTelefone(telefone);
+        cliente.setCpf(cpf);
+        cliente.setCidade(normalizarTexto(request.getCidade()));
+        cliente.setIndicacao(normalizarTexto(request.getIndicacao()));
 
         return toResponse(repository.save(cliente));
     }
 
+    @Transactional
     public void deletar(UUID id) {
+        Cliente cliente = buscarCliente(id);
 
-        Cliente cliente = repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
-
-        // Cliente vinculado a ensaio não pode ser deletado → 409 Conflict
         if (!cliente.getEnsaios().isEmpty()) {
             throw new ResponseStatusException(
-                HttpStatus.CONFLICT,
-                "Cliente vinculado a ensaio(s) não pode ser deletado"
+                    HttpStatus.CONFLICT,
+                    "Cliente vinculado a ensaio(s) nao pode ser deletado"
             );
         }
 
         repository.delete(cliente);
+    }
+
+    private Cliente buscarCliente(UUID id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente nao encontrado"));
     }
 
     private ClienteResponse toResponse(Cliente cliente) {
@@ -134,6 +152,65 @@ public class ClienteService {
                 .cidade(cliente.getCidade())
                 .indicacao(cliente.getIndicacao())
                 .ativo(cliente.getAtivo())
+                .situacao(resolverSituacao(cliente))
                 .build();
+    }
+
+    private SituacaoCliente resolverSituacao(Cliente cliente) {
+        List<Ensaio> ensaios = cliente.getEnsaios();
+
+        boolean temFluxoAtivo = ensaios.stream()
+                .map(Ensaio::getStatus)
+                .anyMatch(this::isStatusFluxoAtivo);
+
+        if (temFluxoAtivo) {
+            return SituacaoCliente.EM_ANDAMENTO;
+        }
+
+        if (Boolean.FALSE.equals(cliente.getAtivo())) {
+            return SituacaoCliente.ARQUIVADO;
+        }
+
+        boolean temEntregue = ensaios.stream()
+                .map(Ensaio::getStatus)
+                .anyMatch(status -> status == StatusEnsaio.FINALIZADO);
+
+        if (temEntregue) {
+            return SituacaoCliente.ENTREGUE;
+        }
+
+        return ensaios.isEmpty() ? SituacaoCliente.SEM_ENSAIOS : SituacaoCliente.SEM_FLUXO;
+    }
+
+    private boolean isStatusFluxoAtivo(StatusEnsaio status) {
+        return status == StatusEnsaio.AGENDADO
+                || status == StatusEnsaio.REALIZADO
+                || status == StatusEnsaio.EM_SELECAO
+                || status == StatusEnsaio.EM_EDICAO;
+    }
+
+    private String normalizarTexto(String valor) {
+        if (valor == null) return null;
+        String texto = valor.trim();
+        return texto.isEmpty() ? null : texto;
+    }
+
+    private String normalizarEmail(String valor) {
+        String email = normalizarTexto(valor);
+        return email == null ? null : email.toLowerCase();
+    }
+
+    private String normalizarCpf(String valor) {
+        String cpf = somenteDigitos(valor);
+        return cpf.isEmpty() ? null : cpf;
+    }
+
+    private String normalizarTelefone(String valor) {
+        String telefone = somenteDigitos(valor);
+        return telefone.isEmpty() ? null : telefone;
+    }
+
+    private String somenteDigitos(String valor) {
+        return valor == null ? "" : valor.replaceAll("\\D", "");
     }
 }

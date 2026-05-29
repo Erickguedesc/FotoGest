@@ -31,7 +31,7 @@ export default function DashboardHeader() {
 
             <Link
                 to="/novo-ensaio"
-                className="inline-flex items-center gap-2 rounded-2xl bg-[#D4AF37] px-5 py-3 text-sm font-semibold tracking-wide text-black transition hover:opacity-90"
+                className="inline-flex items-center gap-2 rounded-2xl bg-[#b7833a] px-5 py-3 text-sm font-medium tracking-wide text-[#fff7e6] shadow-[0_14px_30px_rgba(183,131,58,0.22)] transition hover:bg-[#a87532]"
             >
                 <Plus size={18} />
                 Novo ensaio

@@ -1,6 +1,7 @@
 package com.fotogest.service;
 
 import com.fotogest.dto.EnsaioRequest;
+import com.fotogest.dto.EnsaioConflitoAgendaResponse;
 import com.fotogest.dto.EnsaioResponse;
 import com.fotogest.dto.EnsaioStatusRequest;
 import com.fotogest.enums.StatusEnsaio;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 import com.fotogest.enums.TipoEnsaio;
 import com.fotogest.specification.EnsaioSpecification;
 import java.time.OffsetDateTime;
+import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +46,7 @@ public class EnsaioService {
     public EnsaioResponse criar(EnsaioRequest request) {
         Cliente cliente = buscarCliente(request.getClienteId());
         atualizarDadosCliente(cliente, request);
+        cliente.setAtivo(true);
         
 
 boolean cobrar = Boolean.TRUE.equals(request.getCobrarFotoExtra());
@@ -102,6 +105,34 @@ public List<EnsaioResponse> listar(
     @Transactional(readOnly = true)
     public EnsaioResponse buscarPorId(UUID id) {
         return toResponse(buscarEnsaio(id));
+    }
+
+    @Transactional(readOnly = true)
+    public EnsaioConflitoAgendaResponse buscarConflitoAgenda(OffsetDateTime dataEnsaio) {
+        if (dataEnsaio == null) {
+            return EnsaioConflitoAgendaResponse.builder()
+                    .conflito(false)
+                    .build();
+        }
+
+        OffsetDateTime inicio = dataEnsaio.minusMinutes(90);
+        OffsetDateTime fim = dataEnsaio.plusMinutes(90);
+
+        return ensaioRepository
+                .findByDataEnsaioBetweenAndStatusNotOrderByDataEnsaioAsc(
+                        inicio,
+                        fim,
+                        StatusEnsaio.CANCELADO
+                )
+                .stream()
+                .min(Comparator.comparing(ensaio ->
+                        Math.abs(ensaio.getDataEnsaio().toInstant().toEpochMilli()
+                                - dataEnsaio.toInstant().toEpochMilli())
+                ))
+                .map(this::toConflitoAgendaResponse)
+                .orElseGet(() -> EnsaioConflitoAgendaResponse.builder()
+                        .conflito(false)
+                        .build());
     }
 
     @Transactional
@@ -278,6 +309,18 @@ private String normalizarStatusValores(String valor) {
 
             .criadoEm(ensaio.getCriadoEm())
             .atualizadoEm(ensaio.getAtualizadoEm())
+            .build();
+}
+
+private EnsaioConflitoAgendaResponse toConflitoAgendaResponse(Ensaio ensaio) {
+    return EnsaioConflitoAgendaResponse.builder()
+            .conflito(true)
+            .ensaioId(ensaio.getId())
+            .clienteId(ensaio.getCliente().getId())
+            .clienteNome(ensaio.getCliente().getNome())
+            .dataEnsaio(ensaio.getDataEnsaio())
+            .local(ensaio.getLocal())
+            .status(ensaio.getStatus())
             .build();
 }
 

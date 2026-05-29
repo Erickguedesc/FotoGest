@@ -80,10 +80,10 @@ export default function ClienteHistoricoPage() {
     try {
       const response = await clientesService.reativar(cliente.id)
       setCliente(response.data)
-      setToast({ message: 'Cliente reativada com sucesso.', type: 'success' })
+      setToast({ message: 'Cliente reativado com sucesso.', type: 'success' })
     } catch (error) {
       console.error('[ClienteHistórico] Erro ao reativar:', error?.response?.data || error)
-      setToast({ message: 'Não foi possível reativar a cliente.', type: 'error' })
+      setToast({ message: 'Não foi possível reativar o cliente.', type: 'error' })
     } finally {
       setActionLoading(false)
     }
@@ -122,6 +122,10 @@ export default function ClienteHistoricoPage() {
     )
   }
 
+  const clienteArquivado = cliente.situacao
+    ? cliente.situacao === 'ARQUIVADO'
+    : cliente.ativo === false
+
   return (
     <>
       <Header />
@@ -156,9 +160,9 @@ export default function ClienteHistoricoPage() {
                 <p className="mt-1 text-[13px] text-white/45">
                   {cliente.cidade || 'Cidade não informada'} · {cliente.indicacao || 'Origem não informada'}
                 </p>
-                {cliente.ativo === false && (
+                {clienteArquivado && (
                   <span className="mt-3 inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[10px] uppercase tracking-[0.14em] text-white/45">
-                    Cliente arquivada
+                    Cliente arquivado
                   </span>
                 )}
               </div>
@@ -177,7 +181,7 @@ export default function ClienteHistoricoPage() {
               <Link
                 to={`/novo-ensaio?clienteId=${cliente.id}`}
                 className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-[12px] font-medium transition ${
-                  cliente.ativo === false
+                  clienteArquivado
                     ? 'pointer-events-none border border-white/10 text-white/30'
                     : 'bg-[var(--gold)] text-[#1A1200] hover:bg-[var(--gold-light)]'
                 }`}
@@ -186,7 +190,7 @@ export default function ClienteHistoricoPage() {
                 Novo ensaio
               </Link>
 
-              {cliente.ativo === false && (
+              {clienteArquivado && (
                 <button
                   type="button"
                   disabled={actionLoading}
@@ -200,9 +204,9 @@ export default function ClienteHistoricoPage() {
           </div>
         </section>
 
-        {cliente.ativo === false && (
+        {clienteArquivado && (
           <div className="mb-5 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-5 text-[13px] leading-6 text-amber-100">
-            Esta cliente está arquivada. O histórico, valores e relatórios foram preservados, mas ela fica fora da lista principal de clientes ativos. Reative a cliente antes de criar novos ensaios para ela.
+            Este cliente está arquivado. O histórico, valores e relatórios foram preservados, mas ele fica no filtro Arquivados e fora de Em andamento. Reative o cliente antes de criar novos ensaios para ele.
           </div>
         )}
 

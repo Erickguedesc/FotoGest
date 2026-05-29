@@ -45,6 +45,28 @@ const INITIAL_FORM = {
   extra:     '',
 }
 
+function onlyDigits(value) {
+  return String(value || '').replace(/\D/g, '')
+}
+
+function parseCurrencyBR(value) {
+  const normalized = String(value || '')
+    .replace(/[^\d,.-]/g, '')
+    .replace(/\./g, '')
+    .replace(',', '.')
+
+  return Number(normalized || 0)
+}
+
+function formatCurrencyInput(value) {
+  const number = Number(value || 0)
+  if (!Number.isFinite(number) || number <= 0) return ''
+  return number.toLocaleString('pt-BR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  })
+}
+
 export default function NovoEnsaioPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -52,6 +74,9 @@ export default function NovoEnsaioPage() {
   const [errors, setErrors]   = useState({})
   const [loading, setLoading] = useState(false)
   const [toast, setToast]     = useState(null)
+  const [clientesSugeridos, setClientesSugeridos] = useState([])
+  const [conflitoAgenda, setConflitoAgenda] = useState(null)
+  const [clienteSelecionadoId, setClienteSelecionadoId] = useState(searchParams.get('clienteId'))
   const clienteIdExistente = searchParams.get('clienteId')
 
   useEffect(() => {
@@ -79,7 +104,7 @@ export default function NovoEnsaioPage() {
         extra:
           preferencias.valorFotoExtraPadrao !== null &&
           preferencias.valorFotoExtraPadrao !== undefined
-            ? String(preferencias.valorFotoExtraPadrao)
+            ? formatCurrencyInput(preferencias.valorFotoExtraPadrao)
             : prev.extra,
         local: prev.local || preferencias.cidadePadrao || '',
       }))
@@ -106,7 +131,13 @@ export default function NovoEnsaioPage() {
         setForm((prev) => ({
           ...prev,
           cliente: prev.cliente || cliente.nome || '',
+          telefone: prev.telefone || cliente.telefone || '',
+          email: prev.email || cliente.email || '',
+          cpf: prev.cpf || cliente.cpf || '',
+          cidade: prev.cidade || cliente.cidade || '',
+          indicacao: prev.indicacao || cliente.indicacao || '',
         }))
+        setClienteSelecionadoId(cliente.id)
       } catch (error) {
         console.error('[NovoEnsaio] Erro ao carregar cliente existente:', error?.response?.data || error)
         setToast({ message: 'Nao foi possivel preencher a cliente selecionada.', type: 'error' })
@@ -122,13 +153,90 @@ export default function NovoEnsaioPage() {
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
+    if (field === 'cliente') {
+      setClienteSelecionadoId(null)
+    }
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: '' }))
   }
 
+  const handleSelectCliente = (cliente) => {
+    setClienteSelecionadoId(cliente.id)
+    setForm((prev) => ({
+      ...prev,
+      cliente: cliente.nome || '',
+      telefone: cliente.telefone || '',
+      email: cliente.email || '',
+      cpf: cliente.cpf || '',
+      cidade: cliente.cidade || '',
+      indicacao: cliente.indicacao || '',
+    }))
+    setErrors((prev) => ({ ...prev, cliente: '', telefone: '', email: '', cpf: '' }))
+  }
+
+  useEffect(() => {
+    const busca = form.cliente || form.email || form.telefone
+
+    if (clienteSelecionadoId || busca.trim().length < 2) {
+      setClientesSugeridos([])
+      return
+    }
+
+    let cancelado = false
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await clientesService.listar({ busca })
+        if (cancelado) return
+        setClientesSugeridos(Array.isArray(response.data) ? response.data.slice(0, 5) : [])
+      } catch (error) {
+        if (!cancelado) {
+          console.error('[NovoEnsaio] Erro ao buscar clientes:', error?.response?.data || error)
+          setClientesSugeridos([])
+        }
+      }
+    }, 250)
+
+    return () => {
+      cancelado = true
+      window.clearTimeout(timer)
+    }
+  }, [clienteSelecionadoId, form.cliente, form.email, form.telefone])
+
+  useEffect(() => {
+    if (!form.data || !form.hora) {
+      setConflitoAgenda(null)
+      return
+    }
+
+    const dataEnsaio = new Date(`${form.data}T${form.hora}:00`)
+    if (Number.isNaN(dataEnsaio.getTime())) {
+      setConflitoAgenda(null)
+      return
+    }
+
+    let cancelado = false
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await ensaiosService.buscarConflitoAgenda(dataEnsaio.toISOString())
+        if (cancelado) return
+        setConflitoAgenda(response.data?.conflito ? response.data : null)
+      } catch (error) {
+        if (!cancelado) {
+          console.error('[NovoEnsaio] Erro ao verificar agenda:', error?.response?.data || error)
+          setConflitoAgenda(null)
+        }
+      }
+    }, 250)
+
+    return () => {
+      cancelado = true
+      window.clearTimeout(timer)
+    }
+  }, [form.data, form.hora])
+
   function validate() {
     const e = {}
-    if (!form.cliente.trim())
-      e.cliente = 'Nome do cliente é obrigatório'
+    if (form.cliente.trim().length < 3)
+      e.cliente = 'Informe o nome completo do cliente'
     if (!form.tipo)
       e.tipo = 'Selecione o tipo de ensaio'
     if (form.tipo === 'Outro' && !form.tipoCustom?.trim())
@@ -139,11 +247,11 @@ export default function NovoEnsaioPage() {
       e.hora = 'Informe o horário'
     if (!form.local.trim())
       e.local = 'Informe o local'
-    if (!form.valor || parseFloat(form.valor) <= 0)
+    if (!form.valor || parseCurrencyBR(form.valor) <= 0)
       e.valor = 'Informe o valor do pacote'
     if (!form.fotos || parseInt(form.fotos) <= 0)
       e.fotos = 'Informe o nº de fotos'
-    if (form.extraAtivo && (!form.extra || parseFloat(form.extra) <= 0))
+    if (form.extraAtivo && (!form.extra || parseCurrencyBR(form.extra) <= 0))
       e.extra = 'Informe o valor por foto extra'
     setErrors(e)
     return Object.keys(e).length === 0
@@ -156,14 +264,14 @@ export default function NovoEnsaioPage() {
     setLoading(true)
     try {
       // ── Passo 1: criar o cliente ──────────────────────────────────────────
-      let clienteId = clienteIdExistente
+      let clienteId = clienteSelecionadoId || clienteIdExistente
 
       if (!clienteId) {
         const clientePayload = {
           nome:      form.cliente.trim(),
           telefone:  form.telefone?.trim()           || null,
           email:     form.email?.trim()              || null,
-          cpf:       form.cpf?.replace(/\D/g, '')    || null,
+          cpf:       onlyDigits(form.cpf)             || null,
           cidade:    form.cidade?.trim()             || null,
           indicacao: form.indicacao                  || null,
         }
@@ -185,16 +293,16 @@ export default function NovoEnsaioPage() {
         clienteNome: form.cliente.trim(),
         clienteTelefone: form.telefone?.trim() || null,
         clienteEmail: form.email?.trim() || null,
-        clienteCpf: form.cpf?.replace(/\D/g, '') || null,
+        clienteCpf: onlyDigits(form.cpf) || null,
         clienteCidade: form.cidade?.trim() || null,
         clienteIndicacao: form.indicacao || null,
         tipo:            tipoEnum,
         dataEnsaio: new Date(`${form.data}T${form.hora}:00`).toISOString(),
         local:           form.local.trim(),
         qtdFotosPacote:  parseInt(form.fotos),
-        valorPacote:     parseFloat(form.valor),
+        valorPacote:     parseCurrencyBR(form.valor),
         cobrarFotoExtra: form.extraAtivo,
-        valorFotoExtra:  form.extraAtivo && form.extra ? parseFloat(form.extra) : null,
+        valorFotoExtra:  form.extraAtivo && form.extra ? parseCurrencyBR(form.extra) : null,
         observacoes:     form.obs?.trim() || null,
         status:          'AGENDADO',
       }
@@ -256,7 +364,14 @@ export default function NovoEnsaioPage() {
         <form onSubmit={handleSubmit} noValidate>
           <div className="grid grid-cols-[1fr_340px] items-start gap-5">
             <div>
-              <FormInfoSection   form={form} errors={errors} onChange={handleChange} />
+              <FormInfoSection
+                form={form}
+                errors={errors}
+                clientesSugeridos={clientesSugeridos}
+                conflitoAgenda={conflitoAgenda}
+                onChange={handleChange}
+                onSelectCliente={handleSelectCliente}
+              />
               <FormObsSection    form={form} onChange={handleChange} />
               <FormPacoteSection form={form} errors={errors} onChange={handleChange} />
             </div>

@@ -1,5 +1,6 @@
 package com.fotogest.dto;
 
+import com.fotogest.enums.SituacaoCliente;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -16,4 +17,5 @@ public class ClienteResponse {
     private String cidade;
     private String indicacao;
     private Boolean ativo;
+    private SituacaoCliente situacao;
 }

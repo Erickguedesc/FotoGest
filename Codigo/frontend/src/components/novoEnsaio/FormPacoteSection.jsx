@@ -9,6 +9,18 @@ const inputClass = `
 
 const errorInputClass = 'border-[rgba(201,123,123,0.5)] bg-[rgba(201,123,123,0.07)]'
 
+function formatCurrencyInput(value) {
+  const cleaned = String(value || '').replace(/[^\d,]/g, '')
+  const [inteiro, decimal = ''] = cleaned.split(',')
+  const inteiroFormatado = inteiro ? Number(inteiro).toLocaleString('pt-BR') : ''
+
+  if (cleaned.includes(',')) {
+    return `${inteiroFormatado},${decimal.slice(0, 2)}`
+  }
+
+  return inteiroFormatado
+}
+
 export default function FormPacoteSection({ form, errors, onChange }) {
   const set = (field, value) => onChange(field, value)
 
@@ -78,12 +90,11 @@ export default function FormPacoteSection({ form, errors, onChange }) {
                 R$
               </span>
               <input
-                type="number"
-                placeholder="0"
-                min={0}
-                step={50}
+                type="text"
+                inputMode="decimal"
+                placeholder="0,00"
                 value={form.valor}
-                onChange={(e) => set('valor', e.target.value)}
+                onChange={(e) => set('valor', formatCurrencyInput(e.target.value))}
                 className={`${inputClass} pl-10 rounded-[9px] ${errors.valor ? errorInputClass : ''}`}
               />
             </div>
@@ -124,12 +135,11 @@ export default function FormPacoteSection({ form, errors, onChange }) {
                 R$
               </span>
               <input
-                type="number"
-                placeholder="0"
-                min={0}
-                step={10}
+                type="text"
+                inputMode="decimal"
+                placeholder="0,00"
                 value={form.extra}
-                onChange={(e) => set('extra', e.target.value)}
+                onChange={(e) => set('extra', formatCurrencyInput(e.target.value))}
                 className={`${inputClass} pl-10 rounded-[9px]`}
               />
             </div>

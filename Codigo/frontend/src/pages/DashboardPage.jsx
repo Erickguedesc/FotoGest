@@ -4,7 +4,9 @@ import Header from '../components/layout/Header'
 
 import DashboardHeader from '../components/dashboard/DashboardHeader'
 import DashboardStats from '../components/dashboard/DashboardStats'
+import PipelineEnsaios from '../components/dashboard/PipelineEnsaios'
 import EnsaiosEmAndamento from '../components/dashboard/EnsaiosEmAndamento'
+import UltimasAtualizacoes from '../components/dashboard/UltimasAtualizacoes'
 import ProximosEnsaios from '../components/dashboard/ProximosEnsaios'
 import AtencaoNecessaria from '../components/dashboard/AtencaoNecessaria'
 import ResumoOperacional from '../components/dashboard/ResumoOperacional'
@@ -49,10 +51,9 @@ export default function DashboardPage() {
         return <DashboardError mensagem={erro} />
     }
 
-    if (
-        !dashboard?.ensaiosEmAndamento?.length &&
-        !dashboard?.proximosEnsaios?.length
-    ) {
+    const totalEnsaios = Number(dashboard?.totalEnsaios || 0)
+
+    if (totalEnsaios === 0) {
         return <DashboardEmptyState />
     }
 
@@ -66,18 +67,20 @@ export default function DashboardPage() {
 
                     <DashboardStats dashboard={dashboard} />
 
-                    <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+                    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
                         <div className="space-y-6">
                             <EnsaiosEmAndamento
                                 ensaios={dashboard?.ensaiosEmAndamento || []}
                             />
 
-                            <ResumoOperacional dashboard={dashboard} />
+                            <UltimasAtualizacoes
+                                ensaios={dashboard?.ultimasAtualizacoes || []}
+                            />
 
-                            <QuickActions />
+                            <PipelineEnsaios pipeline={dashboard?.pipelineStatus || {}} />
                         </div>
 
-                        <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+                        <aside className="space-y-6 xl:sticky xl:top-24 xl:self-start">
                             <ProximosEnsaios
                                 ensaios={dashboard?.proximosEnsaios || []}
                             />
@@ -85,6 +88,10 @@ export default function DashboardPage() {
                             <AtencaoNecessaria
                                 itens={dashboard?.atencaoNecessaria || []}
                             />
+
+                            <ResumoOperacional dashboard={dashboard} />
+
+                            <QuickActions />
                         </aside>
                     </div>
                 </div>

@@ -1,6 +1,7 @@
 package com.fotogest.controller;
 
 import com.fotogest.dto.EnsaioRequest;
+import com.fotogest.dto.EnsaioConflitoAgendaResponse;
 import com.fotogest.dto.EnsaioResponse;
 import com.fotogest.dto.EnsaioStatusRequest;
 import com.fotogest.service.EnsaioService;
@@ -44,6 +45,13 @@ public List<EnsaioResponse> listar(
     @GetMapping("/{id}")
     public EnsaioResponse buscar(@PathVariable UUID id) {
         return service.buscarPorId(id);
+    }
+
+    @GetMapping("/conflitos")
+    public EnsaioConflitoAgendaResponse buscarConflitoAgenda(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dataEnsaio
+    ) {
+        return service.buscarConflitoAgenda(dataEnsaio);
     }
 
     @PutMapping("/{id}")

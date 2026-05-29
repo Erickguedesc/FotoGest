@@ -136,7 +136,7 @@ export default function PreferenciasSistemaForm({ data, loading, uploadCapaLoadi
 
         <p className="mt-2 text-sm leading-relaxed text-white/40">
           Esses valores são apenas padrões automáticos. Na criação de cada
-          ensaio, a fotógrafa ainda pode alterar valor do pacote, quantidade de
+          ensaio, você ainda pode alterar valor do pacote, quantidade de
           fotos e cobrança por excedentes.
         </p>
       </div>

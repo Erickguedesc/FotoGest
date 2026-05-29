@@ -1,35 +1,48 @@
-export default function ResumoOperacional({
-    dashboard,
-}) {
+export default function ResumoOperacional({ dashboard }) {
     return (
         <section className="space-y-5">
             <div className="theme-divider border-b pb-4">
                 <h2 className="theme-muted text-xs uppercase tracking-[0.25em]">
-                    Resumo operacional
+                    Resumo de Ensaios
                 </h2>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-                <div className="theme-card rounded-3xl border p-6">
-                    <p className="theme-muted text-xs uppercase tracking-[0.2em]">
-                        Ensaios Finalizados
-                    </p>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
+                <Metric
+                    label="Hoje"
+                    value={dashboard?.ensaiosHoje || 0}
+                    highlight
+                />
 
-                    <h2 className="theme-title mt-3 font-serif text-5xl font-light">
-                        {dashboard?.ensaiosFinalizadosMes || 0}
-                    </h2>
-                </div>
+                <Metric
+                    label="Próximos 7 dias"
+                    value={dashboard?.ensaiosProximosSeteDias || 0}
+                />
 
-                <div className="theme-card rounded-3xl border border-[var(--gold-border)] p-6">
-                    <p className="theme-muted text-xs uppercase tracking-[0.2em]">
-                        Seleções enviadas
-                    </p>
+                <Metric
+                    label="Sem fotos enviadas"
+                    value={dashboard?.ensaiosSemFotosEnviadas || 0}
+                />
 
-                    <h2 className="mt-3 font-serif text-5xl font-light text-[var(--gold)]">
-                        {dashboard?.selecoesEnviadas || 0}
-                    </h2>
-                </div>
+                <Metric
+                    label="Finalizados no mês"
+                    value={dashboard?.ensaiosFinalizadosMes || 0}
+                />
             </div>
         </section>
+    )
+}
+
+function Metric({ label, value, highlight = false }) {
+    return (
+        <div className={`theme-card rounded-3xl border p-6 ${highlight ? 'border-[var(--gold-border)]' : ''}`}>
+            <p className="theme-muted text-xs uppercase tracking-[0.2em]">
+                {label}
+            </p>
+
+            <h2 className={`mt-3 font-serif text-5xl font-light ${highlight ? 'text-[var(--gold)]' : 'theme-title'}`}>
+                {value}
+            </h2>
+        </div>
     )
 }

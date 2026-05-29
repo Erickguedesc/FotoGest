@@ -24,6 +24,7 @@ public class DashboardEnsaioResumoResponse {
     private StatusEnsaio status;
 
     private OffsetDateTime dataEnsaio;
+    private OffsetDateTime atualizadoEm;
     private String local;
 
     private Short progresso;
