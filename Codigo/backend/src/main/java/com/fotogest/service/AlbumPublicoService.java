@@ -63,7 +63,8 @@ public class AlbumPublicoService {
                                 .stream()
                                 .map(foto -> new FotoPublicaResponse(
                                                 foto.getId(),
-                                                foto.getUrlWatermark()))
+                                                foto.getUrlWatermark(),
+                                                foto.getEhCapa()))
                                 .toList();
         }
 
