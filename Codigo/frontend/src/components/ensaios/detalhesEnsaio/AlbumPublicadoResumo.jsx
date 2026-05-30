@@ -155,7 +155,7 @@ export default function AlbumPublicadoResumo({
                     Álbum publicado
                   </p>
                   <h3 className="mt-1 font-serif text-2xl font-light text-white">
-                    Todas as fotos do álbum
+                    Todas as fotos enviadas para seleção.
                   </h3>
                 </div>
 

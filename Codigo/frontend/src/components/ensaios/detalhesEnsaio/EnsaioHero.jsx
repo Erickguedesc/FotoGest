@@ -92,12 +92,33 @@ function FileIcon() {
     </svg>
   )
 }
+function WhatsAppIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="theme-text">
+      <path
+        d="M4.5 19.5L5.7 15.8C4.95 14.6 4.55 13.25 4.55 11.85C4.55 7.7 7.92 4.35 12.08 4.35C16.23 4.35 19.6 7.7 19.6 11.85C19.6 16 16.23 19.35 12.08 19.35C10.75 19.35 9.47 19 8.35 18.35L4.5 19.5Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9.5 9.25C9.72 11.75 11.35 13.45 14.05 14.35L15 13.2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
 
 export default function EnsaioHero({
   ensaio,
   fotos = [],
   onEdit,
   onPreContrato,
+  onWhatsApp,
   onBack,
 }) {
   const statusInfo = getStatusInfo(ensaio?.status)
@@ -182,6 +203,15 @@ export default function EnsaioHero({
   >
     <EditIcon />
     Editar
+  </button>
+
+  <button
+    type="button"
+    onClick={onWhatsApp}
+    className="inline-flex items-center gap-2 rounded-[12px] border border-[var(--border)] bg-transparent px-5 py-3 text-[13px] font-medium tracking-[0.06em] text-[var(--text)] transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--text)]"
+  >
+    <WhatsAppIcon />
+    WhatsApp
   </button>
 
   <button

@@ -1,40 +1,57 @@
 import SectionTitle from './SectionTitle'
 
 export default function AcoesGerais({
+  variant = 'completo',
   onWhatsApp,
   onCopyLink,
   onExportPdf,
   onDelete,
 }) {
+  const mostrarEntrega = variant === 'completo' || variant === 'entrega'
+  const mostrarAdministrativo = variant === 'completo' || variant === 'administrativo'
+  const title = variant === 'entrega'
+    ? 'Ações de entrega'
+    : variant === 'administrativo'
+      ? 'Ações administrativas'
+      : 'Ações gerais'
+
   return (
     <section className="rounded-2xl border border-[var(--gold-border)] bg-[#121212]">
-      <SectionTitle title="Ações gerais" />
+      <SectionTitle title={title} />
 
       <div className="space-y-3 p-5">
-        <ActionButton
-          title="Enviar link pelo WhatsApp"
-          description="Compartilhar álbum com a cliente"
-          onClick={onWhatsApp}
-        />
+        {mostrarEntrega && (
+          <>
+            <ActionButton
+              title="Enviar link pelo WhatsApp"
+              description="Compartilhar álbum com a cliente"
+              onClick={onWhatsApp}
+            />
 
-        <ActionButton
-          title="Copiar link do álbum"
-          description="Para compartilhar em outro canal"
-          onClick={onCopyLink}
-        />
+            <ActionButton
+              title="Copiar link do álbum"
+              description="Para compartilhar em outro canal"
+              onClick={onCopyLink}
+            />
+          </>
+        )}
 
-        <ActionButton
-          title="Exportar PDF do ensaio"
-          description="Resumo com todas informações"
-          onClick={onExportPdf}
-        />
+        {mostrarAdministrativo && (
+          <>
+            <ActionButton
+              title="Exportar PDF do ensaio"
+              description="Resumo com todas informações"
+              onClick={onExportPdf}
+            />
 
-        <ActionButton
-          danger
-          title="Excluir ensaio"
-          description="Ação irreversível"
-          onClick={onDelete}
-        />
+            <ActionButton
+              danger
+              title="Excluir ensaio"
+              description="Ação irreversível"
+              onClick={onDelete}
+            />
+          </>
+        )}
       </div>
     </section>
   )

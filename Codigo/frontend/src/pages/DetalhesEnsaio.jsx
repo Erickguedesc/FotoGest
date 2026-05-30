@@ -1,5 +1,6 @@
   import { useEffect, useMemo, useState } from 'react'
   import { useNavigate, useParams } from 'react-router-dom'
+  import { Heart, Images, Info } from 'lucide-react'
 
   import Header from '../components/layout/Header'
   import Toast from '../components/ui/Toast'
@@ -21,6 +22,7 @@
   import StatusSidebar from '../components/ensaios/detalhesEnsaio/StatusSidebar'
   import PublicacaoCard from '../components/ensaios/detalhesEnsaio/PublicacaoCard'
   import AcoesGerais from '../components/ensaios/detalhesEnsaio/AcoesGerais'
+  import SectionTitle from '../components/ensaios/detalhesEnsaio/SectionTitle'
   import { configuracoesService } from '../services/configuracoesService'
 
   const extrairTokenDoLink = (url) => {
@@ -40,6 +42,17 @@
     }
 
     return lotes
+  }
+
+  const pluralizarFotos = (total) => `${total} foto${total === 1 ? '' : 's'}`
+
+  const getValorCliente = (ensaio, chaves = []) => {
+    for (const chave of chaves) {
+      const valor = ensaio?.[chave] ?? ensaio?.cliente?.[chave]
+      if (valor !== null && valor !== undefined && valor !== '') return valor
+    }
+
+    return '—'
   }
 
   export default function DetalhesEnsaio() {
@@ -72,6 +85,7 @@
     const [uploadTotal, setUploadTotal] = useState(0)
     const [uploadStatus, setUploadStatus] = useState('')
     const [configuracoes, setConfiguracoes] = useState(null)
+    const [activeTab, setActiveTab] = useState('informacoes')
 
     const albumToken = useMemo(() => {
       if (album?.tokenUrl) return album.tokenUrl
@@ -83,6 +97,19 @@
       album?.ativo !== false &&
       album?.acessoLiberado !== false
     )
+
+    const totalSelecionadas = useMemo(() => {
+      const total = Number(selecao?.totalSelecionadas || 0)
+      if (total > 0) return total
+
+      return Array.isArray(selecao?.fotosIds) ? selecao.fotosIds.length : 0
+    }, [selecao])
+
+    const tabs = [
+      { id: 'informacoes', label: 'Informações', icon: Info },
+      { id: 'album', label: 'Álbum & Entrega', icon: Images, badge: pluralizarFotos(fotos.length) },
+      { id: 'selecao', label: 'Seleção da cliente', icon: Heart, badge: pluralizarFotos(totalSelecionadas) },
+    ]
 
     useEffect(() => {
       if (!uploadLoading) return undefined
@@ -777,80 +804,151 @@ const texto =
             fotos={fotos}
             onEdit={() => setEditModalOpen(true)}
             onPreContrato={() => navigate(`/ensaios/${ensaio.id}/pre-contrato`)}
+            onWhatsApp={handleWhatsApp}
             onBack={() => navigate('/ensaios')}
           />
 
-          <div className="mt-5 grid grid-cols-[1fr_360px] gap-5 max-lg:grid-cols-1">
-            <div className="space-y-5">
-  <LinhaTempo
-    ensaio={ensaio}
-    historicoStatus={historicoStatus}
-  />
-              <InformacoesCard
-                ensaio={ensaio}
-                selecao={selecao}
-                onEdit={() => setEditModalOpen(true)}
-              />
+          <div className="mt-5 border-b border-[var(--gold-border)]">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              {tabs.map((tab) => {
+                const active = activeTab === tab.id
+                const Icon = tab.icon
 
-              {albumPublicado ? (
-                <AlbumPublicadoResumo fotos={fotos} />
-              ) : (
-                <>
-                 <AlbumUpload
-                totalFotos={fotos.length}
-                loading={uploadLoading}
-                disabled={albumPublicado}
-                uploadProgress={uploadProgress}
-                uploadTotal={uploadTotal}
-                uploadStatus={uploadStatus}
-                onUpload={handleUploadFotos}
-              />
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`group relative inline-flex min-h-[52px] items-center gap-2.5 px-1 pb-4 pt-2 text-[15px] font-medium transition ${
+                      active
+                        ? 'text-[var(--gold)]'
+                        : 'text-[var(--text)] hover:text-[var(--gold)]'
+                    }`}
+                  >
+                    <Icon size={17} strokeWidth={1.9} />
 
-                <AlbumFotoGrid
-                fotos={fotos}
-                loading={fotosLoading}
-                disabled={albumPublicado}
-                onDefinirCapa={handleDefinirCapa}
-                onRemoverFoto={handleRemoverFoto}
-                onRemoverFotos={handleRemoverFotos}
-/>
-                </>
-              )}
+                    {tab.label}
 
+                    {tab.badge ? (
+                      <span
+                        className={`ml-1 rounded-full px-2.5 py-1 text-[10px] font-semibold ${
+                          active
+                            ? 'bg-[var(--gold-dim)] text-[var(--gold)]'
+                            : 'bg-[var(--card-hover)] text-[var(--text-muted)]'
+                        }`}
+                      >
+                        {tab.badge}
+                      </span>
+                    ) : null}
+
+                    {active ? (
+                      <span className="absolute inset-x-0 bottom-[-1px] h-0.5 bg-[var(--gold)]" />
+                    ) : null}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {activeTab === 'informacoes' && (
+            <div className="mt-5 grid grid-cols-[1fr_360px] gap-5 max-lg:grid-cols-1">
+              <div className="space-y-5">
+                <LinhaTempo
+                  ensaio={ensaio}
+                  historicoStatus={historicoStatus}
+                />
+
+                <InformacoesCard
+                  ensaio={ensaio}
+                  selecao={selecao}
+                  onEdit={() => setEditModalOpen(true)}
+                />
+
+                <AcoesGerais
+                  variant="administrativo"
+                  onExportPdf={handleExportPdf}
+                  onDelete={handleDelete}
+                />
+              </div>
+
+              <aside className="space-y-5">
+                <StatusSidebar
+                  ensaio={ensaio}
+                  loading={actionLoading}
+                  onStatusChange={handleStatusChange}
+                />
+
+                <DadosClienteCard ensaio={ensaio} />
+              </aside>
+            </div>
+          )}
+
+          {activeTab === 'album' && (
+            <div className="mt-5 grid grid-cols-[1fr_360px] gap-5 max-lg:grid-cols-1">
+              <div className="space-y-5">
+                {albumPublicado ? (
+                  <AlbumPublicadoResumo fotos={fotos} />
+                ) : (
+                  <>
+                    <AlbumUpload
+                      totalFotos={fotos.length}
+                      loading={uploadLoading}
+                      disabled={albumPublicado}
+                      uploadProgress={uploadProgress}
+                      uploadTotal={uploadTotal}
+                      uploadStatus={uploadStatus}
+                      onUpload={handleUploadFotos}
+                    />
+
+                    <AlbumFotoGrid
+                      fotos={fotos}
+                      loading={fotosLoading}
+                      disabled={albumPublicado}
+                      onDefinirCapa={handleDefinirCapa}
+                      onRemoverFoto={handleRemoverFoto}
+                      onRemoverFotos={handleRemoverFotos}
+                    />
+                  </>
+                )}
+              </div>
+
+              <aside className="space-y-5">
+                <PublicacaoCard
+                  album={album}
+                  totalFotos={fotos.length}
+                  loading={publicando}
+                  albumPublicado={albumPublicado}
+                  onPublicar={handlePublicar}
+                  onReabrir={handleReabrirAlbum}
+                />
+
+                <AcoesGerais
+                  variant="entrega"
+                  onWhatsApp={handleWhatsApp}
+                  onCopyLink={handleCopyLink}
+                />
+              </aside>
+            </div>
+          )}
+
+          {activeTab === 'selecao' && (
+            <div className="mt-5 grid grid-cols-[1fr_320px] gap-5 max-lg:grid-cols-1">
               <SelecaoClienteCard
                 fotos={fotos}
                 selecao={selecao}
                 loading={buscandoSelecao}
                 onBuscarSelecao={handleBuscarSelecao}
+                showResumo={false}
+              />
+
+              <SelecaoResumoCard
+                selecao={selecao}
+                totalFotos={fotos.length}
+                onBuscarSelecao={handleBuscarSelecao}
+                loading={buscandoSelecao}
               />
             </div>
-
-            <aside className="space-y-5">
-              <StatusSidebar
-                ensaio={ensaio}
-                loading={actionLoading}
-                onStatusChange={handleStatusChange}
-              />
-
-              <PublicacaoCard
-                album={album}
-                totalFotos={fotos.length}
-                loading={publicando}
-                albumPublicado={albumPublicado}
-                onPublicar={handlePublicar}
-                onReabrir={handleReabrirAlbum}
-                onCopyLink={handleCopyLink}
-                onWhatsApp={handleWhatsApp}
-              />
-
-              <AcoesGerais
-                onWhatsApp={handleWhatsApp}
-                onCopyLink={handleCopyLink}
-                onExportPdf={handleExportPdf}
-                onDelete={handleDelete}
-              />
-            </aside>
-          </div>
+          )}
         </main>
 
   <EditEnsaioModal
@@ -892,5 +990,140 @@ const texto =
     />
   )}
       </>
+    )
+  }
+
+  function DadosClienteCard({ ensaio }) {
+    const dados = [
+      {
+        label: 'Nome',
+        value: getValorCliente(ensaio, ['clienteNome', 'nome']),
+      },
+      {
+        label: 'Telefone',
+        value: getValorCliente(ensaio, [
+          'clienteTelefone',
+          'telefoneCliente',
+          'telefone',
+          'clienteWhatsapp',
+          'whatsapp',
+        ]),
+      },
+      {
+        label: 'E-mail',
+        value: getValorCliente(ensaio, ['clienteEmail', 'emailCliente', 'email']),
+      },
+      {
+        label: 'Cidade',
+        value: getValorCliente(ensaio, ['clienteCidade', 'cidade']),
+      },
+      {
+        label: 'Indicação',
+        value: getValorCliente(ensaio, ['clienteIndicacao', 'indicacao']),
+      },
+    ]
+
+    return (
+      <section className="theme-card rounded-2xl border border-[var(--gold-border)]">
+        <SectionTitle title="Dados da cliente" />
+
+        <div className="divide-y divide-[var(--gold-border)] p-5">
+          {dados.map((item) => (
+            <div key={item.label} className="py-3 first:pt-0 last:pb-0">
+              <p className="theme-muted text-[10px] uppercase tracking-[0.16em]">
+                {item.label}
+              </p>
+
+              <p className="theme-text mt-1 break-words text-[13px]">
+                {item.value}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  function SelecaoResumoCard({
+    selecao,
+    totalFotos,
+    loading,
+    onBuscarSelecao,
+  }) {
+    const totalSelecionadas = Number(selecao?.totalSelecionadas || 0)
+    const limitePlano = Number(selecao?.limitePlano || 0)
+    const excedente = Number(selecao?.excedente || 0)
+    const valorExcedente = Number(selecao?.valorExcedente || 0)
+    const temSelecao = totalSelecionadas > 0
+
+    const valorFormatado = valorExcedente.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    })
+
+    return (
+      <aside className="space-y-5">
+        <section className="theme-card rounded-2xl border border-[var(--gold-border)]">
+          <SectionTitle title="Resumo" />
+
+          <div className="p-5">
+            <ResumoSelecaoLinha
+              label="Fotos selecionadas"
+              value={temSelecao ? totalSelecionadas : '—'}
+            />
+            <ResumoSelecaoLinha
+              label="Incluídas no pacote"
+              value={limitePlano || totalFotos || '—'}
+            />
+            <ResumoSelecaoLinha
+              label="Excedente"
+              value={temSelecao ? `+${excedente} foto${excedente === 1 ? '' : 's'}` : '—'}
+              danger={excedente > 0}
+            />
+            <ResumoSelecaoLinha
+              label="Valor adicional"
+              value={temSelecao ? valorFormatado : '—'}
+              highlight={excedente > 0}
+            />
+
+            {excedente > 0 ? (
+              <div className="mt-5 rounded-xl border border-red-400/30 bg-red-400/10 p-4 text-[12px] leading-5 text-red-300">
+                A cliente selecionou além do pacote. Confirme o valor antes da entrega.
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              disabled={loading}
+              onClick={onBuscarSelecao}
+              className="mt-5 w-full rounded-lg border border-[var(--gold-border)] px-4 py-3 text-[12px] font-medium text-[var(--gold)] transition hover:bg-[var(--gold-dim)] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loading ? 'Consultando...' : 'Atualizar seleção'}
+            </button>
+          </div>
+        </section>
+      </aside>
+    )
+  }
+
+  function ResumoSelecaoLinha({ label, value, danger, highlight }) {
+    return (
+      <div className="flex items-center justify-between gap-4 border-b border-[var(--gold-border)] py-3 first:pt-0 last:border-b-0 last:pb-0">
+        <span className="theme-text text-[13px]">
+          {label}
+        </span>
+
+        <span
+          className={`text-right text-[13px] font-medium ${
+            danger
+              ? 'text-red-300'
+              : highlight
+                ? 'text-[var(--gold)]'
+                : 'theme-title'
+          }`}
+        >
+          {value}
+        </span>
+      </div>
     )
   }

@@ -12,11 +12,11 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RelatorioDestaqueResponse {
+public class RelatorioTipoEnsaioResponse {
 
-    private String melhorPeriodo;
-    private BigDecimal maiorReceita;
-    private BigDecimal menorReceita;
-    private TipoEnsaio tipoMaisRealizado;
-    private Integer quantidadeTipoMaisRealizado;
+    private TipoEnsaio tipo;
+    private BigDecimal faturamento;
+    private BigDecimal percentualReceita;
+    private BigDecimal ticketMedio;
+    private Integer quantidadeEnsaios;
 }

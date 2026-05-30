@@ -5,6 +5,7 @@ import RelatorioDestaques from '../components/relatorios/RelatorioDestaques'
 import RelatorioKpiGrid from '../components/relatorios/RelatorioKpiGrid'
 import RelatorioGrafico from '../components/relatorios/RelatorioGrafico'
 import RelatorioResumoConsolidado from '../components/relatorios/RelatorioResumoConsolidado'
+import RelatorioTiposEnsaio from '../components/relatorios/RelatorioTiposEnsaio'
 import RelatorioTabela from '../components/relatorios/RelatorioTabela'
 import { relatoriosService } from '../services/relatoriosService'
 import Header from '../components/layout/Header'
@@ -81,7 +82,10 @@ return (
               onFiltrar={carregarRelatorio}
             />
 
-            <RelatorioDestaques destaques={relatorio?.destaques} />
+            <RelatorioDestaques
+              destaques={relatorio?.destaques}
+              periodos={periodos}
+            />
           </aside>
 
           <section className="space-y-6">
@@ -99,6 +103,8 @@ return (
               relatorio={relatorio}
               tituloFallback={tituloFallback}
             />
+
+            <RelatorioTiposEnsaio tipos={relatorio?.tiposEnsaio} />
 
             <RelatorioTabela periodos={periodos} />
           </section>

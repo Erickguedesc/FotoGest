@@ -23,6 +23,7 @@ export default function SelecaoClienteCard({
   selecao,
   loading,
   onBuscarSelecao,
+  showResumo = true,
 }) {
   const [jaConsultouSelecao, setJaConsultouSelecao] = useState(false)
   const [erroConsulta, setErroConsulta] = useState(null)
@@ -156,27 +157,35 @@ export default function SelecaoClienteCard({
         </div>
       ) : (
         <div className="p-5">
-          <div className="mb-5 grid grid-cols-4 gap-3 max-md:grid-cols-2">
-            <Resumo label="Selecionadas" value={selecao.totalSelecionadas} />
-            <Resumo label="Limite" value={selecao.limitePlano} />
-            <Resumo
-              label="Excedente"
-              value={selecao.excedente}
-              danger={selecao.excedente > 0}
-            />
-            <Resumo
-              label="Valor extra"
-              value={Number(selecao.valorExcedente || 0).toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              })}
-              danger={selecao.excedente > 0}
-            />
-          </div>
+          {showResumo ? (
+            <>
+              <div className="mb-5 grid grid-cols-4 gap-3 max-md:grid-cols-2">
+                <Resumo label="Selecionadas" value={selecao.totalSelecionadas} />
+                <Resumo label="Limite" value={selecao.limitePlano} />
+                <Resumo
+                  label="Excedente"
+                  value={selecao.excedente}
+                  danger={selecao.excedente > 0}
+                />
+                <Resumo
+                  label="Valor extra"
+                  value={Number(selecao.valorExcedente || 0).toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })}
+                  danger={selecao.excedente > 0}
+                />
+              </div>
 
-          {selecao.excedente > 0 && (
-            <div className="mb-5 rounded-xl border border-red-400/30 bg-red-400/10 p-4 text-[13px] text-red-200">
-              A cliente selecionou fotos acima do limite do pacote.
+              {selecao.excedente > 0 && (
+                <div className="mb-5 rounded-xl border border-red-400/30 bg-red-400/10 p-4 text-[13px] text-red-200">
+                  A cliente selecionou fotos acima do limite do pacote.
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="mb-5 rounded-xl border border-[var(--gold-border)] bg-[var(--gold-dim)] p-4 text-[13px] leading-5 text-[var(--gold)]">
+              Seleção finalizada com {selecao.totalSelecionadas} foto{selecao.totalSelecionadas === 1 ? '' : 's'}.
             </div>
           )}
 
