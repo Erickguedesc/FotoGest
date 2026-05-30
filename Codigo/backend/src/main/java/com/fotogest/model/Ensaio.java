@@ -36,6 +36,9 @@ public class Ensaio {
 @Column(nullable = false, columnDefinition = "tipo_ensaio")
 private TipoEnsaio tipo;
 
+@Column(name = "tipo_personalizado", length = 120)
+private String tipoPersonalizado;
+
 @Enumerated(EnumType.STRING)
 @JdbcTypeCode(SqlTypes.NAMED_ENUM)
 @Column(nullable = false, columnDefinition = "status_ensaio")

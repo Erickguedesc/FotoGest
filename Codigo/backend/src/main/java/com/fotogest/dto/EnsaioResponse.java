@@ -24,6 +24,8 @@ public class EnsaioResponse {
     private String clienteIndicacao;
 
     private TipoEnsaio tipo;
+    private String tipoPersonalizado;
+    private String tipoExibicao;
     private StatusEnsaio status;
 
     private OffsetDateTime dataEnsaio;

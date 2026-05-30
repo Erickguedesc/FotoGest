@@ -116,7 +116,7 @@ function EnsaioRow({ ensaio }) {
                 </h3>
 
                 <p className="theme-muted mt-1 truncate text-xs">
-                    {ensaio.tipo} · {formatarDataCurta(ensaio.dataEnsaio)}
+                    {(ensaio.tipoExibicao || ensaio.tipo) ?? 'Não informado'} · {formatarDataCurta(ensaio.dataEnsaio)}
                 </p>
             </div>
 

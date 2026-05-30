@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 
 import Icon from './Icon'
 import StatusBadge from './StatusBadge'
-import { formatCurrency, getStatusInfo, getTipoLabel } from './ensaioHelpers'
+import { formatCurrency, getStatusInfo, getTipoExibicao } from './ensaioHelpers'
 
 const WEEK_DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab']
 const MONTH_OPTIONS = [
@@ -400,7 +400,7 @@ export default function CalendarioEnsaios({
                         {ensaio.clienteNome || 'Cliente sem nome'}
                       </p>
                       <p className="mt-1 text-[12px] text-white/40">
-                        {formatTime(ensaio.dataEnsaio)} · {getTipoLabel(ensaio.tipo)}
+                        {formatTime(ensaio.dataEnsaio)} · {getTipoExibicao(ensaio)}
                       </p>
                     </div>
                     <StatusBadge status={ensaio.status} />

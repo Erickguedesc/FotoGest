@@ -146,7 +146,7 @@ private void adicionarCabecalho(Document document, ConfiguracaoEstudio estudio) 
 
         PdfPTable table = criarTabela();
 
-        adicionarLinha(table, "Tipo", formatarTipo(ensaio.getTipo()));
+        adicionarLinha(table, "Tipo", resolverTipoExibicao(ensaio));
         adicionarLinha(table, "Status", formatarStatus(ensaio.getStatus()));
         adicionarLinha(table, "Data do ensaio", formatarData(ensaio.getDataEnsaio()));
         adicionarLinha(table, "Local", valorOuTraco(ensaio.getLocal()));
@@ -561,6 +561,20 @@ private String gerarUrlMiniaturaCloudinary(String url) {
             case "OUTRO" -> "Outro";
             default -> tipo.toString();
         };
+    }
+
+    private String resolverTipoExibicao(Ensaio ensaio) {
+        if (ensaio == null || ensaio.getTipo() == null) {
+            return "-";
+        }
+
+        if ("OUTRO".equals(ensaio.getTipo().name())
+                && ensaio.getTipoPersonalizado() != null
+                && !ensaio.getTipoPersonalizado().isBlank()) {
+            return ensaio.getTipoPersonalizado().trim();
+        }
+
+        return formatarTipo(ensaio.getTipo());
     }
 
     private String valorOuTraco(Object valor) {

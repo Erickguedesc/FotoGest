@@ -1,3 +1,4 @@
+import { Clock3 } from 'lucide-react'
 import { formatarDataExpiracao } from '../../../services/galeriaUtils'
 
 export default function GalleryHero({
@@ -61,25 +62,25 @@ export default function GalleryHero({
 
         {expiraEm && tempoRestante ? (
           <div
-            className={`mx-auto mt-8 max-w-xl rounded-2xl border px-6 py-5 backdrop-blur-xl ${
+            className={`mx-auto mt-8 inline-flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-full border px-4 py-2 text-[12px] backdrop-blur-xl ${
               tempoRestante.dias <= 3
-                ? 'border-red-400/40 bg-red-500/10'
-                : 'border-white/15 bg-white/10'
+                ? 'border-red-300/35 bg-red-500/10 text-red-50'
+                : 'border-white/15 bg-white/10 text-white/70'
             }`}
           >
-            <p className="text-[11px] uppercase tracking-[0.22em] text-white/50">
-              Álbum disponível por tempo limitado
-            </p>
+            <Clock3 size={14} strokeWidth={1.8} />
 
-            <h3 className="mt-2 font-serif text-3xl font-light text-white">
-              Expira em {tempoRestante.dias} dias,{' '}
-              {String(tempoRestante.horas).padStart(2, '0')}h e{' '}
-              {String(tempoRestante.minutos).padStart(2, '0')}min
-            </h3>
-
-            <p className="mt-2 text-sm text-white/60">
+            <span className="font-medium">
               Disponível até {formatarDataExpiracao(expiraEm)}
-            </p>
+            </span>
+
+            <span className="hidden h-1 w-1 rounded-full bg-current opacity-45 sm:block" />
+
+            <span className="text-white/50">
+              {tempoRestante.dias > 0
+                ? `${tempoRestante.dias} dias restantes`
+                : `${String(tempoRestante.horas).padStart(2, '0')}h ${String(tempoRestante.minutos).padStart(2, '0')}min restantes`}
+            </span>
           </div>
         ) : null}
       </div>

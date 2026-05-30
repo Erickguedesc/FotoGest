@@ -1,7 +1,7 @@
 import BaseModal from './BaseModal'
 import ProgressBar from './ProgressBar'
 import StatusBadge from './StatusBadge'
-import { formatCurrency, formatDate, getTipoLabel } from './ensaioHelpers'
+import { formatCurrency, formatDate, getTipoExibicao } from './ensaioHelpers'
 
 function Detail({ label, value, highlight }) {
   return (
@@ -28,7 +28,7 @@ export default function EnsaioDetailsModal({ ensaio, open, onClose, onEdit }) {
       {ensaio && (
         <div className="space-y-5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Detail label="Tipo" value={getTipoLabel(ensaio.tipo)} />
+            <Detail label="Tipo" value={getTipoExibicao(ensaio)} />
             <Detail label="Data" value={formatDate(ensaio.dataEnsaio)} />
             <Detail label="Local" value={ensaio.local} />
             <Detail label="Valor" value={formatCurrency(ensaio.valorPacote)} highlight />

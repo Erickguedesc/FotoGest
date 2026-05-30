@@ -42,7 +42,7 @@ export default function RelatorioTiposEnsaio({ tipos = [] }) {
 
           {principal ? (
             <p className="theme-muted mt-2 text-sm">
-              {getTipoLabel(principal.tipo)} lidera com{' '}
+              {(principal.tipoExibicao || getTipoLabel(principal.tipo))} lidera com{' '}
               <span className="text-[var(--gold)]">
                 {percentualPrincipal.toLocaleString('pt-BR', {
                   maximumFractionDigits: 1,
@@ -85,13 +85,13 @@ export default function RelatorioTiposEnsaio({ tipos = [] }) {
 
             return (
               <article
-                key={item.tipo}
+                key={item.tipoExibicao || item.tipo}
                 className="rounded-xl border border-[var(--border)] bg-black/10 p-4"
               >
                 <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <h3 className="theme-title text-base font-semibold">
-                      {getTipoLabel(item.tipo)}
+                      {item.tipoExibicao || getTipoLabel(item.tipo)}
                     </h3>
 
                     <p className="theme-muted mt-1 text-xs">
@@ -133,7 +133,7 @@ export default function RelatorioTiposEnsaio({ tipos = [] }) {
               </p>
 
               <p className="theme-title mt-1 max-w-[150px] truncate text-lg font-semibold">
-                {getTipoLabel(principal.tipo)}
+                {principal.tipoExibicao || getTipoLabel(principal.tipo)}
               </p>
 
               <p className="font-serif text-4xl text-[var(--gold)]">
@@ -154,12 +154,12 @@ export default function RelatorioTiposEnsaio({ tipos = [] }) {
 
               return (
                 <div
-                  key={item.tipo}
+                  key={item.tipoExibicao || item.tipo}
                   className="flex items-center justify-between gap-4 rounded-xl border border-[var(--border)] bg-black/10 px-4 py-3"
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <span
-                      title={`${getTipoLabel(item.tipo)} · ${percentual.toLocaleString('pt-BR', {
+                      title={`${item.tipoExibicao || getTipoLabel(item.tipo)} · ${percentual.toLocaleString('pt-BR', {
                         maximumFractionDigits: 1,
                       })}% · ${formatMoney(item.faturamento)}`}
                       className="h-3 w-3 shrink-0 rounded-full"
@@ -168,7 +168,7 @@ export default function RelatorioTiposEnsaio({ tipos = [] }) {
 
                     <div className="min-w-0">
                       <p className="theme-title truncate text-sm font-semibold">
-                        {getTipoLabel(item.tipo)}
+                        {item.tipoExibicao || getTipoLabel(item.tipo)}
                       </p>
 
                       <p className="theme-muted text-xs">
@@ -239,7 +239,7 @@ function DonutChart({ ranking }) {
 
         return (
           <circle
-            key={item.tipo}
+            key={item.tipoExibicao || item.tipo}
             className="cursor-pointer opacity-90 transition duration-200 hover:opacity-100 hover:[filter:saturate(1.28)_brightness(1.08)]"
             cx="21"
             cy="21"
@@ -252,7 +252,7 @@ function DonutChart({ ranking }) {
             strokeLinecap="butt"
           >
             <title>
-              {`${getTipoLabel(item.tipo)} · ${percentual.toLocaleString('pt-BR', {
+              {`${item.tipoExibicao || getTipoLabel(item.tipo)} · ${percentual.toLocaleString('pt-BR', {
                 maximumFractionDigits: 1,
               })}% · ${formatMoney(item.faturamento)} · ${item.quantidadeEnsaios || 0} ensaio${item.quantidadeEnsaios === 1 ? '' : 's'}`}
             </title>

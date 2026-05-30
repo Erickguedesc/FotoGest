@@ -17,11 +17,18 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class FotoService {
+
+    private static final int MAX_UPLOAD_CONCURRENCY = 4;
 
     private final CloudinaryService cloudinaryService;
     private final FotoRepository fotoRepository;
@@ -57,44 +64,109 @@ public class FotoService {
         int proximaOrdem = fotoRepository.countByEnsaioId(ensaioId);
         boolean jaTemCapa = fotoRepository.existsByEnsaioIdAndEhCapaTrue(ensaioId);
 
-        List<Foto> fotosSalvas = new ArrayList<>();
+        arquivos.forEach(this::validarImagem);
 
- for (int i = 0; i < arquivos.size(); i++) {
-    MultipartFile arquivo = arquivos.get(i);
+        List<UploadFotoResult> uploads = enviarFotosParaCloudinary(arquivos, ensaioId);
+        List<Foto> fotosParaSalvar = new ArrayList<>();
 
-    String nomeOriginal = arquivo.getOriginalFilename();
+        for (UploadFotoResult upload : uploads) {
+            String urlWatermark = marcaDaguaService.gerarUrlComMarcaDagua(upload.urlOriginal());
+            boolean deveSerCapa = !jaTemCapa && upload.index() == 0;
 
-    validarImagem(arquivo);
+            Foto foto = Foto.builder()
+                    .ensaio(ensaio)
+                    .cloudinaryId(upload.publicId())
+                    .nomeOriginal(upload.nomeOriginal())
+                    .urlOriginal(upload.urlOriginal())
+                    .urlWatermark(urlWatermark)
+                    .ehCapa(deveSerCapa)
+                    .ordem(proximaOrdem + upload.index())
+                    .build();
 
-    Map<String, Object> uploadResult = cloudinaryService.upload(arquivo, ensaioId);
+            fotosParaSalvar.add(foto);
 
- String urlOriginal = String.valueOf(uploadResult.get("secure_url"));
-String urlWatermark = marcaDaguaService.gerarUrlComMarcaDagua(urlOriginal);
-String publicId = String.valueOf(uploadResult.get("public_id"));
+            if (deveSerCapa) {
+                jaTemCapa = true;
+            }
+        }
 
-    boolean deveSerCapa = !jaTemCapa && i == 0;
-
-    Foto foto = Foto.builder()
-            .ensaio(ensaio)
-            .cloudinaryId(publicId)
-            .nomeOriginal(nomeOriginal)
-            .urlOriginal(urlOriginal)
-            .urlWatermark(urlWatermark)
-            .ehCapa(deveSerCapa)
-            .ordem(proximaOrdem + i)
-            .build();
-
-    fotosSalvas.add(fotoRepository.save(foto));
-
-    if (deveSerCapa) {
-        jaTemCapa = true;
-    }
-}
+        List<Foto> fotosSalvas = fotoRepository.saveAll(fotosParaSalvar);
 
         return fotosSalvas
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    private List<UploadFotoResult> enviarFotosParaCloudinary(
+            List<MultipartFile> arquivos,
+            UUID ensaioId
+    ) {
+        int concorrencia = Math.min(MAX_UPLOAD_CONCURRENCY, arquivos.size());
+        ExecutorService executor = Executors.newFixedThreadPool(concorrencia);
+        List<UploadFotoResult> uploadsConcluidos = new ArrayList<>();
+
+        try {
+            List<Callable<UploadFotoResult>> tarefas = new ArrayList<>();
+
+            for (int i = 0; i < arquivos.size(); i++) {
+                final int index = i;
+                MultipartFile arquivo = arquivos.get(i);
+
+                tarefas.add(() -> {
+                    Map<String, Object> uploadResult = cloudinaryService.upload(arquivo, ensaioId);
+
+                    return new UploadFotoResult(
+                            index,
+                            arquivo.getOriginalFilename(),
+                            String.valueOf(uploadResult.get("secure_url")),
+                            String.valueOf(uploadResult.get("public_id"))
+                    );
+                });
+            }
+
+            List<Future<UploadFotoResult>> resultados = executor.invokeAll(tarefas);
+            RuntimeException erroUpload = null;
+
+            for (Future<UploadFotoResult> resultado : resultados) {
+                try {
+                    uploadsConcluidos.add(resultado.get());
+                } catch (ExecutionException e) {
+                    erroUpload = new ResponseStatusException(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Não foi possível enviar todas as fotos. Tente novamente."
+                    );
+                }
+            }
+
+            if (erroUpload != null) {
+                limparUploadsConcluidos(uploadsConcluidos);
+                throw erroUpload;
+            }
+
+            return uploadsConcluidos.stream()
+                    .sorted(Comparator.comparingInt(UploadFotoResult::index))
+                    .toList();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            limparUploadsConcluidos(uploadsConcluidos);
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Envio de fotos interrompido. Tente novamente."
+            );
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    private void limparUploadsConcluidos(List<UploadFotoResult> uploads) {
+        for (UploadFotoResult upload : uploads) {
+            try {
+                cloudinaryService.deletar(upload.publicId());
+            } catch (IOException ignored) {
+                // Se a limpeza falhar, a operação principal ainda deve retornar o erro de upload.
+            }
+        }
     }
 
     @Transactional(readOnly = true)
@@ -279,5 +351,13 @@ String publicId = String.valueOf(uploadResult.get("public_id"));
             .ehCapa(foto.getEhCapa())
             .enviadaEm(foto.getEnviadaEm())
             .build();
+}
+
+private record UploadFotoResult(
+        int index,
+        String nomeOriginal,
+        String urlOriginal,
+        String publicId
+) {
 }
 }

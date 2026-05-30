@@ -1,6 +1,6 @@
 import {
   getStatusInfo,
-  getTipoLabel,
+  getTipoExibicao,
 } from '../listaEnsaios/ensaioHelpers'
 
 function formatarDataHora(valor) {
@@ -160,7 +160,7 @@ export default function EnsaioHero({
           <div className="w-full px-10 py-9 max-md:px-6 max-md:py-7">
             <div className="flex flex-wrap items-center gap-3">
               <span className="theme-text text-[11px] font-medium uppercase tracking-[0.24em]">
-                {getTipoLabel(ensaio?.tipo)}
+                {getTipoExibicao(ensaio)}
               </span>
 
               <span

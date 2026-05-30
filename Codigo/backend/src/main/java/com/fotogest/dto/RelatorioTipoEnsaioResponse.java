@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 public class RelatorioTipoEnsaioResponse {
 
     private TipoEnsaio tipo;
+    private String tipoExibicao;
     private BigDecimal faturamento;
     private BigDecimal percentualReceita;
     private BigDecimal ticketMedio;

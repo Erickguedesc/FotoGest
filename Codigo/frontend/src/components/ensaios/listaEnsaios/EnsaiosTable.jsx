@@ -7,7 +7,7 @@ import {
   formatCurrency,
   formatDate,
   getInitials,
-  getTipoLabel,
+  getTipoExibicao,
 } from './ensaioHelpers'
 
 const sortOptions = [
@@ -140,7 +140,7 @@ function EnsaioListCard({
           <StatusBadge status={ensaio.status} />
 
           <span className="theme-soft rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.12em] text-[var(--text-muted)]">
-            {getTipoLabel(ensaio.tipo)}
+            {getTipoExibicao(ensaio)}
           </span>
         </div>
 

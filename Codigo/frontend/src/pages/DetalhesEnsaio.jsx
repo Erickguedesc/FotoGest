@@ -105,10 +105,15 @@
       return Array.isArray(selecao?.fotosIds) ? selecao.fotosIds.length : 0
     }, [selecao])
 
+    const selecaoFinalizada = totalSelecionadas > 0
+    const badgeSelecao = selecaoFinalizada
+      ? pluralizarFotos(totalSelecionadas)
+      : 'Pendente'
+
     const tabs = [
       { id: 'informacoes', label: 'Informações', icon: Info },
       { id: 'album', label: 'Álbum & Entrega', icon: Images, badge: pluralizarFotos(fotos.length) },
-      { id: 'selecao', label: 'Seleção da cliente', icon: Heart, badge: pluralizarFotos(totalSelecionadas) },
+      { id: 'selecao', label: 'Seleção da cliente', icon: Heart, badge: badgeSelecao },
     ]
 
     useEffect(() => {
@@ -1055,6 +1060,10 @@ const texto =
     const excedente = Number(selecao?.excedente || 0)
     const valorExcedente = Number(selecao?.valorExcedente || 0)
     const temSelecao = totalSelecionadas > 0
+    const excedenteLabel =
+      excedente > 0
+        ? `+${excedente} foto${excedente === 1 ? '' : 's'}`
+        : '0 fotos'
 
     const valorFormatado = valorExcedente.toLocaleString('pt-BR', {
       style: 'currency',
@@ -1077,7 +1086,7 @@ const texto =
             />
             <ResumoSelecaoLinha
               label="Excedente"
-              value={temSelecao ? `+${excedente} foto${excedente === 1 ? '' : 's'}` : '—'}
+              value={temSelecao ? excedenteLabel : '—'}
               danger={excedente > 0}
             />
             <ResumoSelecaoLinha

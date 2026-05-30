@@ -1,6 +1,6 @@
 import {
   formatCurrency,
-  getTipoLabel,
+  getTipoExibicao,
 } from '../listaEnsaios/ensaioHelpers'
 
 import SectionTitle from './SectionTitle'
@@ -55,7 +55,7 @@ export default function InformacoesCard({ ensaio, selecao, onEdit }) {
 
       <div className="grid grid-cols-2 gap-x-12 gap-y-5 p-6 max-md:grid-cols-1">
         <InfoItem label="Local" value={getSafeValue(ensaio.local)} />
-        <InfoItem label="Tipo" value={getTipoLabel(ensaio.tipo)} />
+        <InfoItem label="Tipo" value={getTipoExibicao(ensaio)} />
 
         <InfoItem
           label="Fotos incluídas"

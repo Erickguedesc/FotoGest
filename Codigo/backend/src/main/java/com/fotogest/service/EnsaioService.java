@@ -71,6 +71,7 @@ if (request.getValorPacote() == null ||
 Ensaio ensaio = Ensaio.builder()
         .cliente(cliente)
         .tipo(request.getTipo())
+        .tipoPersonalizado(resolverTipoPersonalizado(request, null))
         .status(StatusEnsaio.AGENDADO)
         .dataEnsaio(request.getDataEnsaio())
         .local(request.getLocal())
@@ -143,6 +144,7 @@ public List<EnsaioResponse> listar(
 
         ensaio.setCliente(cliente);
         ensaio.setTipo(request.getTipo());
+        ensaio.setTipoPersonalizado(resolverTipoPersonalizado(request, ensaio));
         ensaio.setDataEnsaio(request.getDataEnsaio());
         ensaio.setLocal(request.getLocal());
         // ✅ Direto — @NotNull no DTO já protege
@@ -277,6 +279,42 @@ private String normalizarStatusValores(String valor) {
     return status;
 }
 
+private String resolverTipoPersonalizado(EnsaioRequest request, Ensaio ensaioAtual) {
+    if (request.getTipo() != TipoEnsaio.OUTRO) {
+        return null;
+    }
+
+    String tipoPersonalizado = normalizarTexto(request.getTipoPersonalizado());
+
+    if (tipoPersonalizado != null) {
+        return tipoPersonalizado;
+    }
+
+    if (ensaioAtual != null) {
+        return ensaioAtual.getTipoPersonalizado();
+    }
+
+    throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
+            "Informe o tipo personalizado quando o tipo do ensaio for Outro"
+    );
+}
+
+private String resolverTipoExibicao(Ensaio ensaio) {
+    if (ensaio == null || ensaio.getTipo() == null) {
+        return null;
+    }
+
+    if (ensaio.getTipo() == TipoEnsaio.OUTRO) {
+        String tipoPersonalizado = normalizarTexto(ensaio.getTipoPersonalizado());
+        if (tipoPersonalizado != null) {
+            return tipoPersonalizado;
+        }
+    }
+
+    return ensaio.getTipo().getDescricao();
+}
+
     private EnsaioResponse toResponse(Ensaio ensaio) {
     return EnsaioResponse.builder()
             .id(ensaio.getId())
@@ -290,6 +328,8 @@ private String normalizarStatusValores(String valor) {
             .clienteIndicacao(ensaio.getCliente().getIndicacao())
 
             .tipo(ensaio.getTipo())
+            .tipoPersonalizado(ensaio.getTipoPersonalizado())
+            .tipoExibicao(resolverTipoExibicao(ensaio))
             .status(ensaio.getStatus())
             .dataEnsaio(ensaio.getDataEnsaio())
             .local(ensaio.getLocal())

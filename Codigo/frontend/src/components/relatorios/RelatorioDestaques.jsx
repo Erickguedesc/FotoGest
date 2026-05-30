@@ -12,8 +12,9 @@ export default function RelatorioDestaques({ destaques, periodos = [] }) {
     : 'Apenas 1 período com receita'
   const quantidadeTipo = Number(destaques?.quantidadeTipoMaisRealizado || 0)
   const tipoMaisRealizado = destaques?.tipoMaisRealizado
+  const tipoMaisRealizadoExibicao = destaques?.tipoMaisRealizadoExibicao
   const tipoMaisRealizadoLabel = tipoMaisRealizado
-    ? `${getTipoLabel(tipoMaisRealizado)} · ${quantidadeTipo} ensaio${quantidadeTipo === 1 ? '' : 's'}`
+    ? `${tipoMaisRealizadoExibicao || getTipoLabel(tipoMaisRealizado)} · ${quantidadeTipo} ensaio${quantidadeTipo === 1 ? '' : 's'}`
     : 'Sem ensaios'
   const melhorPeriodoLabel = periodosComReceita.length > 0
     ? destaques?.melhorPeriodo || '—'

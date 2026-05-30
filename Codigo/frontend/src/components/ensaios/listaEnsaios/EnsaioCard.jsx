@@ -2,7 +2,7 @@ import EnsaioActions from './EnsaioActions'
 import Icon from './Icon'
 import ProgressBar from './ProgressBar'
 import StatusBadge from './StatusBadge'
-import { formatCurrency, formatDate, getInitials, getTipoLabel } from './ensaioHelpers'
+import { formatCurrency, formatDate, getInitials, getTipoExibicao } from './ensaioHelpers'
 
 export default function EnsaioCard({ ensaio, onView, onEdit, onStatus, onDelete, onPreContrato }) {
   return (
@@ -15,7 +15,7 @@ export default function EnsaioCard({ ensaio, onView, onEdit, onStatus, onDelete,
             </span>
             <div>
               <h3 className="text-[15px] text-white">{ensaio.clienteNome || 'Cliente sem nome'}</h3>
-              <p className="text-[11.5px] text-white/35">{getTipoLabel(ensaio.tipo)}</p>
+              <p className="text-[11.5px] text-white/35">{getTipoExibicao(ensaio)}</p>
             </div>
           </div>
           <StatusBadge status={ensaio.status} />

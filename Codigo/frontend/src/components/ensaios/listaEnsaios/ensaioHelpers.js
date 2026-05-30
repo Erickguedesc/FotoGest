@@ -26,8 +26,18 @@ export const TIPO_OPTIONS = [
 export const getStatusInfo = (status) =>
   STATUS_OPTIONS.find((item) => item.value === status) || STATUS_OPTIONS[0]
 
-export const getTipoLabel = (tipo) =>
-  TIPO_OPTIONS.find((item) => item.value === tipo)?.label || tipo || '—'
+export const getTipoLabel = (tipo, tipoPersonalizado) => {
+  const personalizado = String(tipoPersonalizado || '').trim()
+
+  if (tipo === 'OUTRO' && personalizado) {
+    return personalizado
+  }
+
+  return TIPO_OPTIONS.find((item) => item.value === tipo)?.label || tipo || '—'
+}
+
+export const getTipoExibicao = (ensaio) =>
+  ensaio?.tipoExibicao || getTipoLabel(ensaio?.tipo, ensaio?.tipoPersonalizado)
 
 export const getInitials = (name = '') => {
   const parts = name.trim().split(/\s+/).filter(Boolean)

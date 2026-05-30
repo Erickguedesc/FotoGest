@@ -193,10 +193,11 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                 return ensaios.stream()
                                 .filter(this::isEnsaioFinanceiro)
                                 .filter(ensaio -> pertenceAAlgumPeriodo(ensaio, periodos))
-                                .collect(Collectors.groupingBy(Ensaio::getTipo))
+                                .collect(Collectors.groupingBy(this::resolverTipoExibicao))
                                 .entrySet()
                                 .stream()
                                 .map(entry -> montarTipoEnsaio(
+                                                entry.getValue().get(0).getTipo(),
                                                 entry.getKey(),
                                                 entry.getValue(),
                                                 albumPorEnsaio,
@@ -208,6 +209,7 @@ RelatorioComparativoResponse comparativo = montarComparativo(
 
         private RelatorioTipoEnsaioResponse montarTipoEnsaio(
                         TipoEnsaio tipo,
+                        String tipoExibicao,
                         List<Ensaio> ensaios,
                         Map<UUID, Album> albumPorEnsaio,
                         Map<UUID, Integer> totalSelecoesPorAlbum,
@@ -227,6 +229,7 @@ RelatorioComparativoResponse comparativo = montarComparativo(
 
                 return RelatorioTipoEnsaioResponse.builder()
                                 .tipo(tipo)
+                                .tipoExibicao(tipoExibicao)
                                 .faturamento(faturamento)
                                 .percentualReceita(percentualReceita)
                                 .ticketMedio(ticketMedio)
@@ -395,10 +398,27 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                                 .maiorReceita(maior != null ? maior.getTotalLiquido() : BigDecimal.ZERO)
                                 .menorReceita(menor != null ? menor.getTotalLiquido() : BigDecimal.ZERO)
                                 .tipoMaisRealizado(tipoMaisRealizado != null ? tipoMaisRealizado.getTipo() : null)
+                                .tipoMaisRealizadoExibicao(tipoMaisRealizado != null
+                                                ? tipoMaisRealizado.getTipoExibicao()
+                                                : null)
                                 .quantidadeTipoMaisRealizado(tipoMaisRealizado != null
                                                 ? tipoMaisRealizado.getQuantidadeEnsaios()
                                                 : 0)
                                 .build();
+        }
+
+        private String resolverTipoExibicao(Ensaio ensaio) {
+                if (ensaio == null || ensaio.getTipo() == null) {
+                        return "Nao informado";
+                }
+
+                if (ensaio.getTipo() == TipoEnsaio.OUTRO
+                                && ensaio.getTipoPersonalizado() != null
+                                && !ensaio.getTipoPersonalizado().isBlank()) {
+                        return ensaio.getTipoPersonalizado().trim();
+                }
+
+                return ensaio.getTipo().getDescricao();
         }
 
         private List<PeriodoRelatorioInterno> gerarPeriodoAnual(int ano) {

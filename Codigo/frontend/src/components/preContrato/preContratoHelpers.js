@@ -140,6 +140,7 @@ export function buildInitialDraft({ ensaio, cliente }) {
 
   const clienteNome = cliente?.nome || ensaio?.clienteNome || ''
   const tipo = ensaio?.tipo || ''
+  const tipoExibicao = ensaio?.tipoExibicao || formatTipo(tipo)
 
   const initialDraft = {
     numeroDocumento: buildDocumentNumber(ensaio?.id),
@@ -162,7 +163,7 @@ export function buildInitialDraft({ ensaio, cliente }) {
     clienteCidade: cliente?.cidade || '',
     clienteIndicacao: cliente?.indicacao || '',
 
-    tipoEnsaio: formatTipo(tipo),
+    tipoEnsaio: tipoExibicao,
     dataEnsaio: formatLongDate(ensaio?.dataEnsaio, ''),
     horario: '',
     local: ensaio?.local || '',
@@ -181,6 +182,10 @@ export function buildInitialDraft({ ensaio, cliente }) {
     formaPagamento: 'PIX / Transferência',
     sinal: sinal ? formatCurrency(sinal) : '',
     saldo: '',
+  }
+
+  if (tipo) {
+    initialDraft.descricaoPacote = `Ensaio ${tipoExibicao} - pacote completo`
   }
 
   return recalculateFinancialDraft(initialDraft)

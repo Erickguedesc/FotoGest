@@ -55,7 +55,8 @@ export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
           <div className="grid grid-cols-5 gap-6 max-md:grid-cols-1">
             {timelineSteps.map((step, index) => {
               const isCurrent = step.value === statusAtual
-              const isDone = currentIndex >= 0 && index < currentIndex
+              const isFinalCurrent = isCurrent && index === timelineSteps.length - 1
+              const isDone = currentIndex >= 0 && (index < currentIndex || isFinalCurrent)
               const isActive = isCurrent || isDone
               const isLast = index === timelineSteps.length - 1
 
@@ -83,7 +84,7 @@ export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
                       isDone
                         ? 'border-emerald-400/50 bg-emerald-400/10 text-emerald-300'
                         : isCurrent
-                          ? 'border-[var(--gold-border)] bg-[rgba(201,164,89,0.12)] text-[var(--gold)]'
+                          ? 'border-[var(--gold)] bg-[var(--gold-dim)] text-[var(--gold)] shadow-[0_0_0_5px_var(--gold-dim),0_10px_24px_rgba(0,0,0,0.10)] ring-1 ring-[var(--gold)]'
                           : 'border-[var(--border)] bg-[var(--card-hover)] text-[var(--text-muted)]'
                     }`}
                   >
