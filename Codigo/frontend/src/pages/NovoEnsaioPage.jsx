@@ -297,6 +297,8 @@ export default function NovoEnsaioPage() {
         clienteCidade: form.cidade?.trim() || null,
         clienteIndicacao: form.indicacao || null,
         tipo:            tipoEnum,
+        tipoPersonalizado:
+          tipoEnum === 'OUTRO' ? form.tipoCustom.trim() : null,
         dataEnsaio: new Date(`${form.data}T${form.hora}:00`).toISOString(),
         local:           form.local.trim(),
         qtdFotosPacote:  parseInt(form.fotos),

@@ -14,7 +14,7 @@ import {
   formatDateTime,
   getInitials,
   getStatusLabel,
-  getTipoLabel,
+  getTipoExibicao,
   limparTelefone,
 } from '../utils/clientesHistoricoUtils'
 
@@ -243,7 +243,7 @@ export default function ClienteHistoricoPage() {
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <p className="text-[15px] text-white">
-                            {getTipoLabel(ensaio.tipo)}
+                            {getTipoExibicao(ensaio)}
                           </p>
                           <p className="mt-1 text-[12px] text-white/45">
                             {formatDateTime(ensaio.dataEnsaio)} · {ensaio.local || 'Local não informado'}

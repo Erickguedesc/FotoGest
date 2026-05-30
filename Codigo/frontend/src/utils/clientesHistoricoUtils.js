@@ -37,7 +37,13 @@ export const limparTelefone = (valor) => {
   return apenasNumeros.startsWith('55') ? apenasNumeros : `55${apenasNumeros}`
 }
 
-export const getTipoLabel = (tipo) => {
+export const getTipoLabel = (tipo, tipoPersonalizado) => {
+  const personalizado = String(tipoPersonalizado || '').trim()
+
+  if (tipo === 'OUTRO' && personalizado) {
+    return personalizado
+  }
+
   const labels = {
     NEWBORN: 'Newborn',
     GESTANTE: 'Gestante',
@@ -56,6 +62,9 @@ export const getTipoLabel = (tipo) => {
 
   return labels[tipo] || tipo || '—'
 }
+
+export const getTipoExibicao = (ensaio) =>
+  ensaio?.tipoExibicao || getTipoLabel(ensaio?.tipo, ensaio?.tipoPersonalizado)
 
 export const getStatusLabel = (status) => {
   const labels = {
@@ -100,7 +109,7 @@ export const calcularResumoCliente = (cliente, ensaios = []) => {
     })
     .sort((a, b) => new Date(a.dataEnsaio).getTime() - new Date(b.dataEnsaio).getTime())[0]
 
-  const tipos = [...new Set(ensaiosCliente.map((ensaio) => getTipoLabel(ensaio.tipo)))]
+  const tipos = [...new Set(ensaiosCliente.map((ensaio) => getTipoExibicao(ensaio)))]
 
   return {
     ensaios: ensaiosCliente,

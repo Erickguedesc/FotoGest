@@ -189,7 +189,7 @@ export default function ProximosEnsaios({ ensaios }) {
                                             <div className="theme-text mt-2 flex items-center gap-2 text-sm font-normal">
                                                 <Camera size={15} />
                                                 <span className="truncate">
-                                                    {ensaio.tipo || 'Não informado'}
+                                                    {ensaio.tipoExibicao || ensaio.tipo || 'Não informado'}
                                                 </span>
                                             </div>
                                         </div>

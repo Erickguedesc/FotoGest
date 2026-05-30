@@ -21,6 +21,8 @@ public class DashboardEnsaioResumoResponse {
     private String clienteNome;
 
     private TipoEnsaio tipo;
+    private String tipoPersonalizado;
+    private String tipoExibicao;
     private StatusEnsaio status;
 
     private OffsetDateTime dataEnsaio;

@@ -4,7 +4,9 @@ import com.fotogest.dto.AlbumPublicoResponse;
 import com.fotogest.dto.FotoPublicaResponse;
 import com.fotogest.dto.FotoResponse;
 import com.fotogest.dto.SelecaoResponse;
+import com.fotogest.enums.TipoEnsaio;
 import com.fotogest.model.Album;
+import com.fotogest.model.Ensaio;
 import com.fotogest.model.Foto;
 import com.fotogest.model.SelecaoFoto;
 import com.fotogest.repository.AlbumRepository;
@@ -230,7 +232,7 @@ public class AlbumPublicoService {
 
                 return new AlbumPublicoResponse(
                                 album.getEnsaio().getCliente().getNome(),
-                                album.getEnsaio().getTipo().name(),
+                                resolverTipoExibicao(album.getEnsaio()),
                                 album.getEnsaio().getQtdFotosPacote(),
                                 album.getEnsaio().getDataEnsaio(),
                                 album.getEnsaio().getLocal(),
@@ -238,6 +240,20 @@ public class AlbumPublicoService {
                                 album.getEnsaio().getValorFotoExtra(),
                                 buscarCapaAlbumPadrao(),
                                 album.getExpiraEm());
+        }
+
+        private String resolverTipoExibicao(Ensaio ensaio) {
+                if (ensaio == null || ensaio.getTipo() == null) {
+                        return null;
+                }
+
+                if (ensaio.getTipo() == TipoEnsaio.OUTRO
+                                && ensaio.getTipoPersonalizado() != null
+                                && !ensaio.getTipoPersonalizado().isBlank()) {
+                        return ensaio.getTipoPersonalizado().trim();
+                }
+
+                return ensaio.getTipo().getDescricao();
         }
 
         private String buscarCapaAlbumPadrao() {

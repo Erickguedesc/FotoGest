@@ -18,5 +18,6 @@ public class RelatorioDestaqueResponse {
     private BigDecimal maiorReceita;
     private BigDecimal menorReceita;
     private TipoEnsaio tipoMaisRealizado;
+    private String tipoMaisRealizadoExibicao;
     private Integer quantidadeTipoMaisRealizado;
 }

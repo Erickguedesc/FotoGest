@@ -5,7 +5,7 @@ import {
   formatCurrency,
   formatDate,
   getInitials,
-  getTipoLabel,
+  getTipoExibicao,
 } from './ensaioHelpers'
 
 export default function EnsaioTableRow({
@@ -44,7 +44,7 @@ export default function EnsaioTableRow({
       </td>
 
       <td className="w-[100px] px-4 py-4 text-[13px] text-white/65">
-        {getTipoLabel(ensaio.tipo)}
+        {getTipoExibicao(ensaio)}
       </td>
 
       <td className="w-[110px] px-4 py-4 text-[13px] text-white/65">

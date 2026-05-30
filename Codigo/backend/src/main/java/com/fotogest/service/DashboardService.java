@@ -4,6 +4,7 @@ import com.fotogest.dto.DashboardAtencaoResponse;
 import com.fotogest.dto.DashboardEnsaioResumoResponse;
 import com.fotogest.dto.DashboardResumoResponse;
 import com.fotogest.enums.StatusEnsaio;
+import com.fotogest.enums.TipoEnsaio;
 import com.fotogest.model.Album;
 import com.fotogest.model.Ensaio;
 import com.fotogest.model.Foto;
@@ -304,6 +305,8 @@ public class DashboardService {
                 .id(ensaioId)
                 .clienteNome(ensaio.getCliente().getNome())
                 .tipo(ensaio.getTipo())
+                .tipoPersonalizado(ensaio.getTipoPersonalizado())
+                .tipoExibicao(resolverTipoExibicao(ensaio))
                 .status(ensaio.getStatus())
                 .dataEnsaio(ensaio.getDataEnsaio())
                 .atualizadoEm(ensaio.getAtualizadoEm())
@@ -315,6 +318,20 @@ public class DashboardService {
                 .albumPublicado(albumPublicado)
                 .selecaoEnviada(selecaoEnviada)
                 .build();
+    }
+
+    private String resolverTipoExibicao(Ensaio ensaio) {
+        if (ensaio == null || ensaio.getTipo() == null) {
+            return null;
+        }
+
+        if (ensaio.getTipo() == TipoEnsaio.OUTRO
+                && ensaio.getTipoPersonalizado() != null
+                && !ensaio.getTipoPersonalizado().isBlank()) {
+            return ensaio.getTipoPersonalizado().trim();
+        }
+
+        return ensaio.getTipo().getDescricao();
     }
 
     private boolean pertenceAoMes(Ensaio ensaio, YearMonth mes) {

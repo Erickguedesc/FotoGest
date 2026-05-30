@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CalendarDays, MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import logoFotoGest from '../../assets/logo.jpg'
+import logoFotoGest from '../../assets/logofotogest.png'
 
 const STATUS_CONFIG = {
   EM_EDICAO: {
@@ -93,7 +93,7 @@ export default function EnsaioDashboardCard({ ensaio }) {
           </h3>
 
           <p className="theme-muted mt-1 text-sm">
-            {ensaio.tipo}
+            {ensaio.tipoExibicao || ensaio.tipo}
           </p>
         </div>
 

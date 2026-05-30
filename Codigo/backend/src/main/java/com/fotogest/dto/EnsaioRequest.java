@@ -43,6 +43,9 @@ public class EnsaioRequest {
     @NotNull(message = "Tipo do ensaio e obrigatorio")
     private TipoEnsaio tipo;
 
+    @Size(max = 120, message = "Tipo personalizado deve ter no maximo 120 caracteres")
+    private String tipoPersonalizado;
+
     @NotNull(message = "Data do ensaio e obrigatoria")
     private OffsetDateTime dataEnsaio;
 

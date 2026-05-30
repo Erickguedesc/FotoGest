@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS ensaio (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   cliente_id UUID NOT NULL REFERENCES cliente(id) ON DELETE CASCADE,
   tipo tipo_ensaio NOT NULL,
+  tipo_personalizado VARCHAR(120),
   status status_ensaio NOT NULL DEFAULT 'AGENDADO',
   data_ensaio TIMESTAMPTZ NOT NULL,
   local VARCHAR(300) NOT NULL,

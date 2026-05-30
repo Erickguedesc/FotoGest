@@ -85,7 +85,7 @@ public class EmailService {
         String corpo = String.join("\n\n",
                 mensagem,
                 "Cliente: " + ensaio.getCliente().getNome(),
-                "Tipo do ensaio: " + ensaio.getTipo(),
+                "Tipo do ensaio: " + resolverTipoExibicao(ensaio),
                 "Fotos selecionadas: " + totalSelecionadas,
                 "Fotos extras: " + excedente
         );
@@ -166,5 +166,19 @@ public class EmailService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private String resolverTipoExibicao(Ensaio ensaio) {
+        if (ensaio == null || ensaio.getTipo() == null) {
+            return "Nao informado";
+        }
+
+        if (ensaio.getTipo().name().equals("OUTRO")
+                && ensaio.getTipoPersonalizado() != null
+                && !ensaio.getTipoPersonalizado().isBlank()) {
+            return ensaio.getTipoPersonalizado().trim();
+        }
+
+        return ensaio.getTipo().getDescricao();
     }
 }
