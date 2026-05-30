@@ -33,8 +33,6 @@ export default function PublicacaoCard({
   albumPublicado,
   onPublicar,
   onReabrir,
-  onCopyLink,
-  onWhatsApp,
 }) {
   const temAlbum = Boolean(album?.urlAcesso)
 
@@ -128,23 +126,6 @@ export default function PublicacaoCard({
               </>
             )}
 
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={onCopyLink}
-                className="rounded-lg border border-[var(--gold-border)] px-3 py-2 text-[11px] text-[var(--gold)] transition hover:bg-[var(--gold-dim)]"
-              >
-                Copiar link
-              </button>
-
-              <button
-                type="button"
-                onClick={onWhatsApp}
-                className="rounded-lg border border-[var(--gold-border)] px-3 py-2 text-[11px] text-[var(--gold)] transition hover:bg-[var(--gold-dim)]"
-              >
-                WhatsApp
-              </button>
-            </div>
           </div>
         )}
 

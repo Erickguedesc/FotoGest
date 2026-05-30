@@ -48,7 +48,7 @@ export default function InformacoesCard({ ensaio, selecao, onEdit }) {
   return (
     <section className="rounded-2xl border border-[var(--gold-border)] bg-[#121212]">
       <SectionTitle
-        title="Informações adicionais"
+        title="Dados do ensaio"
         actionLabel="Editar"
         onAction={onEdit}
       />

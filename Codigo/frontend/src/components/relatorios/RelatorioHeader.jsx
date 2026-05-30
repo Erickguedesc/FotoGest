@@ -12,8 +12,8 @@ export default function RelatorioHeader({ tipo, ano, periodoDescricao }) {
           Relatório de Valores Previstos
         </h1>
 <p className="mt-3 max-w-2xl text-sm text-white/50">
-  Acompanhe uma referência de valores com base em ensaios entregues, pacote,
-  fotos extras e ajustes manuais informados fora da plataforma.
+  Acompanhe uma referência de valores com base em ensaios entregues, pacotes,
+  fotos extras e acordos finais informados fora da plataforma.
 </p>
 <p className="mt-2 max-w-2xl text-xs text-white/35">
   O relatório considera apenas ensaios marcados como entregues, entendendo que

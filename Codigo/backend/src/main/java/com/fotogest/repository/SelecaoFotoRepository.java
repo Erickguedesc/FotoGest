@@ -12,5 +12,7 @@ public interface SelecaoFotoRepository extends JpaRepository<SelecaoFoto, UUID> 
 
     List<SelecaoFoto> findByAlbumId(UUID albumId);
 
+    void deleteByAlbumId(UUID albumId);
+
     void deleteByFotoId(UUID fotoId);
 }

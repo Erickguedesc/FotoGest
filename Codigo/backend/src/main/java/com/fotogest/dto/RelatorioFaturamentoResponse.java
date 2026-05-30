@@ -33,4 +33,5 @@ public class RelatorioFaturamentoResponse {
     private RelatorioComparativoResponse comparativo;
 
     private List<RelatorioPeriodoResponse> periodos;
+    private List<RelatorioTipoEnsaioResponse> tiposEnsaio;
 }

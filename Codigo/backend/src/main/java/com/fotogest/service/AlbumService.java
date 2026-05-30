@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import com.fotogest.model.PreferenciasSistema;
 import com.fotogest.repository.PreferenciasSistemaRepository;
+import com.fotogest.repository.SelecaoFotoRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +30,7 @@ public class AlbumService {
 private final AlbumRepository albumRepository;
 private final EnsaioRepository ensaioRepository;
 private final PreferenciasSistemaRepository preferenciasSistemaRepository;
+private final SelecaoFotoRepository selecaoFotoRepository;
 private final PasswordEncoder passwordEncoder;
 private final EmailService emailService;
 
@@ -51,6 +53,15 @@ private final EmailService emailService;
                         .tokenUrl(gerarTokenUnico())
                         .build()
                 );
+
+        boolean albumExistenteReaberto =
+                album.getId() != null &&
+                (!Boolean.TRUE.equals(album.getAtivo()) ||
+                        !Boolean.TRUE.equals(album.getAcessoLiberado()));
+
+        if (albumExistenteReaberto) {
+            selecaoFotoRepository.deleteByAlbumId(album.getId());
+        }
 
         album.setSenhaHash(passwordEncoder.encode(senhaLimpa));
         album.setAcessoLiberado(true);
@@ -92,6 +103,8 @@ private final EmailService emailService;
 
         album.setAcessoLiberado(false);
         album.setAtivo(false);
+
+        selecaoFotoRepository.deleteByAlbumId(album.getId());
 
         albumRepository.save(album);
         atualizarStatusParaEmEdicaoSeNecessario(album.getEnsaio());

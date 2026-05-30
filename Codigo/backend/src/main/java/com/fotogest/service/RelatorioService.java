@@ -3,7 +3,9 @@ package com.fotogest.service;
 import com.fotogest.dto.RelatorioDestaqueResponse;
 import com.fotogest.dto.RelatorioFaturamentoResponse;
 import com.fotogest.dto.RelatorioPeriodoResponse;
+import com.fotogest.dto.RelatorioTipoEnsaioResponse;
 import com.fotogest.enums.StatusEnsaio;
+import com.fotogest.enums.TipoEnsaio;
 import com.fotogest.enums.TipoPeriodoRelatorio;
 import com.fotogest.model.Album;
 import com.fotogest.model.Ensaio;
@@ -81,7 +83,15 @@ int ensaiosRealizados = periodos.stream()
 
 BigDecimal mediaPorPeriodo = calcularMedia(totalLiquido, periodos.size());
 
-RelatorioDestaqueResponse destaques = montarDestaques(periodos);
+List<RelatorioTipoEnsaioResponse> tiposEnsaio = montarTiposEnsaio(
+        ensaios,
+        periodosInternos,
+        albumPorEnsaio,
+        totalSelecoesPorAlbum,
+        totalLiquido
+);
+
+RelatorioDestaqueResponse destaques = montarDestaques(periodos, tiposEnsaio);
 
 int anoComparado = anoFinal - 1;
 
@@ -127,6 +137,7 @@ RelatorioComparativoResponse comparativo = montarComparativo(
         .destaques(destaques)
         .comparativo(comparativo)
         .periodos(periodos)
+        .tiposEnsaio(tiposEnsaio)
         .build();
         }
 
@@ -171,6 +182,82 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                                 .totalLiquido(totalLiquido)
                                 .quantidadeEnsaios(ensaiosDoPeriodo.size())
                                 .build();
+        }
+
+        private List<RelatorioTipoEnsaioResponse> montarTiposEnsaio(
+                        List<Ensaio> ensaios,
+                        List<PeriodoRelatorioInterno> periodos,
+                        Map<UUID, Album> albumPorEnsaio,
+                        Map<UUID, Integer> totalSelecoesPorAlbum,
+                        BigDecimal totalLiquidoGeral) {
+                return ensaios.stream()
+                                .filter(this::isEnsaioFinanceiro)
+                                .filter(ensaio -> pertenceAAlgumPeriodo(ensaio, periodos))
+                                .collect(Collectors.groupingBy(Ensaio::getTipo))
+                                .entrySet()
+                                .stream()
+                                .map(entry -> montarTipoEnsaio(
+                                                entry.getKey(),
+                                                entry.getValue(),
+                                                albumPorEnsaio,
+                                                totalSelecoesPorAlbum,
+                                                totalLiquidoGeral))
+                                .sorted(Comparator.comparing(RelatorioTipoEnsaioResponse::getFaturamento).reversed())
+                                .toList();
+        }
+
+        private RelatorioTipoEnsaioResponse montarTipoEnsaio(
+                        TipoEnsaio tipo,
+                        List<Ensaio> ensaios,
+                        Map<UUID, Album> albumPorEnsaio,
+                        Map<UUID, Integer> totalSelecoesPorAlbum,
+                        BigDecimal totalLiquidoGeral) {
+                BigDecimal faturamento = ensaios.stream()
+                                .map(ensaio -> calcularTotalLiquidoDoEnsaio(
+                                                ensaio,
+                                                albumPorEnsaio,
+                                                totalSelecoesPorAlbum))
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                BigDecimal percentualReceita = calcularPercentualParticipacao(
+                                faturamento,
+                                totalLiquidoGeral);
+
+                BigDecimal ticketMedio = calcularMedia(faturamento, ensaios.size());
+
+                return RelatorioTipoEnsaioResponse.builder()
+                                .tipo(tipo)
+                                .faturamento(faturamento)
+                                .percentualReceita(percentualReceita)
+                                .ticketMedio(ticketMedio)
+                                .quantidadeEnsaios(ensaios.size())
+                                .build();
+        }
+
+        private boolean pertenceAAlgumPeriodo(
+                        Ensaio ensaio,
+                        List<PeriodoRelatorioInterno> periodos) {
+                return periodos.stream()
+                                .anyMatch(periodo -> estaDentroDoPeriodo(ensaio, periodo));
+        }
+
+        private BigDecimal calcularTotalLiquidoDoEnsaio(
+                        Ensaio ensaio,
+                        Map<UUID, Album> albumPorEnsaio,
+                        Map<UUID, Integer> totalSelecoesPorAlbum) {
+                BigDecimal valorPacote = ensaio.getValorPacote() == null
+                                ? BigDecimal.ZERO
+                                : ensaio.getValorPacote();
+
+                return valorPacote
+                                .add(calcularExcedenteDoEnsaio(
+                                                ensaio,
+                                                albumPorEnsaio,
+                                                totalSelecoesPorAlbum))
+                                .add(calcularAjusteManualDoEnsaio(
+                                                ensaio,
+                                                albumPorEnsaio,
+                                                totalSelecoesPorAlbum));
         }
 
         private boolean isEnsaioFinanceiro(Ensaio ensaio) {
@@ -284,8 +371,11 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                 return new PeriodoRelatorioInterno(label, inicio, fim);
         }
 
-        private RelatorioDestaqueResponse montarDestaques(List<RelatorioPeriodoResponse> periodos) {
+        private RelatorioDestaqueResponse montarDestaques(
+                        List<RelatorioPeriodoResponse> periodos,
+                        List<RelatorioTipoEnsaioResponse> tiposEnsaio) {
                 RelatorioPeriodoResponse maior = periodos.stream()
+                                .filter(periodo -> periodo.getTotalLiquido().compareTo(BigDecimal.ZERO) > 0)
                                 .max(Comparator.comparing(RelatorioPeriodoResponse::getTotalLiquido))
                                 .orElse(null);
 
@@ -294,10 +384,20 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                                 .min(Comparator.comparing(RelatorioPeriodoResponse::getTotalLiquido))
                                 .orElse(null);
 
+                RelatorioTipoEnsaioResponse tipoMaisRealizado = tiposEnsaio.stream()
+                                .max(Comparator
+                                                .comparing(RelatorioTipoEnsaioResponse::getQuantidadeEnsaios)
+                                                .thenComparing(RelatorioTipoEnsaioResponse::getFaturamento))
+                                .orElse(null);
+
                 return RelatorioDestaqueResponse.builder()
                                 .melhorPeriodo(maior != null ? maior.getLabel() : "-")
                                 .maiorReceita(maior != null ? maior.getTotalLiquido() : BigDecimal.ZERO)
                                 .menorReceita(menor != null ? menor.getTotalLiquido() : BigDecimal.ZERO)
+                                .tipoMaisRealizado(tipoMaisRealizado != null ? tipoMaisRealizado.getTipo() : null)
+                                .quantidadeTipoMaisRealizado(tipoMaisRealizado != null
+                                                ? tipoMaisRealizado.getQuantidadeEnsaios()
+                                                : 0)
                                 .build();
         }
 
@@ -390,6 +490,15 @@ private BigDecimal calcularPercentualVariacao(BigDecimal atual, BigDecimal anter
     return atual.subtract(anterior)
             .multiply(BigDecimal.valueOf(100))
             .divide(anterior, 2, RoundingMode.HALF_UP);
+}
+
+private BigDecimal calcularPercentualParticipacao(BigDecimal valor, BigDecimal total) {
+    if (valor == null || total == null || total.compareTo(BigDecimal.ZERO) == 0) {
+        return BigDecimal.ZERO;
+    }
+
+    return valor.multiply(BigDecimal.valueOf(100))
+            .divide(total, 2, RoundingMode.HALF_UP);
 }
 
 private String montarDescricaoFaturamento(

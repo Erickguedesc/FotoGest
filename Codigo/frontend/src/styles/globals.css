@@ -200,6 +200,18 @@
     background-clip: content-box;
   }
 
+  .relatorio-tipos-ensaio {
+    --report-accent: #C08457;
+    --report-accent-hover: #D49A68;
+    --report-accent-soft: rgba(192, 132, 87, 0.16);
+  }
+
+  :root[data-theme='light'] .relatorio-tipos-ensaio {
+    --report-accent: #A8783A;
+    --report-accent-hover: #8F632E;
+    --report-accent-soft: rgba(168, 120, 58, 0.14);
+  }
+
   :root[data-theme='light'] .theme-card {
     background-color: #faf8f4;
     border-color: #d8ccba;
