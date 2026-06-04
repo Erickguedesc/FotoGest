@@ -3,6 +3,7 @@ package com.fotogest.dto;
 import com.fotogest.enums.MarcaDaguaCor;
 import com.fotogest.enums.MarcaDaguaEstilo;
 import com.fotogest.enums.MarcaDaguaFonte;
+import com.fotogest.enums.MarcaDaguaTextoModo;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -21,4 +22,6 @@ public class MarcaDaguaTextoRequest {
     private MarcaDaguaCor cor = MarcaDaguaCor.BRANCO;
 
     private MarcaDaguaEstilo estilo = MarcaDaguaEstilo.NORMAL;
+
+    private MarcaDaguaTextoModo modo = MarcaDaguaTextoModo.REPETIDA;
 }

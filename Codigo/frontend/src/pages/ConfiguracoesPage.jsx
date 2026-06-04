@@ -10,6 +10,8 @@ import MarcaDaguaForm from '../components/configuracoes/MarcaDaguaForm'
 import PreferenciasSistemaForm from '../components/configuracoes/PreferenciasSistemaForm'
 import EmailConfigForm from '../components/configuracoes/EmailConfigForm'
 import AlterarSenhaForm from '../components/configuracoes/AlterarSenhaForm'
+import ModelosContratoForm from '../components/configuracoes/ModelosContratoForm'
+import BackupDadosForm from '../components/configuracoes/BackupDadosForm'
 import { configuracoesService } from '../services/configuracoesService'
 import ConfirmActionModal from '../components/ui/ConfirmActionModal'
 
@@ -42,6 +44,8 @@ export default function ConfiguracoesPage() {
 
   const [gerarTextoLoading, setGerarTextoLoading] = useState(false)
   const [uploadCapaAlbumLoading, setUploadCapaAlbumLoading] = useState(false)
+  const [backupLoading, setBackupLoading] = useState(false)
+  const [emailTesteLoading, setEmailTesteLoading] = useState(false)
 
   async function carregarConfiguracoes() {
     try {
@@ -103,14 +107,14 @@ async function handleUploadCapaAlbumPadrao(arquivo) {
       }))
 
       notificarFotografaAtualizada(data)
-      showToast('Dados da fotógrafa atualizados com sucesso.')
+      showToast('Dados atualizados com sucesso.')
     } catch (error) {
-      console.error('[ConfiguracoesPage] Erro ao salvar fotógrafa:', error)
+      console.error('[ConfiguracoesPage] Erro ao salvar:', error)
 
       const message =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
-        'Não foi possível salvar os dados da fotógrafa.'
+        'Não foi possível salvar os dados.'
 
       showToast(message, 'error')
     } finally {
@@ -386,6 +390,142 @@ setAlertModal({
     }
   }
 
+  async function handleEnviarEmailTeste() {
+    try {
+      setEmailTesteLoading(true)
+
+      const data = await configuracoesService.enviarEmailTeste()
+
+      setConfiguracoes((current) => ({
+        ...(current || {}),
+        email: data,
+      }))
+
+      showToast('E-mail de teste enviado com sucesso.')
+    } catch (error) {
+      console.error('[ConfiguracoesPage] Erro ao testar e-mail:', error)
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Nao foi possivel enviar o e-mail de teste.'
+
+      showToast(message, 'error')
+    } finally {
+      setEmailTesteLoading(false)
+    }
+  }
+
+  async function handleCriarModeloContrato(dados) {
+    try {
+      setSaving(true)
+
+      const data = await configuracoesService.criarModeloContrato(dados)
+      const modelos = await configuracoesService.listarModelosContrato()
+
+      setConfiguracoes((current) => ({
+        ...(current || {}),
+        modelosContrato: modelos,
+      }))
+
+      showToast(`Modelo "${data.nome}" criado com sucesso.`)
+    } catch (error) {
+      console.error('[ConfiguracoesPage] Erro ao criar modelo de contrato:', error)
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Nao foi possivel criar o modelo de contrato.'
+
+      showToast(message, 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleAtualizarModeloContrato(id, dados) {
+    try {
+      setSaving(true)
+
+      await configuracoesService.atualizarModeloContrato(id, dados)
+      const modelos = await configuracoesService.listarModelosContrato()
+
+      setConfiguracoes((current) => ({
+        ...(current || {}),
+        modelosContrato: modelos,
+      }))
+
+      showToast('Modelo de contrato atualizado com sucesso.')
+    } catch (error) {
+      console.error('[ConfiguracoesPage] Erro ao atualizar modelo de contrato:', error)
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Nao foi possivel salvar o modelo de contrato.'
+
+      showToast(message, 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleRemoverModeloContrato(id) {
+    try {
+      setSaving(true)
+
+      await configuracoesService.removerModeloContrato(id)
+      const modelos = await configuracoesService.listarModelosContrato()
+
+      setConfiguracoes((current) => ({
+        ...(current || {}),
+        modelosContrato: modelos,
+      }))
+
+      showToast('Modelo de contrato excluido com sucesso.')
+    } catch (error) {
+      console.error('[ConfiguracoesPage] Erro ao excluir modelo de contrato:', error)
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Nao foi possivel excluir o modelo de contrato.'
+
+      showToast(message, 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleGerarBackupMetadados() {
+    try {
+      setBackupLoading(true)
+
+      const backup = await configuracoesService.gerarBackupMetadados()
+
+      setConfiguracoes((current) => ({
+        ...(current || {}),
+        preferencias: {
+          ...(current?.preferencias || {}),
+          ultimoBackupMetadadosEm: backup?.geradoEm,
+        },
+      }))
+
+      showToast('Backup de dados gerado com sucesso.')
+    } catch (error) {
+      console.error('[ConfiguracoesPage] Erro ao gerar backup:', error)
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Nao foi possivel gerar o backup de dados.'
+
+      showToast(message, 'error')
+    } finally {
+      setBackupLoading(false)
+    }
+  }
+
   async function handleAlterarSenha(dados) {
     try {
       setSaving(true)
@@ -477,11 +617,31 @@ setAlertModal({
                   />
                 )}
 
+                {activeTab === 'modelosContrato' && (
+                  <ModelosContratoForm
+                    data={configuracoes?.modelosContrato}
+                    loading={saving}
+                    onCreate={handleCriarModeloContrato}
+                    onUpdate={handleAtualizarModeloContrato}
+                    onDelete={handleRemoverModeloContrato}
+                  />
+                )}
+
                 {activeTab === 'email' && (
                   <EmailConfigForm
                     data={configuracoes?.email}
                     loading={saving}
                     onSubmit={handleSalvarEmail}
+                    testLoading={emailTesteLoading}
+                    onTest={handleEnviarEmailTeste}
+                  />
+                )}
+
+                {activeTab === 'backup' && (
+                  <BackupDadosForm
+                    ultimoBackup={configuracoes?.preferencias?.ultimoBackupMetadadosEm}
+                    loading={backupLoading}
+                    onGerarBackup={handleGerarBackupMetadados}
                   />
                 )}
               </>

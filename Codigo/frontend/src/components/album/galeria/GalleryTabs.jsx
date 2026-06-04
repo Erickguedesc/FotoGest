@@ -1,7 +1,6 @@
 export default function GalleryTabs({
   aba,
   onChangeAba,
-  totalFotos,
   totalSelecionadas,
   limite,
   excedente,
@@ -19,9 +18,6 @@ export default function GalleryTabs({
           }`}
         >
           Galeria
-          <span className="rounded-full border border-[#ddd5c5] bg-[#ede6d8] px-2 py-0.5 text-[11px] text-[#5c5248]">
-            {totalFotos}
-          </span>
         </button>
 
         <button

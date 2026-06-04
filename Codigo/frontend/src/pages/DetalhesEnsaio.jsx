@@ -55,6 +55,20 @@
     return '—'
   }
 
+  const getApiErrorMessage = (error, fallback) => {
+    const data = error?.response?.data
+
+    if (typeof data === 'string' && data.trim()) return data
+
+    return (
+      data?.message ||
+      data?.erro ||
+      data?.error ||
+      data?.detail ||
+      fallback
+    )
+  }
+
   export default function DetalhesEnsaio() {
     const { id } = useParams()
     const navigate = useNavigate()
@@ -70,6 +84,7 @@
     const [actionLoading, setActionLoading] = useState(false)
     const [publicando, setPublicando] = useState(false)
     const [buscandoSelecao, setBuscandoSelecao] = useState(false)
+    const [salvandoNotasInternas, setSalvandoNotasInternas] = useState(false)
 
     const [editModalOpen, setEditModalOpen] = useState(false)
     const [editLoading, setEditLoading] = useState(false)
@@ -273,6 +288,62 @@
       showToast(msg, 'error')
     } finally {
       setActionLoading(false)
+    }
+  }
+
+  const handleAprovarSelecao = async () => {
+    if (!ensaio || ensaio.status === 'EM_EDICAO') return
+
+    setActionLoading(true)
+
+    try {
+      await ensaiosService.aprovarSelecao(ensaio.id)
+      showToast('Seleção aprovada. Ensaio movido para edição.')
+      await loadEnsaio()
+      await loadHistoricoStatus()
+    } catch (error) {
+      const msg = getApiErrorMessage(
+        error,
+        error?.response?.status === 404
+          ? 'Rota de aprovação não encontrada. Reinicie o backend e tente novamente.'
+          : 'Não foi possível aprovar a seleção.',
+      )
+
+      showToast(msg, 'error')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleSalvarNotasInternas = async (notasInternas) => {
+    if (!ensaio) return
+
+    setSalvandoNotasInternas(true)
+
+    try {
+      const response = await ensaiosService.atualizarNotasInternas(
+        ensaio.id,
+        notasInternas.trim() || null,
+      )
+      setEnsaio(response.data)
+      showToast('Notas do ensaio salvas com sucesso.')
+    } catch (error) {
+      console.error('[DetalhesEnsaio] Erro ao salvar notas internas:', error?.response?.data || error)
+
+      const backendMessage = getApiErrorMessage(
+        error,
+        'Não foi possível salvar as notas do ensaio.',
+      )
+      const msg = error?.response?.status === 404
+        ? 'Rota de notas internas não encontrada. Reinicie o backend e tente novamente.'
+        : String(backendMessage || '').includes('notas_internas')
+          ? 'O banco ainda não criou o campo de notas internas. Reinicie o backend para aplicar a atualização.'
+          : backendMessage
+
+      showToast(msg, 'error')
+      throw error
+    } finally {
+      setSalvandoNotasInternas(false)
     }
   }
 
@@ -807,7 +878,9 @@ const texto =
           <EnsaioHero
             ensaio={ensaio}
             fotos={fotos}
+            savingNotes={salvandoNotasInternas}
             onEdit={() => setEditModalOpen(true)}
+            onSaveNotes={handleSalvarNotasInternas}
             onPreContrato={() => navigate(`/ensaios/${ensaio.id}/pre-contrato`)}
             onWhatsApp={handleWhatsApp}
             onBack={() => navigate('/ensaios')}
@@ -858,16 +931,16 @@ const texto =
           {activeTab === 'informacoes' && (
             <div className="mt-5 grid grid-cols-[1fr_360px] gap-5 max-lg:grid-cols-1">
               <div className="space-y-5">
-                <LinhaTempo
-                  ensaio={ensaio}
-                  historicoStatus={historicoStatus}
-                />
+                            <LinhaTempo
+                ensaio={ensaio}
+                historicoStatus={historicoStatus}
+              />
 
-                <InformacoesCard
-                  ensaio={ensaio}
-                  selecao={selecao}
-                  onEdit={() => setEditModalOpen(true)}
-                />
+              <InformacoesCard
+                ensaio={ensaio}
+                selecao={selecao}
+                onEdit={() => setEditModalOpen(true)}
+              />
 
                 <AcoesGerais
                   variant="administrativo"
@@ -943,6 +1016,12 @@ const texto =
                 selecao={selecao}
                 loading={buscandoSelecao}
                 onBuscarSelecao={handleBuscarSelecao}
+                onAprovarSelecao={handleAprovarSelecao}
+                aprovandoSelecao={actionLoading}
+                podeAprovarSelecao={
+                  selecaoFinalizada &&
+                  !['EM_EDICAO', 'FINALIZADO', 'CANCELADO'].includes(ensaio?.status)
+                }
                 showResumo={false}
               />
 

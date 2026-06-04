@@ -1,5 +1,24 @@
+import { useEffect, useState } from 'react'
+
 import Icon from './Icon'
 import { TIPO_OPTIONS } from './ensaioHelpers'
+
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+function isValidDateFilter(value) {
+  if (!value) return true
+  if (!DATE_PATTERN.test(value)) return false
+
+  const [year, month, day] = value.split('-').map(Number)
+  if (year < 1900 || year > 2100) return false
+
+  const date = new Date(year, month - 1, day)
+  return (
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  )
+}
 
 export default function EnsaiosToolbar({
   filters,
@@ -9,6 +28,48 @@ export default function EnsaiosToolbar({
   onViewModeChange,
   onClear,
 }) {
+  const [dateDrafts, setDateDrafts] = useState({
+    dataInicio: filters.dataInicio || '',
+    dataFim: filters.dataFim || '',
+  })
+
+  useEffect(() => {
+    setDateDrafts({
+      dataInicio: filters.dataInicio || '',
+      dataFim: filters.dataFim || '',
+    })
+  }, [filters.dataInicio, filters.dataFim, resetKey])
+
+  const handleDateChange = (field, value) => {
+    setDateDrafts((current) => ({
+      ...current,
+      [field]: value,
+    }))
+
+    if (value === '' || isValidDateFilter(value)) {
+      onFilterChange(field, value)
+    }
+  }
+
+  const handleDateBlur = (field) => {
+    const value = dateDrafts[field]
+
+    if (value === '') {
+      if (filters[field]) onFilterChange(field, '')
+      return
+    }
+
+    if (isValidDateFilter(value)) {
+      if (value !== filters[field]) onFilterChange(field, value)
+      return
+    }
+
+    setDateDrafts((current) => ({
+      ...current,
+      [field]: filters[field] || '',
+    }))
+  }
+
   return (
     <div className="mb-5 flex flex-wrap items-center gap-3">
       <div className="relative min-w-[220px] flex-1 max-w-[360px]">
@@ -35,19 +96,23 @@ export default function EnsaiosToolbar({
       <div className="flex items-center gap-2 rounded-lg border border-white/[0.10] bg-[#181818] px-3 py-2 text-white/55">
         <Icon name="calendar" size={13} />
         <input
-          key={`data-inicio-${resetKey}`}
           type="date"
-          value={filters.dataInicio}
-          onChange={(event) => onFilterChange('dataInicio', event.target.value)}
+          min="1900-01-01"
+          max="2100-12-31"
+          value={dateDrafts.dataInicio}
+          onChange={(event) => handleDateChange('dataInicio', event.target.value)}
+          onBlur={() => handleDateBlur('dataInicio')}
           className="w-[120px] bg-transparent text-[12px] text-white/70 outline-none"
           title="Data inicial"
         />
         <span className="text-white/25">—</span>
         <input
-          key={`data-fim-${resetKey}`}
           type="date"
-          value={filters.dataFim}
-          onChange={(event) => onFilterChange('dataFim', event.target.value)}
+          min="1900-01-01"
+          max="2100-12-31"
+          value={dateDrafts.dataFim}
+          onChange={(event) => handleDateChange('dataFim', event.target.value)}
+          onBlur={() => handleDateBlur('dataFim')}
           className="w-[120px] bg-transparent text-[12px] text-white/70 outline-none"
           title="Data final"
         />

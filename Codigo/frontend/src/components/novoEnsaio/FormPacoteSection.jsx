@@ -21,14 +21,18 @@ function formatCurrencyInput(value) {
   return inteiroFormatado
 }
 
-export default function FormPacoteSection({ form, errors, onChange }) {
+export default function FormPacoteSection({ form, errors, onChange, onSectionFocus }) {
   const set = (field, value) => onChange(field, value)
 
   const stepFotos = (delta) =>
     set('fotos', Math.max(1, parseInt(form.fotos || 0) + delta))
 
   return (
-    <div className="theme-card mb-4 overflow-hidden rounded-[14px] border">
+    <div
+      className="theme-card mb-4 overflow-hidden rounded-[14px] border"
+      onPointerDownCapture={() => onSectionFocus?.('pacote')}
+      onFocusCapture={() => onSectionFocus?.('pacote')}
+    >
 
       <div className="theme-divider flex items-center gap-2.5 border-b px-5 py-4">
         <div className="w-7 h-7 rounded-lg bg-[var(--gold-dim)] border border-[var(--gold-border)] flex items-center justify-center flex-shrink-0">

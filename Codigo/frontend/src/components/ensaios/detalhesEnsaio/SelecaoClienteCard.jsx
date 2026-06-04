@@ -1,4 +1,8 @@
 import { useState } from 'react'
+import { CheckCircle2 } from 'lucide-react'
+
+import useBodyScrollLock from '../../../hooks/useBodyScrollLock'
+import FotoPreviewImage from './FotoPreviewImage'
 import SectionTitle from './SectionTitle'
 
 const LIMITE_PREVIA = 6
@@ -23,11 +27,16 @@ export default function SelecaoClienteCard({
   selecao,
   loading,
   onBuscarSelecao,
+  onAprovarSelecao,
+  aprovandoSelecao = false,
+  podeAprovarSelecao = false,
   showResumo = true,
 }) {
   const [jaConsultouSelecao, setJaConsultouSelecao] = useState(false)
   const [erroConsulta, setErroConsulta] = useState(null)
   const [modalAberto, setModalAberto] = useState(false)
+
+  useBodyScrollLock(modalAberto)
 
   const fotosSelecionadas = selecao?.fotosIds
     ? fotos.filter((foto) => selecao.fotosIds.includes(foto.id))
@@ -78,11 +87,13 @@ export default function SelecaoClienteCard({
         key={foto.id}
         className="overflow-hidden rounded-xl border border-white/[0.08] bg-black/20"
       >
-        <img
-          src={foto.urlWatermark || foto.urlOriginal}
-          alt={getNomeFoto(foto)}
-          className="h-36 w-full object-cover"
-        />
+        <div className="relative">
+          <FotoPreviewImage
+            foto={foto}
+            alt={getNomeFoto(foto)}
+            className="h-36 w-full object-cover"
+          />
+        </div>
 
         <div className="p-3">
           <p className="truncate text-[12px] text-white/70">
@@ -209,16 +220,32 @@ export default function SelecaoClienteCard({
             </div>
           )}
 
-          <button
-            type="button"
-            onClick={baixarLista}
-            className="mt-5 rounded-lg border border-[var(--gold-border)] px-4 py-2 text-[12px] text-[var(--gold)] transition hover:bg-[var(--gold-dim)]"
-          >
-            Baixar lista para filtro
-          </button>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={baixarLista}
+              className="rounded-lg border border-[var(--gold-border)] px-4 py-2 text-[12px] text-[var(--gold)] transition hover:bg-[var(--gold-dim)]"
+            >
+              Baixar lista para filtro
+            </button>
+
+            {podeAprovarSelecao ? (
+              <button
+                type="button"
+                disabled={aprovandoSelecao}
+                onClick={onAprovarSelecao}
+                className="inline-flex items-center gap-2 rounded-lg bg-[var(--gold)] px-4 py-2 text-[12px] font-medium text-black transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <CheckCircle2 size={15} strokeWidth={1.8} />
+                {aprovandoSelecao
+                  ? 'Aprovando...'
+                  : 'Aprovar seleção e avançar para edição'}
+              </button>
+            ) : null}
+          </div>
 
           {modalAberto && (
-            <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-8 backdrop-blur max-sm:p-4">
+            <div className="fixed inset-0 z-[70] flex items-center justify-center overflow-hidden bg-black/80 p-8 backdrop-blur max-sm:p-4">
               <div className="flex max-h-[84vh] w-full max-w-5xl flex-col rounded-2xl border border-[var(--gold-border)] bg-[#121212] shadow-2xl">
                 <div className="flex items-center justify-between gap-4 border-b border-white/[0.08] px-7 py-6 max-sm:px-5">
                   <div>
@@ -239,18 +266,34 @@ export default function SelecaoClienteCard({
                   </button>
                 </div>
 
-                <div className="overflow-y-auto px-7 py-6 max-sm:px-5">
+                <div className="min-h-0 flex-1 overscroll-contain overflow-y-auto px-7 py-6 max-sm:px-5">
                   <div className="grid grid-cols-2 gap-5 md:grid-cols-3">
                     {fotosSelecionadas.map(renderFotoSelecionada)}
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={baixarLista}
-                    className="mt-5 rounded-lg border border-[var(--gold-border)] px-4 py-2 text-[12px] text-[var(--gold)] transition hover:bg-[var(--gold-dim)]"
-                  >
-                    Baixar lista para filtro
-                  </button>
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={baixarLista}
+                      className="rounded-lg border border-[var(--gold-border)] px-4 py-2 text-[12px] text-[var(--gold)] transition hover:bg-[var(--gold-dim)]"
+                    >
+                      Baixar lista para filtro
+                    </button>
+
+                    {podeAprovarSelecao ? (
+                      <button
+                        type="button"
+                        disabled={aprovandoSelecao}
+                        onClick={onAprovarSelecao}
+                        className="inline-flex items-center gap-2 rounded-lg bg-[var(--gold)] px-4 py-2 text-[12px] font-medium text-black transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <CheckCircle2 size={15} strokeWidth={1.8} />
+                        {aprovandoSelecao
+                          ? 'Aprovando...'
+                          : 'Aprovar seleção e avançar para edição'}
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             </div>

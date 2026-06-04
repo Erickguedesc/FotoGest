@@ -51,6 +51,9 @@ public class PreferenciasSistema {
     @Column(name = "capa_album_padrao_public_id", columnDefinition = "TEXT")
     private String capaAlbumPadraoPublicId;
 
+    @Column(name = "ultimo_backup_metadados_em")
+    private OffsetDateTime ultimoBackupMetadadosEm;
+
     @PrePersist
     protected void onCreate() {
         criadoEm = atualizadoEm = OffsetDateTime.now();

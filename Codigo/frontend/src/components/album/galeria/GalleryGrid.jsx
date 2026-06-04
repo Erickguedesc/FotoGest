@@ -46,17 +46,6 @@ export default function GalleryGrid({
                   />
                 </button>
 
-                <div className="pointer-events-none absolute inset-0 grid grid-cols-3 opacity-60">
-                  {Array.from({ length: 12 }).map((_, item) => (
-                    <span
-                      key={item}
-                      className="rotate-[-35deg] select-none self-center text-center font-serif text-[10px] italic tracking-[0.18em] text-white/20"
-                    >
-                      © FotoGest
-                    </span>
-                  ))}
-                </div>
-
                 <span className="absolute left-3 top-3 text-[10px] tracking-[0.12em] text-white/50 opacity-0 transition group-hover:opacity-100">
                   #{String(index + 1).padStart(3, '0')}
                 </span>

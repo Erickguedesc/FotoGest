@@ -20,4 +20,5 @@ public class RelatorioTipoEnsaioResponse {
     private BigDecimal percentualReceita;
     private BigDecimal ticketMedio;
     private Integer quantidadeEnsaios;
+    private Integer fotosExtrasVendidas;
 }

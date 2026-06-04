@@ -41,6 +41,7 @@ public class EnsaioResponse {
     private String observacaoValores;
 
     private String observacoes;
+    private String notasInternas;
     private Short progresso;
     private Integer totalFotos;
     private String capaUrl;

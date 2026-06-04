@@ -5,11 +5,31 @@ import com.fotogest.model.ConfiguracaoEstudio;
 import com.fotogest.model.ConfiguracaoEmail;
 import com.fotogest.model.Fotografa;
 import com.fotogest.model.PreferenciasSistema;
+import com.fotogest.model.*;
+import com.fotogest.repository.AlbumRepository;
+import com.fotogest.repository.ClienteRepository;
 import com.fotogest.repository.ConfiguracaoEmailRepository;
 import com.fotogest.repository.ConfiguracaoEstudioRepository;
+import com.fotogest.repository.EnsaioRepository;
+import com.fotogest.repository.FotoRepository;
 import com.fotogest.repository.FotografaRepository;
+import com.fotogest.repository.HistoricoStatusEnsaioRepository;
+import com.fotogest.repository.ModeloContratoRepository;
 import com.fotogest.repository.PreferenciasSistemaRepository;
+import com.fotogest.repository.SelecaoFotoRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lowagie.text.Document;
+import com.lowagie.text.Element;
+import com.lowagie.text.Font;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,7 +39,16 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.awt.Color;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 @Service
 @RequiredArgsConstructor
 
@@ -32,6 +61,22 @@ public class ConfiguracoesService {
     private final PasswordEncoder passwordEncoder;
     private final CloudinaryService cloudinaryService;
     private final MarcaDaguaService marcaDaguaService;
+    private final ModeloContratoService modeloContratoService;
+    private final ClienteRepository clienteRepository;
+    private final EnsaioRepository ensaioRepository;
+    private final AlbumRepository albumRepository;
+    private final FotoRepository fotoRepository;
+    private final SelecaoFotoRepository selecaoFotoRepository;
+    private final HistoricoStatusEnsaioRepository historicoStatusEnsaioRepository;
+    private final ModeloContratoRepository modeloContratoRepository;
+    private final ObjectMapper objectMapper;
+    private final EmailService emailService;
+
+    @Value("${spring.mail.username:}")
+    private String mailUsername;
+
+    @Value("${spring.mail.password:}")
+    private String mailPassword;
 
     @Transactional
     public ConfiguracoesResponseDTO buscarConfiguracoes() {
@@ -46,7 +91,140 @@ public class ConfiguracoesService {
         .preferencias(toPreferenciasDTO(preferencias))
         .marcaDagua(marcaDaguaService.buscarMarcaDagua())
         .email(toEmailDTO(email))
+        .modelosContrato(modeloContratoService.listarGarantindoPadrao())
         .build();
+    }
+
+    @Transactional
+    public byte[] gerarBackupMetadadosZip() {
+        Map<String, Object> backup = gerarBackupMetadados();
+
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+            try (ZipOutputStream zip = new ZipOutputStream(outputStream, StandardCharsets.UTF_8)) {
+                zip.putNextEntry(new ZipEntry("backup-tecnico.json"));
+                zip.write(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(backup));
+                zip.closeEntry();
+
+                zip.putNextEntry(new ZipEntry("resumo-do-backup.pdf"));
+                zip.write(gerarResumoBackupPdf(backup));
+                zip.closeEntry();
+            }
+
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Nao foi possivel gerar o pacote de backup"
+            );
+        }
+    }
+
+    @Transactional
+    public Map<String, Object> gerarBackupMetadados() {
+        Fotografa fotografa = getFotografaLogada();
+        ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
+        PreferenciasSistema preferencias = getOuCriarPreferencias(fotografa);
+        ConfiguracaoEmail email = getOuCriarEmail(fotografa);
+        OffsetDateTime geradoEm = OffsetDateTime.now();
+
+        preferencias.setUltimoBackupMetadadosEm(geradoEm);
+        preferenciasSistemaRepository.save(preferencias);
+
+        List<Cliente> clientes = clienteRepository.findAll();
+        List<Ensaio> ensaios = ensaioRepository.findAll();
+        List<Album> albuns = albumRepository.findAll();
+        List<Foto> fotos = fotoRepository.findAll();
+        List<SelecaoFoto> selecoes = selecaoFotoRepository.findAll();
+        List<HistoricoStatusEnsaio> historico = historicoStatusEnsaioRepository.findAll();
+        List<ModeloContrato> modelos = modeloContratoRepository.findAll();
+
+        return mapa(
+                "tipo", "FOTOGEST_BACKUP_METADADOS",
+                "versao", 1,
+                "geradoEm", geradoEm,
+                "nomeArquivo", "fotogest-backup-" + geradoEm.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) + ".json",
+                "observacao", "Backup de metadados. Fotos permanecem armazenadas no Cloudinary; este arquivo guarda referencias e dados do sistema.",
+                "resumo", mapa(
+                        "clientes", clientes.size(),
+                        "ensaios", ensaios.size(),
+                        "albuns", albuns.size(),
+                        "fotos", fotos.size(),
+                        "selecoes", selecoes.size()
+                ),
+                "dados", mapa(
+                        "fotografa", mapa(
+                                "id", fotografa.getId(),
+                                "nome", fotografa.getNome(),
+                                "email", fotografa.getEmail(),
+                                "telefone", fotografa.getTelefone(),
+                                "cidade", fotografa.getCidade(),
+                                "cnpj", fotografa.getCnpj(),
+                                "logoUrl", fotografa.getLogoUrl(),
+                                "fotoPerfilUrl", fotografa.getFotoPerfilUrl(),
+                                "ativo", fotografa.getAtivo(),
+                                "criadoEm", fotografa.getCriadoEm(),
+                                "atualizadoEm", fotografa.getAtualizadoEm()
+                        ),
+                        "estudio", mapa(
+                                "id", estudio.getId(),
+                                "nomeEstudio", estudio.getNomeEstudio(),
+                                "nomeComercial", estudio.getNomeComercial(),
+                                "email", estudio.getEmail(),
+                                "telefone", estudio.getTelefone(),
+                                "instagram", estudio.getInstagram(),
+                                "cidade", estudio.getCidade(),
+                                "endereco", estudio.getEndereco(),
+                                "cnpj", estudio.getCnpj(),
+                                "logoUrl", estudio.getLogoUrl(),
+                                "marcaDaguaUrl", estudio.getMarcaDaguaUrl(),
+                                "marcaDaguaPublicId", estudio.getMarcaDaguaPublicId(),
+                                "marcaDaguaTexto", estudio.getMarcaDaguaTexto(),
+                                "marcaDaguaAtiva", estudio.getMarcaDaguaAtiva(),
+                                "marcaDaguaTipo", estudio.getMarcaDaguaTipo(),
+                                "marcaDaguaPosicao", estudio.getMarcaDaguaPosicao(),
+                                "marcaDaguaOpacidade", estudio.getMarcaDaguaOpacidade(),
+                                "marcaDaguaTamanho", estudio.getMarcaDaguaTamanho(),
+                                "marcaDaguaMargem", estudio.getMarcaDaguaMargem(),
+                                "marcaDaguaFonte", estudio.getMarcaDaguaFonte(),
+                                "marcaDaguaCor", estudio.getMarcaDaguaCor(),
+                                "marcaDaguaEstilo", estudio.getMarcaDaguaEstilo(),
+                                "marcaDaguaTextoModo", estudio.getMarcaDaguaTextoModo()
+                        ),
+                        "preferencias", mapa(
+                                "id", preferencias.getId(),
+                                "qtdFotosPadrao", preferencias.getQtdFotosPadrao(),
+                                "valorFotoExtraPadrao", preferencias.getValorFotoExtraPadrao(),
+                                "prazoExpiracaoAlbumDias", preferencias.getPrazoExpiracaoAlbumDias(),
+                                "cidadePadrao", preferencias.getCidadePadrao(),
+                                "mensagemEnvioAlbum", preferencias.getMensagemEnvioAlbum(),
+                                "mensagemSelecaoRecebida", preferencias.getMensagemSelecaoRecebida(),
+                                "capaAlbumPadraoUrl", preferencias.getCapaAlbumPadraoUrl(),
+                                "capaAlbumPadraoPublicId", preferencias.getCapaAlbumPadraoPublicId(),
+                                "ultimoBackupMetadadosEm", preferencias.getUltimoBackupMetadadosEm()
+                        ),
+                        "email", mapa(
+                                "id", email.getId(),
+                                "ativo", email.getAtivo(),
+                                "nomeRemetente", email.getNomeRemetente(),
+                                "emailFotografaAvisos", email.getEmailFotografaAvisos(),
+                                "enviarAlbumPublicado", email.getEnviarAlbumPublicado(),
+                                "avisarSelecaoRecebida", email.getAvisarSelecaoRecebida(),
+                                "enviarConfirmacaoSelecaoCliente", email.getEnviarConfirmacaoSelecaoCliente(),
+                                "enviarMudancaStatus", email.getEnviarMudancaStatus(),
+                                "mensagemAlbumPublicado", email.getMensagemAlbumPublicado(),
+                                "mensagemSelecaoRecebida", email.getMensagemSelecaoRecebida()
+                        ),
+                        "clientes", clientes.stream().map(this::backupCliente).toList(),
+                        "ensaios", ensaios.stream().map(this::backupEnsaio).toList(),
+                        "albuns", albuns.stream().map(this::backupAlbum).toList(),
+                        "fotos", fotos.stream().map(this::backupFoto).toList(),
+                        "selecoes", selecoes.stream().map(this::backupSelecao).toList(),
+                        "historicoStatus", historico.stream().map(this::backupHistorico).toList(),
+                        "modelosContrato", modelos.stream().map(this::backupModeloContrato).toList()
+                )
+        );
     }
 
     @Transactional
@@ -122,15 +300,25 @@ public class ConfiguracoesService {
 
         email.setAtivo(Boolean.TRUE.equals(request.getAtivo()));
         email.setNomeRemetente(normalizarTexto(request.getNomeRemetente()));
-        email.setEmailResposta(normalizarTexto(request.getEmailResposta()));
         email.setEmailFotografaAvisos(normalizarTexto(request.getEmailFotografaAvisos()));
         email.setEnviarAlbumPublicado(Boolean.TRUE.equals(request.getEnviarAlbumPublicado()));
         email.setAvisarSelecaoRecebida(Boolean.TRUE.equals(request.getAvisarSelecaoRecebida()));
+        email.setEnviarConfirmacaoSelecaoCliente(Boolean.TRUE.equals(request.getEnviarConfirmacaoSelecaoCliente()));
         email.setEnviarMudancaStatus(Boolean.TRUE.equals(request.getEnviarMudancaStatus()));
         email.setMensagemAlbumPublicado(normalizarTexto(request.getMensagemAlbumPublicado()));
         email.setMensagemSelecaoRecebida(normalizarTexto(request.getMensagemSelecaoRecebida()));
 
         configuracaoEmailRepository.save(email);
+
+        return toEmailDTO(email);
+    }
+
+    @Transactional
+    public EmailConfigDTO enviarEmailTeste() {
+        Fotografa fotografa = getFotografaLogada();
+        ConfiguracaoEmail email = getOuCriarEmail(fotografa);
+
+        emailService.enviarTeste(email);
 
         return toEmailDTO(email);
     }
@@ -211,10 +399,10 @@ public class ConfiguracoesService {
                                 .fotografa(fotografa)
                                 .ativo(false)
                                 .nomeRemetente("Seu Estúdio Fotográfico")
-                                .emailResposta(fotografa.getEmail())
                                 .emailFotografaAvisos(fotografa.getEmail())
                                 .enviarAlbumPublicado(true)
                                 .avisarSelecaoRecebida(true)
+                                .enviarConfirmacaoSelecaoCliente(true)
                                 .enviarMudancaStatus(false)
                                 .mensagemAlbumPublicado("Olá! Seu álbum já está disponível. Acesse pelo link abaixo usando a senha enviada.")
                                 .mensagemSelecaoRecebida("A cliente enviou a seleção de fotos. Acesse o sistema para conferir os detalhes.")
@@ -269,22 +457,49 @@ public class ConfiguracoesService {
                 .mensagemSelecaoRecebida(preferencias.getMensagemSelecaoRecebida())
                 .capaAlbumPadraoUrl(preferencias.getCapaAlbumPadraoUrl())
                 .capaAlbumPadraoPublicId(preferencias.getCapaAlbumPadraoPublicId())
+                .ultimoBackupMetadadosEm(preferencias.getUltimoBackupMetadadosEm())
                 .build();
     }
 
     private EmailConfigDTO toEmailDTO(ConfiguracaoEmail email) {
+        boolean smtpConfigurado = smtpConfigurado();
+        boolean envioDisponivel = Boolean.TRUE.equals(email.getAtivo()) && smtpConfigurado;
+
         return EmailConfigDTO.builder()
                 .id(email.getId())
                 .ativo(email.getAtivo())
                 .nomeRemetente(email.getNomeRemetente())
-                .emailResposta(email.getEmailResposta())
                 .emailFotografaAvisos(email.getEmailFotografaAvisos())
                 .enviarAlbumPublicado(email.getEnviarAlbumPublicado())
                 .avisarSelecaoRecebida(email.getAvisarSelecaoRecebida())
+                .enviarConfirmacaoSelecaoCliente(email.getEnviarConfirmacaoSelecaoCliente())
                 .enviarMudancaStatus(email.getEnviarMudancaStatus())
                 .mensagemAlbumPublicado(email.getMensagemAlbumPublicado())
                 .mensagemSelecaoRecebida(email.getMensagemSelecaoRecebida())
+                .smtpConfigurado(smtpConfigurado)
+                .envioDisponivel(envioDisponivel)
+                .motivoIndisponivel(resolverMotivoEmailIndisponivel(email, smtpConfigurado))
                 .build();
+    }
+
+    private boolean smtpConfigurado() {
+        return !isBlank(mailUsername) && !isBlank(mailPassword);
+    }
+
+    private String resolverMotivoEmailIndisponivel(ConfiguracaoEmail email, boolean smtpConfigurado) {
+        if (!Boolean.TRUE.equals(email.getAtivo())) {
+            return "Envio automatico desativado.";
+        }
+
+        if (!smtpConfigurado) {
+            return "Os avisos automaticos nao serao enviados ate a configuracao ser concluida.";
+        }
+
+        return null;
+    }
+
+    private boolean isBlank(String valor) {
+        return valor == null || valor.trim().isEmpty();
     }
     @Transactional
 public FotografaConfigDTO uploadFotoPerfil(MultipartFile arquivo) {
@@ -392,6 +607,278 @@ public PreferenciasConfigDTO uploadCapaAlbumPadrao(MultipartFile arquivo) {
                 "Não foi possível enviar a capa padrão do álbum"
         );
     }
+}
+
+private Map<String, Object> backupCliente(Cliente cliente) {
+    return mapa(
+            "id", cliente.getId(),
+            "nome", cliente.getNome(),
+            "email", cliente.getEmail(),
+            "telefone", cliente.getTelefone(),
+            "cpf", cliente.getCpf(),
+            "cidade", cliente.getCidade(),
+            "indicacao", cliente.getIndicacao(),
+            "ativo", cliente.getAtivo(),
+            "criadoEm", cliente.getCriadoEm(),
+            "atualizadoEm", cliente.getAtualizadoEm()
+    );
+}
+
+private Map<String, Object> backupEnsaio(Ensaio ensaio) {
+    return mapa(
+            "id", ensaio.getId(),
+            "clienteId", ensaio.getCliente().getId(),
+            "tipo", ensaio.getTipo(),
+            "tipoPersonalizado", ensaio.getTipoPersonalizado(),
+            "status", ensaio.getStatus(),
+            "dataEnsaio", ensaio.getDataEnsaio(),
+            "local", ensaio.getLocal(),
+            "qtdFotosPacote", ensaio.getQtdFotosPacote(),
+            "valorPacote", ensaio.getValorPacote(),
+            "valorFotoExtra", ensaio.getValorFotoExtra(),
+            "cobrarFotoExtra", ensaio.getCobrarFotoExtra(),
+            "valorFinalEnsaio", ensaio.getValorFinalEnsaio(),
+            "statusValores", ensaio.getStatusValores(),
+            "observacaoValores", ensaio.getObservacaoValores(),
+            "observacoes", ensaio.getObservacoes(),
+            "notasInternas", ensaio.getNotasInternas(),
+            "progresso", ensaio.getProgresso(),
+            "criadoEm", ensaio.getCriadoEm(),
+            "atualizadoEm", ensaio.getAtualizadoEm()
+    );
+}
+
+private Map<String, Object> backupAlbum(Album album) {
+    return mapa(
+            "id", album.getId(),
+            "ensaioId", album.getEnsaio().getId(),
+            "acessoLiberado", album.getAcessoLiberado(),
+            "tokenUrl", album.getTokenUrl(),
+            "publicadoEm", album.getPublicadoEm(),
+            "expiraEm", album.getExpiraEm(),
+            "ativo", album.getAtivo(),
+            "views", album.getViews()
+    );
+}
+
+private Map<String, Object> backupFoto(Foto foto) {
+    return mapa(
+            "id", foto.getId(),
+            "ensaioId", foto.getEnsaio().getId(),
+            "cloudinaryId", foto.getCloudinaryId(),
+            "nomeOriginal", foto.getNomeOriginal(),
+            "urlWatermark", foto.getUrlWatermark(),
+            "urlOriginal", foto.getUrlOriginal(),
+            "ordem", foto.getOrdem(),
+            "ehCapa", foto.getEhCapa(),
+            "enviadaEm", foto.getEnviadaEm()
+    );
+}
+
+private Map<String, Object> backupSelecao(SelecaoFoto selecao) {
+    return mapa(
+            "id", selecao.getId(),
+            "albumId", selecao.getAlbum().getId(),
+            "fotoId", selecao.getFoto().getId(),
+            "finalizada", selecao.getFinalizada(),
+            "selecionadaEm", selecao.getSelecionadaEm(),
+            "totalSelecionadas", selecao.getTotalSelecionadas(),
+            "valorExcedente", selecao.getValorExcedente(),
+            "observacao", selecao.getObservacao()
+    );
+}
+
+private Map<String, Object> backupHistorico(HistoricoStatusEnsaio historico) {
+    return mapa(
+            "id", historico.getId(),
+            "ensaioId", historico.getEnsaio().getId(),
+            "status", historico.getStatus(),
+            "alteradoEm", historico.getAlteradoEm()
+    );
+}
+
+private Map<String, Object> backupModeloContrato(ModeloContrato modelo) {
+    return mapa(
+            "id", modelo.getId(),
+            "fotografaId", modelo.getFotografa().getId(),
+            "nome", modelo.getNome(),
+            "tipoEnsaio", modelo.getTipoEnsaio(),
+            "clausulas", modelo.getClausulas(),
+            "textoAceite", modelo.getTextoAceite(),
+            "padrao", modelo.getPadrao(),
+            "ativo", modelo.getAtivo(),
+            "criadoEm", modelo.getCriadoEm(),
+            "atualizadoEm", modelo.getAtualizadoEm()
+    );
+}
+
+@SuppressWarnings("unchecked")
+private byte[] gerarResumoBackupPdf(Map<String, Object> backup) throws Exception {
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    Document document = new Document(PageSize.A4, 36, 36, 34, 34);
+
+    PdfWriter.getInstance(document, outputStream);
+    document.open();
+
+    Font titulo = new Font(Font.HELVETICA, 18, Font.BOLD, new Color(38, 38, 38));
+    Font subtitulo = new Font(Font.HELVETICA, 10, Font.NORMAL, new Color(110, 110, 110));
+    Font secao = new Font(Font.HELVETICA, 12, Font.BOLD, new Color(38, 38, 38));
+    Font texto = new Font(Font.HELVETICA, 9, Font.NORMAL, new Color(55, 55, 55));
+    Font destaque = new Font(Font.HELVETICA, 9, Font.BOLD, new Color(38, 38, 38));
+
+    Paragraph title = new Paragraph("Resumo do backup FotoGest", titulo);
+    title.setSpacingAfter(6);
+    document.add(title);
+
+    Paragraph meta = new Paragraph("Gerado em " + valorTexto(backup.get("geradoEm")) +
+            " - Arquivo tecnico incluido neste pacote: backup-tecnico.json", subtitulo);
+    meta.setSpacingAfter(18);
+    document.add(meta);
+
+    Map<String, Object> resumo = (Map<String, Object>) backup.get("resumo");
+    document.add(new Paragraph("Resumo geral", secao));
+    document.add(tabelaResumo(resumo, texto, destaque));
+
+    Map<String, Object> dados = (Map<String, Object>) backup.get("dados");
+    Map<String, Object> fotografa = (Map<String, Object>) dados.get("fotografa");
+    document.add(new Paragraph("Profissional", secao));
+    document.add(paragrafo("Nome: " + valorTexto(fotografa.get("nome")) +
+            " | Email: " + valorTexto(fotografa.get("email")) +
+            " | Telefone: " + valorTexto(fotografa.get("telefone")), texto));
+
+    List<Map<String, Object>> clientes = (List<Map<String, Object>>) dados.get("clientes");
+    List<Map<String, Object>> ensaios = (List<Map<String, Object>>) dados.get("ensaios");
+
+    document.add(new Paragraph("Clientes", secao));
+    document.add(tabelaClientes(clientes, texto, destaque));
+
+    document.add(new Paragraph("Ensaios", secao));
+    document.add(tabelaEnsaios(ensaios, texto, destaque));
+
+    Paragraph nota = new Paragraph(
+            "Observacao: este PDF e para leitura e conferencia. Para restauracao/importacao futura, use o arquivo backup-tecnico.json incluido neste ZIP.",
+            subtitulo
+    );
+    nota.setSpacingBefore(14);
+    document.add(nota);
+
+    document.close();
+    return outputStream.toByteArray();
+}
+
+private PdfPTable tabelaResumo(Map<String, Object> resumo, Font texto, Font destaque) {
+    PdfPTable table = new PdfPTable(5);
+    table.setWidthPercentage(100);
+    table.setSpacingAfter(16);
+
+    addHeader(table, "Clientes", destaque);
+    addHeader(table, "Ensaios", destaque);
+    addHeader(table, "Albuns", destaque);
+    addHeader(table, "Fotos", destaque);
+    addHeader(table, "Selecoes", destaque);
+    addCell(table, valorTexto(resumo.get("clientes")), texto);
+    addCell(table, valorTexto(resumo.get("ensaios")), texto);
+    addCell(table, valorTexto(resumo.get("albuns")), texto);
+    addCell(table, valorTexto(resumo.get("fotos")), texto);
+    addCell(table, valorTexto(resumo.get("selecoes")), texto);
+
+    return table;
+}
+
+private PdfPTable tabelaClientes(List<Map<String, Object>> clientes, Font texto, Font destaque) {
+    PdfPTable table = new PdfPTable(new float[] { 2.4f, 2.6f, 1.7f, 1.5f });
+    table.setWidthPercentage(100);
+    table.setSpacingAfter(16);
+
+    addHeader(table, "Nome", destaque);
+    addHeader(table, "Email", destaque);
+    addHeader(table, "Telefone", destaque);
+    addHeader(table, "Cidade", destaque);
+
+    clientes.stream().limit(40).forEach(cliente -> {
+        addCell(table, valorTexto(cliente.get("nome")), texto);
+        addCell(table, valorTexto(cliente.get("email")), texto);
+        addCell(table, valorTexto(cliente.get("telefone")), texto);
+        addCell(table, valorTexto(cliente.get("cidade")), texto);
+    });
+
+    if (clientes.size() > 40) {
+        addCell(table, "PDF mostra 40 clientes. O JSON tecnico contem todos os registros.", texto, 4);
+    }
+
+    return table;
+}
+
+private PdfPTable tabelaEnsaios(List<Map<String, Object>> ensaios, Font texto, Font destaque) {
+    PdfPTable table = new PdfPTable(new float[] { 1.5f, 1.4f, 1.5f, 1.5f, 1.2f });
+    table.setWidthPercentage(100);
+    table.setSpacingAfter(12);
+
+    addHeader(table, "Data", destaque);
+    addHeader(table, "Tipo", destaque);
+    addHeader(table, "Status", destaque);
+    addHeader(table, "Valor final", destaque);
+    addHeader(table, "Fotos pacote", destaque);
+
+    ensaios.stream().limit(60).forEach(ensaio -> {
+        addCell(table, valorTexto(ensaio.get("dataEnsaio")), texto);
+        addCell(table, valorTexto(ensaio.get("tipo")), texto);
+        addCell(table, valorTexto(ensaio.get("status")), texto);
+        addCell(table, valorTexto(ensaio.get("valorFinalEnsaio")), texto);
+        addCell(table, valorTexto(ensaio.get("qtdFotosPacote")), texto);
+    });
+
+    if (ensaios.size() > 60) {
+        addCell(table, "PDF mostra 60 ensaios. O JSON tecnico contem todos os registros.", texto, 5);
+    }
+
+    return table;
+}
+
+private Paragraph paragrafo(String valor, Font font) {
+    Paragraph paragraph = new Paragraph(valor, font);
+    paragraph.setSpacingAfter(14);
+    return paragraph;
+}
+
+private void addHeader(PdfPTable table, String value, Font font) {
+    PdfPCell cell = new PdfPCell(new Phrase(value, font));
+    cell.setBorder(Rectangle.BOTTOM);
+    cell.setPadding(6);
+    cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+    cell.setBackgroundColor(new Color(245, 241, 232));
+    table.addCell(cell);
+}
+
+private void addCell(PdfPTable table, String value, Font font) {
+    addCell(table, value, font, 1);
+}
+
+private void addCell(PdfPTable table, String value, Font font, int colspan) {
+    PdfPCell cell = new PdfPCell(new Phrase(value, font));
+    cell.setColspan(colspan);
+    cell.setBorder(Rectangle.BOTTOM);
+    cell.setPadding(6);
+    table.addCell(cell);
+}
+
+private String valorTexto(Object valor) {
+    if (valor == null) {
+        return "-";
+    }
+
+    String texto = String.valueOf(valor);
+    return texto.isBlank() ? "-" : texto;
+}
+
+private Map<String, Object> mapa(Object... valores) {
+    Map<String, Object> resultado = new LinkedHashMap<>();
+
+    for (int index = 0; index + 1 < valores.length; index += 2) {
+        resultado.put(String.valueOf(valores[index]), valores[index + 1]);
+    }
+
+    return resultado;
 }
 
 

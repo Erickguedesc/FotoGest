@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import useBodyScrollLock from '../../../hooks/useBodyScrollLock'
+import FotoPreviewImage from './FotoPreviewImage'
 import SectionTitle from './SectionTitle'
 
 const LIMITE_PREVIA = 6
@@ -10,24 +12,33 @@ export default function AlbumPublicadoResumo({
   const [mostrarFotos, setMostrarFotos] = useState(false)
   const [modalAberto, setModalAberto] = useState(false)
 
+  useBodyScrollLock(modalAberto)
+
   const capa = fotos.find((foto) => foto.ehCapa) || fotos[0]
-  const capaUrl = capa?.urlWatermark || capa?.urlOriginal
   const fotosPrevias = fotos.slice(0, LIMITE_PREVIA)
   const temMaisFotos = fotos.length > LIMITE_PREVIA
 
-  const renderFotoCard = (foto) => {
-    const url = foto.urlWatermark || foto.urlOriginal
+  const getNomeFoto = (foto) => {
+    if (foto.nomeOriginal) return foto.nomeOriginal
 
+    if (foto.cloudinaryId) {
+      const partes = foto.cloudinaryId.split('/')
+      return partes[partes.length - 1]
+    }
+
+    return foto.id
+  }
+
+  const renderFotoCard = (foto) => {
     return (
       <article
         key={foto.id}
         className="overflow-hidden rounded-xl border border-white/[0.08] bg-black/20"
       >
         <div className="relative">
-          <img
-            src={url}
+          <FotoPreviewImage
+            foto={foto}
             alt={foto.cloudinaryId || 'Foto do álbum'}
-            className="h-40 w-full object-cover"
           />
 
           {foto.ehCapa && (
@@ -43,7 +54,7 @@ export default function AlbumPublicadoResumo({
 
         <div className="p-3">
           <p className="truncate text-[12px] text-white/70">
-            {foto.cloudinaryId || foto.id}
+            {getNomeFoto(foto)}
           </p>
         </div>
       </article>
@@ -61,9 +72,9 @@ export default function AlbumPublicadoResumo({
         <div className="overflow-hidden rounded-2xl border border-emerald-400/25 bg-emerald-400/5">
           <div className="grid grid-cols-[220px_1fr] max-md:grid-cols-1">
             <div className="min-h-[180px] bg-black/30">
-              {capaUrl ? (
-                <img
-                  src={capaUrl}
+              {capa ? (
+                <FotoPreviewImage
+                  foto={capa}
                   alt="Capa do álbum publicado"
                   className="h-full min-h-[180px] w-full object-cover"
                 />
@@ -147,7 +158,7 @@ export default function AlbumPublicadoResumo({
         )}
 
         {modalAberto && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-8 backdrop-blur max-sm:p-4">
+          <div className="fixed inset-0 z-[70] flex items-center justify-center overflow-hidden bg-black/80 p-8 backdrop-blur max-sm:p-4">
             <div className="flex max-h-[84vh] w-full max-w-5xl flex-col rounded-2xl border border-[var(--gold-border)] bg-[#121212] shadow-2xl">
               <div className="flex items-center justify-between gap-4 border-b border-white/[0.08] px-7 py-6 max-sm:px-5">
                 <div>
@@ -168,7 +179,7 @@ export default function AlbumPublicadoResumo({
                 </button>
               </div>
 
-              <div className="overflow-y-auto px-7 py-6 max-sm:px-5">
+              <div className="min-h-0 flex-1 overscroll-contain overflow-y-auto px-7 py-6 max-sm:px-5">
                 <div className="grid grid-cols-2 gap-5 md:grid-cols-3">
                   {fotos.map(renderFotoCard)}
                 </div>

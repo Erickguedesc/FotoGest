@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Download } from 'lucide-react'
 import RelatorioHeader from '../components/relatorios/RelatorioHeader'
 import RelatorioFiltros from '../components/relatorios/RelatorioFiltros'
 import RelatorioDestaques from '../components/relatorios/RelatorioDestaques'
@@ -14,13 +15,28 @@ import {
   getTipoPeriodoLabel,
 } from '../utils/relatoriosUtils'
 
+const downloadBlob = (blob, filename) => {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
 export default function RelatoriosPage() {
   const anoAtual = new Date().getFullYear()
 
   const [tipo, setTipo] = useState('MENSAL')
   const [ano, setAno] = useState(anoAtual)
+  const [dataInicio, setDataInicio] = useState('')
+  const [dataFim, setDataFim] = useState('')
   const [relatorio, setRelatorio] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [exportLoading, setExportLoading] = useState(false)
   const [erro, setErro] = useState('')
 
   const anosDisponiveis = useMemo(() => getAnosDisponiveis(), [])
@@ -35,6 +51,8 @@ export default function RelatoriosPage() {
       const resultado = await relatoriosService.buscarFaturamento({
         tipo,
         ano,
+        dataInicio: dataInicio || undefined,
+        dataFim: dataFim || undefined,
       })
 
       setRelatorio(resultado?.data ?? resultado)
@@ -57,6 +75,40 @@ export default function RelatoriosPage() {
   }, [])
 
   const tituloFallback = `${getTipoPeriodoLabel(tipo)} - ${ano}`
+  const tituloRelatorio = relatorio?.periodoDescricao || tituloFallback
+
+  const handleExportPdf = async () => {
+    if (!relatorio || exportLoading) return
+
+    const slug = String(tituloRelatorio)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase()
+
+    try {
+      setExportLoading(true)
+      setErro('')
+
+      const response = await relatoriosService.exportarFaturamentoPdf({
+        tipo,
+        ano,
+        dataInicio: dataInicio || undefined,
+        dataFim: dataFim || undefined,
+      })
+
+      downloadBlob(
+        response.data,
+        `relatorio-fotogest-${slug || ano}.pdf`
+      )
+    } catch (error) {
+      console.error('Erro ao exportar relatorio em PDF:', error)
+      setErro('Nao foi possivel exportar o relatorio em PDF.')
+    } finally {
+      setExportLoading(false)
+    }
+  }
 
 return (
   <>
@@ -70,15 +122,31 @@ return (
   periodoDescricao={relatorio?.periodoDescricao}
 />
 
+        <div className="mb-6 flex justify-end">
+          <button
+            type="button"
+            onClick={handleExportPdf}
+            disabled={!relatorio || loading || exportLoading}
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--gold-border)] bg-[var(--gold-dim)] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--gold)] transition hover:bg-[rgba(201,164,89,0.16)] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Download size={15} />
+            {exportLoading ? 'Gerando PDF' : 'Exportar PDF'}
+          </button>
+        </div>
+
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
           <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
             <RelatorioFiltros
               tipo={tipo}
               ano={ano}
+              dataInicio={dataInicio}
+              dataFim={dataFim}
               anosDisponiveis={anosDisponiveis}
               loading={loading}
               onTipoChange={setTipo}
               onAnoChange={setAno}
+              onDataInicioChange={setDataInicio}
+              onDataFimChange={setDataFim}
               onFiltrar={carregarRelatorio}
             />
 

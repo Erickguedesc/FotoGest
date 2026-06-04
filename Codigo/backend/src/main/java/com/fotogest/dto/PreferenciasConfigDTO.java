@@ -3,6 +3,7 @@ package com.fotogest.dto;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Getter
@@ -20,5 +21,6 @@ public class PreferenciasConfigDTO {
     private String mensagemSelecaoRecebida;
     private String capaAlbumPadraoUrl;
     private String capaAlbumPadraoPublicId;
+    private OffsetDateTime ultimoBackupMetadadosEm;
 
 }

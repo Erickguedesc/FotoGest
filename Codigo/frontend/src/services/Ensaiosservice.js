@@ -50,5 +50,11 @@ export const ensaiosService = {
 
   atualizarStatus: (id, status) => api.patch(`/ensaios/${id}/status`, { status }),
 
+  atualizarObservacoes: (id, observacoes) => api.patch(`/ensaios/${id}/observacoes`, { observacoes }),
+
+  atualizarNotasInternas: (id, notasInternas) => api.patch(`/ensaios/${id}/notas-internas`, { notasInternas }),
+
+  aprovarSelecao: (id) => api.patch(`/ensaios/${id}/aprovar-selecao`),
+
   excluir: (id) => api.delete(`/ensaios/${id}`),
 }

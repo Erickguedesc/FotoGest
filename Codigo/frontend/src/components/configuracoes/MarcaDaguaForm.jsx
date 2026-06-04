@@ -38,6 +38,7 @@ const emptyTextoForm = {
   fonte: 'MODERNA',
   cor: 'BRANCO',
   estilo: 'NORMAL',
+  modo: 'REPETIDA',
 }
 
 const emptyForm = {
@@ -48,6 +49,27 @@ const emptyForm = {
   marcaDaguaTamanho: 'MEDIA',
   marcaDaguaMargem: 30,
 }
+
+const previewFotos = [
+  {
+    id: 'casamento',
+    label: 'Foto escura',
+    orientation: 'landscape',
+    url: 'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?auto=format&fit=crop&w=900&q=80',
+  },
+  {
+    id: 'infantil',
+    label: 'Foto clara',
+    orientation: 'portrait',
+    url: 'https://i.pinimg.com/474x/0f/40/13/0f40131c6347faa8e93350016197dffd.jpg',
+  },
+  {
+    id: 'retrato',
+    label: 'Retrato',
+    orientation: 'portrait',
+    url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80',
+  },
+]
 
 export default function MarcaDaguaForm({
   data,
@@ -65,6 +87,7 @@ export default function MarcaDaguaForm({
   const fileInputRef = useRef(null)
   const [textoForm, setTextoForm] = useState(emptyTextoForm)
   const [confirmModal, setConfirmModal] = useState(null)
+  const [previewFotoId, setPreviewFotoId] = useState(previewFotos[0].id)
 
   useEffect(() => {
     setForm({
@@ -81,6 +104,7 @@ export default function MarcaDaguaForm({
   fonte: data?.marcaDaguaFonte || 'MODERNA',
   cor: data?.marcaDaguaCor || 'BRANCO',
   estilo: data?.marcaDaguaEstilo || 'NORMAL',
+  modo: data?.marcaDaguaTextoModo || 'REPETIDA',
 })
 
   }, [data])
@@ -135,6 +159,7 @@ function handleGerarTexto() {
     fonte: textoForm.fonte,
     cor: textoForm.cor,
     estilo: textoForm.estilo,
+    modo: textoForm.modo,
   })
 }
 
@@ -153,6 +178,10 @@ function handleGerarTexto() {
   }[form.marcaDaguaTamanho]
 
   const temMarcaDagua = Boolean(form.marcaDaguaUrl)
+  const marcaPorTexto = data?.marcaDaguaTipo === 'TEXTO'
+  const textoRepetidoPreview = marcaPorTexto && (data?.marcaDaguaTextoModo || 'REPETIDA') === 'REPETIDA'
+  const previewFoto = previewFotos.find((foto) => foto.id === previewFotoId) || previewFotos[0]
+  const previewVertical = previewFoto.orientation === 'portrait'
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -239,7 +268,7 @@ function handleGerarTexto() {
     </h3>
 
     <p className="mt-1 text-sm text-white/40">
-      Digite um texto para o sistema gerar uma imagem transparente e usar como marca d’água.
+      Digite um texto para o sistema gerar uma proteção repetida sobre toda a foto.
     </p>
 
     {data?.marcaDaguaTipo === 'TEXTO' && data?.marcaDaguaTexto && (
@@ -323,12 +352,61 @@ function handleGerarTexto() {
       </select>
     </div>
 
+    <div className="md:col-span-2">
+      <label className="mb-2 block text-xs uppercase tracking-[0.14em] text-white/35">
+        Como aplicar o texto
+      </label>
+
+      <div className="grid gap-2 md:grid-cols-2">
+        {[
+          {
+            value: 'REPETIDA',
+            title: 'Repetida na foto toda',
+            description: 'Protecao mais forte para selecao de fotos.',
+          },
+          {
+            value: 'UNICA',
+            title: 'Texto unico',
+            description: 'Assinatura discreta usando posicao e tamanho.',
+          },
+        ].map((modo) => {
+          const active = textoForm.modo === modo.value
+
+          return (
+            <label
+              key={modo.value}
+              className={`cursor-pointer rounded-xl border p-4 transition ${
+                active
+                  ? 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]'
+                  : 'border-white/10 bg-black/10 text-white/55 hover:border-white/20'
+              }`}
+            >
+              <input
+                type="radio"
+                name="modo"
+                value={modo.value}
+                checked={active}
+                onChange={handleTextoChange}
+                className="sr-only"
+              />
+              <span className="block text-sm font-medium">
+                {modo.title}
+              </span>
+              <span className="mt-1 block text-xs leading-5 opacity-70">
+                {modo.description}
+              </span>
+            </label>
+          )
+        })}
+      </div>
+    </div>
+
     <div className="flex items-end">
       <button
         type="button"
         disabled={gerarTextoLoading || !textoForm.texto.trim()}
         onClick={handleGerarTexto}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--gold-border)] bg-[var(--gold-dim)] px-5 py-3 text-sm font-medium text-[var(--gold)] transition hover:bg-[var(--gold)] hover:text-black disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/30"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--gold-border)] bg-[var(--gold-dim)] px-5 py-3 text-sm font-medium text-[var(--gold)] transition hover:bg-[var(--gold)] hover:text-black disabled:cursor-not-allowed disabled:border-[var(--border)] disabled:bg-[var(--card-hover)] disabled:text-[var(--text-muted)] disabled:opacity-70"
       >
         {gerarTextoLoading ? 'Gerando...' : 'Gerar marca por texto'}
       </button>
@@ -500,36 +578,71 @@ function handleGerarTexto() {
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-        <div className="mb-4 flex items-center gap-2">
-          <ImageIcon size={17} className="text-[var(--gold)]" />
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <ImageIcon size={17} className="text-[var(--gold)]" />
 
-          <h3 className="text-sm font-medium text-white">
-            Pré-visualização na galeria
-          </h3>
+            <h3 className="text-sm font-medium text-white">
+              Pré-visualização na galeria
+            </h3>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {previewFotos.map((foto) => {
+              const active = previewFotoId === foto.id
+
+              return (
+                <button
+                  key={foto.id}
+                  type="button"
+                  onClick={() => setPreviewFotoId(foto.id)}
+                  className={`rounded-lg border px-3 py-1.5 text-xs transition ${
+                    active
+                      ? 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]'
+                      : 'border-white/10 bg-black/10 text-white/50 hover:border-[var(--gold-border)] hover:text-[var(--gold)]'
+                  }`}
+                >
+                  {foto.label}
+                </button>
+              )
+            })}
+          </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#181818]">
-          <img
-            src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?auto=format&fit=crop&w=900&q=80"
-            alt="Prévia de foto com marca d’água"
-            className="h-[320px] w-full object-cover brightness-75"
-          />
+        <div
+          className={`overflow-hidden rounded-2xl border border-white/10 ${
+            previewVertical
+              ? 'flex justify-center bg-[#0f0f0f] p-4'
+              : 'bg-[#181818]'
+          }`}
+        >
+          <div className={`relative overflow-hidden ${previewVertical ? 'max-w-full rounded-xl' : 'w-full'}`}>
+            <img
+              src={previewFoto.url}
+              alt={`Prévia de marca d'água em ${previewFoto.label.toLowerCase()}`}
+              className={
+                previewVertical
+                  ? 'h-[520px] max-h-[68vh] w-auto max-w-full object-contain brightness-75'
+                  : 'h-[320px] w-full object-cover brightness-75'
+              }
+            />
 
-          {form.marcaDaguaAtiva && (
-            <div
-              className={`absolute inset-0 flex ${posicaoPreview}`}
-              style={{ padding: `${form.marcaDaguaMargem}px` }}
-            >
-             {form.marcaDaguaUrl && (
-  <img
-    src={form.marcaDaguaUrl}
-    alt="Prévia da marca d’água"
-    className={`${tamanhoPreview} object-contain`}
-    style={{ opacity: Number(form.marcaDaguaOpacidade) / 100 }}
-  />
-)}
-            </div>
-          )}
+            {form.marcaDaguaAtiva && (
+              <div
+                className={textoRepetidoPreview ? 'absolute inset-0' : `absolute inset-0 flex ${posicaoPreview}`}
+                style={textoRepetidoPreview ? undefined : { padding: `${form.marcaDaguaMargem}px` }}
+              >
+                {form.marcaDaguaUrl && (
+                  <img
+                    src={form.marcaDaguaUrl}
+                    alt="Prévia da marca d’água"
+                    className={textoRepetidoPreview ? 'h-full w-full object-cover' : `${tamanhoPreview} object-contain`}
+                    style={{ opacity: Number(form.marcaDaguaOpacidade) / 100 }}
+                  />
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
       <p className="mt-3 text-xs leading-5 text-white/35">

@@ -2,20 +2,27 @@ package com.fotogest.service;
 
 import com.fotogest.dto.EnsaioRequest;
 import com.fotogest.dto.EnsaioConflitoAgendaResponse;
+import com.fotogest.dto.EnsaioNotasInternasRequest;
+import com.fotogest.dto.EnsaioObservacoesRequest;
 import com.fotogest.dto.EnsaioResponse;
 import com.fotogest.dto.EnsaioStatusRequest;
 import com.fotogest.enums.StatusEnsaio;
 import com.fotogest.model.Cliente;
 import com.fotogest.model.Ensaio;
 import com.fotogest.model.Foto;
+import com.fotogest.model.Album;
+import com.fotogest.repository.AlbumRepository;
 import com.fotogest.repository.ClienteRepository;
 import com.fotogest.repository.EnsaioRepository;
 import com.fotogest.repository.FotoRepository;
 import com.fotogest.repository.PreferenciasSistemaRepository;
+import com.fotogest.repository.SelecaoFotoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 // Adiciona esse import no topo
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
@@ -36,6 +43,8 @@ public class EnsaioService {
     private final EnsaioRepository ensaioRepository;
     private final ClienteRepository clienteRepository;
     private final FotoRepository fotoRepository;
+    private final AlbumRepository albumRepository;
+    private final SelecaoFotoRepository selecaoFotoRepository;
     private final PreferenciasSistemaRepository preferenciasSistemaRepository;
     private final EmailService emailService;
 
@@ -86,7 +95,10 @@ Ensaio ensaio = Ensaio.builder()
         .progresso(resolverProgresso(StatusEnsaio.AGENDADO))
         .build();
 
-        return toResponse(ensaioRepository.save(ensaio));
+        Ensaio salvo = ensaioRepository.save(ensaio);
+        executarAposCommit(() -> emailService.avisarEnsaioAgendado(salvo));
+
+        return toResponse(salvo);
     }
 @Transactional(readOnly = true)
 public List<EnsaioResponse> listar(
@@ -207,7 +219,55 @@ public void deletar(UUID id) {
         return toResponse(salvo);
     }
 
+    @Transactional
+    public EnsaioResponse atualizarObservacoes(UUID id, EnsaioObservacoesRequest request) {
+        Ensaio ensaio = buscarEnsaio(id);
+        ensaio.setObservacoes(normalizarTexto(request.getObservacoes()));
+        return toResponse(ensaioRepository.save(ensaio));
+    }
+
+    @Transactional
+    public EnsaioResponse atualizarNotasInternas(UUID id, EnsaioNotasInternasRequest request) {
+        Ensaio ensaio = buscarEnsaio(id);
+        ensaio.setNotasInternas(normalizarTexto(request.getNotasInternas()));
+        return toResponse(ensaioRepository.save(ensaio));
+    }
+
     // ── helpers ─────────────────────────────────────────────────────────────
+
+    @Transactional
+    public EnsaioResponse aprovarSelecao(UUID id) {
+        Ensaio ensaio = buscarEnsaio(id);
+
+        if (ensaio.getStatus() == StatusEnsaio.FINALIZADO ||
+                ensaio.getStatus() == StatusEnsaio.CANCELADO) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Nao e possivel aprovar selecao para um ensaio finalizado ou cancelado"
+            );
+        }
+
+        Album album = albumRepository.findByEnsaioId(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Publique o album antes de aprovar a selecao"
+                ));
+
+        if (!selecaoFotoRepository.existsByAlbumId(album.getId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "A cliente ainda nao enviou uma selecao"
+            );
+        }
+
+        ensaio.setStatus(StatusEnsaio.EM_EDICAO);
+        ensaio.setProgresso(resolverProgresso(StatusEnsaio.EM_EDICAO));
+
+        Ensaio salvo = ensaioRepository.save(ensaio);
+        emailService.avisarStatusAlterado(salvo, StatusEnsaio.EM_EDICAO);
+
+        return toResponse(salvo);
+    }
 
     private Ensaio buscarEnsaio(UUID id) {
         return ensaioRepository.findById(id)
@@ -343,6 +403,7 @@ private String resolverTipoExibicao(Ensaio ensaio) {
             .observacaoValores(ensaio.getObservacaoValores())
 
             .observacoes(ensaio.getObservacoes())
+            .notasInternas(ensaio.getNotasInternas())
             .progresso(ensaio.getProgresso())
             .totalFotos(fotoRepository.countByEnsaioId(ensaio.getId()))
             .capaUrl(buscarCapaUrl(ensaio.getId()))
@@ -393,5 +454,19 @@ private String buscarCapaAlbumPadrao() {
             .findFirst()
             .map(preferencias -> preferencias.getCapaAlbumPadraoUrl())
             .orElse(null);
+}
+
+private void executarAposCommit(Runnable action) {
+    if (TransactionSynchronizationManager.isSynchronizationActive()) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                action.run();
+            }
+        });
+        return;
+    }
+
+    action.run();
 }
 }

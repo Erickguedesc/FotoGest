@@ -114,6 +114,34 @@ function formatProximoEnsaio(value) {
   }
 }
 
+function getClienteAvatarUrl(resumo) {
+  return resumo.ensaios.find((ensaio) => ensaio.capaUrl)?.capaUrl || ''
+}
+
+function ClienteAvatar({ nome, src, size = 'md' }) {
+  const [imageError, setImageError] = useState(false)
+  const hasImage = src && !imageError
+  const sizeClass = size === 'sm' ? 'h-10 w-10 text-[12px]' : 'h-12 w-12 text-[13px]'
+
+  return (
+    <span
+      className={`flex ${sizeClass} shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]`}
+    >
+      {hasImage ? (
+        <img
+          src={src}
+          alt={nome ? `Capa de ${nome}` : 'Capa do cliente'}
+          className="h-full w-full object-cover"
+          loading="lazy"
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        getInitials(nome)
+      )}
+    </span>
+  )
+}
+
 export default function ClientesPage() {
   const [clientes, setClientes] = useState([])
   const [ensaios, setEnsaios] = useState([])
@@ -396,6 +424,7 @@ export default function ClientesPage() {
               {clientesComResumo.map(({ cliente, resumo }) => {
                 const telefone = cliente.telefone || ''
                 const arquivado = clienteEstaArquivado(cliente, resumo)
+                const avatarUrl = getClienteAvatarUrl(resumo)
                 const proximoEnsaio = resumo.proximoEnsaio
                   ? formatProximoEnsaio(resumo.proximoEnsaio.dataEnsaio)
                   : null
@@ -406,9 +435,7 @@ export default function ClientesPage() {
                     className="grid grid-cols-[minmax(210px,1.25fr)_118px_78px_118px_140px_112px_230px] items-center gap-3 px-5 py-4 text-[13px] max-xl:grid-cols-1 max-xl:gap-3"
                   >
                     <div className="flex min-w-0 items-center gap-3">
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[12px] text-[var(--gold)]">
-                        {getInitials(cliente.nome)}
-                      </span>
+                      <ClienteAvatar nome={cliente.nome} src={avatarUrl} size="sm" />
                       <div className="min-w-0">
                         <h2 className="truncate text-[14px] font-medium text-white">
                           {cliente.nome}
@@ -480,6 +507,7 @@ export default function ClientesPage() {
               const telefone = cliente.telefone || ''
               const situacao = getSituacaoClienteKey(cliente, resumo)
               const arquivado = clienteEstaArquivado(cliente, resumo)
+              const avatarUrl = getClienteAvatarUrl(resumo)
               const statusVisivel = ['EM_ANDAMENTO', 'ENTREGUE', 'ARQUIVADO'].includes(situacao)
               const proximoEnsaio = resumo.proximoEnsaio
                 ? formatProximoEnsaio(resumo.proximoEnsaio.dataEnsaio)
@@ -499,9 +527,7 @@ export default function ClientesPage() {
                 >
                   <div className="mb-5 flex items-start justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-3">
-                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[13px] text-[var(--gold)]">
-                        {getInitials(cliente.nome)}
-                      </span>
+                      <ClienteAvatar nome={cliente.nome} src={avatarUrl} />
 
                       <div className="min-w-0">
                         <h2 className="truncate text-[16px] font-medium text-white">

@@ -4,10 +4,9 @@ import { formatarDataExpiracao } from '../../../services/galeriaUtils'
 export default function GalleryHero({
   coverUrl,
   nomeCliente,
+  nomeFotografa,
   tipoEnsaio,
   dataFormatada,
-  localEnsaio,
-  totalFotos,
   limite,
   expiraEm,
   tempoRestante,
@@ -25,38 +24,34 @@ export default function GalleryHero({
         <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/30 to-[#110e0b]/80" />
       </div>
 
-      <div className="relative z-10 max-w-4xl">
-        <p className="mb-10 font-serif text-sm italic tracking-[0.28em] text-white/55">
-          FotoGest · Fotografia
+      <div className="relative z-10 max-w-5xl">
+        <p className="mb-10 font-serif text-base italic tracking-[0.08em] text-white/75">
+          {nomeFotografa}
         </p>
 
         <p className="mx-auto mb-5 inline-flex rounded-full border border-white/20 px-5 py-1.5 text-[11px] uppercase tracking-[0.24em] text-white/55">
           Álbum exclusivo
         </p>
 
-        <h1 className="font-serif text-6xl font-light leading-none tracking-tight md:text-8xl">
+        <p className="mt-8 font-serif text-lg italic text-white/60">
+          Bem-vindo(a)
+        </p>
+
+        <h1 className="mx-auto mt-3 max-w-4xl break-words font-serif text-5xl font-light leading-tight tracking-normal">
           {nomeCliente}
         </h1>
 
-        <p className="mt-5 font-serif text-2xl italic tracking-[0.08em] text-white/65">
+        <p className="mt-5 font-serif text-2xl italic text-white/65">
           {tipoEnsaio}
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <div className="rounded-full border border-white/15 bg-white/10 px-5 py-2 text-xs uppercase tracking-[0.12em] text-white/65 backdrop-blur">
-            {dataFormatada}
+            Ensaio em {dataFormatada}
           </div>
 
           <div className="rounded-full border border-white/15 bg-white/10 px-5 py-2 text-xs uppercase tracking-[0.12em] text-white/65 backdrop-blur">
-            {localEnsaio}
-          </div>
-
-          <div className="rounded-full border border-white/15 bg-white/10 px-5 py-2 text-xs uppercase tracking-[0.12em] text-white/65 backdrop-blur">
-            {totalFotos} fotografias
-          </div>
-
-          <div className="rounded-full border border-white/15 bg-white/10 px-5 py-2 text-xs uppercase tracking-[0.12em] text-white/65 backdrop-blur">
-            Até {limite} no pacote
+            {limite} fotos no pacote
           </div>
         </div>
 
@@ -71,7 +66,7 @@ export default function GalleryHero({
             <Clock3 size={14} strokeWidth={1.8} />
 
             <span className="font-medium">
-              Disponível até {formatarDataExpiracao(expiraEm)}
+              Álbum expira em {formatarDataExpiracao(expiraEm)}
             </span>
 
             <span className="hidden h-1 w-1 rounded-full bg-current opacity-45 sm:block" />

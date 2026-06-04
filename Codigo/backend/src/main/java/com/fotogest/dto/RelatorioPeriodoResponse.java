@@ -23,6 +23,10 @@ public class RelatorioPeriodoResponse {
     private BigDecimal excedentesCobrados;
     private BigDecimal ajustesManuais;
     private BigDecimal totalLiquido;
+    private BigDecimal valorRecebido;
+    private BigDecimal valorPendente;
 
     private Integer quantidadeEnsaios;
+    private Integer clientesNovos;
+    private Integer fotosExtrasVendidas;
 }

@@ -11,12 +11,15 @@ import com.fotogest.model.Foto;
 import com.fotogest.model.SelecaoFoto;
 import com.fotogest.repository.AlbumRepository;
 import com.fotogest.repository.FotoRepository;
+import com.fotogest.repository.FotografaRepository;
 import com.fotogest.repository.PreferenciasSistemaRepository;
 import com.fotogest.repository.SelecaoFotoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,6 +38,7 @@ public class AlbumPublicoService {
         private final AlbumRepository albumRepository;
         private final FotoRepository fotoRepository;
         private final SelecaoFotoRepository selecaoRepository;
+        private final FotografaRepository fotografaRepository;
         private final PasswordEncoder passwordEncoder;
         private final PreferenciasSistemaRepository preferenciasSistemaRepository;
         private final EmailService emailService;
@@ -71,6 +75,7 @@ public class AlbumPublicoService {
         }
 
         // SELECIONAR FOTOS
+        @Transactional
         public SelecaoResponse selecionarFotos(
                         String token,
                         List<UUID> fotosIds,
@@ -150,7 +155,14 @@ public class AlbumPublicoService {
                                 valorExcedente.doubleValue(),
                                 observacoesNormalizadas);
 
-                emailService.avisarSelecaoRecebida(album, total, excedente);
+                BigDecimal valorExcedenteFinal = valorExcedente;
+
+                executarAposCommit(() -> emailService.enviarNotificacoesSelecaoAsync(
+                                album.getId(),
+                                total,
+                                limite,
+                                excedente,
+                                valorExcedenteFinal));
 
                 return response;
         }
@@ -232,6 +244,7 @@ public class AlbumPublicoService {
 
                 return new AlbumPublicoResponse(
                                 album.getEnsaio().getCliente().getNome(),
+                                buscarNomeFotografa(),
                                 resolverTipoExibicao(album.getEnsaio()),
                                 album.getEnsaio().getQtdFotosPacote(),
                                 album.getEnsaio().getDataEnsaio(),
@@ -240,6 +253,15 @@ public class AlbumPublicoService {
                                 album.getEnsaio().getValorFotoExtra(),
                                 buscarCapaAlbumPadrao(),
                                 album.getExpiraEm());
+        }
+
+        private String buscarNomeFotografa() {
+                return fotografaRepository.findAll()
+                                .stream()
+                                .findFirst()
+                                .map(fotografa -> fotografa.getNome())
+                                .filter(nome -> nome != null && !nome.isBlank())
+                                .orElse(null);
         }
 
         private String resolverTipoExibicao(Ensaio ensaio) {
@@ -262,6 +284,20 @@ public class AlbumPublicoService {
                                 .findFirst()
                                 .map(preferencias -> preferencias.getCapaAlbumPadraoUrl())
                                 .orElse(null);
+        }
+
+        private void executarAposCommit(Runnable action) {
+                if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                                @Override
+                                public void afterCommit() {
+                                        action.run();
+                                }
+                        });
+                        return;
+                }
+
+                action.run();
         }
 
 }

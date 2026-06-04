@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 
 const STEP_LABELS = ['Cliente', 'Ensaio', 'Pacote', 'Pronto']
 const STEP_HINTS = [
-  'Preencha os dados do cliente e ensaio',
+  'Preencha os dados do cliente',
   'Preencha as informações do ensaio',
   'Defina o pacote e valor',
   'Formulário completo — pronto para salvar!',
@@ -17,7 +17,7 @@ const fmtDate = (d) => {
 const fmtMoney = (v) =>
   v ? `R$ ${String(v)}` : 'R$ —'
 
-export default function ResumeSidebar({ form, loading }) {
+export default function ResumeSidebar({ form, loading, activeSection = 'cliente' }) {
   const navigate = useNavigate()
 
   // ── Progresso ──────────────────────────────────────────────────────────────
@@ -26,13 +26,17 @@ export default function ResumeSidebar({ form, loading }) {
   // Step 2 → ensaio preenchido
   // Step 3 → pacote preenchido (pronto)
   const clienteDone = form.cliente.trim().length >= 3
-  const ensaioDone  = !!(form.tipo && form.data && form.hora && form.local)
-  const pacoteDone  = !!(form.valor && form.fotos)
+  const ensaioDone = !!(form.tipo && form.data && form.hora && form.local)
+  const pacoteDone = !!(form.valor && form.fotos)
+  const sectionStep = {
+    cliente: 0,
+    ensaio: 1,
+    pacote: 2,
+  }
 
-  const step = clienteDone && ensaioDone && pacoteDone ? 3
-             : clienteDone && ensaioDone               ? 2
-             : clienteDone                             ? 1
-             : 0
+  const step = clienteDone && ensaioDone && pacoteDone
+    ? 3
+    : sectionStep[activeSection] ?? 0
 
   const tipoLabel = form.tipo === 'Outro' ? form.tipoCustom || '—' : form.tipo || '—'
 

@@ -73,6 +73,30 @@ export const configuracoesService = {
     return response.data
   },
 
+  enviarEmailTeste: async () => {
+    const response = await api.post('/configuracoes/email/teste')
+    return response.data
+  },
+
+  listarModelosContrato: async () => {
+    const response = await api.get('/configuracoes/modelos-contrato')
+    return response.data
+  },
+
+  criarModeloContrato: async (dados) => {
+    const response = await api.post('/configuracoes/modelos-contrato', dados)
+    return response.data
+  },
+
+  atualizarModeloContrato: async (id, dados) => {
+    const response = await api.put(`/configuracoes/modelos-contrato/${id}`, dados)
+    return response.data
+  },
+
+  removerModeloContrato: async (id) => {
+    await api.delete(`/configuracoes/modelos-contrato/${id}`)
+  },
+
   uploadCapaAlbumPadrao: async (arquivo) => {
   const formData = new FormData()
   formData.append('arquivo', arquivo)
@@ -85,6 +109,28 @@ export const configuracoesService = {
   alterarSenha: async (dados) => {
     const response = await api.patch('/configuracoes/senha', dados)
     return response.data
+  },
+
+  gerarBackupMetadados: async () => {
+    const response = await api.post('/configuracoes/backup/metadados', null, {
+      responseType: 'blob',
+    })
+    const agora = new Date().toISOString()
+    const nomeArquivo = `fotogest-backup-${agora.slice(0, 10)}.zip`
+    const blob = new Blob([response.data], {
+      type: 'application/zip',
+    })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+
+    link.href = url
+    link.download = nomeArquivo
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+
+    return { geradoEm: agora }
   },
 
   gerarMarcaDaguaTexto: async (dados) => {
