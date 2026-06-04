@@ -115,12 +115,30 @@ public class FotoService {
 
                 tarefas.add(() -> {
                     Map<String, Object> uploadResult = cloudinaryService.upload(arquivo, ensaioId);
+                    String urlOriginal = extrairString(uploadResult, "secure_url");
+
+                    if (urlOriginal == null) {
+                        urlOriginal = extrairString(uploadResult, "url");
+                    }
+
+                    String publicId = extrairString(uploadResult, "public_id");
+
+                    if (urlOriginal == null && publicId != null) {
+                        urlOriginal = cloudinaryService.gerarUrlImagem(publicId);
+                    }
+
+                    if (urlOriginal == null || publicId == null) {
+                        throw new ResponseStatusException(
+                                HttpStatus.INTERNAL_SERVER_ERROR,
+                                "Upload concluido, mas o Cloudinary nao retornou a URL da imagem"
+                        );
+                    }
 
                     return new UploadFotoResult(
                             index,
                             arquivo.getOriginalFilename(),
-                            String.valueOf(uploadResult.get("secure_url")),
-                            String.valueOf(uploadResult.get("public_id"))
+                            urlOriginal,
+                            publicId
                     );
                 });
             }
@@ -339,18 +357,60 @@ public class FotoService {
         }
     }
 
+private String extrairString(Map<String, Object> origem, String chave) {
+    Object valor = origem.get(chave);
+
+    if (valor == null) {
+        return null;
+    }
+
+    String texto = String.valueOf(valor).trim();
+
+    if (texto.isEmpty() || "null".equalsIgnoreCase(texto)) {
+        return null;
+    }
+
+    return texto;
+}
+
    private FotoResponse toResponse(Foto foto) {
+    String urlOriginal = normalizarUrl(foto.getUrlOriginal());
+
+    if (urlOriginal == null) {
+        urlOriginal = cloudinaryService.gerarUrlImagem(foto.getCloudinaryId());
+    }
+
+    String urlWatermark = normalizarUrl(foto.getUrlWatermark());
+
+    if (urlWatermark == null) {
+        urlWatermark = urlOriginal;
+    }
+
     return FotoResponse.builder()
             .id(foto.getId())
             .ensaioId(foto.getEnsaio().getId())
             .cloudinaryId(foto.getCloudinaryId())
             .nomeOriginal(foto.getNomeOriginal())
-            .urlWatermark(foto.getUrlWatermark())
-            .urlOriginal(foto.getUrlOriginal())
+            .urlWatermark(urlWatermark)
+            .urlOriginal(urlOriginal)
             .ordem(foto.getOrdem())
             .ehCapa(foto.getEhCapa())
             .enviadaEm(foto.getEnviadaEm())
             .build();
+}
+
+private String normalizarUrl(String valor) {
+    if (valor == null) {
+        return null;
+    }
+
+    String texto = valor.trim();
+
+    if (texto.isEmpty() || "null".equalsIgnoreCase(texto)) {
+        return null;
+    }
+
+    return texto;
 }
 
 private record UploadFotoResult(

@@ -54,7 +54,7 @@ export default function UltimasAtualizacoes({ ensaios }) {
         <section className="space-y-5">
             <div className="theme-divider flex items-center justify-between gap-4 border-b pb-4">
                 <h2 className="theme-muted text-xs uppercase tracking-[0.25em]">
-                    Últimas atualizações
+                   Histórico de atividades
                 </h2>
 
                 {ensaiosVisiveis.length > 1 && (

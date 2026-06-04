@@ -80,6 +80,9 @@ private Boolean cobrarFotoExtra;
     @Column(columnDefinition = "TEXT")
     private String observacoes;
 
+    @Column(name = "notas_internas", columnDefinition = "TEXT")
+    private String notasInternas;
+
     /** Progresso de 0 a 100 — atualizado manualmente (R03) */
     @Builder.Default
     @Column(nullable = false)

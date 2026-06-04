@@ -22,12 +22,17 @@ public class RelatorioFaturamentoResponse {
 
     private BigDecimal faturamentoTotal;
     private BigDecimal mediaPorPeriodo;
+    private BigDecimal ticketMedioEnsaio;
     private Integer ensaiosRealizados;
+    private Integer clientesNovos;
+    private Integer fotosExtrasVendidas;
 
     private BigDecimal faturamentoBruto;
     private BigDecimal excedentesCobrados;
     private BigDecimal ajustesManuais;
     private BigDecimal totalLiquido;
+    private BigDecimal valorRecebido;
+    private BigDecimal valorPendente;
 
     private RelatorioDestaqueResponse destaques;
     private RelatorioComparativoResponse comparativo;

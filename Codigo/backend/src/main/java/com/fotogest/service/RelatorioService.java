@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -42,10 +43,19 @@ public class RelatorioService {
 
         @Transactional(readOnly = true)
         public RelatorioFaturamentoResponse buscarFaturamento(TipoPeriodoRelatorio tipo, Integer ano) {
+                return buscarFaturamento(tipo, ano, null, null);
+        }
+
+        @Transactional(readOnly = true)
+        public RelatorioFaturamentoResponse buscarFaturamento(
+                        TipoPeriodoRelatorio tipo,
+                        Integer ano,
+                        LocalDate dataInicio,
+                        LocalDate dataFim) {
                 TipoPeriodoRelatorio tipoFinal = tipo == null ? TipoPeriodoRelatorio.MENSAL : tipo;
                 int anoFinal = ano == null ? LocalDate.now().getYear() : ano;
 
-                List<PeriodoRelatorioInterno> periodosInternos = gerarPeriodos(tipoFinal, anoFinal);
+                List<PeriodoRelatorioInterno> periodosInternos = gerarPeriodos(tipoFinal, anoFinal, dataInicio, dataFim);
 
                 List<Ensaio> ensaios = ensaioRepository.findAll();
 
@@ -76,12 +86,23 @@ BigDecimal faturamentoBruto = somar(periodos, RelatorioPeriodoResponse::getFatur
 BigDecimal excedentesCobrados = somar(periodos, RelatorioPeriodoResponse::getExcedentesCobrados);
 BigDecimal ajustesManuais = somar(periodos, RelatorioPeriodoResponse::getAjustesManuais);
 BigDecimal totalLiquido = faturamentoBruto.add(excedentesCobrados).add(ajustesManuais);
+BigDecimal valorRecebido = somar(periodos, RelatorioPeriodoResponse::getValorRecebido);
+BigDecimal valorPendente = totalLiquido.subtract(valorRecebido);
 
 int ensaiosRealizados = periodos.stream()
         .map(RelatorioPeriodoResponse::getQuantidadeEnsaios)
         .reduce(0, Integer::sum);
 
+int clientesNovos = periodos.stream()
+        .map(RelatorioPeriodoResponse::getClientesNovos)
+        .reduce(0, Integer::sum);
+
+int fotosExtrasVendidas = periodos.stream()
+        .map(RelatorioPeriodoResponse::getFotosExtrasVendidas)
+        .reduce(0, Integer::sum);
+
 BigDecimal mediaPorPeriodo = calcularMedia(totalLiquido, periodos.size());
+BigDecimal ticketMedioEnsaio = calcularMedia(totalLiquido, ensaiosRealizados);
 
 List<RelatorioTipoEnsaioResponse> tiposEnsaio = montarTiposEnsaio(
         ensaios,
@@ -96,7 +117,11 @@ RelatorioDestaqueResponse destaques = montarDestaques(periodos, tiposEnsaio);
 int anoComparado = anoFinal - 1;
 
 List<PeriodoRelatorioInterno> periodosInternosAnoAnterior =
-        gerarPeriodos(tipoFinal, anoComparado);
+        gerarPeriodos(
+                tipoFinal,
+                anoComparado,
+                dataInicio != null ? dataInicio.minusYears(1) : null,
+                dataFim != null ? dataFim.minusYears(1) : null);
 
 List<RelatorioPeriodoResponse> periodosAnoAnterior = periodosInternosAnoAnterior.stream()
         .map(periodo -> montarPeriodo(
@@ -125,15 +150,20 @@ RelatorioComparativoResponse comparativo = montarComparativo(
            return RelatorioFaturamentoResponse.builder()
         .tipo(tipoFinal)
         .ano(anoFinal)
-        .periodoDescricao(montarDescricao(tipoFinal, anoFinal))
+        .periodoDescricao(montarDescricao(tipoFinal, anoFinal, dataInicio, dataFim))
         .unidadePeriodo(resolverUnidadePeriodo(tipoFinal))
         .faturamentoTotal(totalLiquido)
         .mediaPorPeriodo(mediaPorPeriodo)
+        .ticketMedioEnsaio(ticketMedioEnsaio)
         .ensaiosRealizados(ensaiosRealizados)
+        .clientesNovos(clientesNovos)
+        .fotosExtrasVendidas(fotosExtrasVendidas)
         .faturamentoBruto(faturamentoBruto)
         .excedentesCobrados(excedentesCobrados)
         .ajustesManuais(ajustesManuais)
         .totalLiquido(totalLiquido)
+        .valorRecebido(valorRecebido)
+        .valorPendente(valorPendente)
         .destaques(destaques)
         .comparativo(comparativo)
         .periodos(periodos)
@@ -172,6 +202,25 @@ RelatorioComparativoResponse comparativo = montarComparativo(
 
                 BigDecimal totalLiquido = faturamento.add(excedentes).add(ajustesManuais);
 
+                BigDecimal valorRecebido = ensaiosDoPeriodo.stream()
+                                .filter(this::isValorRecebido)
+                                .map(ensaio -> calcularTotalLiquidoDoEnsaio(
+                                                ensaio,
+                                                albumPorEnsaio,
+                                                totalSelecoesPorAlbum))
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                BigDecimal valorPendente = totalLiquido.subtract(valorRecebido);
+
+                int clientesNovos = contarClientesComPrimeiroEnsaioNoPeriodo(ensaios, periodo);
+
+                int fotosExtrasVendidas = ensaiosDoPeriodo.stream()
+                                .map(ensaio -> calcularQuantidadeFotosExtras(
+                                                ensaio,
+                                                albumPorEnsaio,
+                                                totalSelecoesPorAlbum))
+                                .reduce(0, Integer::sum);
+
                 return RelatorioPeriodoResponse.builder()
                                 .label(periodo.getLabel())
                                 .inicio(periodo.getInicio())
@@ -180,7 +229,11 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                                 .excedentesCobrados(excedentes)
                                 .ajustesManuais(ajustesManuais)
                                 .totalLiquido(totalLiquido)
+                                .valorRecebido(valorRecebido)
+                                .valorPendente(valorPendente)
                                 .quantidadeEnsaios(ensaiosDoPeriodo.size())
+                                .clientesNovos(clientesNovos)
+                                .fotosExtrasVendidas(fotosExtrasVendidas)
                                 .build();
         }
 
@@ -227,6 +280,13 @@ RelatorioComparativoResponse comparativo = montarComparativo(
 
                 BigDecimal ticketMedio = calcularMedia(faturamento, ensaios.size());
 
+                int fotosExtrasVendidas = ensaios.stream()
+                                .map(ensaio -> calcularQuantidadeFotosExtras(
+                                                ensaio,
+                                                albumPorEnsaio,
+                                                totalSelecoesPorAlbum))
+                                .reduce(0, Integer::sum);
+
                 return RelatorioTipoEnsaioResponse.builder()
                                 .tipo(tipo)
                                 .tipoExibicao(tipoExibicao)
@@ -234,6 +294,7 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                                 .percentualReceita(percentualReceita)
                                 .ticketMedio(ticketMedio)
                                 .quantidadeEnsaios(ensaios.size())
+                                .fotosExtrasVendidas(fotosExtrasVendidas)
                                 .build();
         }
 
@@ -267,13 +328,42 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                 return ensaio.getStatus() == StatusEnsaio.FINALIZADO;
         }
 
+        private boolean isValorRecebido(Ensaio ensaio) {
+                return ensaio.getStatusValores() != null
+                                && "PAGO".equalsIgnoreCase(ensaio.getStatusValores().trim());
+        }
+
         private boolean estaDentroDoPeriodo(Ensaio ensaio, PeriodoRelatorioInterno periodo) {
                 if (ensaio.getDataEnsaio() == null) {
                         return false;
                 }
 
-                OffsetDateTime data = ensaio.getDataEnsaio();
+                return estaDataDentroDoPeriodo(ensaio.getDataEnsaio(), periodo);
+        }
 
+        private int contarClientesComPrimeiroEnsaioNoPeriodo(
+                        List<Ensaio> ensaios,
+                        PeriodoRelatorioInterno periodo) {
+                return (int) ensaios.stream()
+                                .filter(ensaio -> ensaio.getCliente() != null)
+                                .filter(ensaio -> ensaio.getCliente().getId() != null)
+                                .collect(Collectors.groupingBy(ensaio -> ensaio.getCliente().getId()))
+                                .values()
+                                .stream()
+                                .map(this::buscarDataPrimeiroEnsaio)
+                                .filter(data -> data != null && estaDataDentroDoPeriodo(data, periodo))
+                                .count();
+        }
+
+        private OffsetDateTime buscarDataPrimeiroEnsaio(List<Ensaio> ensaios) {
+                return ensaios.stream()
+                                .map(Ensaio::getDataEnsaio)
+                                .filter(data -> data != null)
+                                .min(OffsetDateTime::compareTo)
+                                .orElse(null);
+        }
+
+        private boolean estaDataDentroDoPeriodo(OffsetDateTime data, PeriodoRelatorioInterno periodo) {
                 OffsetDateTime inicio = periodo.getInicio()
                                 .atStartOfDay()
                                 .atOffset(ZoneOffset.UTC);
@@ -290,24 +380,35 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                         Ensaio ensaio,
                         Map<UUID, Album> albumPorEnsaio,
                         Map<UUID, Integer> totalSelecoesPorAlbum) {
-                if (!Boolean.TRUE.equals(ensaio.getCobrarFotoExtra())) {
+                if (ensaio.getValorFotoExtra() == null) {
                         return BigDecimal.ZERO;
                 }
 
-                if (ensaio.getValorFotoExtra() == null || ensaio.getQtdFotosPacote() == null) {
-                        return BigDecimal.ZERO;
+                int excedentes = calcularQuantidadeFotosExtras(
+                                ensaio,
+                                albumPorEnsaio,
+                                totalSelecoesPorAlbum);
+
+                return ensaio.getValorFotoExtra().multiply(BigDecimal.valueOf(excedentes));
+        }
+
+        private int calcularQuantidadeFotosExtras(
+                        Ensaio ensaio,
+                        Map<UUID, Album> albumPorEnsaio,
+                        Map<UUID, Integer> totalSelecoesPorAlbum) {
+                if (!Boolean.TRUE.equals(ensaio.getCobrarFotoExtra()) || ensaio.getQtdFotosPacote() == null) {
+                        return 0;
                 }
 
                 Album album = albumPorEnsaio.get(ensaio.getId());
 
                 if (album == null) {
-                        return BigDecimal.ZERO;
+                        return 0;
                 }
 
                 int totalSelecionadas = totalSelecoesPorAlbum.getOrDefault(album.getId(), 0);
-                int excedentes = Math.max(0, totalSelecionadas - ensaio.getQtdFotosPacote());
 
-                return ensaio.getValorFotoExtra().multiply(BigDecimal.valueOf(excedentes));
+                return Math.max(0, totalSelecionadas - ensaio.getQtdFotosPacote());
         }
 
         private BigDecimal calcularAjusteManualDoEnsaio(
@@ -328,6 +429,27 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                                 totalSelecoesPorAlbum));
 
                 return ensaio.getValorFinalEnsaio().subtract(valorAutomatico);
+        }
+
+        private List<PeriodoRelatorioInterno> gerarPeriodos(
+                        TipoPeriodoRelatorio tipo,
+                        int ano,
+                        LocalDate dataInicio,
+                        LocalDate dataFim) {
+                if (dataInicio != null || dataFim != null) {
+                        LocalDate inicio = dataInicio != null ? dataInicio : LocalDate.of(ano, 1, 1);
+                        LocalDate fim = dataFim != null ? dataFim : LocalDate.of(ano, 12, 31);
+
+                        if (fim.isBefore(inicio)) {
+                                LocalDate originalInicio = inicio;
+                                inicio = fim;
+                                fim = originalInicio;
+                        }
+
+                        return List.of(periodo("Personalizado", inicio, fim));
+                }
+
+                return gerarPeriodos(tipo, ano);
         }
 
         private List<PeriodoRelatorioInterno> gerarPeriodos(TipoPeriodoRelatorio tipo, int ano) {
@@ -461,6 +583,25 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                 };
 
                 return nome + " - " + ano;
+        }
+
+        private String montarDescricao(TipoPeriodoRelatorio tipo, int ano, LocalDate dataInicio, LocalDate dataFim) {
+                if (dataInicio == null && dataFim == null) {
+                        return montarDescricao(tipo, ano);
+                }
+
+                LocalDate inicio = dataInicio != null ? dataInicio : LocalDate.of(ano, 1, 1);
+                LocalDate fim = dataFim != null ? dataFim : LocalDate.of(ano, 12, 31);
+
+                if (fim.isBefore(inicio)) {
+                        LocalDate originalInicio = inicio;
+                        inicio = fim;
+                        fim = originalInicio;
+                }
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+                return "Personalizado - " + inicio.format(formatter) + " a " + fim.format(formatter);
         }
 
         @FunctionalInterface

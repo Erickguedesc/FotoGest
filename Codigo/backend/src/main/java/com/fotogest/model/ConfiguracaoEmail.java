@@ -29,9 +29,6 @@ public class ConfiguracaoEmail {
     @Column(name = "nome_remetente", length = 120)
     private String nomeRemetente;
 
-    @Column(name = "email_resposta", length = 180)
-    private String emailResposta;
-
     @Column(name = "email_fotografa_avisos", length = 180)
     private String emailFotografaAvisos;
 
@@ -44,6 +41,10 @@ public class ConfiguracaoEmail {
     private Boolean avisarSelecaoRecebida = true;
 
     @Builder.Default
+    @Column(name = "enviar_confirmacao_selecao_cliente", nullable = false)
+    private Boolean enviarConfirmacaoSelecaoCliente = true;
+
+    @Builder.Default
     @Column(name = "enviar_mudanca_status", nullable = false)
     private Boolean enviarMudancaStatus = false;
 
@@ -52,4 +53,5 @@ public class ConfiguracaoEmail {
 
     @Column(name = "mensagem_selecao_recebida", columnDefinition = "TEXT")
     private String mensagemSelecaoRecebida;
+
 }

@@ -72,6 +72,6 @@ public class EnsaioRequest {
     @Size(max = 500, message = "Observacao de valores deve ter no maximo 500 caracteres")
     private String observacaoValores;
 
-    @Size(max = 400, message = "Observacoes deve ter no maximo 400 caracteres")
+    @Size(max = 1000, message = "Observacoes deve ter no maximo 1000 caracteres")
     private String observacoes;
 }

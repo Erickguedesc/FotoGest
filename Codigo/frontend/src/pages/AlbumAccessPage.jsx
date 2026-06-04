@@ -61,7 +61,6 @@ export default function AlbumAccessPage() {
 
     const fotos = await acessarAlbumComSenha(token, senha)
     const dadosPublicos = await validarAlbumPorToken(token)
-    console.log("DADOS PÚBLICOS DO ÁLBUM:", dadosPublicos)
 
    sessionStorage.setItem(
   `fotogest_album_${token}`,

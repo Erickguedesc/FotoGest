@@ -1,7 +1,7 @@
 export const TIPO_LABELS = {
   NEWBORN: 'Newborn',
   GESTANTE: 'Gestante',
-  FAMILIA: 'Família',
+  FAMILIA: 'Familia',
   INFANTIL: 'Infantil',
   FEMININO: 'Feminino',
   CASAL: 'Casal',
@@ -82,12 +82,103 @@ export function normalizeFotoExtraInput(value) {
   return number > 0 ? `${formatCurrency(number)} / foto` : String(value)
 }
 
+export const DEFAULT_CONTRACT_CLAUSES = [
+  'O presente pre-contrato tem validade de {validade} a partir da data de emissao. Apos este prazo, os valores estao sujeitos a revisao.',
+  'O agendamento e confirmado mediante o pagamento do sinal informado neste documento. A data e o horario ficam reservados apos a confirmacao.',
+  'Em caso de cancelamento pela contratante com menos de 48 horas de antecedencia, o sinal nao sera reembolsado. Reagendamentos serao aceitos com aviso previo minimo de 5 dias.',
+  'As fotos editadas serao entregues via galeria online exclusiva com link protegido por senha. O prazo de entrega e combinado entre as partes.',
+  "As imagens exibidas na galeria poderao conter marca d'agua visivel. As fotos editadas em alta resolucao serao disponibilizadas apos quitacao integral.",
+  'O profissional contratado reserva o direito de uso das imagens produzidas em portfolio, salvo acordo diferente formalizado por escrito.',
+  'Caso a cliente selecione mais fotos do que o pacote inclui, sera gerado valor adicional por foto excedente, a ser quitado antes da entrega final.',
+]
+
+export const DEFAULT_ACCEPT_TEXT =
+  'Ao assinar este documento, as partes declaram ter lido e compreendido todos os termos acima, concordando com as condicoes estabelecidas neste pre-contrato de prestacao de servicos fotograficos.'
+
+export function splitContractClauses(value) {
+  if (!value) return DEFAULT_CONTRACT_CLAUSES
+
+  const clauses = String(value)
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  return clauses.length ? clauses : DEFAULT_CONTRACT_CLAUSES
+}
+
+export function buildContractVariables(draft) {
+  return {
+    cliente_nome: draft.clienteNome || '',
+    cliente_cpf: draft.clienteCpf || '',
+    cliente_telefone: draft.clienteTelefone || '',
+    cliente_email: draft.clienteEmail || '',
+    tipo_ensaio: draft.tipoEnsaio || '',
+    data_ensaio: draft.dataEnsaio || '',
+    horario_ensaio: draft.horario || '',
+    local_ensaio: draft.local || '',
+    qtd_fotos: draft.qtdFotos || '',
+    valor_pacote: draft.valorPacote || '',
+    valor_foto_extra: draft.valorFotoExtra || '',
+    total_pacote: draft.totalPacote || '',
+    sinal: draft.sinal || '',
+    saldo: draft.saldo || '',
+    condicoes_comerciais: draft.condicoesComerciais || '',
+    nome_fotografo: draft.fotografaNome || '',
+    nome_profissional: draft.fotografaNome || '',
+    cidade_assinatura: draft.cidadeAssinatura || '',
+    data_emissao: draft.dataEmissao || '',
+    validade: draft.validade || '',
+  }
+}
+
+export function renderContractTemplate(text, draft) {
+  const variables = buildContractVariables(draft)
+
+  return String(text || '').replace(/\{([a-zA-Z0-9_]+)\}/g, (match, key) => {
+    const value = variables[key]
+    return value === undefined || value === null || value === '' ? match : value
+  })
+}
+
+export function applyModeloContratoToDraft(draft, modelo) {
+  if (!modelo) return draft
+
+  const base = { ...draft }
+  const clausulasContrato = splitContractClauses(modelo.clausulas)
+    .map((clausula) => renderContractTemplate(clausula, base))
+
+  const textoAceiteContrato = renderContractTemplate(
+    modelo.textoAceite || DEFAULT_ACCEPT_TEXT,
+    base,
+  )
+
+  return {
+    ...base,
+    modeloContratoId: modelo.id,
+    modeloContratoNome: modelo.nome,
+    clausulasContrato,
+    textoAceiteContrato,
+  }
+}
+
+export function updateContractClause(draft, index, value) {
+  const clauses = Array.isArray(draft.clausulasContrato)
+    ? [...draft.clausulasContrato]
+    : [...DEFAULT_CONTRACT_CLAUSES]
+
+  clauses[index] = value
+
+  return {
+    ...draft,
+    clausulasContrato: clauses,
+  }
+}
+
 export function recalculateFinancialDraft(draft, changedField) {
   const next = { ...draft }
 
   if (changedField === 'valorPacote') next.valorPacote = normalizeMoneyInput(next.valorPacote)
   if (changedField === 'valorFotoExtra') next.valorFotoExtra = normalizeFotoExtraInput(next.valorFotoExtra)
-  if (changedField === 'deslocamento') next.deslocamento = normalizeMoneyInput(next.deslocamento, next.deslocamento)
   if (changedField === 'sinal') next.sinal = normalizeMoneyInput(next.sinal)
 
   const quantidadePacote = parseQuantityValue(next.quantidadePacote, 1) || 1
@@ -98,15 +189,11 @@ export function recalculateFinancialDraft(draft, changedField) {
   const valorFotoExtra = parseCurrencyValue(next.valorFotoExtra)
   const subtotalFotosExtras = qtdFotosExtras * valorFotoExtra
 
-  const deslocamento = parseCurrencyValue(next.deslocamento)
-  const total = subtotalPacote + subtotalFotosExtras + deslocamento
-  const sinal = parseCurrencyValue(next.sinal)
-  const saldo = Math.max(total - sinal, 0)
+  const total = subtotalPacote + subtotalFotosExtras
 
   next.subtotalPacote = subtotalPacote > 0 ? formatCurrency(subtotalPacote) : ''
   next.subtotalFotosExtras = subtotalFotosExtras > 0 ? formatCurrency(subtotalFotosExtras) : 'A calcular'
   next.totalPacote = total > 0 ? formatCurrency(total) : ''
-  next.saldo = total > 0 ? formatCurrency(saldo) : ''
 
   return next
 }
@@ -128,7 +215,7 @@ export function buildDocumentNumber(id) {
   return `#${now.getFullYear()}-${suffix}`
 }
 
-export function buildInitialDraft({ ensaio, cliente }) {
+export function buildInitialDraft({ ensaio, cliente, configuracoes }) {
   const hoje = new Date()
   const validade = new Date(hoje)
   validade.setDate(validade.getDate() + 15)
@@ -136,25 +223,30 @@ export function buildInitialDraft({ ensaio, cliente }) {
   const valorPacote = ensaio?.valorPacote ?? ''
   const qtdFotos = ensaio?.qtdFotosPacote ?? ''
   const valorFotoExtra = ensaio?.valorFotoExtra ?? ''
-  const sinal = valorPacote ? Number(valorPacote) / 3 : ''
 
   const clienteNome = cliente?.nome || ensaio?.clienteNome || ''
   const tipo = ensaio?.tipo || ''
   const tipoExibicao = ensaio?.tipoExibicao || formatTipo(tipo)
+  const fotografa = configuracoes?.fotografa || {}
+  const estudio = configuracoes?.estudio || {}
+  const nomeEstudio = estudio.nomeComercial || estudio.nomeEstudio || fotografa.nome || 'FotoGest Fotografia'
+  const emailEstudio = estudio.email || fotografa.email || ''
+  const telefoneEstudio = estudio.telefone || fotografa.telefone || ''
+  const cidadeEstudio = estudio.cidade || fotografa.cidade || ''
+  const documentoEstudio = estudio.cnpj ? `CNPJ ${estudio.cnpj}` : ''
 
   const initialDraft = {
     numeroDocumento: buildDocumentNumber(ensaio?.id),
-    statusDocumento: 'Aguardando assinatura',
     dataEmissao: formatLongDate(hoje),
     dataEmissaoCurta: formatDate(hoje),
     validade: formatLongDate(validade),
-    cidadeAssinatura: 'Belo Horizonte',
+    cidadeAssinatura: cidadeEstudio || 'Belo Horizonte',
 
-    fotografaNome: 'Maria Clara Souza',
-    fotografaEmail: 'contato@fotogest.com.br',
-    fotografaTelefone: '(31) 99000-1234',
-    fotografaCidade: 'Belo Horizonte, Minas Gerais',
-    fotografaDocumento: 'CNPJ 00.000.000/0001-00',
+    fotografaNome: nomeEstudio,
+    fotografaEmail: emailEstudio,
+    fotografaTelefone: telefoneEstudio,
+    fotografaCidade: cidadeEstudio,
+    fotografaDocumento: documentoEstudio,
 
     clienteNome,
     clienteCpf: cliente?.cpf || '',
@@ -169,7 +261,7 @@ export function buildInitialDraft({ ensaio, cliente }) {
     local: ensaio?.local || '',
     observacoes: ensaio?.observacoes || '',
 
-    descricaoPacote: tipo ? `Ensaio ${formatTipo(tipo)} — pacote completo` : 'Ensaio fotográfico — pacote completo',
+    descricaoPacote: tipo ? `Ensaio ${formatTipo(tipo)} - pacote completo` : 'Ensaio fotografico - pacote completo',
     quantidadePacote: '1',
     valorPacote: valorPacote ? formatCurrency(valorPacote) : '',
     subtotalPacote: valorPacote ? formatCurrency(valorPacote) : '',
@@ -177,11 +269,15 @@ export function buildInitialDraft({ ensaio, cliente }) {
     qtdFotosExtras: '',
     valorFotoExtra: valorFotoExtra ? `${formatCurrency(valorFotoExtra)} / foto` : '',
     subtotalFotosExtras: 'A calcular',
-    deslocamento: 'Incluso',
     totalPacote: valorPacote ? formatCurrency(valorPacote) : '',
-    formaPagamento: 'PIX / Transferência',
-    sinal: sinal ? formatCurrency(sinal) : '',
+    formaPagamento: 'PIX / Transferencia',
+    sinal: '',
     saldo: '',
+    condicoesComerciais: 'Deslocamento, descontos, taxas adicionais ou outros combinados serao definidos entre as partes, quando aplicavel.',
+    clausulasContrato: DEFAULT_CONTRACT_CLAUSES,
+    textoAceiteContrato: DEFAULT_ACCEPT_TEXT,
+    modeloContratoId: null,
+    modeloContratoNome: '',
   }
 
   if (tipo) {

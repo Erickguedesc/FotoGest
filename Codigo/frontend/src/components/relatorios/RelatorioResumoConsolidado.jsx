@@ -26,7 +26,9 @@ export default function RelatorioResumoConsolidado({ relatorio, tituloFallback }
 
           <DetailRow
             label="Fotos extras"
-            value={formatMoney(relatorio?.excedentesCobrados)}
+            value={`${formatMoney(relatorio?.excedentesCobrados)} · ${relatorio?.fotosExtrasVendidas || 0} foto${
+              relatorio?.fotosExtrasVendidas === 1 ? '' : 's'
+            }`}
           />
 
           <DetailRow
@@ -41,6 +43,13 @@ export default function RelatorioResumoConsolidado({ relatorio, tituloFallback }
             value={formatMoney(relatorio?.totalLiquido)}
             strong
           />
+
+          <DetailRow
+            label="Recebido"
+            value={formatMoney(relatorio?.valorRecebido)}
+            strong
+          />
+
         </div>
       </div>
     </section>

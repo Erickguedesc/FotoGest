@@ -67,13 +67,18 @@ export default function FormInfoSection({
   conflitoAgenda,
   onChange,
   onSelectCliente,
+  onSectionFocus,
 }) {
   const set = (field, value) => onChange(field, value)
 
   return (
     <>
       {/* ── CARD 1: Dados do cliente ───────────────────────────────────────── */}
-      <div className="theme-card mb-4 overflow-hidden rounded-[14px] border">
+      <div
+        className="theme-card mb-4 overflow-hidden rounded-[14px] border"
+        onPointerDownCapture={() => onSectionFocus?.('cliente')}
+        onFocusCapture={() => onSectionFocus?.('cliente')}
+      >
 
         <SectionHeader
           label="Dados do cliente"
@@ -203,7 +208,11 @@ export default function FormInfoSection({
       </div>
 
       {/* ── CARD 2: Informações do ensaio ─────────────────────────────────── */}
-      <div className="theme-card mb-4 overflow-hidden rounded-[14px] border">
+      <div
+        className="theme-card mb-4 overflow-hidden rounded-[14px] border"
+        onPointerDownCapture={() => onSectionFocus?.('ensaio')}
+        onFocusCapture={() => onSectionFocus?.('ensaio')}
+      >
 
         <SectionHeader
           label="Informações do ensaio"

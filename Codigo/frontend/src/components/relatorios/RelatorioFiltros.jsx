@@ -4,10 +4,14 @@ import { TIPOS_PERIODO } from '../../utils/relatoriosUtils'
 export default function RelatorioFiltros({
   tipo,
   ano,
+  dataInicio,
+  dataFim,
   anosDisponiveis,
   loading,
   onTipoChange,
   onAnoChange,
+  onDataInicioChange,
+  onDataFimChange,
   onFiltrar,
 }) {
   return (
@@ -56,6 +60,51 @@ export default function RelatorioFiltros({
               {item}
             </button>
           ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-white/10 bg-[#111111] p-5">
+        <h2 className="mb-4 text-xs uppercase tracking-[0.18em] text-[var(--gold)]">
+          Datas personalizadas
+        </h2>
+
+        <div className="space-y-3">
+          <label className="block">
+            <span className="mb-1.5 block text-[10.5px] uppercase tracking-[0.13em] text-white/40">
+              Inicio
+            </span>
+            <input
+              type="date"
+              value={dataInicio}
+              onChange={(event) => onDataInicioChange(event.target.value)}
+              className="w-full rounded-xl border border-white/10 bg-transparent px-3.5 py-2.5 text-sm text-white/70 outline-none transition focus:border-[var(--gold-border)] focus:bg-white/[0.03]"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1.5 block text-[10.5px] uppercase tracking-[0.13em] text-white/40">
+              Fim
+            </span>
+            <input
+              type="date"
+              value={dataFim}
+              onChange={(event) => onDataFimChange(event.target.value)}
+              className="w-full rounded-xl border border-white/10 bg-transparent px-3.5 py-2.5 text-sm text-white/70 outline-none transition focus:border-[var(--gold-border)] focus:bg-white/[0.03]"
+            />
+          </label>
+
+          {(dataInicio || dataFim) && (
+            <button
+              type="button"
+              onClick={() => {
+                onDataInicioChange('')
+                onDataFimChange('')
+              }}
+              className="text-xs uppercase tracking-[0.12em] text-white/45 transition hover:text-white"
+            >
+              Limpar datas
+            </button>
+          )}
         </div>
       </section>
 

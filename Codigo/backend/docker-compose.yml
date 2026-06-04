@@ -1,3 +1,5 @@
+name: fotogest
+
 services:
   fotogest-db:
     image: postgres:16-alpine

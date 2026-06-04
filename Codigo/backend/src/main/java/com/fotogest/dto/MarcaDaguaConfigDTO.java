@@ -9,6 +9,7 @@ import com.fotogest.enums.MarcaDaguaFonte;
 import com.fotogest.enums.MarcaDaguaPosicao;
 import com.fotogest.enums.MarcaDaguaTamanho;
 import com.fotogest.enums.MarcaDaguaTipo;
+import com.fotogest.enums.MarcaDaguaTextoModo;
 
 @Getter
 @Setter
@@ -31,4 +32,5 @@ public class MarcaDaguaConfigDTO {
     private MarcaDaguaFonte marcaDaguaFonte;
     private MarcaDaguaCor marcaDaguaCor;
     private MarcaDaguaEstilo marcaDaguaEstilo;
+    private MarcaDaguaTextoModo marcaDaguaTextoModo;
 }

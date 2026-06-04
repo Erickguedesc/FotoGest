@@ -11,12 +11,16 @@
   --pc-text-primary: #ffffff;
   --pc-text-secondary: #ffffff;
   --pc-text-muted: #999385;
+  --pc-page-text: var(--text, #ffffff);
+  --pc-page-muted: var(--text-muted, #999385);
+  --pc-page-panel: color-mix(in srgb, var(--card, #121212) 88%, transparent);
+  --pc-page-border: var(--border, rgba(255, 255, 255, 0.12));
 
   min-height: 100vh;
   max-width: 960px;
   margin: 0 auto;
   padding: 80px 32px 64px;
-  color: var(--pc-text-primary);
+  color: var(--pc-page-text);
   animation: preContratoFadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -31,7 +35,7 @@
   gap: 8px;
   margin-bottom: 20px;
   font-size: 12px;
-  color: var(--pc-text-muted);
+  color: var(--pc-page-muted);
 }
 
 .precontrato-bc a,
@@ -43,7 +47,7 @@
 
 .precontrato-bc a:hover { color: var(--pc-gold); }
 .precontrato-bc span { color: rgba(153,147,133,0.45); }
-.precontrato-bc .precontrato-bc-muted { color: var(--pc-text-secondary); opacity: 0.7; }
+.precontrato-bc .precontrato-bc-muted { color: var(--pc-page-text); opacity: 0.7; }
 
 .precontrato-page-top {
   display: flex;
@@ -59,7 +63,7 @@
   font-size: 10.5px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--pc-text-muted);
+  color: var(--pc-page-muted);
 }
 
 .precontrato-title {
@@ -71,7 +75,7 @@
 
 .precontrato-sub {
   margin-top: 3px;
-  color: var(--pc-text-muted);
+  color: var(--pc-page-muted);
   font-size: 12.5px;
 }
 
@@ -104,15 +108,15 @@
 }
 
 .precontrato-btn-outline {
-  border: 0.5px solid var(--pc-border-md);
-  background: transparent;
-  color: var(--pc-text-secondary);
+  border: 0.5px solid var(--pc-page-border);
+  background: color-mix(in srgb, var(--card, #121212) 72%, transparent);
+  color: var(--pc-page-text);
 }
 
 .precontrato-btn-outline:hover {
   border-color: var(--pc-gold-border);
   background: var(--pc-gold-dim);
-  color: var(--pc-text-primary);
+  color: var(--pc-page-text);
 }
 
 .precontrato-btn-gold {
@@ -135,7 +139,23 @@
   background: rgba(201, 164, 89, 0.07);
   padding: 12px 16px;
   font-size: 12.5px;
-  color: var(--pc-text-muted);
+  color: var(--pc-page-muted);
+}
+
+.precontrato-model-selector {
+  background: var(--pc-page-panel) !important;
+  border-color: var(--pc-page-border) !important;
+  color: var(--pc-page-text);
+}
+
+.precontrato-model-selector select {
+  background: color-mix(in srgb, var(--card, #121212) 86%, transparent) !important;
+  color: var(--pc-page-text) !important;
+}
+
+.precontrato-model-selector option {
+  background: var(--card, #121212);
+  color: var(--text, #ffffff);
 }
 
 .precontrato-wrap {
@@ -143,6 +163,7 @@
   border: 0.5px solid var(--pc-border);
   border-radius: 16px;
   background: var(--pc-dark-card);
+  color: var(--pc-text-primary);
 }
 
 .precontrato-wrap::before {
@@ -163,30 +184,18 @@
 
 .precontrato-brand { display: flex; flex-direction: column; gap: 6px; }
 .precontrato-logo-row { display: flex; align-items: center; gap: 10px; }
-.precontrato-logo-text { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; letter-spacing: 0.26em; }
+.precontrato-logo-text { color: var(--pc-text-primary); font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; letter-spacing: 0.26em; }
 .precontrato-brand-sub { color: var(--pc-text-muted); font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; }
 .precontrato-brand-contact { margin-top: 10px; color: var(--pc-text-muted); font-size: 12px; line-height: 1.8; }
 .precontrato-brand-contact span { color: var(--pc-text-secondary); }
 
-.precontrato-doc-info { text-align: right; max-width: 260px; }
+.precontrato-doc-info { text-align: right; width: 280px; max-width: 280px; }
 .precontrato-num-label { margin-bottom: 4px; color: var(--pc-text-muted); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; }
 .precontrato-num { color: var(--pc-gold); font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300; letter-spacing: 0.08em; }
-.precontrato-date { display: flex; justify-content: flex-end; gap: 4px; margin-top: 10px; color: var(--pc-text-secondary); font-size: 12.5px; }
-.precontrato-date.small { margin-top: 3px; font-size: 11.5px; }
-
-.precontrato-status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 8px;
-  border: 0.5px solid rgba(201,164,89,0.3);
-  border-radius: 20px;
-  background: rgba(201,164,89,0.1);
-  padding: 4px 12px;
-  color: var(--pc-gold);
-  font-size: 11px;
-  letter-spacing: 0.07em;
-}
+.precontrato-date-row { display: grid; grid-template-columns: 78px minmax(0, 1fr); align-items: start; gap: 8px; margin-top: 10px; color: var(--pc-text-secondary); font-size: 12.5px; text-align: left; }
+.precontrato-date-row span { color: var(--pc-text-muted); text-align: right; }
+.precontrato-date-row input { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+.precontrato-date-row.small { margin-top: 5px; font-size: 11.5px; }
 
 .precontrato-title-band {
   display: flex;
@@ -198,7 +207,7 @@
   padding: 20px 48px;
 }
 
-.precontrato-title-main { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; letter-spacing: 0.1em; text-transform: uppercase; }
+.precontrato-title-main { color: var(--pc-text-primary); font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; letter-spacing: 0.1em; text-transform: uppercase; }
 .precontrato-title-sub { color: var(--pc-text-muted); font-size: 11.5px; letter-spacing: 0.06em; }
 .precontrato-body { padding: 36px 48px; }
 .precontrato-section { margin-bottom: 32px; }
@@ -285,6 +294,12 @@
 .precontrato-valores-table .td-total { color: var(--pc-gold); font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; }
 
 .precontrato-payment-grid { margin-top: 16px; }
+.precontrato-payment-grid.three .precontrato-data-cell:nth-child(-n+3) {
+  border-bottom: 0.5px solid var(--pc-border);
+}
+.precontrato-payment-grid.three .precontrato-data-cell.full {
+  border-bottom: none;
+}
 .precontrato-note { margin-top: 10px; border: 0.5px solid rgba(201,164,89,0.2); border-radius: 9px; background: rgba(201,164,89,0.05); padding: 12px 16px; color: var(--pc-text-muted); font-size: 12.5px; line-height: 1.6; }
 .precontrato-note strong { color: var(--pc-text-secondary); font-weight: 400; }
 
@@ -296,6 +311,7 @@
 
 .precontrato-clausulas div {
   display: flex;
+  align-items: flex-start;
   gap: 14px;
   border-bottom: 0.5px solid var(--pc-border);
   padding: 14px 18px;
@@ -303,7 +319,7 @@
 
 .precontrato-clausulas div:last-child { border-bottom: none; }
 .precontrato-clausulas span { min-width: 24px; flex-shrink: 0; color: var(--pc-gold); font-family: 'Cormorant Garamond', serif; font-size: 12px; letter-spacing: 0.04em; }
-.precontrato-clausulas p { color: var(--pc-text-secondary); font-size: 13px; line-height: 1.65; }
+.precontrato-clausulas p { flex: 1; min-width: 0; margin: 0; color: var(--pc-text-secondary); font-size: 13px; line-height: 1.65; }
 .precontrato-clausulas strong { color: var(--pc-text-primary); font-weight: 400; }
 
 .precontrato-accept { margin-bottom: 18px; border: 0.5px solid var(--pc-border); border-radius: 10px; background: rgba(255,255,255,0.02); padding: 12px 16px 16px; color: var(--pc-text-secondary); font-size: 13px; line-height: 1.65; }
@@ -335,11 +351,38 @@
   font-family: inherit;
 }
 
+.precontrato-wrap input,
+.precontrato-wrap textarea {
+  color: inherit !important;
+}
+
+.precontrato-wrap input::placeholder,
+.precontrato-wrap textarea::placeholder {
+  color: rgba(255, 255, 255, 0.32) !important;
+}
+
+.precontrato-main ::selection {
+  background: rgba(212, 175, 55, 0.38);
+  color: #ffffff;
+}
+
+.precontrato-main input::selection,
+.precontrato-main textarea::selection {
+  background: rgba(212, 175, 55, 0.42);
+  color: #ffffff;
+}
+
+.precontrato-main textarea {
+  display: block;
+  overflow: hidden;
+  min-height: 1.4em;
+}
+
 @media (max-width: 700px) {
   .precontrato-main { padding: 76px 16px 48px; }
   .precontrato-contract-header { flex-direction: column; padding: 24px 24px 20px; }
-  .precontrato-doc-info { max-width: none; text-align: left; }
-  .precontrato-date { justify-content: flex-start; }
+  .precontrato-doc-info { width: 100%; max-width: none; text-align: left; }
+  .precontrato-date-row { grid-template-columns: 72px minmax(0, 1fr); }
   .precontrato-title-band,
   .precontrato-body,
   .precontrato-footer { padding-left: 24px; padding-right: 24px; }
@@ -362,6 +405,7 @@
   .precontrato-bc,
   .precontrato-page-top,
   .precontrato-fill-hint,
+  .precontrato-model-selector,
   .precontrato-bottom-actions,
   .Toastify,
   [role='alert'] { display: none !important; }

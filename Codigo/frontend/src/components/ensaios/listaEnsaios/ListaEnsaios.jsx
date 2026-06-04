@@ -31,11 +31,39 @@ const GRUPO_STATUS = {
   ativos: STATUS_ATIVOS,
 }
 
+const VIEW_MODE_STORAGE_KEY = 'fotogest:ensaios:viewMode'
+const VIEW_MODES = ['table', 'grid', 'calendar']
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+const getInitialViewMode = () => {
+  try {
+    const saved = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY)
+    return VIEW_MODES.includes(saved) ? saved : 'table'
+  } catch {
+    return 'table'
+  }
+}
+
+const normalizeDateParam = (value) => {
+  if (!value || !DATE_PATTERN.test(value)) return ''
+
+  const [year, month, day] = value.split('-').map(Number)
+  if (year < 1900 || year > 2100) return ''
+
+  const date = new Date(year, month - 1, day)
+  const valid =
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+
+  return valid ? value : ''
+}
+
 const getInitialFilters = (searchParams) => ({
   ...INITIAL_FILTERS,
   status: searchParams.get('status') || '',
-  dataInicio: searchParams.get('dataInicio') || '',
-  dataFim: searchParams.get('dataFim') || '',
+  dataInicio: normalizeDateParam(searchParams.get('dataInicio')),
+  dataFim: normalizeDateParam(searchParams.get('dataFim')),
   grupo: searchParams.get('status') ? '' : searchParams.get('grupo') || 'ativos',
 })
 
@@ -105,7 +133,7 @@ export default function ListaEnsaios() {
   const [statusCounts, setStatusCounts] = useState({ total: 0 })
   const [filters, setFilters] = useState(() => getInitialFilters(searchParams))
   const [filtersResetKey, setFiltersResetKey] = useState(0)
-  const [viewMode, setViewMode] = useState('table')
+  const [viewMode, setViewMode] = useState(getInitialViewMode)
   const [sort, setSort] = useState({ key: 'dataEnsaio', direction: 'desc' })
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
@@ -165,6 +193,26 @@ export default function ListaEnsaios() {
     setFiltersResetKey((current) => current + 1)
     setPage(1)
   }, [searchParams])
+
+  useEffect(() => {
+    if (viewMode !== 'calendar' || filters.status || filters.grupo === 'todos') {
+      return
+    }
+
+    setFilters((prev) => {
+      if (prev.status || prev.grupo === 'todos') return prev
+
+      const next = {
+        ...prev,
+        grupo: 'todos',
+      }
+
+      updateUrlFilters(next)
+
+      return next
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode, filters.status, filters.grupo])
 
   const sortedEnsaios = useMemo(() => {
     return [...ensaios].sort((a, b) => {
@@ -342,7 +390,15 @@ export default function ListaEnsaios() {
   }
 
   const handleViewModeChange = (mode) => {
+    if (!VIEW_MODES.includes(mode)) return
+
     setViewMode(mode)
+
+    try {
+      window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode)
+    } catch {
+      // Preferencia visual local; se o navegador bloquear, a tela continua funcionando.
+    }
 
     if (mode === 'calendar') {
       setFilters((prev) => {

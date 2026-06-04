@@ -144,14 +144,15 @@ export default function GaleriaPage() {
 
   const nomeCliente =
     album.nomeCliente || album.clienteNome || album.nome || 'Cliente'
+  const nomeFotografa =
+    album.nomeFotografa || album.fotografaNome || album.nomeEstudio || 'Fotografia'
   const tipoEnsaio = album.tipoEnsaio || album.tipo || 'Ensaio fotográfico'
   const limite =
     album.qtdFotosPacote ||
-    album.quantidadeFotos ||
     album.limiteFotos ||
     album.quantidadeFotosPacote ||
+    album.quantidadeFotos ||
     LIMITE_PADRAO
-  const localEnsaio = album.local || album.localEnsaio || 'Local não informado'
   const dataFormatada = formatDate(album.dataEnsaio)
   const cobraFotoExtra = album.cobrarFotoExtra === true
   const valorFotoExtra = cobraFotoExtra
@@ -267,10 +268,9 @@ export default function GaleriaPage() {
       <GalleryHero
         coverUrl={capaAlbumUrl}
         nomeCliente={nomeCliente}
+        nomeFotografa={nomeFotografa}
         tipoEnsaio={tipoEnsaio}
         dataFormatada={dataFormatada}
-        localEnsaio={localEnsaio}
-        totalFotos={fotos.length}
         limite={limite}
         expiraEm={album.expiraEm}
         tempoRestante={tempoRestante}
@@ -279,7 +279,6 @@ export default function GaleriaPage() {
       <GalleryTabs
         aba={aba}
         onChangeAba={setAba}
-        totalFotos={fotos.length}
         totalSelecionadas={totalSelecionadas}
         limite={limite}
         excedente={excedente}

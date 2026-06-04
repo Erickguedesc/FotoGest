@@ -28,6 +28,7 @@ import com.fotogest.enums.MarcaDaguaCor;
 import com.fotogest.enums.MarcaDaguaEstilo;
 import com.fotogest.enums.MarcaDaguaFonte;
 import com.fotogest.enums.MarcaDaguaTipo;
+import com.fotogest.enums.MarcaDaguaTextoModo;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -207,8 +208,13 @@ public class MarcaDaguaService {
         }
 
         String overlayPublicId = prepararPublicIdOverlay(estudio.getMarcaDaguaPublicId());
+        boolean textoRepetido =
+                estudio.getMarcaDaguaTipo() == MarcaDaguaTipo.TEXTO &&
+                getModoTexto(estudio) == MarcaDaguaTextoModo.REPETIDA;
         String gravidade = mapearGravidade(estudio.getMarcaDaguaPosicao());
-        int largura = mapearLargura(estudio.getMarcaDaguaTamanho());
+        int largura = textoRepetido
+                ? 1800
+                : mapearLargura(estudio.getMarcaDaguaTamanho());
         int opacidade = estudio.getMarcaDaguaOpacidade() == null ? 35 : estudio.getMarcaDaguaOpacidade();
         int margem = estudio.getMarcaDaguaMargem() == null ? 30 : estudio.getMarcaDaguaMargem();
 
@@ -216,7 +222,15 @@ public class MarcaDaguaService {
 
 String baseTransform = "c_limit,w_1800,h_1800,q_auto";
 
-if ("center".equals(gravidade)) {
+if (textoRepetido) {
+    transformacao = String.format(
+            "/upload/%s/l_%s,w_%d,o_%d/fl_layer_apply,g_center/",
+            baseTransform,
+            overlayPublicId,
+            largura,
+            opacidade
+    );
+} else if ("center".equals(gravidade)) {
     transformacao = String.format(
             "/upload/%s/l_%s,w_%d,o_%d/fl_layer_apply,g_%s/",
             baseTransform,
@@ -257,6 +271,16 @@ if ("center".equals(gravidade)) {
         if (estudio.getMarcaDaguaMargem() == null) {
             estudio.setMarcaDaguaMargem(30);
         }
+
+        if (estudio.getMarcaDaguaTextoModo() == null) {
+            estudio.setMarcaDaguaTextoModo(MarcaDaguaTextoModo.REPETIDA);
+        }
+    }
+
+    private MarcaDaguaTextoModo getModoTexto(ConfiguracaoEstudio estudio) {
+        return estudio.getMarcaDaguaTextoModo() == null
+                ? MarcaDaguaTextoModo.REPETIDA
+                : estudio.getMarcaDaguaTextoModo();
     }
 
     private String prepararPublicIdOverlay(String publicId) {
@@ -360,6 +384,7 @@ if ("center".equals(gravidade)) {
                 .marcaDaguaFonte(estudio.getMarcaDaguaFonte())
                 .marcaDaguaCor(estudio.getMarcaDaguaCor())
                 .marcaDaguaEstilo(estudio.getMarcaDaguaEstilo())
+                .marcaDaguaTextoModo(getModoTexto(estudio))
                 .build();
                 
     }
@@ -389,7 +414,8 @@ public MarcaDaguaConfigDTO gerarMarcaDaguaTexto(MarcaDaguaTextoRequest request) 
                 texto,
                 request.getFonte(),
                 request.getCor(),
-                request.getEstilo()
+                request.getEstilo(),
+                request.getModo()
         );
 
         Map<String, Object> uploadResult =
@@ -407,6 +433,7 @@ public MarcaDaguaConfigDTO gerarMarcaDaguaTexto(MarcaDaguaTextoRequest request) 
         estudio.setMarcaDaguaFonte(request.getFonte() != null ? request.getFonte() : MarcaDaguaFonte.MODERNA);
         estudio.setMarcaDaguaCor(request.getCor() != null ? request.getCor() : MarcaDaguaCor.BRANCO);
         estudio.setMarcaDaguaEstilo(request.getEstilo() != null ? request.getEstilo() : MarcaDaguaEstilo.NORMAL);
+        estudio.setMarcaDaguaTextoModo(request.getModo() != null ? request.getModo() : MarcaDaguaTextoModo.REPETIDA);
 
         garantirPadroes(estudio);
 
@@ -426,7 +453,8 @@ private byte[] gerarPngTextoTransparente(
         String texto,
         MarcaDaguaFonte fonte,
         MarcaDaguaCor cor,
-        MarcaDaguaEstilo estilo
+        MarcaDaguaEstilo estilo,
+        MarcaDaguaTextoModo modo
 ) throws IOException {
     int fontStyle = Font.PLAIN;
 
@@ -442,6 +470,59 @@ private byte[] gerarPngTextoTransparente(
         case MODERNA -> "SansSerif";
     };
 
+    if (modo == MarcaDaguaTextoModo.UNICA) {
+        return gerarPngTextoUnico(texto, fontFamily, fontStyle, cor);
+    }
+
+    Font font = new Font(fontFamily, fontStyle, 58);
+
+    int width = 1800;
+    int height = 1800;
+    int stepX = 430;
+    int stepY = 260;
+
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    Graphics2D graphics = image.createGraphics();
+
+    graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+    graphics.setFont(font);
+
+    Color baseColor = switch (cor != null ? cor : MarcaDaguaCor.BRANCO) {
+        case BRANCO -> Color.WHITE;
+        case PRETO -> Color.BLACK;
+        case DOURADO -> new Color(212, 175, 55);
+    };
+
+    Color shadowColor = new Color(0, 0, 0, 45);
+    Color textColor = new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), 175);
+
+    graphics.rotate(Math.toRadians(-35), width / 2.0, height / 2.0);
+
+    for (int y = -height; y < height * 2; y += stepY) {
+        for (int x = -width; x < width * 2; x += stepX) {
+            graphics.setColor(shadowColor);
+            graphics.drawString(texto, x + 3, y + 3);
+
+            graphics.setColor(textColor);
+            graphics.drawString(texto, x, y);
+        }
+    }
+
+    graphics.dispose();
+
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    ImageIO.write(image, "png", output);
+
+    return output.toByteArray();
+}
+
+private byte[] gerarPngTextoUnico(
+        String texto,
+        String fontFamily,
+        int fontStyle,
+        MarcaDaguaCor cor
+) throws IOException {
     Font font = new Font(fontFamily, fontStyle, 96);
 
     BufferedImage temp = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);

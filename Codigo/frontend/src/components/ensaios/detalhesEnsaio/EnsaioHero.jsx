@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 import {
   getStatusInfo,
   getTipoExibicao,
@@ -113,15 +115,37 @@ function WhatsAppIcon() {
   )
 }
 
+function NotesIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className="text-[var(--gold)]">
+      <path d="M7 4H17C18.1 4 19 4.9 19 6V18C19 19.1 18.1 20 17 20H7C5.9 20 5 19.1 5 18V6C5 4.9 5.9 4 7 4Z" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M8.5 9H15.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M8.5 13H15.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M8.5 17H12.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 export default function EnsaioHero({
   ensaio,
   fotos = [],
+  savingNotes = false,
   onEdit,
+  onSaveNotes,
   onPreContrato,
   onWhatsApp,
   onBack,
 }) {
   const statusInfo = getStatusInfo(ensaio?.status)
+  const [notes, setNotes] = useState(ensaio?.notasInternas || '')
+  const [notesOpen, setNotesOpen] = useState(false)
+
+  useEffect(() => {
+    setNotes(ensaio?.notasInternas || '')
+  }, [ensaio?.id, ensaio?.notasInternas])
+
+  const notesChanged = notes.trim() !== String(ensaio?.notasInternas || '').trim()
+  const notesPreview = notes.trim() || 'Adicionar lembrete ou anotação'
 
   const fotoCapa =
     fotos.find((foto) => foto.ehCapa)?.urlWatermark ||
@@ -130,15 +154,28 @@ export default function EnsaioHero({
     fotos[0]?.urlOriginal ||
     null
 
+  const fotoCapaOriginal =
+    fotos.find((foto) => foto.ehCapa)?.urlOriginal ||
+    fotos[0]?.urlOriginal ||
+    null
+
   return (
     <section className="theme-card overflow-hidden rounded-[24px] border border-[var(--gold-border)]">
-      <div className="grid min-h-[300px] grid-cols-[260px_1fr] max-lg:grid-cols-1">
+      <div className="grid min-h-[300px] grid-cols-[260px_minmax(0,1fr)_340px] max-xl:grid-cols-[260px_minmax(0,1fr)] max-lg:grid-cols-1">
         <div className="theme-panel relative h-full min-h-[300px] max-lg:min-h-[240px]">
           {fotoCapa ? (
             <img
               src={fotoCapa}
               alt={`Capa do ensaio de ${ensaio?.clienteNome || 'cliente'}`}
               className="h-full w-full object-cover"
+              onError={(event) => {
+                if (fotoCapaOriginal && event.currentTarget.src !== fotoCapaOriginal) {
+                  event.currentTarget.src = fotoCapaOriginal
+                  return
+                }
+
+                event.currentTarget.style.display = 'none'
+              }}
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(201,164,89,0.10),_transparent_58%),linear-gradient(180deg,#1a1a1a_0%,#101010_100%)]">
@@ -156,8 +193,8 @@ export default function EnsaioHero({
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-black/10 max-lg:bg-gradient-to-t" />
         </div>
 
-        <div className="flex items-center">
-          <div className="w-full px-10 py-9 max-md:px-6 max-md:py-7">
+        <div className="flex min-w-0 items-center">
+          <div className="min-w-0 w-full px-10 py-9 max-md:px-6 max-md:py-7">
             <div className="flex flex-wrap items-center gap-3">
               <span className="theme-text text-[11px] font-medium uppercase tracking-[0.24em]">
                 {getTipoExibicao(ensaio)}
@@ -170,7 +207,7 @@ export default function EnsaioHero({
               </span>
             </div>
 
-            <h1 className="theme-title mt-6 font-serif text-[56px] font-light leading-[1.05] tracking-[0.01em] max-lg:text-[44px] max-md:text-[34px]">
+            <h1 className="theme-title mt-6 max-w-full break-words font-serif text-[56px] font-light leading-[1.05] tracking-[0.01em] [overflow-wrap:anywhere] max-lg:text-[44px] max-md:text-[34px]">
               {ensaio?.clienteNome || 'Cliente sem nome'}
             </h1>
 
@@ -223,9 +260,108 @@ export default function EnsaioHero({
     Voltar
   </button>
 </div>
+
           </div>
         </div>
+
+        <aside className="flex items-center px-8 py-9 max-xl:col-span-2 max-xl:border-t max-xl:border-[var(--gold-border)] max-lg:col-span-1 max-md:px-6 max-md:py-6">
+          <button
+            type="button"
+            onClick={() => setNotesOpen(true)}
+            className="group w-full rounded-2xl border border-[var(--gold-border)] bg-[var(--gold-dim)] p-4 text-left transition hover:bg-[var(--card-hover)]"
+          >
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="inline-flex items-center gap-2">
+                <NotesIcon />
+                <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--gold)]">
+                  Bloco de notas
+                </span>
+              </div>
+
+              <span className="text-[11px] text-[var(--text-muted)] transition group-hover:text-[var(--gold)]">
+                Abrir
+              </span>
+            </div>
+
+            <p className={`line-clamp-4 min-h-[78px] text-[13px] leading-5 ${
+              notes.trim() ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'
+            }`}>
+              {notesPreview}
+            </p>
+          </button>
+        </aside>
       </div>
+
+      {notesOpen ? (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm max-sm:p-4">
+          <div className="w-full max-w-2xl rounded-2xl border border-[var(--gold-border)] bg-[var(--card)] shadow-2xl">
+            <div className="flex items-center justify-between gap-4 border-b border-[var(--gold-border)] px-6 py-5">
+              <div className="inline-flex items-center gap-2">
+                <NotesIcon />
+                <div>
+                  <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--gold)]">
+                    Bloco de notas
+                  </p>
+                  <p className="mt-1 text-[12px] text-[var(--text-muted)]">
+                    Anotações internas deste ensaio.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setNotesOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-xl text-[var(--text-muted)] transition hover:border-[var(--gold-border)] hover:text-[var(--gold)]"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="p-6">
+              <textarea
+                value={notes}
+                maxLength={1000}
+                autoFocus
+                onChange={(event) => setNotes(event.target.value)}
+                placeholder="Ex: ainda falta separar fotos, combinar pagamento, cliente pediu atenção em tal detalhe..."
+                className="min-h-[220px] w-full resize-y rounded-xl border border-[var(--border)] bg-black/20 px-4 py-3 text-[14px] leading-6 text-[var(--text)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--gold-border)]"
+              />
+
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                <span className="text-[11px] text-[var(--text-muted)]">
+                  {notes.length} / 1000
+                </span>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setNotesOpen(false)}
+                    className="rounded-lg border border-[var(--border)] px-4 py-2 text-[12px] font-medium text-[var(--text-muted)] transition hover:border-[var(--gold-border)] hover:text-[var(--text)]"
+                  >
+                    Fechar
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={!notesChanged || savingNotes}
+                    onClick={async () => {
+                      try {
+                        await onSaveNotes?.(notes)
+                        setNotesOpen(false)
+                      } catch {
+                        // O toast de erro fica no componente pai.
+                      }
+                    }}
+                    className="rounded-lg border border-[var(--gold-border)] bg-[var(--gold-dim)] px-4 py-2 text-[12px] font-medium text-[var(--gold)] transition hover:bg-[var(--card-hover)] disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {savingNotes ? 'Salvando...' : 'Salvar notas'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   )
 }

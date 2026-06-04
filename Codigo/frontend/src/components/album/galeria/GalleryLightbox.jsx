@@ -56,16 +56,6 @@ export default function GalleryLightbox({
           className="max-h-[52vh] max-w-[92vw] object-contain xl:max-h-[82vh] xl:max-w-[calc(86vw-380px)]"
         />
 
-        <div className="pointer-events-none absolute inset-0 grid grid-cols-4 opacity-70">
-          {Array.from({ length: 16 }).map((_, item) => (
-            <span
-              key={item}
-              className="rotate-[-35deg] select-none self-center text-center font-serif text-sm italic tracking-[0.18em] text-black/15"
-            >
-              © FotoGest fotografia
-            </span>
-          ))}
-        </div>
       </div>
 
       <button

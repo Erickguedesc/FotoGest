@@ -2,6 +2,8 @@ package com.fotogest.dto;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,4 +15,5 @@ public class ConfiguracoesResponseDTO {
     private PreferenciasConfigDTO preferencias;
     private MarcaDaguaConfigDTO marcaDagua;
     private EmailConfigDTO email;
+    private List<ModeloContratoDTO> modelosContrato;
 }

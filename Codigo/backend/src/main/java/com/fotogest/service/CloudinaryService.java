@@ -38,6 +38,18 @@ public class CloudinaryService {
                 .uploader()
                 .destroy(publicId, ObjectUtils.emptyMap());
     }
+
+    public String gerarUrlImagem(String publicId) {
+        if (publicId == null || publicId.isBlank()) {
+            return null;
+        }
+
+        return cloudinary.url()
+                .secure(true)
+                .resourceType("image")
+                .generate(publicId);
+    }
+
     @SuppressWarnings("unchecked")
 public Map<String, Object> uploadConfiguracao(MultipartFile multipartFile, String pasta) throws IOException {
     return (Map<String, Object>) cloudinary

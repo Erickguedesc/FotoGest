@@ -88,10 +88,13 @@ CREATE TABLE IF NOT EXISTS ensaio (
   status_valores VARCHAR(30) DEFAULT 'NAO_INFORMADO',
   observacao_valores TEXT,
   observacoes TEXT,
+  notas_internas TEXT,
   progresso SMALLINT NOT NULL DEFAULT 0 CHECK(progresso BETWEEN 0 AND 100),
   criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE ensaio ADD COLUMN IF NOT EXISTS notas_internas TEXT;
 
 CREATE TABLE IF NOT EXISTS historico_status_ensaio (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -107,6 +110,17 @@ ON historico_status_ensaio(ensaio_id);
 
 CREATE INDEX IF NOT EXISTS idx_historico_status_ensaio_status
 ON historico_status_ensaio(status);
+
+CREATE TABLE IF NOT EXISTS notificacao_dispensada (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  fotografa_id UUID NOT NULL REFERENCES fotografa(id) ON DELETE CASCADE,
+  chave VARCHAR(180) NOT NULL,
+  dispensada_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (fotografa_id, chave)
+);
+
+CREATE INDEX IF NOT EXISTS idx_notificacao_dispensada_fotografa_id
+ON notificacao_dispensada(fotografa_id);
 
 CREATE TABLE IF NOT EXISTS foto (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -268,9 +282,13 @@ CREATE TABLE IF NOT EXISTS configuracao_estudio (
   marca_dagua_fonte VARCHAR(30) DEFAULT 'MODERNA',
   marca_dagua_cor VARCHAR(20) DEFAULT 'BRANCO',
   marca_dagua_estilo VARCHAR(20) DEFAULT 'NORMAL',
+  marca_dagua_texto_modo VARCHAR(20) DEFAULT 'REPETIDA',
   criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE configuracao_estudio
+ADD COLUMN IF NOT EXISTS marca_dagua_texto_modo VARCHAR(20) DEFAULT 'REPETIDA';
 
 CREATE TABLE IF NOT EXISTS preferencias_sistema (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -283,9 +301,45 @@ CREATE TABLE IF NOT EXISTS preferencias_sistema (
   mensagem_selecao_recebida TEXT,
   capa_album_padrao_url TEXT,
   capa_album_padrao_public_id TEXT,
+  ultimo_backup_metadados_em TIMESTAMPTZ,
   criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE preferencias_sistema ADD COLUMN IF NOT EXISTS ultimo_backup_metadados_em TIMESTAMPTZ;
+
+CREATE TABLE IF NOT EXISTS configuracao_email (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  fotografa_id UUID NOT NULL UNIQUE REFERENCES fotografa(id) ON DELETE CASCADE,
+  ativo BOOLEAN NOT NULL DEFAULT false,
+  nome_remetente VARCHAR(120),
+  email_fotografa_avisos VARCHAR(180),
+  enviar_album_publicado BOOLEAN NOT NULL DEFAULT true,
+  avisar_selecao_recebida BOOLEAN NOT NULL DEFAULT true,
+  enviar_confirmacao_selecao_cliente BOOLEAN NOT NULL DEFAULT true,
+  enviar_mudanca_status BOOLEAN NOT NULL DEFAULT false,
+  mensagem_album_publicado TEXT,
+  mensagem_selecao_recebida TEXT
+);
+
+ALTER TABLE configuracao_email
+ADD COLUMN IF NOT EXISTS enviar_confirmacao_selecao_cliente BOOLEAN NOT NULL DEFAULT true;
+
+CREATE TABLE IF NOT EXISTS modelo_contrato (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  fotografa_id UUID NOT NULL REFERENCES fotografa(id) ON DELETE CASCADE,
+  nome VARCHAR(140) NOT NULL,
+  tipo_ensaio VARCHAR(40),
+  clausulas TEXT NOT NULL,
+  texto_aceite TEXT,
+  padrao BOOLEAN NOT NULL DEFAULT false,
+  ativo BOOLEAN NOT NULL DEFAULT true,
+  criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_modelo_contrato_fotografa_id
+ON modelo_contrato(fotografa_id);
 
 DROP TRIGGER IF EXISTS trg_preferencias_sistema_ts ON preferencias_sistema;
 CREATE TRIGGER trg_preferencias_sistema_ts
@@ -296,6 +350,12 @@ EXECUTE FUNCTION fn_atualiza_timestamp();
 DROP TRIGGER IF EXISTS trg_configuracao_estudio_ts ON configuracao_estudio;
 CREATE TRIGGER trg_configuracao_estudio_ts
 BEFORE UPDATE ON configuracao_estudio
+FOR EACH ROW
+EXECUTE FUNCTION fn_atualiza_timestamp();
+
+DROP TRIGGER IF EXISTS trg_modelo_contrato_ts ON modelo_contrato;
+CREATE TRIGGER trg_modelo_contrato_ts
+BEFORE UPDATE ON modelo_contrato
 FOR EACH ROW
 EXECUTE FUNCTION fn_atualiza_timestamp();
 ------------------------------------

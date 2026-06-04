@@ -13,6 +13,7 @@ import java.time.OffsetDateTime;
 public class AlbumPublicoResponse {
 
     private String nomeCliente;
+    private String nomeFotografa;
     private String tipoEnsaio;
     private Integer quantidadeFotos;
 

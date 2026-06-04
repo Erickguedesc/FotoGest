@@ -4,16 +4,25 @@ import com.fotogest.enums.StatusEnsaio;
 import com.fotogest.model.Album;
 import com.fotogest.model.ConfiguracaoEmail;
 import com.fotogest.model.Ensaio;
+import com.fotogest.model.SelecaoFoto;
+import com.fotogest.repository.AlbumRepository;
 import com.fotogest.repository.ConfiguracaoEmailRepository;
-import jakarta.mail.internet.MimeMessage;
+import com.fotogest.repository.SelecaoFotoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -22,12 +31,20 @@ public class EmailService {
 
     private static final DateTimeFormatter DATA_BR =
             DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter DATA_HORA_BR =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    private final JavaMailSender mailSender;
     private final ConfiguracaoEmailRepository configuracaoEmailRepository;
+    private final AlbumRepository albumRepository;
+    private final SelecaoFotoRepository selecaoFotoRepository;
+    private final EmailDeliveryService emailDeliveryService;
+    private final SelecaoResumoPdfService selecaoResumoPdfService;
 
     @Value("${spring.mail.username:}")
     private String emailSistema;
+
+    @Value("${spring.mail.password:}")
+    private String senhaSistema;
 
     public void enviarAlbumPublicado(Ensaio ensaio, Album album, String senha, String urlAcesso) {
         ConfiguracaoEmail config = buscarConfiguracao(ensaio);
@@ -43,12 +60,12 @@ public class EmailService {
         }
 
         String validade = album.getExpiraEm() == null
-                ? "validade não informada"
+                ? "validade nao informada"
                 : album.getExpiraEm().format(DATA_BR);
 
         String mensagem = valorOuPadrao(
                 config.getMensagemAlbumPublicado(),
-                "Olá! Seu álbum já está disponível. Acesse pelo link abaixo usando a senha enviada."
+                "Olá! Seu álbum já está disponivel. Acesse pelo link abaixo usando a senha enviada."
         );
 
         String corpo = String.join("\n\n",
@@ -56,11 +73,11 @@ public class EmailService {
                 "Cliente: " + ensaio.getCliente().getNome(),
                 "Link do álbum: " + urlAcesso,
                 "Senha: " + senha,
-                "Disponível até: " + validade,
-                "Com carinho,\n" + valorOuPadrao(config.getNomeRemetente(), "Seu Estúdio Fotográfico")
+                "Disponivel até: " + validade,
+                "Com carinho,\n" + valorOuPadrao(config.getNomeRemetente(), "Seu Estudio Fotografico")
         );
 
-        enviar(config, destino, "Seu álbum está disponível", corpo);
+        enviar(config, destino, "Seu álbum está disponivel", corpo);
     }
 
     public void avisarSelecaoRecebida(Album album, int totalSelecionadas, int excedente) {
@@ -79,7 +96,7 @@ public class EmailService {
 
         String mensagem = valorOuPadrao(
                 config.getMensagemSelecaoRecebida(),
-                "A cliente enviou a seleção de fotos. Acesse o sistema para conferir os detalhes."
+                "A cliente enviou a selecao de fotos. Acesse o sistema para conferir os detalhes."
         );
 
         String corpo = String.join("\n\n",
@@ -91,6 +108,92 @@ public class EmailService {
         );
 
         enviar(config, destino, "Seleção de fotos recebida", corpo);
+    }
+
+    public void enviarConfirmacaoSelecaoCliente(
+            Album album,
+            List<SelecaoFoto> selecoes,
+            int totalSelecionadas,
+            int limitePlano,
+            int excedente,
+            BigDecimal valorExcedente
+    ) {
+        try {
+            Ensaio ensaio = album.getEnsaio();
+            ConfiguracaoEmail config = buscarConfiguracao(ensaio);
+
+            if (!envioHabilitado(config) || !Boolean.TRUE.equals(config.getEnviarConfirmacaoSelecaoCliente())) {
+                return;
+            }
+
+            String destino = ensaio.getCliente().getEmail();
+
+            if (isBlank(destino)) {
+                return;
+            }
+
+            byte[] pdf = selecaoResumoPdfService.gerarPdf(
+                    album,
+                    selecoes,
+                    totalSelecionadas,
+                    limitePlano,
+                    excedente,
+                    valorExcedente
+            );
+
+            String nomeCliente = valorOuPadrao(ensaio.getCliente().getNome(), "cliente");
+            String nomeRemetente = valorOuPadrao(config.getNomeRemetente(), "Seu Estudio Fotografico");
+            String corpo = String.join("\n\n",
+                    "Olá, " + nomeCliente + ". Tudo bem?",
+                    "Recebemos a relação das fotos que voçê selecionou.\nSegue em anexo um PDF com o resumo da sua seleção.",
+                    "Um abraço,\n" + nomeRemetente
+            );
+
+            emailDeliveryService.enviarAutomaticoComAnexo(
+                    destino,
+                    "Confirmacao de selecao finalizada",
+                    corpo,
+                    nomeRemetente,
+                    config.getEmailFotografaAvisos(),
+                    "resumo-da-selecao.pdf",
+                    pdf
+            );
+        } catch (Exception error) {
+            log.warn("[EmailService] Nao foi possivel preparar confirmacao da selecao para a cliente: {}", error.getMessage());
+        }
+    }
+
+    @Async("emailTaskExecutor")
+    @Transactional(readOnly = true)
+    public void enviarNotificacoesSelecaoAsync(
+            UUID albumId,
+            int totalSelecionadas,
+            int limitePlano,
+            int excedente,
+            BigDecimal valorExcedente
+    ) {
+        try {
+            Album album = albumRepository.findById(albumId).orElse(null);
+
+            if (album == null) {
+                log.warn("[EmailService] Album {} nao encontrado para notificacoes de selecao.", albumId);
+                return;
+            }
+
+            List<SelecaoFoto> selecoes = selecaoFotoRepository.findByAlbumId(albumId);
+
+            avisarSelecaoRecebida(album, totalSelecionadas, excedente);
+            enviarConfirmacaoSelecaoCliente(
+                    album,
+                    selecoes,
+                    totalSelecionadas,
+                    limitePlano,
+                    excedente,
+                    valorExcedente
+            );
+        } catch (Exception error) {
+            log.warn("[EmailService] Nao foi possivel preparar notificacoes da selecao: {}", error.getMessage());
+        }
     }
 
     public void avisarStatusAlterado(Ensaio ensaio, StatusEnsaio status) {
@@ -106,55 +209,143 @@ public class EmailService {
             return;
         }
 
+        String corpo = resolverMensagemStatus(config, ensaio, status);
+
+        enviar(config, destino, "Atualizaçao do seu ensaio", corpo);
+    }
+
+    public void avisarEnsaioAgendado(Ensaio ensaio) {
+        ConfiguracaoEmail config = buscarConfiguracao(ensaio);
+
+        if (!envioHabilitado(config) || !Boolean.TRUE.equals(config.getEnviarMudancaStatus())) {
+            return;
+        }
+
+        String destino = ensaio.getCliente().getEmail();
+
+        if (isBlank(destino)) {
+            return;
+        }
+
+        String data = ensaio.getDataEnsaio() == null
+                ? "data a definir"
+                : ensaio.getDataEnsaio().format(DATA_HORA_BR);
+
         String corpo = String.join("\n\n",
-                "Olá, " + ensaio.getCliente().getNome() + ".",
-                "O status do seu ensaio foi atualizado para: " + formatarStatus(status) + ".",
-                "Com carinho,\n" + valorOuPadrao(config.getNomeRemetente(), "Seu Estúdio Fotográfico")
+                "Ola, " + valorOuPadrao(ensaio.getCliente().getNome(), "cliente") + ".",
+                "Seu ensaio foi agendado.",
+                "Tipo do ensaio: " + resolverTipoExibicao(ensaio),
+                "Data: " + data,
+                "Com carinho,\n" + valorOuPadrao(config.getNomeRemetente(), "Seu Estudio Fotografico")
         );
 
-        enviar(config, destino, "Atualização do seu ensaio", corpo);
+        enviar(config, destino, "Ensaio agendado", corpo);
+    }
+
+    public void enviarTeste(ConfiguracaoEmail config) {
+        if (!smtpConfigurado()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Servidor de e-mail nao configurado. Defina MAIL_USERNAME e MAIL_PASSWORD no backend."
+            );
+        }
+
+        String destino = config.getEmailFotografaAvisos();
+
+        if (isBlank(destino)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Informe um e-mail para receber avisos antes de testar."
+            );
+        }
+
+        String corpo = String.join("\n\n",
+                "Este é um e-mail de teste do FotoGest.",
+                "Se voce recebeu está mensagem, o envio de e-mails esta funcionando.",
+                "Remetente: " + valorOuPadrao(config.getNomeRemetente(), "Seu Estudio Fotografico")
+        );
+
+        enviarObrigatorio(config, destino, "Teste de e-mail FotoGest", corpo);
     }
 
     private ConfiguracaoEmail buscarConfiguracao(Ensaio ensaio) {
-        return configuracaoEmailRepository
-                .findAll()
+        ConfiguracaoEmail configLogada = buscarConfiguracaoFotografaLogada();
+
+        if (configLogada != null) {
+            return configLogada;
+        }
+
+        List<ConfiguracaoEmail> configuracoes = configuracaoEmailRepository.findAll();
+
+        if (configuracoes.size() == 1) {
+            return configuracoes.get(0);
+        }
+
+        if (configuracoes.size() > 1) {
+            log.warn(
+                    "[EmailService] Nao foi possivel escolher configuracao de e-mail para o ensaio {}.",
+                    ensaio != null ? ensaio.getId() : null
+            );
+        }
+
+        return null;
+    }
+
+    private boolean envioHabilitado(ConfiguracaoEmail config) {
+        return config != null && Boolean.TRUE.equals(config.getAtivo()) && smtpConfigurado();
+    }
+
+    private void enviar(ConfiguracaoEmail config, String destino, String assunto, String corpo) {
+        emailDeliveryService.enviarAutomatico(
+                destino,
+                assunto,
+                corpo,
+                valorOuPadrao(config.getNomeRemetente(), "Seu Estudio Fotografico"),
+                config.getEmailFotografaAvisos()
+        );
+    }
+
+    private void enviarObrigatorio(ConfiguracaoEmail config, String destino, String assunto, String corpo) {
+        emailDeliveryService.enviarObrigatorio(
+                destino,
+                assunto,
+                corpo,
+                valorOuPadrao(config.getNomeRemetente(), "Seu Estudio Fotografico"),
+                config.getEmailFotografaAvisos()
+        );
+    }
+
+    private ConfiguracaoEmail buscarConfiguracaoFotografaLogada() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        String email = authentication.getName();
+
+        if (isBlank(email) || "anonymousUser".equals(email)) {
+            return null;
+        }
+
+        return configuracaoEmailRepository.findAll()
                 .stream()
+                .filter(config -> config.getFotografa() != null
+                        && email.equalsIgnoreCase(config.getFotografa().getEmail()))
                 .findFirst()
                 .orElse(null);
     }
 
-    private boolean envioHabilitado(ConfiguracaoEmail config) {
-        return config != null && Boolean.TRUE.equals(config.getAtivo()) && !isBlank(emailSistema);
-    }
-
-    private void enviar(ConfiguracaoEmail config, String destino, String assunto, String corpo) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
-
-            String nomeRemetente = valorOuPadrao(config.getNomeRemetente(), "Seu Estúdio Fotográfico");
-
-            helper.setTo(destino);
-            helper.setSubject(assunto);
-            helper.setText(corpo, false);
-            helper.setFrom(emailSistema, nomeRemetente);
-
-            if (!isBlank(config.getEmailResposta())) {
-                helper.setReplyTo(config.getEmailResposta());
-            }
-
-            mailSender.send(message);
-        } catch (Exception error) {
-            log.warn("[EmailService] Não foi possível enviar e-mail para {}: {}", destino, error.getMessage());
-        }
+    private boolean smtpConfigurado() {
+        return !isBlank(emailSistema) && !isBlank(senhaSistema);
     }
 
     private String formatarStatus(StatusEnsaio status) {
         return switch (status) {
             case AGENDADO -> "Agendado";
             case REALIZADO -> "Realizado";
-            case EM_SELECAO -> "Em seleção";
-            case EM_EDICAO -> "Em edição";
+            case EM_SELECAO -> "Em selecao";
+            case EM_EDICAO -> "Em edicao";
             case FINALIZADO -> "Finalizado";
             case CANCELADO -> "Cancelado";
         };
@@ -162,6 +353,14 @@ public class EmailService {
 
     private String valorOuPadrao(String value, String fallback) {
         return isBlank(value) ? fallback : value.trim();
+    }
+
+    private String resolverMensagemStatus(ConfiguracaoEmail config, Ensaio ensaio, StatusEnsaio status) {
+        return String.join("\n\n",
+                "Olá, " + valorOuPadrao(ensaio.getCliente().getNome(), "cliente") + ".",
+                "O status do seu ensaio foi atualizado para: " + formatarStatus(status) + ".",
+                "Com carinho,\n" + valorOuPadrao(config.getNomeRemetente(), "Seu Estudio Fotografico")
+        );
     }
 
     private boolean isBlank(String value) {

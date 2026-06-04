@@ -1,8 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LogOut, Moon, Settings, Sun } from 'lucide-react'
+import {
+  BarChart3,
+  CalendarDays,
+  LayoutDashboard,
+  LogOut,
+  Moon,
+  PlusCircle,
+  Settings,
+  Sun,
+  Users,
+} from 'lucide-react'
 
 import { configuracoesService } from '../../services/configuracoesService'
+import NotificationBell from './NotificationBell'
 
 const FotoGestIcon = () => (
   <svg width="26" height="26" viewBox="0 0 42 42" fill="none">
@@ -17,10 +28,10 @@ const FotoGestIcon = () => (
 )
 
 const navLinks = [
-  { label: 'Dashboard', to: '/dashboard' },
-  { label: 'Ensaios', to: '/ensaios' },
-  { label: 'Clientes', to: '/clientes' },
-  { label: 'Novo Ensaio', to: '/novo-ensaio' },
+  { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
+  { label: 'Ensaios', to: '/ensaios', icon: CalendarDays },
+  { label: 'Clientes', to: '/clientes', icon: Users },
+  { label: 'Novo Ensaio', to: '/novo-ensaio', icon: PlusCircle },
   { label: 'Relatórios', to: '/relatorios' },
 ]
 
@@ -132,23 +143,29 @@ export default function Header() {
       </Link>
 
       <nav className="theme-soft mx-auto flex items-center gap-1 rounded-full border px-1.5 py-1 shadow-[0_10px_30px_rgba(0,0,0,0.12)]">
-        {navLinks.map((link) => (
-          <Link
-            key={link.to}
-            to={link.to}
-            className={`
-              rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] no-underline
-              transition-all duration-200
-              ${
-                isActive(link.to)
-                  ? 'bg-[var(--card)] text-[var(--gold)] shadow-[0_6px_18px_rgba(0,0,0,0.10)]'
-                  : 'text-[var(--text-muted)] hover:bg-[var(--card-hover)] hover:text-[var(--text)]'
-              }
-            `}
-          >
-            {link.label}
-          </Link>
-        ))}
+        {navLinks.map((link) => {
+          const active = isActive(link.to)
+          const Icon = link.icon || BarChart3
+
+          return (
+            <Link
+              key={link.to}
+              to={link.to}
+              className={`
+                inline-flex min-h-10 items-center gap-2 rounded-full px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.10em] no-underline
+                transition-all duration-200
+                ${
+                  active
+                    ? 'bg-[var(--card)] text-[var(--gold)] shadow-[0_6px_18px_rgba(0,0,0,0.10)]'
+                    : 'text-[var(--text-muted)] hover:bg-[var(--card-hover)] hover:text-[var(--text)]'
+                }
+              `}
+            >
+              <Icon size={15} strokeWidth={active ? 2.2 : 1.9} />
+              <span>{link.label}</span>
+            </Link>
+          )
+        })}
       </nav>
 
       <button
@@ -181,6 +198,8 @@ export default function Header() {
         </span>
       </button>
 
+      <NotificationBell />
+
       <div ref={menuRef} className="relative flex-shrink-0">
         <button
           type="button"
@@ -200,32 +219,56 @@ export default function Header() {
         </button>
 
         {menuOpen && (
-          <div className="absolute right-0 top-11 w-64 overflow-hidden rounded-2xl border border-white/10 bg-[#141414] shadow-2xl shadow-black/50">
-            <div className="border-b border-white/10 px-4 py-3">
-              <p className="truncate text-sm font-medium text-white">
+          <div className="theme-card absolute right-0 top-11 w-[286px] overflow-hidden rounded-2xl border shadow-2xl shadow-black/30">
+            <div className="border-b border-[var(--border)] px-4 py-4">
+              <p className="mb-3 text-[10px] uppercase tracking-[0.18em] text-[var(--gold)]">
+                Conta
+              </p>
+
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--gold-border)] bg-[var(--gold-dim)] font-serif text-[15px] text-[var(--gold)]">
+                  {fotografa?.fotoPerfilUrl ? (
+                    <img
+                      src={fotografa.fotoPerfilUrl}
+                      alt={fotografa?.nome || 'FotÃ³grafa'}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    initials
+                  )}
+                </div>
+
+                <div className="min-w-0">
+              <p className="theme-title truncate text-sm font-semibold">
                 {fotografa?.nome || 'Fotógrafa'}
               </p>
 
-              <p className="mt-0.5 truncate text-xs text-white/40">
+              <p className="theme-muted mt-0.5 truncate text-xs">
                 {fotografa?.email || 'Conta administrativa'}
               </p>
+                </div>
+              </div>
             </div>
 
             <Link
               to="/configuracoes"
               onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 text-sm text-white/65 transition hover:bg-white/[0.04] hover:text-[var(--gold)]"
+              className="group mx-2 mt-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[var(--text-muted)] transition hover:bg-[var(--card-hover)] hover:text-[var(--text)]"
             >
-              <Settings size={16} />
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] transition group-hover:border-[var(--gold-border)] group-hover:text-[var(--gold)]">
+                <Settings size={15} />
+              </span>
               Configurações
             </Link>
 
             <button
               type="button"
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-red-300/80 transition hover:bg-red-400/10 hover:text-red-200"
+              className="group mx-2 mb-2 mt-2 flex w-[calc(100%-16px)] items-center gap-3 rounded-xl border-t border-[var(--border)] px-3 py-2.5 text-left text-sm text-red-300 transition hover:bg-red-400/10 hover:text-red-200"
             >
-              <LogOut size={16} />
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-red-400/20 bg-red-400/10 text-red-300 transition group-hover:text-red-200">
+                <LogOut size={15} />
+              </span>
               Sair
             </button>
           </div>

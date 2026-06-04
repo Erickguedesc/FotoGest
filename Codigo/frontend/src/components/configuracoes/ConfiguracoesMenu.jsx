@@ -1,25 +1,30 @@
-import { Building2, Image, LockKeyhole, Mail, SlidersHorizontal, User } from 'lucide-react'
+import { Building2, Download, FileText, Image, LockKeyhole, Mail, SlidersHorizontal, User } from 'lucide-react'
 
 const tabs = [
   {
     id: 'fotografa',
-    label: 'Dados da fotógrafa',
+    label: 'Seus Dados',
     description: 'Perfil, login e foto do painel',
     icon: User,
   },
-  
-{
-  id: 'estudio',
-  label: 'Dados do estúdio/empresa',
-  description: 'Logo, contato e dados dos PDFs',
-  icon: Building2,
-},
-{
-  id: 'marcaDagua',
-  label: 'Marca d’água',
-  description: 'Proteção das fotos da galeria',
-  icon: Image,
-},
+  {
+    id: 'estudio',
+    label: 'Dados do estudio/empresa',
+    description: 'Logo, contato e dados dos PDFs',
+    icon: Building2,
+  },
+  {
+    id: 'marcaDagua',
+    label: "Marca d'agua",
+    description: 'Protecao das fotos da galeria',
+    icon: Image,
+  },
+  {
+    id: 'modelosContrato',
+    label: 'Modelos de contrato',
+    description: 'Clausulas do pre-contrato',
+    icon: FileText,
+  },
   {
     id: 'senha',
     label: 'Alterar senha',
@@ -28,8 +33,8 @@ const tabs = [
   },
   {
     id: 'preferencias',
-    label: 'Preferências do sistema',
-    description: 'Padrões para ensaios e álbuns',
+    label: 'Preferencias do sistema',
+    description: 'Padroes para ensaios e albuns',
     icon: SlidersHorizontal,
   },
   {
@@ -37,6 +42,12 @@ const tabs = [
     label: 'E-mails',
     description: 'Notificacoes automaticas',
     icon: Mail,
+  },
+  {
+    id: 'backup',
+    label: 'Backup',
+    description: 'Copia dos dados do sistema',
+    icon: Download,
   },
 ]
 
@@ -55,7 +66,7 @@ export default function ConfiguracoesMenu({ activeTab, onChange }) {
             className={`w-full rounded-2xl border p-4 text-left transition ${
               active
                 ? 'border-[var(--gold-border)] bg-[var(--gold-dim)]'
-                : 'border-white/10 bg-[#141414] hover:border-white/20 hover:bg-white/[0.03]'
+                : 'theme-card hover:border-[var(--gold-border)]'
             }`}
           >
             <div className="flex items-start gap-3">
@@ -63,18 +74,18 @@ export default function ConfiguracoesMenu({ activeTab, onChange }) {
                 className={`rounded-xl border p-2 ${
                   active
                     ? 'border-[var(--gold-border)] text-[var(--gold)]'
-                    : 'border-white/10 text-white/45'
+                    : 'border-[var(--border)] text-[var(--text-muted)]'
                 }`}
               >
                 <Icon size={18} />
               </span>
 
               <span>
-                <span className="block text-sm font-medium text-white">
+                <span className="theme-title block text-sm font-medium">
                   {tab.label}
                 </span>
 
-                <span className="mt-1 block text-xs text-white/35">
+                <span className="theme-muted mt-1 block text-xs">
                   {tab.description}
                 </span>
               </span>

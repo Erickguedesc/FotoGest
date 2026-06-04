@@ -2,6 +2,8 @@ package com.fotogest.controller;
 
 import com.fotogest.dto.EnsaioRequest;
 import com.fotogest.dto.EnsaioConflitoAgendaResponse;
+import com.fotogest.dto.EnsaioNotasInternasRequest;
+import com.fotogest.dto.EnsaioObservacoesRequest;
 import com.fotogest.dto.EnsaioResponse;
 import com.fotogest.dto.EnsaioStatusRequest;
 import com.fotogest.service.EnsaioService;
@@ -77,5 +79,22 @@ public ResponseEntity<?> deletar(@PathVariable UUID id) {
     public EnsaioResponse atualizarStatus(@PathVariable UUID id,
             @RequestBody @Valid EnsaioStatusRequest request) {
         return service.atualizarStatus(id, request);
+    }
+
+    @PatchMapping("/{id}/observacoes")
+    public EnsaioResponse atualizarObservacoes(@PathVariable UUID id,
+            @RequestBody @Valid EnsaioObservacoesRequest request) {
+        return service.atualizarObservacoes(id, request);
+    }
+
+    @PatchMapping("/{id}/notas-internas")
+    public EnsaioResponse atualizarNotasInternas(@PathVariable UUID id,
+            @RequestBody @Valid EnsaioNotasInternasRequest request) {
+        return service.atualizarNotasInternas(id, request);
+    }
+
+    @PatchMapping("/{id}/aprovar-selecao")
+    public EnsaioResponse aprovarSelecao(@PathVariable UUID id) {
+        return service.aprovarSelecao(id);
     }
 }

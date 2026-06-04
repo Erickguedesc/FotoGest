@@ -13,6 +13,7 @@ import com.fotogest.enums.MarcaDaguaTipo;
 import com.fotogest.enums.MarcaDaguaFonte;
 import com.fotogest.enums.MarcaDaguaCor;
 import com.fotogest.enums.MarcaDaguaEstilo;
+import com.fotogest.enums.MarcaDaguaTextoModo;
 
 @Entity
 @Table(name = "configuracao_estudio")
@@ -126,7 +127,11 @@ private MarcaDaguaCor marcaDaguaCor = MarcaDaguaCor.BRANCO;
 @Column(name = "marca_dagua_estilo", length = 20)
 private MarcaDaguaEstilo marcaDaguaEstilo = MarcaDaguaEstilo.NORMAL;
 
+@Builder.Default
+@Enumerated(EnumType.STRING)
+@Column(name = "marca_dagua_texto_modo", length = 20)
+private MarcaDaguaTextoModo marcaDaguaTextoModo = MarcaDaguaTextoModo.REPETIDA;
 
 }
 
-// para alterar configuraçes do perfil 
+// para alterar configuraçes do perfil

@@ -7,6 +7,7 @@ import com.fotogest.service.MarcaDaguaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +23,16 @@ public class ConfiguracoesController {
     @GetMapping
     public ResponseEntity<ConfiguracoesResponseDTO> buscarConfiguracoes() {
         return ResponseEntity.ok(configuracoesService.buscarConfiguracoes());
+    }
+
+    @PostMapping(value = "/backup/metadados", produces = "application/zip")
+    public ResponseEntity<byte[]> gerarBackupMetadados() {
+        byte[] arquivo = configuracoesService.gerarBackupMetadadosZip();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=fotogest-backup.zip")
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .body(arquivo);
     }
 
     @PutMapping("/fotografa")
@@ -68,6 +79,11 @@ public ResponseEntity<EstudioConfigDTO> uploadLogoEstudio(
             @RequestBody EmailConfigUpdateRequest request
     ) {
         return ResponseEntity.ok(configuracoesService.atualizarEmail(request));
+    }
+
+    @PostMapping("/email/teste")
+    public ResponseEntity<EmailConfigDTO> enviarEmailTeste() {
+        return ResponseEntity.ok(configuracoesService.enviarEmailTeste());
     }
 
     @PatchMapping("/senha")

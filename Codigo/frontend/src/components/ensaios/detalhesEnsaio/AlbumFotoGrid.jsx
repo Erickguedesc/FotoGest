@@ -1,5 +1,8 @@
 import { useMemo, useState } from 'react'
 
+import useBodyScrollLock from '../../../hooks/useBodyScrollLock'
+import FotoPreviewImage from './FotoPreviewImage'
+
 const LIMITE_PREVIA = 9
 
 export default function AlbumFotoGrid({
@@ -12,6 +15,8 @@ export default function AlbumFotoGrid({
 }) {
   const [selectedIds, setSelectedIds] = useState([])
   const [modalAberto, setModalAberto] = useState(false)
+
+  useBodyScrollLock(modalAberto)
 
   const totalSelecionadas = selectedIds.length
   const fotosPrevias = fotos.slice(0, LIMITE_PREVIA)
@@ -48,8 +53,18 @@ export default function AlbumFotoGrid({
     setSelectedIds([])
   }
 
+  const getNomeFoto = (foto) => {
+    if (foto.nomeOriginal) return foto.nomeOriginal
+
+    if (foto.cloudinaryId) {
+      const partes = foto.cloudinaryId.split('/')
+      return partes[partes.length - 1]
+    }
+
+    return foto.id
+  }
+
   const renderFotoCard = (foto) => {
-    const url = foto.urlWatermark || foto.urlOriginal
     const selecionada = selectedIds.includes(foto.id)
 
     return (
@@ -62,11 +77,7 @@ export default function AlbumFotoGrid({
         }`}
       >
         <div className="relative">
-          <img
-            src={url}
-            alt={foto.cloudinaryId || 'Foto do ensaio'}
-            className="h-40 w-full object-cover"
-          />
+          <FotoPreviewImage foto={foto} alt={getNomeFoto(foto)} />
 
           {!disabled && (
             <button
@@ -92,7 +103,7 @@ export default function AlbumFotoGrid({
 
         <div className="p-3">
           <p className="truncate text-[12px] text-white/70">
-            {foto.cloudinaryId || foto.id}
+            {getNomeFoto(foto)}
           </p>
 
           <div className="mt-3 flex gap-2">
@@ -206,7 +217,7 @@ export default function AlbumFotoGrid({
       )}
 
       {modalAberto && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-8 backdrop-blur max-sm:p-4">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center overflow-hidden bg-black/80 p-8 backdrop-blur max-sm:p-4">
           <div className="flex max-h-[84vh] w-full max-w-5xl flex-col rounded-2xl border border-[var(--gold-border)] bg-[#121212] shadow-2xl">
             <div className="flex items-center justify-between gap-4 border-b border-white/[0.08] px-7 py-6 max-sm:px-5">
               <div>
@@ -227,7 +238,7 @@ export default function AlbumFotoGrid({
               </button>
             </div>
 
-            <div className="overflow-y-auto px-7 py-6 max-sm:px-5">
+            <div className="min-h-0 flex-1 overscroll-contain overflow-y-auto px-7 py-6 max-sm:px-5">
               <div className="grid grid-cols-2 gap-5 md:grid-cols-3">
                 {fotos.map(renderFotoCard)}
               </div>

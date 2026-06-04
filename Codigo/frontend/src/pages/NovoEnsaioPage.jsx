@@ -77,6 +77,7 @@ export default function NovoEnsaioPage() {
   const [clientesSugeridos, setClientesSugeridos] = useState([])
   const [conflitoAgenda, setConflitoAgenda] = useState(null)
   const [clienteSelecionadoId, setClienteSelecionadoId] = useState(searchParams.get('clienteId'))
+  const [activeProgressSection, setActiveProgressSection] = useState('cliente')
   const clienteIdExistente = searchParams.get('clienteId')
 
   useEffect(() => {
@@ -276,10 +277,8 @@ export default function NovoEnsaioPage() {
           indicacao: form.indicacao                  || null,
         }
 
-        console.log('[NovoEnsaio] Criando cliente:', clientePayload)
         const clienteRes = await clientesService.criar(clientePayload)
         clienteId = clienteRes.data.id
-        console.log('[NovoEnsaio] Cliente criado, id:', clienteId)
       }
 
       // ── Passo 2: criar o ensaio ───────────────────────────────────────────
@@ -309,7 +308,6 @@ export default function NovoEnsaioPage() {
         status:          'AGENDADO',
       }
 
-      console.log('[NovoEnsaio] Criando ensaio:', ensaioPayload)
       await ensaiosService.criar(ensaioPayload)
 
       setToast({ message: 'Ensaio cadastrado com sucesso!', type: 'success' })
@@ -373,11 +371,25 @@ export default function NovoEnsaioPage() {
                 conflitoAgenda={conflitoAgenda}
                 onChange={handleChange}
                 onSelectCliente={handleSelectCliente}
+                onSectionFocus={setActiveProgressSection}
               />
-              <FormObsSection    form={form} onChange={handleChange} />
-              <FormPacoteSection form={form} errors={errors} onChange={handleChange} />
+              <FormObsSection
+                form={form}
+                onChange={handleChange}
+                onSectionFocus={setActiveProgressSection}
+              />
+              <FormPacoteSection
+                form={form}
+                errors={errors}
+                onChange={handleChange}
+                onSectionFocus={setActiveProgressSection}
+              />
             </div>
-            <ResumeSidebar form={form} loading={loading} />
+            <ResumeSidebar
+              form={form}
+              loading={loading}
+              activeSection={activeProgressSection}
+            />
           </div>
         </form>
       </main>

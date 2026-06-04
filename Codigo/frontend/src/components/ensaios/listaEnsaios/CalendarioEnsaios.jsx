@@ -31,6 +31,12 @@ const DAY_LABEL = new Intl.DateTimeFormat('pt-BR', {
   month: 'long',
 })
 
+const CONFLICT_DATE_LABEL = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+})
+
 const STATUS_DOT = {
   AGENDADO: 'bg-indigo-300',
   REALIZADO: 'bg-lime-300',
@@ -137,6 +143,31 @@ export default function CalendarioEnsaios({
         itens.length > 1
       )
     }).length
+  }, [ensaiosPorDia, mesAtual])
+
+  const conflitosDetalhesNoMes = useMemo(() => {
+    return Object.entries(ensaiosPorDia)
+      .filter(([key, itens]) => {
+        const [year, month] = key.split('-').map(Number)
+        return (
+          year === mesAtual.getFullYear() &&
+          month === mesAtual.getMonth() + 1 &&
+          itens.length > 1
+        )
+      })
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, itens]) => {
+        const [year, month, day] = key.split('-').map(Number)
+        const date = new Date(year, month - 1, day)
+
+        return {
+          key,
+          label: CONFLICT_DATE_LABEL.format(date),
+          ensaios: [...itens].sort(
+            (a, b) => new Date(a.dataEnsaio).getTime() - new Date(b.dataEnsaio).getTime()
+          ),
+        }
+      })
   }, [ensaiosPorDia, mesAtual])
 
   const ensaiosSelecionados = [...(ensaiosPorDia[diaSelecionado] || [])].sort(
@@ -267,7 +298,13 @@ export default function CalendarioEnsaios({
           <div className="mb-4 grid grid-cols-3 gap-3 md:grid-cols-4">
             <ResumoCalendario label="Ensaios no mês" value={ensaiosDoMes.length} />
             <ResumoCalendario label="Dias ocupados" value={diasOcupadosNoMes} />
-            <ResumoCalendario label="Possíveis conflitos" value={conflitosNoMes} danger={conflitosNoMes > 0} />
+            <ResumoCalendario
+              label="Possíveis conflitos"
+              value={conflitosNoMes}
+              danger={conflitosNoMes > 0}
+              tooltipTitle="Dias com possíveis conflitos"
+              tooltipItems={conflitosDetalhesNoMes}
+            />
             <ResumoCalendario label="Dia selecionado" value={ensaiosSelecionados.length} />
           </div>
 
@@ -433,19 +470,62 @@ export default function CalendarioEnsaios({
   )
 }
 
-function ResumoCalendario({ label, value, danger }) {
+function ResumoCalendario({ label, value, danger, tooltipTitle, tooltipItems = [] }) {
+  const hasTooltip = tooltipItems.length > 0
+
   return (
-    <div className={`rounded-xl border px-4 py-3 ${
-      danger
-        ? 'border-red-400/30 bg-red-400/10'
-        : 'border-white/[0.08] bg-black/20'
-    }`}>
+    <div
+      className={`group relative rounded-xl border px-4 py-3 outline-none ${
+        danger
+          ? 'border-red-400/30 bg-red-400/10'
+          : 'border-white/[0.08] bg-black/20'
+      }`}
+      tabIndex={hasTooltip ? 0 : undefined}
+      title={hasTooltip ? 'Passe o mouse para ver os dias com conflito' : undefined}
+    >
       <p className={danger ? 'text-[18px] text-red-300' : 'text-[18px] text-white'}>
         {value}
       </p>
       <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-white/35">
         {label}
       </p>
+
+      {hasTooltip && (
+        <div className="pointer-events-none absolute left-0 top-[calc(100%+10px)] z-30 hidden w-[360px] rounded-xl border border-red-400/30 bg-[#171111] p-4 text-left shadow-[0_18px_40px_rgba(0,0,0,0.45)] group-hover:block group-focus:block max-sm:left-auto max-sm:right-0 max-sm:w-[min(82vw,360px)]">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-red-200/80">
+            {tooltipTitle}
+          </p>
+
+          <div className="mt-3 space-y-3">
+            {tooltipItems.slice(0, 4).map((item) => (
+              <div key={item.key} className="border-t border-white/[0.08] pt-3 first:border-t-0 first:pt-0">
+                <p className="text-[13px] font-medium capitalize text-white">
+                  {item.label}
+                </p>
+
+                <div className="mt-2 space-y-1.5">
+                  {item.ensaios.map((ensaio) => (
+                    <p key={ensaio.id} className="flex items-center justify-between gap-3 text-[12px] text-white/60">
+                      <span className="min-w-0 truncate">
+                        {ensaio.clienteNome || 'Cliente sem nome'}
+                      </span>
+                      <span className="shrink-0 text-red-200">
+                        {formatTime(ensaio.dataEnsaio)}
+                      </span>
+                    </p>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {tooltipItems.length > 4 && (
+            <p className="mt-3 border-t border-white/[0.08] pt-3 text-[12px] text-red-200/75">
+              +{tooltipItems.length - 4} dia{tooltipItems.length - 4 === 1 ? '' : 's'} com conflito neste mês.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   )
 }
