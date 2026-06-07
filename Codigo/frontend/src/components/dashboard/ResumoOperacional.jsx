@@ -1,48 +1,60 @@
+import { CalendarDays, CheckCircle2, ImageOff, TimerReset } from 'lucide-react'
+
 export default function ResumoOperacional({ dashboard }) {
+    const metrics = [
+        {
+            label: 'Hoje',
+            value: dashboard?.ensaiosHoje || 0,
+            icon: CalendarDays,
+            color: 'text-sky-400',
+        },
+        {
+            label: 'Próximos 7 dias',
+            value: dashboard?.ensaiosProximosSeteDias || 0,
+            icon: TimerReset,
+            color: 'text-amber-400',
+        },
+        {
+            label: 'Sem fotos enviadas',
+            value: dashboard?.ensaiosSemFotosEnviadas || 0,
+            icon: ImageOff,
+            color: 'text-emerald-400',
+        },
+        {
+            label: 'Finalizados no mês',
+            value: dashboard?.ensaiosFinalizadosMes || 0,
+            icon: CheckCircle2,
+            color: 'text-emerald-400',
+        },
+    ]
+
     return (
-        <section className="space-y-5">
-            <div className="theme-divider border-b pb-4">
-                <h2 className="theme-muted text-xs uppercase tracking-[0.25em]">
-                    Resumo de Ensaios
-                </h2>
-            </div>
+        <section className="theme-card rounded-2xl border p-4">
+            <h2 className="theme-muted mb-2 text-xs uppercase tracking-[0.22em]">
+                Resumo de ensaios
+            </h2>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
-                <Metric
-                    label="Hoje"
-                    value={dashboard?.ensaiosHoje || 0}
-                    highlight
-                />
-
-                <Metric
-                    label="Próximos 7 dias"
-                    value={dashboard?.ensaiosProximosSeteDias || 0}
-                />
-
-                <Metric
-                    label="Sem fotos enviadas"
-                    value={dashboard?.ensaiosSemFotosEnviadas || 0}
-                />
-
-                <Metric
-                    label="Finalizados no mês"
-                    value={dashboard?.ensaiosFinalizadosMes || 0}
-                />
+            <div className="divide-y divide-[var(--border)]">
+                {metrics.map((metric) => (
+                    <Metric key={metric.label} {...metric} />
+                ))}
             </div>
         </section>
     )
 }
 
-function Metric({ label, value, highlight = false }) {
+function Metric({ label, value, icon: Icon, color }) {
     return (
-        <div className={`theme-card rounded-3xl border p-6 ${highlight ? 'border-[var(--gold-border)]' : ''}`}>
-            <p className="theme-muted text-xs uppercase tracking-[0.2em]">
-                {label}
-            </p>
+        <div className="grid min-h-11 grid-cols-[22px_minmax(0,1fr)_auto] items-center gap-3 py-2.5">
+            <Icon size={16} strokeWidth={1.8} className={`shrink-0 ${color}`} />
 
-            <h2 className={`mt-3 font-serif text-5xl font-light ${highlight ? 'text-[var(--gold)]' : 'theme-title'}`}>
+            <span className="theme-text truncate text-[13px]">
+                {label}
+            </span>
+
+            <span className="theme-title font-serif text-2xl font-light leading-none">
                 {value}
-            </h2>
+            </span>
         </div>
     )
 }

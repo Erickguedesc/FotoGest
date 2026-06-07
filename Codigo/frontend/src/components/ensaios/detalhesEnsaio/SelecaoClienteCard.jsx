@@ -91,7 +91,7 @@ export default function SelecaoClienteCard({
           <FotoPreviewImage
             foto={foto}
             alt={getNomeFoto(foto)}
-            className="h-36 w-full object-cover"
+            className="aspect-[4/3] w-full object-cover"
           />
         </div>
 

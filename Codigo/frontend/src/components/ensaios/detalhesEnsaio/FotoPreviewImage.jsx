@@ -20,7 +20,7 @@ function addRetryParam(url, attempt) {
 export default function FotoPreviewImage({
   foto,
   alt,
-  className = 'h-40 w-full object-cover',
+  className = 'aspect-[4/3] w-full object-cover',
 }) {
   const watermarkUrl = foto?.urlWatermark || ''
   const originalUrl = foto?.urlOriginal || ''

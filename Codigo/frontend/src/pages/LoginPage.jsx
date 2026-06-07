@@ -1,19 +1,99 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import {
+  AlertCircle,
+  CircleCheck,
+  Eye,
+  EyeOff,
+  Folder,
+  Image as ImageIcon,
+  Loader2,
+  Mail,
+} from 'lucide-react'
 import api from '../services/api'
-// tela de login da fotografa //
+import loginBrand from '../assets/login-brand.png'
+import loginScene from '../assets/login-scene.png'
+
+const LOGIN_DISPLAY_NAME_KEY = 'fotogest-login-display-name'
+
+const benefitCards = [
+  {
+    icon: Folder,
+    title: 'Organize seus trabalhos',
+    text: 'Centralize clientes, contratos, ensaios, arquivos e tarefas em um só lugar.',
+  },
+  {
+    icon: CircleCheck,
+    title: 'Status e aprovações',
+    text: 'Acompanhe e gerencie status, seleções, feedbacks e notificações com mais agilidade.',
+  },
+  {
+    icon: ImageIcon,
+    title: 'Galerias e relatórios',
+    text: 'Entregue galerias privadas para seus clientes selecionarem as melhores fotos, consulte seus relatórios e muito mais!',
+  },
+]
+
+function GoogleIcon() {
+  return (
+    <svg width="21" height="21" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09Z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A10.99 10.99 0 0 0 12 23Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.84 14.1A6.63 6.63 0 0 1 5.49 12c0-.73.13-1.43.35-2.1V7.06H2.18A10.99 10.99 0 0 0 1 12c0 1.78.43 3.45 1.18 4.94l3.66-2.84Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A10.99 10.99 0 0 0 2.18 7.06L5.84 9.9c.87-2.6 3.3-4.52 6.16-4.52Z"
+      />
+    </svg>
+  )
+}
+
+function isGenericDisplayName(name = '') {
+  const normalized = name.trim().toLowerCase()
+  return [
+    'seu estudio',
+    'seu estúdio',
+    'seu estudio fotografico',
+    'seu estúdio fotográfico',
+  ].includes(normalized)
+}
+
+function getStoredDisplayName() {
+  const storedName = localStorage.getItem(LOGIN_DISPLAY_NAME_KEY) || ''
+  return isGenericDisplayName(storedName) ? '' : storedName
+}
+
 export default function LoginPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const [form, setForm]         = useState({ email: '', senha: '' })
-  const [errors, setErrors]     = useState({})
+  const [form, setForm] = useState({ email: '', senha: '' })
+  const [displayName, setDisplayName] = useState(getStoredDisplayName)
+  const [errors, setErrors] = useState({})
   const [showPass, setShowPass] = useState(false)
-  const [loading, setLoading]   = useState(false)
+  const [remember, setRemember] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [apiError, setApiError] = useState(
     searchParams.get('motivo') === 'sessao-expirada'
       ? 'Sua sessão expirou ou ficou inválida. Faça login novamente.'
       : '',
   )
+
+  useEffect(() => {
+    document.documentElement.classList.add('login-scrollbar-hidden')
+
+    return () => {
+      document.documentElement.classList.remove('login-scrollbar-hidden')
+    }
+  }, [])
 
   const set = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -23,10 +103,12 @@ export default function LoginPage() {
 
   function validate() {
     const e = {}
-    if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+    if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       e.email = 'Insira um e-mail válido'
-    if (!form.senha || form.senha.length < 6)
+    }
+    if (!form.senha || form.senha.length < 6) {
       e.senha = 'A senha deve ter pelo menos 6 caracteres'
+    }
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -47,16 +129,19 @@ export default function LoginPage() {
         senha: form.senha,
       })
 
-      const { token, nome, email } = res.data
+      const { token, nome, email, nomeExibicao, nomeEstudio, nomeComercial } = res.data
+      const loginDisplayName = [nomeExibicao, nomeComercial, nomeEstudio, nome]
+        .find((value) => value && !isGenericDisplayName(value))
 
-      // Salva no localStorage para uso em todas as requisições
       localStorage.setItem('token', token)
       localStorage.setItem('fotografaNome', nome)
       localStorage.setItem('fotografaEmail', email)
+      if (loginDisplayName) {
+        localStorage.setItem(LOGIN_DISPLAY_NAME_KEY, loginDisplayName)
+        setDisplayName(loginDisplayName)
+      }
 
-      // Redireciona para o dashboard
       navigate('/dashboard', { replace: true })
-
     } catch (err) {
       const status = err?.response?.status
       if (status === 401 || status === 403) {
@@ -71,198 +156,193 @@ export default function LoginPage() {
     }
   }
 
+  const loginCardSurface =
+    'rounded-[8px] border border-white/80 bg-white/[0.96] shadow-[0_18px_50px_rgba(48,38,29,0.14)]'
+
   const inputBase = `
-    w-full bg-white/[0.03] border border-white/[0.12] rounded-[8px]
-    px-4 py-[13px] font-light text-[14.5px] text-white
-    outline-none transition-all duration-200
-    hover:border-white/[0.22]
-    focus:border-[rgba(226,185,107,0.5)] focus:bg-[rgba(201,164,89,0.04)]
-    placeholder:text-white/20
+    w-full rounded-[8px] border border-[#d8d2cc] bg-white/[0.72] px-4 py-[14px]
+    text-[15px] text-[#1f2a32] outline-none transition-all duration-200
+    placeholder:text-[#8c969d] hover:border-[#c8b8aa]
+    focus:border-[#bf4b25] focus:bg-white focus:shadow-[0_0_0_3px_rgba(191,75,37,0.11)]
   `
-  const inputError = 'border-[rgba(226,92,92,0.5)] bg-[rgba(255,107,107,0.05)]'
+  const inputError = 'border-[#d05757] bg-[#fff8f8] focus:border-[#d05757]'
+  const validDisplayName = displayName && !isGenericDisplayName(displayName) ? displayName.trim() : ''
 
   return (
-    <div
-      className="theme-static flex min-h-screen items-center justify-center px-6"
-      style={{ background: '#0A0A0A' }}
-    >
-      {/* Grain */}
-      <div
-        className="fixed inset-0 pointer-events-none opacity-[0.032]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-        }}
-      />
+    <main className="theme-static min-h-screen overflow-x-hidden bg-[#f4ece4] text-[#1f2a32]">
+<section className="relative min-h-[880px] overflow-hidden pb-10 sm:min-h-[900px] lg:min-h-[930px]">        <img
+          src={loginScene}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-left-top opacity-[0.18] md:inset-y-0 md:left-0 md:w-[60%] md:opacity-100"
+        />
+        <div className="pointer-events-none absolute inset-y-0 left-[42%] hidden w-[28%] bg-[linear-gradient(90deg,rgba(244,236,228,0)_0%,#f4ece4_78%)] md:block" />
 
-      {/* Glow */}
-      <div
-        className="fixed pointer-events-none"
-        style={{
-          width: 600, height: 600, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(201,164,89,0.04) 0%, transparent 70%)',
-          top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-        }}
-      />
+        <div className="relative z-10 mx-auto grid w-full max-w-[1244px] items-start gap-7 px-5 pt-8 sm:px-8 md:grid-cols-[minmax(0,1fr)_minmax(520px,568px)] md:pt-12 lg:px-0 lg:pt-14">
+          <div className="hidden md:block" aria-hidden="true" />
 
-      <div
-        className="relative z-10 w-full max-w-[420px]"
-        style={{ animation: 'fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) both' }}
-      >
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <div className="flex justify-center mb-3.5">
-            <svg width="42" height="42" viewBox="0 0 42 42" fill="none">
-              <circle cx="21" cy="21" r="13" stroke="#C9A459" strokeWidth="1"/>
-              <circle cx="21" cy="21" r="7" stroke="#C9A459" strokeWidth="0.75" opacity="0.5"/>
-              <circle cx="21" cy="21" r="2.5" fill="#C9A459"/>
-              <line x1="21" y1="4" x2="21" y2="8" stroke="#C9A459" strokeWidth="1" strokeLinecap="round"/>
-              <line x1="21" y1="34" x2="21" y2="38" stroke="#C9A459" strokeWidth="1" strokeLinecap="round"/>
-              <line x1="4" y1="21" x2="8" y2="21" stroke="#C9A459" strokeWidth="1" strokeLinecap="round"/>
-              <line x1="34" y1="21" x2="38" y2="21" stroke="#C9A459" strokeWidth="1" strokeLinecap="round"/>
-            </svg>
-          </div>
-          <div
-            className="text-[38px] font-light tracking-[0.28em] text-white leading-none mb-1.5"
-            style={{ fontFamily: "'Cormorant Garamond', serif" }}
-          >
-            FOTOGEST
-          </div>
-          <div className="text-[10.5px] tracking-[0.22em] uppercase text-white/40">
-            Fotografia Profissional
-          </div>
-        </div>
+          <div>
+           <div className="mx-auto mb-5 h-[132px] w-full max-w-[520px] overflow-visible">
+  <img
+    src={loginBrand}
+    alt="FotoGest - Seu olhar cria. O FotoGest organiza."
+    className="h-full w-full object-cover object-center scale-[1.45]"
+  />
+</div>
 
-        {/* Card */}
-        <div
-          className="relative rounded-[16px] overflow-hidden"
-          style={{
-            background: '#252525',
-            border: '0.5px solid rgba(226,185,107,0.15)',
-          }}
-        >
-          {/* Linha dourada topo */}
-          <div
-            className="absolute top-0 left-0 right-0 h-px"
-            style={{ background: 'linear-gradient(90deg, transparent, rgba(201,164,89,0.3), transparent)' }}
-          />
+            <form onSubmit={handleSubmit} noValidate className={`${loginCardSurface} w-full px-6 py-7 sm:px-10 sm:py-9`}>
+              <p className="mb-3 text-[13px] font-bold uppercase tracking-normal text-[#bf4b25]">
+                Login do usuário
+              </p>
+              <h1 className="font-serif text-[2.15rem] font-normal leading-tight text-[#1f2a32] sm:text-[2.75rem]">
+                {validDisplayName ? `Olá, ${validDisplayName}` : 'Bem-vindo(a)!'}
+              </h1>
+              <p className="mt-3 max-w-[390px] text-[16px] leading-7 text-[#68737b]">
+                {validDisplayName
+                  ? 'Acesse sua conta para continuar organizando seus clientes, ensaios e galerias.'
+                  : 'Entre para gerenciar seus clientes, ensaios, galerias e muito mais!'}
+              </p>
 
-          <form onSubmit={handleSubmit} noValidate className="px-9 py-10">
-
-            {/* Erro geral da API */}
-            {apiError && (
-              <div className="mb-5 px-4 py-3 rounded-[8px] bg-[rgba(226,92,92,0.1)] border border-[rgba(226,92,92,0.3)] flex items-center gap-2.5">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E25C5C" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="8" x2="12" y2="12"/>
-                  <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-                <span className="text-[13px] text-[#E25C5C]">{apiError}</span>
-              </div>
-            )}
-
-            {/* E-mail */}
-            <div className="mb-5">
-              <label className="block text-[11px] tracking-[0.12em] uppercase text-white/45 mb-2">
-                E-mail
-              </label>
-              <input
-                type="email"
-                placeholder="seu@email.com"
-                autoComplete="email"
-                value={form.email}
-                onChange={(e) => set('email', e.target.value)}
-                className={`${inputBase} ${errors.email ? inputError : ''}`}
-              />
-              {errors.email && (
-                <p className="mt-1.5 text-[12px] text-[#E25C5C]">{errors.email}</p>
+              {apiError && (
+                <div className="mt-6 flex items-start gap-3 rounded-[8px] border border-[#dfb5ac] bg-[#fff4f1] px-4 py-3 text-[#a13a21]">
+                  <AlertCircle size={18} className="mt-0.5 shrink-0" />
+                  <span className="text-[13.5px]">{apiError}</span>
+                </div>
               )}
-            </div>
 
-            {/* Senha */}
-            <div className="mb-6">
-              <label className="block text-[11px] tracking-[0.12em] uppercase text-white/45 mb-2">
-                Senha
-              </label>
-              <div className="relative">
-                <input
-                  type={showPass ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  value={form.senha}
-                  onChange={(e) => set('senha', e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSubmit(e)}
-                  className={`${inputBase} pr-12 ${errors.senha ? inputError : ''}`}
-                />
+              <div className="mt-6 space-y-5">
+                <div>
+                  <label className="mb-2 block text-[14px] font-bold text-[#1f2a32]" htmlFor="email">
+                    E-mail
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      autoComplete="email"
+                      value={form.email}
+                      onChange={(e) => set('email', e.target.value)}
+                      className={`${inputBase} pr-12 ${errors.email ? inputError : ''}`}
+                    />
+                    <Mail
+                      size={20}
+                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#7e8990]"
+                    />
+                  </div>
+                  {errors.email && <p className="mt-1.5 text-[12.5px] text-[#c04435]">{errors.email}</p>}
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-[14px] font-bold text-[#1f2a32]" htmlFor="senha">
+                    Senha
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="senha"
+                      type={showPass ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      autoComplete="current-password"
+                      value={form.senha}
+                      onChange={(e) => set('senha', e.target.value)}
+                      className={`${inputBase} pr-12 ${errors.senha ? inputError : ''}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPass((v) => !v)}
+                      className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-[8px] text-[#7e8990] transition hover:bg-[#f0e6db] hover:text-[#bf4b25]"
+                      aria-label={showPass ? 'Ocultar senha' : 'Mostrar senha'}
+                      title={showPass ? 'Ocultar senha' : 'Mostrar senha'}
+                    >
+                      {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                  {errors.senha && <p className="mt-1.5 text-[12.5px] text-[#c04435]">{errors.senha}</p>}
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+                <label className="flex cursor-pointer items-center gap-2 text-[13.5px] text-[#68737b]">
+                  <input
+                    type="checkbox"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                    className="h-4 w-4 rounded border-[#c7bdb4] accent-[#bf4b25]"
+                  />
+                  Manter conectado
+                </label>
                 <button
                   type="button"
-                  onClick={() => setShowPass((v) => !v)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-white/35 hover:text-white/70 transition-colors"
+                  className="text-[13.5px] font-medium text-[#bf4b25] transition hover:text-[#923315]"
+                  onClick={() => alert('Entre em contato com o suporte.')}
                 >
-                  {showPass ? (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                      <line x1="1" y1="1" x2="23" y2="23"/>
-                    </svg>
-                  ) : (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                      <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                  )}
+                  Esqueci minha senha
                 </button>
               </div>
-              {errors.senha && (
-                <p className="mt-1.5 text-[12px] text-[#E25C5C]">{errors.senha}</p>
-              )}
-            </div>
 
-            {/* Botão */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="
-                w-full py-3.5 rounded-[8px]
-                bg-[#E2B96B] text-[#1A1200]
-                text-[12px] font-medium tracking-[0.2em] uppercase
-                transition-all duration-200
-                hover:bg-[#F0CC84] hover:-translate-y-px
-                disabled:opacity-75 disabled:cursor-not-allowed disabled:translate-y-0
-                flex items-center justify-center gap-2.5
-              "
-            >
-              {loading ? (
-                <>
-                  <span className="w-3.5 h-3.5 rounded-full border-2 border-[rgba(26,18,0,0.3)] border-t-[#1A1200] animate-spin" />
-                  Entrando...
-                </>
-              ) : (
-                'Entrar'
-              )}
-            </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-[8px] bg-[#bf4b25] px-5 py-4 text-[13px] font-bold uppercase tracking-normal text-white shadow-[0_10px_24px_rgba(191,75,37,0.24)] transition hover:-translate-y-px hover:bg-[#a83f1f] disabled:cursor-not-allowed disabled:opacity-75 disabled:hover:translate-y-0"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Entrando...
+                  </>
+                ) : (
+                  'Entrar na conta'
+                )}
+              </button>
 
-            {/* Divider */}
-            <div className="my-6 h-px bg-white/[0.08]" />
+              <div className="my-6 flex items-center gap-4 text-[13px] text-[#68737b]">
+                <span className="h-px flex-1 bg-[#d8d2cc]" />
+                ou
+                <span className="h-px flex-1 bg-[#d8d2cc]" />
+              </div>
 
-            {/* Esqueci senha */}
-            <button
-              type="button"
-              className="w-full text-center text-[12.5px] text-white/35 hover:text-[#E2B96B] transition-colors"
-              onClick={() => alert('Entre em contato com o suporte.')}
-            >
-              Esqueci minha senha
-            </button>
+              <button
+                type="button"
+                className="flex w-full items-center justify-center gap-4 rounded-[8px] border border-[#d8d2cc] bg-white/[0.65] px-5 py-3.5 text-[15px] font-medium text-[#38454d] transition hover:border-[#c8b8aa] hover:bg-white"
+                onClick={() => alert('Login com Google ainda não está configurado.')}
+              >
+                <GoogleIcon />
+                Entrar com Google
+              </button>
 
-          </form>
+              <p className="mt-5 text-center text-[13.5px] text-[#68737b]">
+                Ainda não tem uma conta?{' '}
+                <button
+                  type="button"
+                  className="font-medium text-[#bf4b25] transition hover:text-[#923315]"
+                  onClick={() => alert('Entre em contato com nossa equipe.')}
+                >
+                  Fale com nossa equipe
+                </button>
+              </p>
+            </form>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <style>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(24px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-    </div>
+      <section className="border-t border-[#e2dbd3] bg-white/[0.78]">
+        <div className="mx-auto grid w-full max-w-[1244px] gap-0 px-5 py-7 sm:px-8 md:grid-cols-3 lg:px-0">
+          {benefitCards.map(({ icon: Icon, title, text }) => (
+            <article
+              key={title}
+              className="flex min-h-[112px] items-center gap-5 border-[#ddd4ca] px-6 py-4 md:border-r md:last:border-r-0 lg:px-8"
+            >
+              <div className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full bg-[#f5efe8] text-[#a8783a]">
+                <Icon size={31} strokeWidth={1.8} />
+              </div>
+              <div>
+                <h2 className="text-[17px] font-bold leading-tight text-[#1f2a32]">{title}</h2>
+                <p className="mt-2 text-[13.5px] leading-5 text-[#68737b]">{text}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
   )
 }

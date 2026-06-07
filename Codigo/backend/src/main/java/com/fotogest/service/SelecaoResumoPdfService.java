@@ -5,7 +5,6 @@ import com.fotogest.model.Ensaio;
 import com.fotogest.model.Foto;
 import com.fotogest.model.SelecaoFoto;
 import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.Image;
@@ -119,16 +118,6 @@ public class SelecaoResumoPdfService {
         table.setWidthPercentage(100);
         table.setSpacingAfter(12);
 
-        try {
-            table.setWidths(new float[] { 0.5f, 1.1f, 2.3f, 3f });
-        } catch (DocumentException ignored) {
-        }
-
-        addHeader(table, "#", destaque);
-        addHeader(table, "Previa", destaque);
-        addHeader(table, "Arquivo", destaque);
-        addHeader(table, "Observacao", destaque);
-
         List<SelecaoFoto> ordenadas = selecoes.stream()
                 .sorted(Comparator.comparing(
                         s -> s.getFoto() != null ? s.getFoto().getOrdem() : null,
@@ -138,16 +127,20 @@ public class SelecaoResumoPdfService {
 
         for (int index = 0; index < ordenadas.size(); index++) {
             SelecaoFoto selecao = ordenadas.get(index);
-            Foto foto = selecao.getFoto();
-
-            addCell(table, String.valueOf(index + 1), texto);
-            addImageCell(table, foto);
-            addCell(table, foto != null ? valorOuTraco(foto.getNomeOriginal()) : "-", texto);
-            addCell(table, valorOuTraco(selecao.getObservacao()), texto);
+            addFotoCard(table, selecao, index + 1, texto, destaque);
         }
 
         if (ordenadas.isEmpty()) {
             addCell(table, "Nenhuma foto selecionada.", texto, 4);
+            return table;
+        }
+
+        int resto = ordenadas.size() % 4;
+
+        if (resto > 0) {
+            for (int index = resto; index < 4; index++) {
+                addEmptyCard(table);
+            }
         }
 
         return table;
@@ -173,12 +166,15 @@ public class SelecaoResumoPdfService {
         table.addCell(cell);
     }
 
-    private void addImageCell(PdfPTable table, Foto foto) {
+    private void addFotoCard(PdfPTable table, SelecaoFoto selecao, int numero, Font texto, Font destaque) {
+        Foto foto = selecao.getFoto();
         PdfPCell cell = new PdfPCell();
-        cell.setBorder(Rectangle.BOTTOM);
-        cell.setPadding(5);
+        cell.setBorder(Rectangle.BOX);
+        cell.setBorderColor(new Color(230, 230, 230));
+        cell.setPadding(6);
+        cell.setMinimumHeight(138);
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setVerticalAlignment(Element.ALIGN_TOP);
 
         try {
             String url = foto != null && foto.getUrlWatermark() != null && !foto.getUrlWatermark().isBlank()
@@ -186,19 +182,39 @@ public class SelecaoResumoPdfService {
                     : foto != null ? foto.getUrlOriginal() : null;
 
             if (url == null || url.isBlank()) {
-                cell.addElement(new Phrase("-", new Font(Font.HELVETICA, 8, Font.NORMAL, new Color(100, 100, 100))));
-                table.addCell(cell);
-                return;
+                cell.addElement(new Paragraph("Imagem indisponivel", texto));
+            } else {
+                Image imagem = Image.getInstance(URI.create(gerarUrlMiniaturaCloudinary(url)).toURL());
+                imagem.scaleToFit(112, 74);
+                imagem.setAlignment(Element.ALIGN_CENTER);
+                cell.addElement(imagem);
             }
-
-            Image imagem = Image.getInstance(URI.create(gerarUrlMiniaturaCloudinary(url)).toURL());
-            imagem.scaleToFit(55, 75);
-            imagem.setAlignment(Element.ALIGN_CENTER);
-            cell.addElement(imagem);
         } catch (Exception e) {
-            cell.addElement(new Phrase("Imagem indisponivel", new Font(Font.HELVETICA, 7, Font.NORMAL, new Color(100, 100, 100))));
+            cell.addElement(new Paragraph("Imagem indisponivel", new Font(Font.HELVETICA, 7, Font.NORMAL, new Color(100, 100, 100))));
         }
 
+        Paragraph arquivo = new Paragraph(
+                numero + ". " + truncar(foto != null ? valorOuTraco(foto.getNomeOriginal()) : "-", 30),
+                destaque
+        );
+        arquivo.setSpacingBefore(4);
+        cell.addElement(arquivo);
+
+        String observacao = selecao.getObservacao();
+
+        if (observacao != null && !observacao.isBlank()) {
+            Paragraph obs = new Paragraph("Obs: " + truncar(observacao.trim(), 55), texto);
+            obs.setSpacingBefore(2);
+            cell.addElement(obs);
+        }
+
+        table.addCell(cell);
+    }
+
+    private void addEmptyCard(PdfPTable table) {
+        PdfPCell cell = new PdfPCell(new Phrase(""));
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setPadding(6);
         table.addCell(cell);
     }
 
@@ -209,8 +225,22 @@ public class SelecaoResumoPdfService {
 
         return url.replace(
                 "/upload/",
-                "/upload/c_fill,w_180,h_240,q_auto,f_jpg/"
+                "/upload/c_fill,w_260,h_170,q_auto,f_jpg/"
         );
+    }
+
+    private String truncar(String valor, int limite) {
+        if (valor == null) {
+            return "-";
+        }
+
+        String texto = valor.trim();
+
+        if (texto.length() <= limite) {
+            return texto;
+        }
+
+        return texto.substring(0, Math.max(0, limite - 3)) + "...";
     }
 
     private String moeda(BigDecimal valor) {

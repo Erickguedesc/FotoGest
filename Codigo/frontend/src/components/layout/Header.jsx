@@ -13,19 +13,56 @@ import {
 } from 'lucide-react'
 
 import { configuracoesService } from '../../services/configuracoesService'
+import { getPreservedOnboardingEntries } from '../../utils/onboarding'
 import NotificationBell from './NotificationBell'
 
-const FotoGestIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 42 42" fill="none">
-    <circle cx="21" cy="21" r="13" stroke="#C9A459" strokeWidth="1" />
-    <circle cx="21" cy="21" r="7" stroke="#C9A459" strokeWidth="0.75" opacity="0.5" />
-    <circle cx="21" cy="21" r="2.5" fill="#C9A459" />
-    <line x1="21" y1="4" x2="21" y2="8" stroke="#C9A459" strokeWidth="1" strokeLinecap="round" />
-    <line x1="21" y1="34" x2="21" y2="38" stroke="#C9A459" strokeWidth="1" strokeLinecap="round" />
-    <line x1="4" y1="21" x2="8" y2="21" stroke="#C9A459" strokeWidth="1" strokeLinecap="round" />
-    <line x1="34" y1="21" x2="38" y2="21" stroke="#C9A459" strokeWidth="1" strokeLinecap="round" />
-  </svg>
-)
+const LOGIN_DISPLAY_NAME_KEY = 'fotogest-login-display-name'
+
+function isGenericLoginDisplayName(name = '') {
+  const normalized = name.trim().toLowerCase()
+  return [
+    'seu estudio',
+    'seu estúdio',
+    'seu estudio fotografico',
+    'seu estúdio fotográfico',
+  ].includes(normalized)
+}
+
+function ApertureLogoMark() {
+  return (
+    <svg className="h-[22px] w-[22px] shrink-0" viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <mask id="fotogest-header-aperture">
+          <rect width="64" height="64" fill="white" />
+          <circle cx="32" cy="32" r="11" fill="black" />
+          <path d="M31 3 39 21" stroke="black" strokeWidth="3" strokeLinecap="round" />
+          <path d="M55 14 42 28" stroke="black" strokeWidth="3" strokeLinecap="round" />
+          <path d="M59 40 44 36" stroke="black" strokeWidth="3" strokeLinecap="round" />
+          <path d="M39 61 35 45" stroke="black" strokeWidth="3" strokeLinecap="round" />
+          <path d="M12 55 25 40" stroke="black" strokeWidth="3" strokeLinecap="round" />
+          <path d="M3 28 20 31" stroke="black" strokeWidth="3" strokeLinecap="round" />
+          <path d="M17 8 28 20" stroke="black" strokeWidth="3" strokeLinecap="round" />
+        </mask>
+      </defs>
+      <circle cx="32" cy="32" r="29" fill="currentColor" mask="url(#fotogest-header-aperture)" />
+    </svg>
+  )
+}
+
+function FotoGestLogo() {
+  return (
+    <span className="header-code-logo" aria-label="FotoGest">
+      <span>F</span>
+      <span>O</span>
+      <span>T</span>
+      <ApertureLogoMark />
+      <span>G</span>
+      <span>E</span>
+      <span>S</span>
+      <span>T</span>
+    </span>
+  )
+}
 
 const navLinks = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
@@ -122,8 +159,20 @@ export default function Header() {
 
   const handleLogout = () => {
     const currentTheme = localStorage.getItem('fotogest-theme')
+    const loginDisplayName =
+      localStorage.getItem(LOGIN_DISPLAY_NAME_KEY) ||
+      fotografa?.nome ||
+      localStorage.getItem('fotografaNome')
+    const onboardingEntries = getPreservedOnboardingEntries()
+
     localStorage.clear()
+
     if (currentTheme) localStorage.setItem('fotogest-theme', currentTheme)
+    onboardingEntries.forEach(([key, value]) => localStorage.setItem(key, value))
+    if (loginDisplayName && !isGenericLoginDisplayName(loginDisplayName)) {
+      localStorage.setItem(LOGIN_DISPLAY_NAME_KEY, loginDisplayName)
+    }
+
     setMenuOpen(false)
     navigate('/login')
   }
@@ -134,12 +183,8 @@ export default function Header() {
 
   return (
     <header className="fixed left-0 right-0 top-0 z-[100] flex h-[60px] items-center gap-0 border-b border-[var(--border)] bg-[var(--header-bg)] px-8 backdrop-blur-[14px]">
-      <Link to="/" className="flex flex-shrink-0 items-center gap-2.5 no-underline">
-        <FotoGestIcon />
-
-        <span className="font-serif text-[20px] font-light tracking-[0.22em] text-white">
-          FOTOGEST
-        </span>
+      <Link to="/" className="flex w-[210px] flex-shrink-0 items-center no-underline">
+        <FotoGestLogo />
       </Link>
 
       <nav className="theme-soft mx-auto flex items-center gap-1 rounded-full border px-1.5 py-1 shadow-[0_10px_30px_rgba(0,0,0,0.12)]">
@@ -204,7 +249,7 @@ export default function Header() {
         <button
           type="button"
           onClick={() => setMenuOpen((current) => !current)}
-          title="Conta da fotógrafa"
+          title="Seus Dados"
           className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[11px] font-medium text-[var(--gold)] transition hover:bg-[var(--gold-dim)]/80"
         >
           {fotografa?.fotoPerfilUrl ? (
@@ -219,7 +264,7 @@ export default function Header() {
         </button>
 
         {menuOpen && (
-          <div className="theme-card absolute right-0 top-11 w-[286px] overflow-hidden rounded-2xl border shadow-2xl shadow-black/30">
+          <div className="theme-card header-popover absolute right-0 top-11 w-[286px] overflow-hidden rounded-2xl border shadow-2xl shadow-black/30">
             <div className="border-b border-[var(--border)] px-4 py-4">
               <p className="mb-3 text-[10px] uppercase tracking-[0.18em] text-[var(--gold)]">
                 Conta
