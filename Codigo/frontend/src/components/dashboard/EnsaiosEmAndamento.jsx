@@ -1,15 +1,34 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Grid2X2, List } from 'lucide-react'
+import { ArrowRight, CalendarDays, Grid2X2, List, MapPin } from 'lucide-react'
 
 import EnsaioDashboardCard from './EnsaioDashboardCard'
+import logoFotoGest from '../../assets/logofotogest.png'
 import {
     formatarDataCurta,
     formatarStatusEnsaio,
 } from '../../utils/dashboardFormatters'
 
 const CARD_MAX_HEIGHT = 620
-const LIST_MAX_HEIGHT = 438
+const LIST_MAX_HEIGHT = 484
+
+const STATUS_COLORS = {
+    AGENDADO: 'border-[#d6a027]/35 bg-[#d6a027]/10 text-[#b7831f]',
+    REALIZADO: 'border-[#36a35c]/30 bg-[#36a35c]/10 text-[#2d8d4d]',
+    EM_SELECAO: 'border-[#d6a027]/35 bg-[#d6a027]/10 text-[#b7831f]',
+    EM_EDICAO: 'border-[#6bb9f0]/35 bg-[#6bb9f0]/12 text-[#3b8cc5]',
+    FINALIZADO: 'border-[#36a35c]/30 bg-[#36a35c]/10 text-[#2d8d4d]',
+    CANCELADO: 'border-[#d95d54]/30 bg-[#d95d54]/10 text-[#c3433b]',
+}
+
+const STATUS_DESCRIPTIONS = {
+    AGENDADO: 'Preparando o ensaio',
+    REALIZADO: 'Ensaio realizado',
+    EM_SELECAO: 'Selecao enviada para o cliente',
+    EM_EDICAO: 'Edicao em andamento',
+    FINALIZADO: 'Entrega finalizada',
+    CANCELADO: 'Ensaio cancelado',
+}
 
 export default function EnsaiosEmAndamento({
     ensaios,
@@ -27,7 +46,7 @@ export default function EnsaiosEmAndamento({
                     </h3>
 
                     <p className="theme-muted mt-2 text-sm">
-                        Os ensaios ativos aparecerão aqui.
+                        Os ensaios ativos aparecerao aqui.
                     </p>
                 </div>
             </section>
@@ -53,14 +72,24 @@ export default function EnsaiosEmAndamento({
                     </div>
                 </div>
             ) : (
-                <div className="theme-card overflow-hidden rounded-3xl border">
+                <div className="space-y-4">
                     <div
-                        className="theme-scrollbar divide-y divide-[var(--border)] overflow-y-auto"
+                        className="theme-scrollbar space-y-3 overflow-y-auto pr-1"
                         style={{ maxHeight: `${LIST_MAX_HEIGHT}px` }}
                     >
                         {ensaios.map((ensaio) => (
                             <EnsaioRow key={ensaio.id} ensaio={ensaio} />
                         ))}
+                    </div>
+
+                    <div className="text-center">
+                        <Link
+                            to="/ensaios?grupo=ativos"
+                            className="theme-muted inline-flex items-center gap-2 text-sm transition hover:text-[var(--gold)]"
+                        >
+                            Ver todos os ensaios em andamento
+                            <ArrowRight size={15} />
+                        </Link>
                     </div>
                 </div>
             )}
@@ -105,42 +134,97 @@ function SectionHeader({ viewMode, onViewModeChange }) {
 }
 
 function EnsaioRow({ ensaio }) {
+    const [imageError, setImageError] = useState(false)
+    const hasImage = ensaio.capaUrl && !imageError
+    const isCapaPadrao = Number(ensaio.totalFotos || 0) === 0
+    const progress = ensaio.progresso || 0
+    const statusClass = STATUS_COLORS[ensaio.status] || 'border-[var(--border)] bg-[var(--card-hover)] text-[var(--muted)]'
+    const progressDescription = isCapaPadrao
+        ? 'Aguardando envio das fotos'
+        : STATUS_DESCRIPTIONS[ensaio.status] || 'Acompanhamento em andamento'
+
     return (
         <Link
             to={`/ensaios/${ensaio.id}`}
-            className="group grid min-h-[73px] grid-cols-[minmax(0,1fr)_120px_72px_24px] items-center gap-4 px-5 py-3 transition hover:bg-[var(--card-hover)] max-md:grid-cols-[minmax(0,1fr)_24px]"
+            className="theme-card group grid min-h-[118px] overflow-hidden rounded-[14px] border p-3 transition hover:-translate-y-0.5 hover:border-[var(--gold-border)] hover:shadow-[0_18px_36px_rgba(0,0,0,0.08)] md:grid-cols-[104px_minmax(0,1fr)_150px]"
         >
-            <div className="min-w-0">
-                <h3 className="theme-title truncate text-base font-medium">
+            <div className="theme-panel h-24 w-24 overflow-hidden rounded-[14px] border border-[var(--gold-border)]/60">
+                {hasImage ? (
+                    <img
+                        src={ensaio.capaUrl}
+                        alt={ensaio.clienteNome}
+                        onError={() => setImageError(true)}
+                        className={`h-full w-full transition duration-500 group-hover:scale-[1.02] ${
+                            isCapaPadrao
+                                ? 'object-contain bg-[#0b0b0b] p-3'
+                                : 'object-cover'
+                        }`}
+                    />
+                ) : (
+                    <div className="flex h-full w-full flex-col items-center justify-center bg-[#111111] px-4 text-center">
+                        <img
+                            src={logoFotoGest}
+                            alt="FotoGest"
+                            className="mb-2 w-20 opacity-80"
+                        />
+
+                        <p className="text-[11px] tracking-wide text-white/45">
+                            Sem fotos publicadas
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            <div className="min-w-0 self-center px-4 py-1">
+                <h3 className="theme-title truncate font-serif text-xl font-light leading-tight">
                     {ensaio.clienteNome}
                 </h3>
 
-                <p className="theme-muted mt-1 truncate text-xs">
-                    {(ensaio.tipoExibicao || ensaio.tipo) ?? 'Não informado'} · {formatarDataCurta(ensaio.dataEnsaio)}
+                <p className="theme-muted mt-1 truncate text-sm">
+                    {ensaio.tipoExibicao || ensaio.tipo || 'Nao informado'}
                 </p>
-            </div>
 
-            <span className="theme-muted text-sm max-md:hidden">
-                {formatarStatusEnsaio(ensaio.status)}
-            </span>
+                <div className="theme-muted mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium">
+                    <span className="inline-flex items-center gap-2">
+                        <CalendarDays size={14} className="text-[var(--gold)]" />
+                        {formatarDataCurta(ensaio.dataEnsaio)}
+                    </span>
 
-            <div className="max-md:hidden">
-                <div className="theme-muted mb-1 text-right text-xs">
-                    {ensaio.progresso || 0}%
-                </div>
-
-                <div className="theme-soft h-1.5 overflow-hidden rounded-full">
-                    <div
-                        className="h-full rounded-full bg-[var(--gold)]"
-                        style={{ width: `${ensaio.progresso || 0}%` }}
-                    />
+                    <span className="inline-flex min-w-0 items-center gap-2">
+                        <MapPin size={14} className="shrink-0 text-[var(--gold)]" />
+                        <span className="truncate">{ensaio.local || 'Nao informado'}</span>
+                    </span>
                 </div>
             </div>
 
-            <ArrowRight
-                size={16}
-                className="theme-muted justify-self-end transition group-hover:translate-x-1 group-hover:text-[var(--gold)]"
-            />
+            <div className="flex flex-col justify-center px-2 pb-1 md:items-end md:py-1">
+                <span className={`inline-flex w-fit rounded-full border px-3 py-1 text-[10px] font-bold uppercase ${statusClass}`}>
+                    {formatarStatusEnsaio(ensaio.status)}
+                </span>
+
+                <div className="mt-3 w-full max-w-[132px]">
+                    <div className="mb-1.5 flex items-end justify-between gap-3">
+                        <span className="theme-muted text-[10px] font-semibold uppercase tracking-[0.16em]">
+                            Progresso
+                        </span>
+
+                        <span className="font-serif text-xl font-light text-[var(--gold)]">
+                            {progress}%
+                        </span>
+                    </div>
+
+                    <div className="theme-soft h-1.5 overflow-hidden rounded-full">
+                        <div
+                            className="h-full rounded-full bg-[var(--gold)]"
+                            style={{ width: `${progress}%` }}
+                        />
+                    </div>
+
+                    <p className="theme-muted mt-2 truncate text-[11px]">
+                        {progressDescription}
+                    </p>
+                </div>
+            </div>
         </Link>
     )
 }
