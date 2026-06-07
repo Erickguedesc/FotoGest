@@ -49,23 +49,23 @@ const CONFIG = {
 export default function AtencaoNecessaria({ itens }) {
     if (!itens?.length) {
         return (
-            <section className="rounded-3xl border border-white/10 bg-[#171717] p-6">
-                <div className="mb-6 border-b border-white/10 pb-4">
-                    <h2 className="text-xs uppercase tracking-[0.25em] text-white/60">
+            <section className="theme-card rounded-3xl border p-6">
+                <div className="theme-divider mb-6 border-b pb-4">
+                    <h2 className="theme-muted text-xs uppercase tracking-[0.25em]">
                         Atenção necessária
                     </h2>
                 </div>
 
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 py-10 text-center">
+                <div className="theme-divider flex flex-col items-center justify-center rounded-2xl border border-dashed py-10 text-center">
                     <div className="rounded-full bg-emerald-400/10 p-3 text-emerald-300">
                         <CheckCircle2 size={22} />
                     </div>
 
-                    <h3 className="mt-4 text-sm font-medium text-white/85">
+                    <h3 className="theme-title mt-4 text-sm font-medium">
                         Nenhuma pendência encontrada
                     </h3>
 
-                    <p className="mt-2 max-w-xs text-sm text-white/50">
+                    <p className="theme-muted mt-2 max-w-xs text-sm">
                         Todos os ensaios estão em dia.
                     </p>
                 </div>
@@ -74,9 +74,9 @@ export default function AtencaoNecessaria({ itens }) {
     }
 
     return (
-        <section className="rounded-3xl border border-white/10 bg-[#171717] p-6">
-            <div className="mb-6 border-b border-white/10 pb-4">
-                <h2 className="text-xs uppercase tracking-[0.25em] text-white/60">
+        <section className="theme-card rounded-3xl border p-6">
+            <div className="theme-divider mb-6 border-b pb-4">
+                <h2 className="theme-muted text-xs uppercase tracking-[0.25em]">
                     Atenção necessária
                 </h2>
             </div>

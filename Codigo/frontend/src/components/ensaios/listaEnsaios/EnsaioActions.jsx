@@ -9,9 +9,11 @@ export default function EnsaioActions({
   onDelete,
   onPreContrato,
   orientation = 'horizontal',
+  showView,
 }) {
   const deletable = canDeleteEnsaio(ensaio)
   const vertical = orientation === 'vertical'
+  const shouldShowView = showView ?? !vertical
   const baseButtonClass = `${
     vertical ? 'h-9 w-9 rounded-xl' : 'h-8 w-8 rounded-lg'
   } theme-icon-button flex items-center justify-center border transition hover:bg-[var(--gold-dim)]`
@@ -22,7 +24,7 @@ export default function EnsaioActions({
 
   return (
     <div className={`flex ${vertical ? 'flex-col' : 'items-center'} gap-1.5`}>
-      {!vertical && (
+      {shouldShowView && (
         <button
           type="button"
           onClick={() => onView(ensaio)}

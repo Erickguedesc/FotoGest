@@ -159,7 +159,7 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="theme-card absolute right-0 top-12 w-[360px] overflow-hidden rounded-2xl border shadow-2xl shadow-black/30 max-sm:right-[-64px] max-sm:w-[calc(100vw-24px)]">
+        <div className="theme-card header-popover absolute right-0 top-12 w-[360px] overflow-hidden rounded-2xl border shadow-2xl shadow-black/30 max-sm:right-[-64px] max-sm:w-[calc(100vw-24px)]">
           <div className="flex items-center justify-between gap-4 border-b border-[var(--border)] px-4 py-3">
             <div>
               <p className="theme-title text-sm font-medium">Notificações</p>

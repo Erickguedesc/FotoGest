@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 import PrivateRoute from '../components/layout/PrivateRoute'
+import HomePage from '../pages/HomePage'
 import LoginPage from '../pages/LoginPage'
 import NovoEnsaioPage from '../pages/NovoEnsaioPage'
 import EnsaiosPage from '../pages/EnsaiosPage'
@@ -13,6 +14,7 @@ import GaleriaPage from "../pages/GaleriaPage"
 import RelatoriosPage from '../pages/RelatoriosPage'
 import DashboardPage from '../pages/DashboardPage'
 import ConfiguracoesPage from '../pages/ConfiguracoesPage'
+import OnboardingPage from '../pages/OnboardingPage'
 
 // Futuras páginas — descomente conforme forem criadas:
 // import DashboardPage      from '../pages/DashboardPage'
@@ -24,7 +26,7 @@ const router = createBrowserRouter([
   // ── Rotas públicas ──────────────────────────────────────────────────────────
   {
     path: '/',
-    element: <Navigate to="/login" replace />,
+    element: <HomePage />,
   },
   {
     path: '/login',
@@ -41,6 +43,15 @@ const router = createBrowserRouter([
 
 
   // ── Rotas privadas (exigem login) ───────────────────────────────────────────
+  {
+    path: '/onboarding',
+    element: (
+      <PrivateRoute>
+        <OnboardingPage />
+      </PrivateRoute>
+    ),
+  },
+
   {
     path: '/novo-ensaio',
     element: (

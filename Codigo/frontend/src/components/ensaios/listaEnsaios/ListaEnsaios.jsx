@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import {
+  Activity,
+  CalendarDays,
+  Camera,
+  Image as ImageIcon,
+  ListFilter,
+  PackageCheck,
+  PencilLine,
+  XCircle,
+} from 'lucide-react'
 
 import Toast from '../../ui/Toast'
 import { ensaiosService } from '../../../services/ensaiosService'
@@ -35,7 +45,13 @@ const VIEW_MODE_STORAGE_KEY = 'fotogest:ensaios:viewMode'
 const VIEW_MODES = ['table', 'grid', 'calendar']
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 
-const getInitialViewMode = () => {
+const getInitialViewMode = (searchParams) => {
+  const viewParam = searchParams?.get('view')
+
+  if (VIEW_MODES.includes(viewParam)) {
+    return viewParam
+  }
+
   try {
     const saved = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY)
     return VIEW_MODES.includes(saved) ? saved : 'table'
@@ -133,7 +149,7 @@ export default function ListaEnsaios() {
   const [statusCounts, setStatusCounts] = useState({ total: 0 })
   const [filters, setFilters] = useState(() => getInitialFilters(searchParams))
   const [filtersResetKey, setFiltersResetKey] = useState(0)
-  const [viewMode, setViewMode] = useState(getInitialViewMode)
+  const [viewMode, setViewMode] = useState(() => getInitialViewMode(searchParams))
   const [sort, setSort] = useState({ key: 'dataEnsaio', direction: 'desc' })
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
@@ -190,6 +206,7 @@ export default function ListaEnsaios() {
 
   useEffect(() => {
     setFilters(getInitialFilters(searchParams))
+    setViewMode(getInitialViewMode(searchParams))
     setFiltersResetKey((current) => current + 1)
     setPage(1)
   }, [searchParams])
@@ -233,9 +250,10 @@ export default function ListaEnsaios() {
     page * pageSize
   )
 
-  const updateUrlFilters = (nextFilters) => {
+  const updateUrlFilters = (nextFilters, nextViewMode = viewMode) => {
     const params = {}
 
+    if (nextViewMode === 'calendar') params.view = 'calendar'
     if (nextFilters.status) params.status = nextFilters.status
     if (nextFilters.dataInicio) params.dataInicio = nextFilters.dataInicio
     if (nextFilters.dataFim) params.dataFim = nextFilters.dataFim
@@ -264,7 +282,7 @@ export default function ListaEnsaios() {
     setFilters({ ...INITIAL_FILTERS })
     setFiltersResetKey((current) => current + 1)
     setPage(1)
-    setSearchParams({}, { replace: true })
+    setSearchParams(viewMode === 'calendar' ? { view: 'calendar' } : {}, { replace: true })
   }
 
   const handleFiltroPrincipalChange = (value) => {
@@ -408,10 +426,12 @@ export default function ListaEnsaios() {
           grupo: 'todos',
         }
 
-        updateUrlFilters(next)
+        updateUrlFilters(next, mode)
 
         return next
       })
+    } else {
+      updateUrlFilters(filters, mode)
     }
   }
 
@@ -587,6 +607,17 @@ export default function ListaEnsaios() {
   )
 }
 
+const STATUS_TAB_ICONS = {
+  ativos: { icon: Activity, className: 'text-emerald-400' },
+  AGENDADO: { icon: CalendarDays, className: 'text-indigo-400' },
+  REALIZADO: { icon: Camera, className: 'text-lime-400' },
+  EM_SELECAO: { icon: ImageIcon, className: 'text-amber-400' },
+  EM_EDICAO: { icon: PencilLine, className: 'text-sky-400' },
+  FINALIZADO: { icon: PackageCheck, className: 'text-emerald-400' },
+  CANCELADO: { icon: XCircle, className: 'text-red-400' },
+  todos: { icon: ListFilter, className: 'text-[var(--gold)]' },
+}
+
 function GrupoEnsaiosTabs({ activeGrupo, counts, onChange }) {
   const grupos = [
     { value: 'ativos', label: 'Ativos' },
@@ -603,25 +634,22 @@ function GrupoEnsaiosTabs({ activeGrupo, counts, onChange }) {
     <div className="mb-6 flex flex-wrap gap-2">
       {grupos.map((grupo) => {
         const active = activeGrupo === grupo.value
+        const iconConfig = STATUS_TAB_ICONS[grupo.value] || STATUS_TAB_ICONS.todos
+        const StatusIcon = iconConfig.icon
 
         return (
           <button
             key={grupo.value}
             type="button"
             onClick={() => onChange(grupo.value)}
-            className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] tracking-[0.08em] transition ${
-              active
-                ? 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]'
-                : 'border-transparent bg-[var(--card)] text-[var(--text-muted)] hover:border-[var(--border)] hover:text-[var(--text)]'
-            }`}
+            className={`ensaios-filter-tab ${active ? 'is-active' : ''}`}
           >
+            <span className={`ensaios-filter-icon ${iconConfig.className}`}>
+              <StatusIcon size={15} strokeWidth={1.9} />
+            </span>
             <span>{grupo.label}</span>
             <span
-              className={`min-w-5 rounded-full px-1.5 py-0.5 text-center text-[10px] font-medium leading-none ${
-                active
-                  ? 'bg-[var(--gold-dim)] text-[var(--gold)]'
-                  : 'bg-[var(--card-hover)] text-[var(--text-muted)]'
-              }`}
+              className={`ensaios-filter-count ${active ? 'is-active' : ''}`}
             >
               {counts[grupo.value] || 0}
             </span>

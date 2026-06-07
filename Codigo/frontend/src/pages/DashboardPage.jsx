@@ -62,22 +62,22 @@ export default function DashboardPage() {
             <Header />
 
             <main className="theme-page min-h-screen px-4 pt-24 pb-8 md:px-8">
-                <div className="mx-auto max-w-7xl space-y-10">
-                    <DashboardHeader />
+                <div className="mx-auto max-w-7xl space-y-7">
+                    <DashboardHeader dashboard={dashboard} />
 
                     <DashboardStats dashboard={dashboard} />
 
-                    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+                    <div className="grid gap-6 pt-3 xl:grid-cols-[minmax(0,1fr)_380px]">
                         <div className="space-y-6">
                             <EnsaiosEmAndamento
                                 ensaios={dashboard?.ensaiosEmAndamento || []}
                             />
 
+                            <PipelineEnsaios pipeline={dashboard?.pipelineStatus || {}} />
+
                             <UltimasAtualizacoes
                                 ensaios={dashboard?.ultimasAtualizacoes || []}
                             />
-
-                            <PipelineEnsaios pipeline={dashboard?.pipelineStatus || {}} />
                         </div>
 
                         <aside className="space-y-6 xl:sticky xl:top-24 xl:self-start">

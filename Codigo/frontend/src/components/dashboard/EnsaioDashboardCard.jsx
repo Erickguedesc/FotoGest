@@ -47,9 +47,9 @@ export default function EnsaioDashboardCard({ ensaio }) {
   return (
     <Link
       to={`/ensaios/${ensaio.id}`}
-      className="theme-card block overflow-hidden rounded-3xl border transition hover:-translate-y-1 hover:border-[var(--gold-border)]"
+      className="theme-card block overflow-hidden rounded-2xl border transition hover:-translate-y-0.5 hover:border-[var(--gold-border)]"
     >
-      <div className="theme-panel relative h-56 overflow-hidden">
+      <div className="theme-panel relative h-32 overflow-hidden">
         {hasImage ? (
           <img
             src={ensaio.capaUrl}
@@ -57,19 +57,19 @@ export default function EnsaioDashboardCard({ ensaio }) {
             onError={() => setImageError(true)}
             className={`h-full w-full transition duration-500 hover:scale-[1.02] ${
               isCapaPadrao
-                ? 'object-contain bg-[#0b0b0b] p-6'
+                ? 'object-contain bg-[#0b0b0b] p-4'
                 : 'object-cover hover:scale-105'
             }`}
           />
         ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center bg-[#111111] px-6 text-center">
+          <div className="flex h-full w-full flex-col items-center justify-center bg-[#111111] px-4 text-center">
             <img
               src={logoFotoGest}
               alt="FotoGest"
-              className="mb-4 w-28 opacity-80"
+              className="mb-2 w-20 opacity-80"
             />
 
-            <p className="text-sm tracking-wide text-white/45">
+            <p className="text-[11px] tracking-wide text-white/45">
               Sem fotos publicadas no momento
             </p>
           </div>
@@ -79,44 +79,44 @@ export default function EnsaioDashboardCard({ ensaio }) {
 
         <div className="absolute right-4 top-4">
           <span
-            className={`rounded-full border px-4 py-2 text-sm font-semibold ${status.color}`}
+            className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold ${status.color}`}
           >
             {status.label}
           </span>
         </div>
       </div>
 
-      <div className="space-y-5 p-5">
+      <div className="space-y-3 p-3.5">
         <div>
-          <h3 className="theme-title text-2xl font-medium">
+          <h3 className="theme-title line-clamp-1 text-[15px] font-medium leading-tight">
             {ensaio.clienteNome}
           </h3>
 
-          <p className="theme-muted mt-1 text-sm">
+          <p className="theme-muted mt-1 truncate text-[12px]">
             {ensaio.tipoExibicao || ensaio.tipo}
           </p>
         </div>
 
-        <div className="theme-text space-y-2 text-sm">
+        <div className="theme-text space-y-1.5 text-[12px]">
           <div className="flex items-center gap-2">
-            <CalendarDays size={16} />
+            <CalendarDays size={13} />
 
             {new Date(ensaio.dataEnsaio).toLocaleDateString('pt-BR')}
           </div>
 
-          <div className="flex items-center gap-2">
-            <MapPin size={16} />
-            {ensaio.local}
+          <div className="flex min-w-0 items-center gap-2">
+            <MapPin size={13} className="shrink-0" />
+            <span className="truncate">{ensaio.local}</span>
           </div>
         </div>
 
         <div>
-          <div className="theme-muted mb-2 flex items-center justify-between text-xs">
+          <div className="theme-muted mb-1.5 flex items-center justify-between text-[11px]">
             <span>Progresso</span>
             <span>{ensaio.progresso || 0}%</span>
           </div>
 
-          <div className="theme-soft h-2 overflow-hidden rounded-full">
+          <div className="theme-soft h-1.5 overflow-hidden rounded-full">
             <div
               className="h-full rounded-full bg-[var(--gold)]"
               style={{
@@ -125,7 +125,7 @@ export default function EnsaioDashboardCard({ ensaio }) {
             />
           </div>
 
-          <p className="theme-muted mt-2 text-xs">
+          <p className="theme-muted mt-1.5 line-clamp-1 text-[11px]">
             {progressDescription}
           </p>
         </div>

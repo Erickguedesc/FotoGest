@@ -1,7 +1,25 @@
 import { getStatusInfo } from './ensaioHelpers'
+import {
+  CalendarDays,
+  Camera,
+  Image as ImageIcon,
+  PackageCheck,
+  PencilLine,
+  XCircle,
+} from 'lucide-react'
+
+const STATUS_ICONS = {
+  AGENDADO: CalendarDays,
+  REALIZADO: Camera,
+  EM_SELECAO: ImageIcon,
+  EM_EDICAO: PencilLine,
+  FINALIZADO: PackageCheck,
+  CANCELADO: XCircle,
+}
 
 export default function StatusBadge({ status }) {
   const info = getStatusInfo(status)
+  const StatusIcon = STATUS_ICONS[status] || CalendarDays
 
   return (
     <span
@@ -15,7 +33,7 @@ export default function StatusBadge({ status }) {
         ${info.chipClass}
       `}
     >
-      <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-current opacity-80" />
+      <StatusIcon size={13} strokeWidth={1.9} className="shrink-0" />
       {info.label}
     </span>
   )

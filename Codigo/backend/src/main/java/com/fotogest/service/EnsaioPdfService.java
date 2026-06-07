@@ -200,31 +200,37 @@ private void adicionarCabecalho(Document document, ConfiguracaoEstudio estudio) 
 
         adicionarSubtitulo(document, "Fotos selecionadas");
 
-PdfPTable fotosTable = new PdfPTable(4);
+PdfPTable fotosTable = new PdfPTable(3);
 fotosTable.setWidthPercentage(100);
 fotosTable.setSpacingAfter(12);
 
 try {
-    fotosTable.setWidths(new float[]{0.5f, 1.2f, 2.4f, 1.8f});
+    fotosTable.setWidths(new float[]{1f, 1f, 1f});
 } catch (DocumentException ignored) {
 }
-
-adicionarCabecalhoTabela(fotosTable, "#");
-adicionarCabecalhoTabela(fotosTable, "Foto");
-adicionarCabecalhoTabela(fotosTable, "Nome da foto");
-adicionarCabecalhoTabela(fotosTable, "Selecionada em");
 
 for (int i = 0; i < selecoes.size(); i++) {
     SelecaoFoto selecao = selecoes.get(i);
     Foto foto = selecao.getFoto();
 
-    adicionarCelulaTabela(fotosTable, String.valueOf(i + 1));
-    adicionarCelulaImagem(fotosTable, foto);
+    adicionarCardFotoSelecionada(fotosTable, foto, i + 1, selecao.getSelecionadaEm());
+    /*
     adicionarCelulaTabela(
             fotosTable,
             foto != null ? valorOuTraco(foto.getNomeOriginal()) : "Foto não encontrada"
     );
     adicionarCelulaTabela(fotosTable, formatarData(selecao.getSelecionadaEm()));
+    */
+}
+
+int resto = selecoes.size() % 3;
+if (resto > 0) {
+    for (int i = resto; i < 3; i++) {
+        PdfPCell empty = new PdfPCell(new Phrase(""));
+        empty.setBorder(Rectangle.NO_BORDER);
+        empty.setPadding(6);
+        fotosTable.addCell(empty);
+    }
 }
 
 document.add(fotosTable);
@@ -497,6 +503,55 @@ return NumberFormat
         };
     }
 
+    private void adicionarCardFotoSelecionada(PdfPTable table, Foto foto, int numero, OffsetDateTime selecionadaEm) {
+        Font nomeFont = new Font(Font.HELVETICA, 8, Font.BOLD, DARK_TEXT);
+        Font metaFont = new Font(Font.HELVETICA, 7, Font.NORMAL, MUTED_TEXT);
+
+        PdfPCell cell = new PdfPCell();
+        cell.setPadding(7);
+        cell.setBorder(Rectangle.BOX);
+        cell.setBorderColor(LIGHT_BORDER);
+        cell.setMinimumHeight(132);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setVerticalAlignment(Element.ALIGN_TOP);
+
+        try {
+            String url = foto != null && foto.getUrlWatermark() != null && !foto.getUrlWatermark().isBlank()
+                    ? foto.getUrlWatermark()
+                    : foto != null ? foto.getUrlOriginal() : null;
+
+            if (url == null || url.isBlank()) {
+                Paragraph indisponivel = new Paragraph("Imagem indisponivel", metaFont);
+                indisponivel.setAlignment(Element.ALIGN_CENTER);
+                cell.addElement(indisponivel);
+            } else {
+                Image imagem = Image.getInstance(URI.create(gerarUrlMiniaturaCloudinary(url)).toURL());
+                imagem.scaleToFit(142, 88);
+                imagem.setAlignment(Element.ALIGN_CENTER);
+                cell.addElement(imagem);
+            }
+        } catch (Exception e) {
+            Paragraph indisponivel = new Paragraph("Imagem indisponivel", metaFont);
+            indisponivel.setAlignment(Element.ALIGN_CENTER);
+            cell.addElement(indisponivel);
+        }
+
+        Paragraph nome = new Paragraph(
+                numero + ". " + truncar(foto != null ? valorOuTraco(foto.getNomeOriginal()) : "Foto nao encontrada", 32),
+                nomeFont
+        );
+        nome.setSpacingBefore(5);
+        nome.setAlignment(Element.ALIGN_CENTER);
+        cell.addElement(nome);
+
+        Paragraph data = new Paragraph(formatarData(selecionadaEm), metaFont);
+        data.setSpacingBefore(2);
+        data.setAlignment(Element.ALIGN_CENTER);
+        cell.addElement(data);
+
+        table.addCell(cell);
+    }
+
     private void adicionarCelulaImagem(PdfPTable table, Foto foto) {
     PdfPCell cell = new PdfPCell();
     cell.setPadding(6);
@@ -515,7 +570,7 @@ return NumberFormat
         String urlMiniatura = gerarUrlMiniaturaCloudinary(foto.getUrlWatermark());
 
 Image imagem = Image.getInstance(URI.create(urlMiniatura).toURL());
-        imagem.scaleToFit(55, 75);
+        imagem.scaleToFit(92, 58);
         imagem.setAlignment(Element.ALIGN_CENTER);
 
         cell.addElement(imagem);
@@ -536,9 +591,23 @@ private String gerarUrlMiniaturaCloudinary(String url) {
 
     return url.replace(
             "/upload/",
-            "/upload/c_fill,w_180,h_240,q_auto,f_jpg/"
+            "/upload/c_fill,w_300,h_190,q_auto,f_jpg/"
     );
 }
+
+    private String truncar(String texto, int limite) {
+        if (texto == null) {
+            return "-";
+        }
+
+        String normalizado = texto.trim();
+
+        if (normalizado.length() <= limite) {
+            return normalizado;
+        }
+
+        return normalizado.substring(0, Math.max(0, limite - 3)) + "...";
+    }
 
     private String formatarTipo(Object tipo) {
         if (tipo == null) {

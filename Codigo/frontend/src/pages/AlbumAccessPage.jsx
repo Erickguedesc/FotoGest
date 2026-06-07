@@ -21,6 +21,7 @@ export default function AlbumAccessPage() {
 
   const [senha, setSenha] = useState("")
   const [erro, setErro] = useState("")
+  const [albumInfo, setAlbumInfo] = useState(null)
   const [validandoToken, setValidandoToken] = useState(true)
   const [loading, setLoading] = useState(false)
 
@@ -28,7 +29,8 @@ export default function AlbumAccessPage() {
     async function validarToken() {
       try {
         setErro("")
-        await validarAlbumPorToken(token)
+        const dadosPublicos = await validarAlbumPorToken(token)
+        setAlbumInfo(dadosPublicos)
       } catch (error) {
         const status = error?.response?.status
 
@@ -99,7 +101,7 @@ export default function AlbumAccessPage() {
   }
 
   return (
-    <AcessoAlbumLayout token={token}>
+    <AcessoAlbumLayout token={token} albumInfo={albumInfo}>
       <AcessoAlbumForm
         senha={senha}
         setSenha={setSenha}

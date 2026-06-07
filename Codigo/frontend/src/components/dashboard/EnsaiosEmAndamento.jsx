@@ -8,7 +8,7 @@ import {
     formatarStatusEnsaio,
 } from '../../utils/dashboardFormatters'
 
-const CARD_MAX_HEIGHT = 990
+const CARD_MAX_HEIGHT = 620
 const LIST_MAX_HEIGHT = 438
 
 export default function EnsaiosEmAndamento({
@@ -43,7 +43,7 @@ export default function EnsaiosEmAndamento({
                     className="theme-scrollbar overflow-y-auto pr-1"
                     style={{ maxHeight: `${CARD_MAX_HEIGHT}px` }}
                 >
-                    <div className="grid gap-5 md:grid-cols-2">
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                         {ensaios.map((ensaio) => (
                             <EnsaioDashboardCard
                                 key={ensaio.id}

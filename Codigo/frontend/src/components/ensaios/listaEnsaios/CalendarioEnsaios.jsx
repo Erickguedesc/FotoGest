@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 
 import Icon from './Icon'
 import StatusBadge from './StatusBadge'
-import { formatCurrency, getStatusInfo, getTipoExibicao } from './ensaioHelpers'
+import { formatCurrency, getInitials, getStatusInfo, getTipoExibicao } from './ensaioHelpers'
 
 const WEEK_DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab']
 const MONTH_OPTIONS = [
@@ -78,6 +78,13 @@ const formatTime = (value) => {
     minute: '2-digit',
   })
 }
+
+const getCapaUrl = (ensaio) =>
+  ensaio?.capaUrl ||
+  ensaio?.fotoCapaUrl ||
+  ensaio?.capa?.urlWatermark ||
+  ensaio?.capa?.urlOriginal ||
+  ''
 
 const buildMonthDays = (monthDate) => {
   if (!isValidDate(monthDate)) return []
@@ -356,9 +363,15 @@ export default function CalendarioEnsaios({
                   </div>
 
                   <div className="space-y-1">
-                    {eventos.slice(0, 3).map((ensaio) => {
-                      const statusInfo = getStatusInfo(ensaio.status)
-                      return (
+                    {eventos.length === 1 ? (
+                      <EventoComCapa ensaio={eventos[0]} />
+                    ) : (
+                      <>
+                        {eventos.slice(0, 3).map((ensaio) => (
+                          <EventoCompacto key={ensaio.id} ensaio={ensaio} />
+                        ))}
+
+                        {false && eventos.slice(0, 3).map((ensaio) => (
                         <div
                           key={ensaio.id}
                           className="rounded-md border border-white/[0.08] bg-black/25 px-2 py-1"
@@ -367,17 +380,15 @@ export default function CalendarioEnsaios({
                             <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[ensaio.status] || 'bg-white/40'}`} />
                             <span className="truncate">{formatTime(ensaio.dataEnsaio)} · {ensaio.clienteNome}</span>
                           </span>
-                          <span className="mt-0.5 block truncate text-[10px] text-white/35">
-                            {statusInfo.label}
-                          </span>
                         </div>
-                      )
-                    })}
+                        ))}
 
-                    {eventos.length > 3 && (
-                      <p className="text-[10px] text-[var(--gold)]">
-                        +{eventos.length - 3} ensaio{eventos.length - 3 === 1 ? '' : 's'}
-                      </p>
+                        {eventos.length > 3 && (
+                          <p className="text-[10px] text-[var(--gold)]">
+                            +{eventos.length - 3} ensaio{eventos.length - 3 === 1 ? '' : 's'}
+                          </p>
+                        )}
+                      </>
                     )}
                   </div>
                 </button>
@@ -470,6 +481,53 @@ export default function CalendarioEnsaios({
   )
 }
 
+function EventoComCapa({ ensaio }) {
+  const statusInfo = getStatusInfo(ensaio.status)
+  const capaUrl = getCapaUrl(ensaio)
+
+  return (
+    <div className="grid grid-cols-[44px_minmax(0,1fr)] gap-2 rounded-lg border border-white/[0.08] bg-black/25 p-1.5">
+      <div className="h-11 w-11 overflow-hidden rounded-md border border-white/[0.08] bg-black/25">
+        {capaUrl ? (
+          <img
+            src={capaUrl}
+            alt={ensaio.clienteNome || 'Capa do ensaio'}
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-[var(--gold-dim)] text-[10px] font-medium text-[var(--gold)]">
+            {getInitials(ensaio.clienteNome)}
+          </div>
+        )}
+      </div>
+
+      <div className="min-w-0">
+        <p className="truncate text-[11px] font-medium text-white/80">
+          {ensaio.clienteNome || 'Cliente sem nome'}
+        </p>
+        <p className="mt-0.5 truncate text-[10px] text-white/45">
+          {formatTime(ensaio.dataEnsaio)}
+        </p>
+        <span className={`mt-1 inline-flex max-w-full items-center rounded-full border px-1.5 py-0.5 text-[9px] leading-none ${statusInfo.chipClass}`}>
+          <span className="truncate">{statusInfo.label}</span>
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function EventoCompacto({ ensaio }) {
+  return (
+    <div className="rounded-md border border-white/[0.08] bg-black/25 px-2 py-1">
+      <span className="flex items-center gap-1.5 text-[11px] text-white/75">
+        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${STATUS_DOT[ensaio.status] || 'bg-white/40'}`} />
+        <span className="truncate">{ensaio.clienteNome || 'Cliente sem nome'}</span>
+      </span>
+    </div>
+  )
+}
+
 function ResumoCalendario({ label, value, danger, tooltipTitle, tooltipItems = [] }) {
   const hasTooltip = tooltipItems.length > 0
 
@@ -481,7 +539,6 @@ function ResumoCalendario({ label, value, danger, tooltipTitle, tooltipItems = [
           : 'border-white/[0.08] bg-black/20'
       }`}
       tabIndex={hasTooltip ? 0 : undefined}
-      title={hasTooltip ? 'Passe o mouse para ver os dias com conflito' : undefined}
     >
       <p className={danger ? 'text-[18px] text-red-300' : 'text-[18px] text-white'}>
         {value}
@@ -491,25 +548,25 @@ function ResumoCalendario({ label, value, danger, tooltipTitle, tooltipItems = [
       </p>
 
       {hasTooltip && (
-        <div className="pointer-events-none absolute left-0 top-[calc(100%+10px)] z-30 hidden w-[360px] rounded-xl border border-red-400/30 bg-[#171111] p-4 text-left shadow-[0_18px_40px_rgba(0,0,0,0.45)] group-hover:block group-focus:block max-sm:left-auto max-sm:right-0 max-sm:w-[min(82vw,360px)]">
-          <p className="text-[11px] uppercase tracking-[0.16em] text-red-200/80">
+        <div className="theme-card pointer-events-none absolute left-0 top-[calc(100%+10px)] z-30 hidden w-[360px] rounded-xl border border-red-400/30 p-4 text-left shadow-[0_18px_40px_rgba(0,0,0,0.22)] group-hover:block group-focus:block max-sm:left-auto max-sm:right-0 max-sm:w-[min(82vw,360px)]">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-red-400">
             {tooltipTitle}
           </p>
 
           <div className="mt-3 space-y-3">
             {tooltipItems.slice(0, 4).map((item) => (
-              <div key={item.key} className="border-t border-white/[0.08] pt-3 first:border-t-0 first:pt-0">
-                <p className="text-[13px] font-medium capitalize text-white">
+              <div key={item.key} className="theme-divider border-t pt-3 first:border-t-0 first:pt-0">
+                <p className="theme-title text-[13px] font-medium capitalize">
                   {item.label}
                 </p>
 
                 <div className="mt-2 space-y-1.5">
                   {item.ensaios.map((ensaio) => (
-                    <p key={ensaio.id} className="flex items-center justify-between gap-3 text-[12px] text-white/60">
+                    <p key={ensaio.id} className="theme-text flex items-center justify-between gap-3 text-[12px]">
                       <span className="min-w-0 truncate">
                         {ensaio.clienteNome || 'Cliente sem nome'}
                       </span>
-                      <span className="shrink-0 text-red-200">
+                      <span className="shrink-0 text-red-400">
                         {formatTime(ensaio.dataEnsaio)}
                       </span>
                     </p>
@@ -520,7 +577,7 @@ function ResumoCalendario({ label, value, danger, tooltipTitle, tooltipItems = [
           </div>
 
           {tooltipItems.length > 4 && (
-            <p className="mt-3 border-t border-white/[0.08] pt-3 text-[12px] text-red-200/75">
+            <p className="theme-divider theme-text mt-3 border-t pt-3 text-[12px]">
               +{tooltipItems.length - 4} dia{tooltipItems.length - 4 === 1 ? '' : 's'} com conflito neste mês.
             </p>
           )}
