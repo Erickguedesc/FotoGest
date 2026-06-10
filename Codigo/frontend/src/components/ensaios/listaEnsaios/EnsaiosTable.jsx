@@ -112,9 +112,7 @@ function EnsaioListCard({
           <img
             src={ensaio.capaUrl}
             alt={ensaio.clienteNome || 'Capa do ensaio'}
-            className={`h-full w-full transition duration-500 group-hover:scale-[1.03] ${
-              isCapaPadrao ? 'object-contain p-5 opacity-85' : 'object-cover'
-            }`}
+           className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.03]"
           />
         ) : (
           <div className="theme-panel flex h-full items-center justify-center">

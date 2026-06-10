@@ -13,7 +13,7 @@ import AcessoAlbumLoading from "../components/album/acessoAlbum/AcessoAlbumLoadi
 import "../styles/album-access.css"
 
 const MSG_ALBUM_PAUSADO =
-  "Álbum em atualização. A fotógrafa está fazendo ajustes nesta galeria. Assim que a nova versão for publicada, você receberá uma nova senha de acesso."
+  "Álbum em atualização. Ajustes estão sendo feitos nesta galeria. Assim que a nova versão for publicada, você receberá uma nova senha de acesso."
 
 export default function AlbumAccessPage() {
   const { token } = useParams()
