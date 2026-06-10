@@ -367,70 +367,28 @@ INSERT INTO fotografa (
   email,
   senha_hash,
   telefone,
-  cnpj
+  cnpj,
+  ativo
 )
-VALUES (
-  'Erick Barbosa',
-  'contato@fotogest.com.br',
-  '$2a$10$uJTG.SFW7By6pq2LSEZQv.df76RPhIeINUU5k1w94FBSo3DhKZY3.',
-  '(31) 99000-1234',
-  '00.000.000/0001-00'
+VALUES
+(
+  'User 1',
+  'user1@fotogest.com.br',
+  crypt('123456', gen_salt('bf')),
+  '(31) 99999-0001',
+  '00.000.000/0001-00',
+  true
+),
+(
+  'User 2',
+  'user2@fotogest.com.br',
+  crypt('123456', gen_salt('bf')),
+  '(31) 99999-0002',
+  '00.000.000/0001-00',
+  true
 )
-ON CONFLICT DO NOTHING;
+ON CONFLICT (email) DO NOTHING;
 
-INSERT INTO cliente (
-  nome,
-  email,
-  telefone,
-  cpf,
-  cidade,
-  indicacao
-)
-VALUES (
-  'Ana Clara Mendes',
-  'anaclara@email.com',
-  '(31) 98765-4321',
-  '123.456.789-00',
-  'Belo Horizonte, MG',
-  'Instagram'
-)
-ON CONFLICT DO NOTHING;
-
-INSERT INTO ensaio (
-  cliente_id,
-  tipo,
-  status,
-  data_ensaio,
-  local,
-  qtd_fotos_pacote,
-  valor_pacote,
-  valor_foto_extra,
-  cobrar_foto_extra,
-  observacoes,
-  progresso
-)
-SELECT
-  c.id,
-  'NEWBORN',
-  'EM_EDICAO',
-  NOW(),
-  'Estúdio Modelo, BH',
-  40,
-  1200.00,
-  35.00,
-  true,
-  'Bebê de 10 dias. Props florais.',
-  65
-FROM cliente c
-WHERE c.email = 'anaclara@email.com'
-  AND NOT EXISTS (
-    SELECT 1
-    FROM ensaio e
-    WHERE e.cliente_id = c.id
-      AND e.tipo = 'NEWBORN'
-      AND e.local = 'Estúdio Modelo, BH'
-  )
-LIMIT 1;
 
 ------------------------------------
 --   BACKFILL DO HISTÓRICO DE STATUS

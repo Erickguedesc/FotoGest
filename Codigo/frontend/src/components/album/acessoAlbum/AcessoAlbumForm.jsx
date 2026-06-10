@@ -16,7 +16,7 @@ export default function AcessoAlbumForm({
       <input
         className={`gate-input ${erro ? "err" : ""}`}
         type="password"
-        placeholder="Senha fornecida pela fotógrafa"
+        placeholder="Digite a senha de acesso."
         value={senha}
         onChange={(e) => setSenha(e.target.value)}
         onKeyDown={(e) => {
@@ -27,8 +27,7 @@ export default function AcessoAlbumForm({
       <AcessoAlbumError mensagem={erro} />
 
       <div className="gate-hint">
-        Senha fornecida pela fotógrafa.
-        <br />
+Senha de acesso ao álbum.        <br />
         <b>Acesso por token — sem cadastro</b>
       </div>
 

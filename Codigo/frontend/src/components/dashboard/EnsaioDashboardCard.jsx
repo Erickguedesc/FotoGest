@@ -12,13 +12,13 @@ const STATUS_CONFIG = {
 
   EM_SELECAO: {
     label: 'Em seleção',
-    description: 'Seleção enviada para o cliente',
+    description: 'Seleção enviada',
     color: 'border-[#fbbf24]/60 bg-black/80 text-[#fbbf24] shadow-lg shadow-black/45',
   },
 
   REALIZADO: {
     label: 'Realizado',
-    description: 'Ensaio realizado, aguardando próximos passos',
+    description: 'Aguardando próximos passos',
     color: 'border-[#34d399]/60 bg-black/80 text-[#34d399] shadow-lg shadow-black/45',
   },
 
@@ -34,7 +34,7 @@ export default function EnsaioDashboardCard({ ensaio }) {
 
   const status = STATUS_CONFIG[ensaio.status] || {
     label: ensaio.status,
-    description: 'Acompanhamento em andamento',
+    description: 'Em acompanhamento',
     color: 'border-white/10 bg-white/10 text-white/60',
   }
 
@@ -55,11 +55,7 @@ export default function EnsaioDashboardCard({ ensaio }) {
             src={ensaio.capaUrl}
             alt={ensaio.clienteNome}
             onError={() => setImageError(true)}
-            className={`h-full w-full transition duration-500 hover:scale-[1.02] ${
-              isCapaPadrao
-                ? 'object-contain bg-[#0b0b0b] p-4'
-                : 'object-cover hover:scale-105'
-            }`}
+           className="h-full w-full object-cover object-center transition duration-500 hover:scale-105"
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center bg-[#111111] px-4 text-center">
@@ -125,7 +121,7 @@ export default function EnsaioDashboardCard({ ensaio }) {
             />
           </div>
 
-          <p className="theme-muted mt-1.5 line-clamp-1 text-[11px]">
+          <p className="mt-2 min-h-[32px] text-[12px] font-medium leading-4 text-[var(--text-muted)]">
             {progressDescription}
           </p>
         </div>
