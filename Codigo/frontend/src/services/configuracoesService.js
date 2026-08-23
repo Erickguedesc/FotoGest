@@ -6,6 +6,11 @@ export const configuracoesService = {
     return response.data
   },
 
+  concluirOnboarding: async () => {
+    const response = await api.post('/configuracoes/onboarding/concluir')
+    return response.data
+  },
+
   atualizarFotografa: async (dados) => {
     const response = await api.put('/configuracoes/fotografa', dados)
     return response.data
@@ -116,7 +121,7 @@ export const configuracoesService = {
       responseType: 'blob',
     })
     const agora = new Date().toISOString()
-    const nomeArquivo = `fotogest-backup-${agora.slice(0, 10)}.zip`
+    const nomeArquivo = `fotolhar-backup-${agora.slice(0, 10)}.zip`
     const blob = new Blob([response.data], {
       type: 'application/zip',
     })

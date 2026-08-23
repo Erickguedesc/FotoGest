@@ -16,7 +16,7 @@ import { configuracoesService } from '../../services/configuracoesService'
 import { getPreservedOnboardingEntries } from '../../utils/onboarding'
 import NotificationBell from './NotificationBell'
 
-const LOGIN_DISPLAY_NAME_KEY = 'fotogest-login-display-name'
+const LOGIN_DISPLAY_NAME_KEY = 'fotolhar-login-display-name'
 
 function isGenericLoginDisplayName(name = '') {
   const normalized = name.trim().toLowerCase()
@@ -32,7 +32,7 @@ function ApertureLogoMark() {
   return (
     <svg className="h-[22px] w-[22px] shrink-0" viewBox="0 0 64 64" aria-hidden="true">
       <defs>
-        <mask id="fotogest-header-aperture">
+        <mask id="fotolhar-header-aperture">
           <rect width="64" height="64" fill="white" />
           <circle cx="32" cy="32" r="11" fill="black" />
           <path d="M31 3 39 21" stroke="black" strokeWidth="3" strokeLinecap="round" />
@@ -44,22 +44,22 @@ function ApertureLogoMark() {
           <path d="M17 8 28 20" stroke="black" strokeWidth="3" strokeLinecap="round" />
         </mask>
       </defs>
-      <circle cx="32" cy="32" r="29" fill="currentColor" mask="url(#fotogest-header-aperture)" />
+      <circle cx="32" cy="32" r="29" fill="currentColor" mask="url(#fotolhar-header-aperture)" />
     </svg>
   )
 }
 
-function FotoGestLogo() {
+function FotolharLogo() {
   return (
-    <span className="header-code-logo" aria-label="FotoGest">
+    <span className="header-code-logo" aria-label="Fotolhar">
       <span>F</span>
       <span>O</span>
       <span>T</span>
       <ApertureLogoMark />
-      <span>G</span>
-      <span>E</span>
-      <span>S</span>
-      <span>T</span>
+      <span>L</span>
+      <span>H</span>
+      <span>A</span>
+      <span>R</span>
     </span>
   )
 }
@@ -91,12 +91,12 @@ export default function Header() {
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [fotografa, setFotografa] = useState(null)
-  const [theme, setTheme] = useState(() => localStorage.getItem('fotogest-theme') || 'dark')
+  const [theme, setTheme] = useState(() => localStorage.getItem('fotolhar-theme') || 'dark')
 
   useEffect(() => {
     const nextTheme = theme === 'light' ? 'light' : 'dark'
     document.documentElement.dataset.theme = nextTheme
-    localStorage.setItem('fotogest-theme', nextTheme)
+    localStorage.setItem('fotolhar-theme', nextTheme)
   }, [theme])
 
   useEffect(() => {
@@ -126,11 +126,11 @@ export default function Header() {
 
     carregarFotografa()
 
-    window.addEventListener('fotogest:fotografa-atualizada', handleFotografaAtualizada)
+    window.addEventListener('fotolhar:fotografa-atualizada', handleFotografaAtualizada)
 
     return () => {
       isMounted = false
-      window.removeEventListener('fotogest:fotografa-atualizada', handleFotografaAtualizada)
+      window.removeEventListener('fotolhar:fotografa-atualizada', handleFotografaAtualizada)
     }
   }, [])
 
@@ -158,19 +158,17 @@ export default function Header() {
       : location.pathname === to
 
   const handleLogout = () => {
-    const currentTheme = localStorage.getItem('fotogest-theme')
-    const loginDisplayName =
-      localStorage.getItem(LOGIN_DISPLAY_NAME_KEY) ||
-      fotografa?.nome ||
-      localStorage.getItem('fotografaNome')
+    const currentTheme = localStorage.getItem('fotolhar-theme')
+    const fotografaEmail = fotografa?.email || localStorage.getItem('fotografaEmail') || ''
+    const loginDisplayName = fotografa?.nome || localStorage.getItem('fotografaNome')
     const onboardingEntries = getPreservedOnboardingEntries()
 
     localStorage.clear()
 
-    if (currentTheme) localStorage.setItem('fotogest-theme', currentTheme)
+    if (currentTheme) localStorage.setItem('fotolhar-theme', currentTheme)
     onboardingEntries.forEach(([key, value]) => localStorage.setItem(key, value))
-    if (loginDisplayName && !isGenericLoginDisplayName(loginDisplayName)) {
-      localStorage.setItem(LOGIN_DISPLAY_NAME_KEY, loginDisplayName)
+    if (fotografaEmail && loginDisplayName && !isGenericLoginDisplayName(loginDisplayName)) {
+      localStorage.setItem(`${LOGIN_DISPLAY_NAME_KEY}:${fotografaEmail.trim().toLowerCase()}`, loginDisplayName)
     }
 
     setMenuOpen(false)
@@ -184,7 +182,7 @@ export default function Header() {
   return (
     <header className="fixed left-0 right-0 top-0 z-[100] flex h-[60px] items-center gap-0 border-b border-[var(--border)] bg-[var(--header-bg)] px-8 backdrop-blur-[14px]">
       <Link to="/" className="flex w-[210px] flex-shrink-0 items-center no-underline">
-        <FotoGestLogo />
+        <FotolharLogo />
       </Link>
 
       <nav className="theme-soft mx-auto flex items-center gap-1 rounded-full border px-1.5 py-1 shadow-[0_10px_30px_rgba(0,0,0,0.12)]">

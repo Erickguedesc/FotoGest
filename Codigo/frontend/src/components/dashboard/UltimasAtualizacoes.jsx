@@ -7,7 +7,7 @@ import {
     formatarTempoRelativo,
 } from '../../utils/dashboardFormatters'
 
-const STORAGE_KEY = 'fotogest.dashboard.atualizacoesOcultas'
+const STORAGE_KEY = 'fotolhar.dashboard.atualizacoesOcultas'
 
 function getUpdateKey(ensaio) {
     return `${ensaio.id}:${ensaio.atualizadoEm || ensaio.dataEnsaio || ''}`

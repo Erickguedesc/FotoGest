@@ -1,6 +1,6 @@
 spring:
   application:
-    name: fotogest-api
+    name: fotolhar-api
 
   servlet:
     multipart:
@@ -8,9 +8,9 @@ spring:
       max-request-size: 100MB
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/fotogest_db
-    username: fotogest_user
-    password: fotogest_senha123
+    url: jdbc:postgresql://localhost:5432/fotolhar_db
+    username: fotolhar_user
+    password: fotolhar_senha123
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -64,6 +64,6 @@ server:
 
 logging:
   level:
-    com.fotogest: DEBUG
+    com.fotolhar: DEBUG
     org.hibernate.SQL: INFO
     org.springframework: WARN

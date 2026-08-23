@@ -4,7 +4,6 @@ import { formatarDataExpiracao } from '../../../services/galeriaUtils'
 export default function GalleryHero({
   coverUrl,
   nomeCliente,
-  nomeFotografa,
   tipoEnsaio,
   dataFormatada,
   limite,
@@ -25,10 +24,6 @@ export default function GalleryHero({
       </div>
 
       <div className="relative z-10 max-w-5xl">
-        <p className="mb-10 font-serif text-base italic tracking-[0.08em] text-white/75">
-          {nomeFotografa}
-        </p>
-
         <p className="mx-auto mb-5 inline-flex rounded-full border border-white/20 px-5 py-1.5 text-[11px] uppercase tracking-[0.24em] text-white/55">
           Álbum exclusivo
         </p>

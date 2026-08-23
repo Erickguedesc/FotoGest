@@ -229,7 +229,7 @@ export function buildInitialDraft({ ensaio, cliente, configuracoes }) {
   const tipoExibicao = ensaio?.tipoExibicao || formatTipo(tipo)
   const fotografa = configuracoes?.fotografa || {}
   const estudio = configuracoes?.estudio || {}
-  const nomeEstudio = estudio.nomeComercial || estudio.nomeEstudio || fotografa.nome || 'FotoGest Fotografia'
+  const nomeEstudio = estudio.nomeComercial || estudio.nomeEstudio || fotografa.nome || 'Fotolhar Fotografia'
   const emailEstudio = estudio.email || fotografa.email || ''
   const telefoneEstudio = estudio.telefone || fotografa.telefone || ''
   const cidadeEstudio = estudio.cidade || fotografa.cidade || ''

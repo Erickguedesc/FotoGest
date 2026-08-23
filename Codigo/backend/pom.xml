@@ -12,11 +12,11 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.fotogest</groupId>
+    <groupId>com.fotolhar</groupId>
     <artifactId>backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>fotogest-backend</name>
-    <description>FotoGest - Sistema de gestao para fotografos</description>
+    <name>fotolhar-backend</name>
+    <description>Fotolhar - Sistema de gestao para fotografos</description>
 
     <properties>
         <java.version>21</java.version>

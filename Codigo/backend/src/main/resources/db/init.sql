@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  FOTOGEST — Schema PostgreSQL Consolidado
+--  FOTOLHAR — Schema PostgreSQL Consolidado
 --  Versão: 1.3
 --  Sincronizado com Java + Histórico de Status + Álbum Reabrível
 ----------------------------------------------------------------------
@@ -54,23 +54,75 @@ CREATE TABLE IF NOT EXISTS fotografa (
   telefone VARCHAR(30),
   cnpj VARCHAR(20),
   logo_url TEXT,
+  onboarding_concluido BOOLEAN NOT NULL DEFAULT false,
+  onboarding_concluido_em TIMESTAMPTZ,
   ativo BOOLEAN NOT NULL DEFAULT true,
   criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE fotografa ADD COLUMN IF NOT EXISTS onboarding_concluido BOOLEAN;
+UPDATE fotografa
+SET onboarding_concluido = true
+WHERE onboarding_concluido IS NULL;
+ALTER TABLE fotografa ALTER COLUMN onboarding_concluido SET DEFAULT false;
+ALTER TABLE fotografa ALTER COLUMN onboarding_concluido SET NOT NULL;
+ALTER TABLE fotografa ADD COLUMN IF NOT EXISTS onboarding_concluido_em TIMESTAMPTZ;
+UPDATE fotografa
+SET onboarding_concluido_em = COALESCE(onboarding_concluido_em, atualizado_em, NOW())
+WHERE onboarding_concluido = true;
+
 CREATE TABLE IF NOT EXISTS cliente (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  fotografa_id UUID NOT NULL REFERENCES fotografa(id) ON DELETE CASCADE,
   nome VARCHAR(200) NOT NULL,
-  email VARCHAR(200) UNIQUE,
+  email VARCHAR(200),
   telefone VARCHAR(30),
-  cpf VARCHAR(20) UNIQUE,
+  cpf VARCHAR(20),
   cidade VARCHAR(120),
   indicacao VARCHAR(120),
   ativo BOOLEAN NOT NULL DEFAULT true,
   criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (fotografa_id, email),
+  UNIQUE (fotografa_id, cpf)
 );
+
+ALTER TABLE cliente ADD COLUMN IF NOT EXISTS fotografa_id UUID;
+
+UPDATE cliente
+SET fotografa_id = (
+  SELECT id
+  FROM fotografa
+  ORDER BY criado_em ASC
+  LIMIT 1
+)
+WHERE fotografa_id IS NULL;
+
+ALTER TABLE cliente
+  DROP CONSTRAINT IF EXISTS cliente_email_key,
+  DROP CONSTRAINT IF EXISTS cliente_cpf_key,
+  DROP CONSTRAINT IF EXISTS cliente_fotografa_id_fkey;
+
+ALTER TABLE cliente
+  ADD CONSTRAINT cliente_fotografa_id_fkey
+  FOREIGN KEY (fotografa_id) REFERENCES fotografa(id) ON DELETE CASCADE
+  NOT VALID;
+
+ALTER TABLE cliente VALIDATE CONSTRAINT cliente_fotografa_id_fkey;
+
+ALTER TABLE cliente ALTER COLUMN fotografa_id SET NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_cliente_fotografa_email
+ON cliente(fotografa_id, email)
+WHERE email IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_cliente_fotografa_cpf
+ON cliente(fotografa_id, cpf)
+WHERE cpf IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_cliente_fotografa_id
+ON cliente(fotografa_id);
 
 CREATE TABLE IF NOT EXISTS ensaio (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -368,23 +420,39 @@ INSERT INTO fotografa (
   senha_hash,
   telefone,
   cnpj,
+  onboarding_concluido,
+  onboarding_concluido_em,
   ativo
 )
 VALUES
 (
   'User 1',
-  'user1@fotogest.com.br',
+  'user1@fotolhar.com.br',
   crypt('123456', gen_salt('bf')),
   '(31) 99999-0001',
   '00.000.000/0001-00',
+  false,
+  null,
   true
 ),
 (
   'User 2',
-  'user2@fotogest.com.br',
+  'user2@fotolhar.com.br',
   crypt('123456', gen_salt('bf')),
   '(31) 99999-0002',
   '00.000.000/0001-00',
+  false,
+  null,
+  true
+),
+(
+  'User 3',
+  'user3@fotolhar.com.br',
+  crypt('123456', gen_salt('bf')),
+  '(31) 99999-0003',
+  '00.000.000/0001-00',
+  false,
+  null,
   true
 )
 ON CONFLICT (email) DO NOTHING;

@@ -100,7 +100,7 @@ export default function RelatoriosPage() {
 
       downloadBlob(
         response.data,
-        `relatorio-fotogest-${slug || ano}.pdf`
+        `relatorio-fotolhar-${slug || ano}.pdf`
       )
     } catch (error) {
       console.error('Erro ao exportar relatorio em PDF:', error)

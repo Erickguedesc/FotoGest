@@ -28,14 +28,14 @@ export default function GaleriaPage() {
   const { token } = useParams()
 
   const [album, setAlbum] = useState(() => {
-    const raw = sessionStorage.getItem(`fotogest_album_${token}`)
+    const raw = sessionStorage.getItem(`fotolhar_album_${token}`)
 
     if (!raw) return null
 
     try {
       return JSON.parse(raw)
     } catch {
-      sessionStorage.removeItem(`fotogest_album_${token}`)
+      sessionStorage.removeItem(`fotolhar_album_${token}`)
       return null
     }
   })
@@ -87,7 +87,7 @@ export default function GaleriaPage() {
           }
 
           sessionStorage.setItem(
-            `fotogest_album_${token}`,
+            `fotolhar_album_${token}`,
             JSON.stringify(albumAtualizado),
           )
 
@@ -144,8 +144,6 @@ export default function GaleriaPage() {
 
   const nomeCliente =
     album.nomeCliente || album.clienteNome || album.nome || 'Cliente'
-  const nomeFotografa =
-    album.nomeFotografa || album.fotografaNome || album.nomeEstudio || 'Fotografia'
   const tipoEnsaio = album.tipoEnsaio || album.tipo || 'Ensaio fotográfico'
   const limite =
     album.qtdFotosPacote ||
@@ -238,7 +236,7 @@ export default function GaleriaPage() {
       setModalSucessoAberto(true)
 
       sessionStorage.setItem(
-        `fotogest_album_${token}`,
+        `fotolhar_album_${token}`,
         JSON.stringify({
           ...album,
           selecaoEnviada: true,
@@ -268,7 +266,6 @@ export default function GaleriaPage() {
       <GalleryHero
         coverUrl={capaAlbumUrl}
         nomeCliente={nomeCliente}
-        nomeFotografa={nomeFotografa}
         tipoEnsaio={tipoEnsaio}
         dataFormatada={dataFormatada}
         limite={limite}

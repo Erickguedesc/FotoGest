@@ -1,7 +1,7 @@
 import ContractSection from './ContractSection'
 import DataCell from './DataCell'
 import EditableField from './EditableField'
-import FotoGestIcon from './FotoGestIcon'
+import FotolharIcon from './FotolharIcon'
 import {
   DEFAULT_ACCEPT_TEXT,
   DEFAULT_CONTRACT_CLAUSES,
@@ -28,7 +28,7 @@ export default function ContractDocument({ draft, onChange }) {
       <div className="precontrato-contract-header">
         <div className="precontrato-brand">
           <div className="precontrato-logo-row">
-            <FotoGestIcon />
+            <FotolharIcon />
             <span className="precontrato-logo-text">
               <EditableField value={draft.fotografaNome} onChange={set('fotografaNome')} />
             </span>
@@ -182,7 +182,7 @@ export default function ContractDocument({ draft, onChange }) {
             </div>
           </div>
           <div className="precontrato-sign-date">
-            <EditableField value={draft.cidadeAssinatura} onChange={set('cidadeAssinatura')} /> - <EditableField value={draft.dataEmissao} onChange={set('dataEmissao')} /> - Documento gerado automaticamente pelo sistema FotoGest
+            <EditableField value={draft.cidadeAssinatura} onChange={set('cidadeAssinatura')} /> - <EditableField value={draft.dataEmissao} onChange={set('dataEmissao')} /> - Documento gerado automaticamente pelo sistema Fotolhar
           </div>
         </ContractSection>
       </div>

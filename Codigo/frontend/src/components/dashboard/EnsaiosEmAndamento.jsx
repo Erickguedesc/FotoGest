@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, CalendarDays, Grid2X2, List, MapPin } from 'lucide-react'
 
 import EnsaioDashboardCard from './EnsaioDashboardCard'
-import logoFotoGest from '../../assets/logofotogest.png'
+import logoFotolhar from '../../assets/logofotolhar.png'
 import {
     formatarDataCurta,
     formatarStatusEnsaio,
@@ -163,8 +163,8 @@ function EnsaioRow({ ensaio }) {
                 ) : (
                     <div className="flex h-full w-full flex-col items-center justify-center bg-[#111111] px-4 text-center">
                         <img
-                            src={logoFotoGest}
-                            alt="FotoGest"
+                            src={logoFotolhar}
+                            alt="Fotolhar"
                             className="mb-2 w-20 opacity-80"
                         />
 

@@ -45,7 +45,7 @@ export default function BackupDadosForm({
             </h4>
 
             <p className="theme-muted mt-2 max-w-2xl text-sm leading-6">
-              As fotos continuam armazenadas. Este backup guarda os dados do FotoGest:
+              As fotos continuam armazenadas. Este backup guarda os dados do Fotolhar:
               clientes, ensaios, albuns, selecoes, valores, observacoes, notas internas,
               modelos de contrato e configuracoes principais. O ZIP inclui um PDF legivel
               e um JSON tecnico.

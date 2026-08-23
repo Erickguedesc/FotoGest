@@ -41,7 +41,7 @@ const GRUPO_STATUS = {
   ativos: STATUS_ATIVOS,
 }
 
-const VIEW_MODE_STORAGE_KEY = 'fotogest:ensaios:viewMode'
+const VIEW_MODE_STORAGE_KEY = 'fotolhar:ensaios:viewMode'
 const VIEW_MODES = ['table', 'grid', 'calendar']
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 

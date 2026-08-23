@@ -1,4 +1,4 @@
-const ONBOARDING_PREFIX = 'fotogest:onboarding'
+const ONBOARDING_PREFIX = 'fotolhar:onboarding'
 
 function getAccountKey() {
   const email = localStorage.getItem('fotografaEmail')
@@ -13,9 +13,23 @@ export function isOnboardingComplete() {
   return localStorage.getItem(getOnboardingKey('complete')) === 'true'
 }
 
-export function completeOnboarding() {
+export function completeOnboarding(completedAt = new Date().toISOString()) {
   localStorage.setItem(getOnboardingKey('complete'), 'true')
-  localStorage.setItem(getOnboardingKey('completedAt'), new Date().toISOString())
+  localStorage.setItem(getOnboardingKey('completedAt'), completedAt)
+}
+
+export function resetOnboardingComplete() {
+  localStorage.removeItem(getOnboardingKey('complete'))
+  localStorage.removeItem(getOnboardingKey('completedAt'))
+}
+
+export function syncOnboardingStatus(complete, completedAt) {
+  if (complete) {
+    completeOnboarding(completedAt || new Date().toISOString())
+    return
+  }
+
+  resetOnboardingComplete()
 }
 
 export function getDemoEnsaioId() {

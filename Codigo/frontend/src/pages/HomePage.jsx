@@ -18,11 +18,11 @@ import {
   User,
   Wand2,
 } from 'lucide-react'
-import heroDashboard from '../assets/home-hero-dashboard.png'
+import heroDashboard from '../assets/home-hero-dashboard.jfif'
 import gallerySelection from '../assets/home-gallery-selection.png'
 import financeDashboard from '../assets/home-finance-dashboard.png'
 import essaysListPreview from '../assets/home-essays-list.png'
-import finalCtaImage from '../assets/home-final-cta.png'
+import finalCtaImage from '../assets/home-final-cta.jfif'
 import homeLogo from '../assets/home-logo-wordmark.png'
 
 const navItems = [
@@ -180,11 +180,11 @@ export default function HomePage() {
     <main className="min-h-screen overflow-x-hidden bg-[#fbf7f2] text-[#22303a]">
       <header className="relative z-30 border-b border-[#e8ded4] bg-[#fffaf5]/95 backdrop-blur">
         <div className="mx-auto flex h-[74px] w-full max-w-[1320px] items-center justify-between px-5 sm:px-8 xl:px-0">
-          <a href="/" className="flex items-center" aria-label="FotoGest">
+          <a href="/" className="flex items-center" aria-label="Fotolhar">
             <img
               src={homeLogo}
-              alt="FotoGest"
-              className="h-[30px] w-auto object-contain sm:h-[30px]"
+              alt="Fotolhar"
+              className="h-[90px] w-auto object-contain sm:h-[90px]"
             />
           </a>
 
@@ -233,10 +233,10 @@ export default function HomePage() {
   <span className="block lg:whitespace-nowrap">Encante seus clientes.</span>
 </h1>
             <p className="mt-6 text-[24px] leading-snug text-[#344652]">
-              Seu olhar cria. O FotoGest organiza.
+              Seu olhar cria. O Fotolhar organiza.
             </p>
             <p className="mt-7 max-w-[430px] text-[16px] leading-8 text-[#72808a]">
-              O FotoGest é o sistema completo para fotógrafos que desejam organizar
+              O Fotolhar é o sistema completo para fotógrafos que desejam organizar
               clientes, ensaios, galerias, entregas e finanças em um só lugar.
             </p>
 
@@ -260,7 +260,7 @@ export default function HomePage() {
           <div className="relative z-10 mt-10 min-h-[390px] lg:mt-0 lg:min-h-[668px]">
             <img
               src={heroDashboard}
-              alt="Painel do FotoGest com resumo de ensaios, faturamento e próximas sessões."
+              alt="Painel do Fotolhar com resumo de ensaios, faturamento e próximas sessões."
               className="absolute left-1/2 top-1/2 w-[760px] max-w-none -translate-x-[36%] -translate-y-[48%] rounded-[6px] object-contain opacity-[0.98] drop-shadow-[0_24px_42px_rgba(94,66,45,0.16)] sm:w-[830px] lg:w-[875px] xl:w-[930px]"
               style={{
                 WebkitMaskImage:
@@ -420,7 +420,7 @@ export default function HomePage() {
             <div className="rounded-[12px] border border-[#eadfd7] bg-white/88 p-3 shadow-[0_24px_65px_rgba(84,62,45,0.12)]">
               <img
                 src={essaysListPreview}
-                alt="Tela de ensaios do FotoGest com filtros, status, progresso e lista de trabalhos."
+                alt="Tela de ensaios do Fotolhar com filtros, status, progresso e lista de trabalhos."
                 className="w-full rounded-[8px] object-contain"
               />
             </div>
@@ -466,7 +466,7 @@ export default function HomePage() {
           <div className="relative">
             <img
               src={gallerySelection}
-              alt="Galeria do FotoGest com seleção de fotos, comentários do cliente, fotos extras e progresso da seleção."
+              alt="Galeria do Fotolhar com seleção de fotos, comentários do cliente, fotos extras e progresso da seleção."
               className="w-full rounded-[8px] border border-[#eadfd7] bg-white object-contain shadow-[0_22px_55px_rgba(84,62,45,0.12)]"
             />
           </div>
@@ -499,7 +499,7 @@ export default function HomePage() {
           <div className="relative">
             <img
               src={financeDashboard}
-              alt="Relatórios financeiros do FotoGest com faturamento, recebimentos, lucro líquido, gráfico mensal e ensaios mais realizados."
+              alt="Relatórios financeiros do Fotolhar com faturamento, recebimentos, lucro líquido, gráfico mensal e ensaios mais realizados."
               className="w-full rounded-[8px] border border-[#eadfd7] bg-white object-contain shadow-[0_22px_55px_rgba(84,62,45,0.10)]"
             />
           </div>
@@ -518,7 +518,7 @@ export default function HomePage() {
               Mais controle sobre cada ensaio.
             </h2>
             <p className="mt-6 max-w-[820px] text-[18px] leading-[1.7] text-[#72808a]">
-              O FotoGest conecta as partes mais importantes da rotina para
+              O Fotolhar conecta as partes mais importantes da rotina para
               você trabalhar com menos improviso e mais clareza.
             </p>
           </div>
@@ -565,7 +565,7 @@ className="absolute inset-y-0 left-[24%] -z-10 hidden w-[50%] bg-[linear-gradien
             <h2 className="mt-5 font-serif text-[42px] font-normal leading-[1.08] tracking-normal text-[#27323a] sm:text-[50px]">
               Mais tempo para criar.
               <br />
-              Tudo organizado com o FotoGest.
+              Tudo organizado com o Fotolhar.
             </h2>
             <p className="mt-6 max-w-[520px] text-[16px] leading-[1.75] text-[#72808a]">
               Junte-se a fotógrafos que já transformaram sua rotina e entregam

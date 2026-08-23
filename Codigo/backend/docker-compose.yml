@@ -1,35 +1,35 @@
-name: fotogest
+name: fotolhar
 
 services:
-  fotogest-db:
+  fotolhar-db:
     image: postgres:16-alpine
-    container_name: fotogest_postgres
+    container_name: fotolhar_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: fotogest_db
-      POSTGRES_USER: fotogest_user
-      POSTGRES_PASSWORD: fotogest_senha123
+      POSTGRES_DB: fotolhar_db
+      POSTGRES_USER: fotolhar_user
+      POSTGRES_PASSWORD: fotolhar_senha123
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./src/main/resources/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U fotogest_user -d fotogest_db"]
+      test: ["CMD-SHELL", "pg_isready -U fotolhar_user -d fotolhar_db"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  fotogest-api:
+  fotolhar-api:
     build: .
-    container_name: fotogest_api
+    container_name: fotolhar_api
     depends_on:
-      fotogest-db:
+      fotolhar-db:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://fotogest-db:5432/fotogest_db
-      SPRING_DATASOURCE_USERNAME: fotogest_user
-      SPRING_DATASOURCE_PASSWORD: fotogest_senha123
+      SPRING_DATASOURCE_URL: jdbc:postgresql://fotolhar-db:5432/fotolhar_db
+      SPRING_DATASOURCE_USERNAME: fotolhar_user
+      SPRING_DATASOURCE_PASSWORD: fotolhar_senha123
     ports:
       - "8080:8080"
 

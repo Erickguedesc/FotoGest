@@ -58,7 +58,7 @@ function normalizeAxiosData(response) {
 
 export default function OnboardingPage() {
   const navigate = useNavigate()
-  const savedThemeOnEntry = useMemo(() => localStorage.getItem('fotogest-theme') || 'dark', [])
+  const savedThemeOnEntry = useMemo(() => localStorage.getItem('fotolhar-theme') || 'dark', [])
   const themeSavedRef = useRef(false)
 
   const [step, setStep] = useState(0)
@@ -89,7 +89,7 @@ export default function OnboardingPage() {
     cidade: '',
     endereco: '',
     cnpj: '',
-    theme: localStorage.getItem('fotogest-theme') || 'dark',
+    theme: localStorage.getItem('fotolhar-theme') || 'dark',
   })
 
   const [album, setAlbum] = useState({
@@ -176,9 +176,12 @@ export default function OnboardingPage() {
     setStep((current) => Math.max(current - 1, 0))
   }
 
-  function finish(path = '/novo-ensaio') {
-    completeOnboarding()
-    navigate(path)
+  async function finish(path = '/novo-ensaio') {
+    await runSave(async () => {
+      const data = await configuracoesService.concluirOnboarding()
+      completeOnboarding(data?.onboardingConcluidoEm || new Date().toISOString())
+      navigate(path)
+    })
   }
 
   function previewTheme(nextTheme) {
@@ -205,7 +208,7 @@ export default function OnboardingPage() {
 
       localStorage.setItem('fotografaNome', data?.nome || perfil.nome)
       localStorage.setItem('fotografaEmail', data?.email || perfil.email)
-      window.dispatchEvent(new CustomEvent('fotogest:fotografa-atualizada', { detail: data }))
+      window.dispatchEvent(new CustomEvent('fotolhar:fotografa-atualizada', { detail: data }))
       remember('Perfil da fotografa')
       nextStep()
     })
@@ -239,7 +242,7 @@ export default function OnboardingPage() {
       })
 
       document.documentElement.dataset.theme = marca.theme === 'light' ? 'light' : 'dark'
-      localStorage.setItem('fotogest-theme', marca.theme === 'light' ? 'light' : 'dark')
+      localStorage.setItem('fotolhar-theme', marca.theme === 'light' ? 'light' : 'dark')
       themeSavedRef.current = true
       setThemeSaved(true)
 
@@ -280,7 +283,7 @@ export default function OnboardingPage() {
     if (list.length > 0) return
 
     await configuracoesService.criarModeloContrato({
-      nome: 'Modelo inicial FotoGest',
+      nome: 'Modelo inicial Fotolhar',
       tipoEnsaio: null,
       padrao: true,
       ativo: true,
@@ -300,11 +303,11 @@ export default function OnboardingPage() {
 
     await runSave(async () => {
       const clienteResponse = await clientesService.criar({
-        nome: 'Cliente Demo FotoGest',
+        nome: 'Cliente Demo Fotolhar',
         email: null,
         telefone: '(00) 00000-0000',
         cidade: marca.cidade || perfil.cidade || 'Cidade demo',
-        indicacao: 'Onboarding FotoGest',
+        indicacao: 'Onboarding Fotolhar',
       })
 
       const cliente = normalizeAxiosData(clienteResponse)
@@ -316,15 +319,15 @@ export default function OnboardingPage() {
 
       const ensaioResponse = await ensaiosService.criar({
         clienteId,
-        clienteNome: cliente.nome || 'Cliente Demo FotoGest',
+        clienteNome: cliente.nome || 'Cliente Demo Fotolhar',
         clienteEmail: cliente.email || null,
         clienteTelefone: cliente.telefone || '(00) 00000-0000',
         clienteCidade: cliente.cidade || marca.cidade || perfil.cidade || '',
-        clienteIndicacao: 'Onboarding FotoGest',
+        clienteIndicacao: 'Onboarding Fotolhar',
         tipo: 'OUTRO',
         tipoPersonalizado: 'Ensaio demo',
         dataEnsaio: tomorrowAtTenIso(),
-        local: marca.endereco || 'Estudio demo FotoGest',
+        local: marca.endereco || 'Estudio demo Fotolhar',
         qtdFotosPacote: 20,
         valorPacote: 500,
         cobrarFotoExtra: false,
@@ -375,7 +378,7 @@ export default function OnboardingPage() {
                 Configuração guiada
               </p>
               <h1 className="theme-title mt-3 font-serif text-4xl font-light md:text-5xl">
-                Deixe o FotoGest pronto antes do primeiro ensaio
+                Deixe o Fotolhar pronto antes do primeiro ensaio
               </h1>
               <p className="theme-muted mt-3 max-w-2xl text-sm leading-6">
                 Cinco passos curtos para montar perfil, marca, galeria, contrato e um ensaio de exemplo demo deixando o sistema com sua identidade.
@@ -885,7 +888,7 @@ function DemoStep({ demoId }) {
       <div className="rounded-[12px] border border-[var(--border)] p-5">
         <p className="theme-muted text-xs font-semibold uppercase tracking-[0.18em]">Demo</p>
         <div className="mt-4 space-y-3 text-sm">
-          <InfoRow icon={UserRound} label="Cliente" value="Cliente Demo FotoGest" />
+          <InfoRow icon={UserRound} label="Cliente" value="Cliente Demo Fotolhar" />
           <InfoRow icon={Image} label="Tipo" value="Ensaio demo" />
           <InfoRow icon={CalendarPlus} label="Agenda" value="Daqui 2 dias, 10:00" />
           <InfoRow icon={FileText} label="Contrato" value="Modelo inicial" />

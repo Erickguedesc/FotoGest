@@ -36,7 +36,7 @@ export default function ConfiguracoesPage() {
 
   const notificarFotografaAtualizada = (fotografa) => {
     window.dispatchEvent(
-      new CustomEvent('fotogest:fotografa-atualizada', {
+      new CustomEvent('fotolhar:fotografa-atualizada', {
         detail: fotografa,
       }),
     )

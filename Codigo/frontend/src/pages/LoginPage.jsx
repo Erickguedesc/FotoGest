@@ -14,7 +14,12 @@ import api from '../services/api'
 import loginBrand from '../assets/login-brand.png'
 import loginScene from '../assets/login-scene.png'
 
-const LOGIN_DISPLAY_NAME_KEY = 'fotogest-login-display-name'
+const LOGIN_DISPLAY_NAME_KEY = 'fotolhar-login-display-name'
+
+function getLoginDisplayNameKey(email = '') {
+  const normalizedEmail = email.trim().toLowerCase()
+  return normalizedEmail ? `${LOGIN_DISPLAY_NAME_KEY}:${normalizedEmail}` : LOGIN_DISPLAY_NAME_KEY
+}
 
 const benefitCards = [
   {
@@ -67,8 +72,8 @@ function isGenericDisplayName(name = '') {
   ].includes(normalized)
 }
 
-function getStoredDisplayName() {
-  const storedName = localStorage.getItem(LOGIN_DISPLAY_NAME_KEY) || ''
+function getStoredDisplayName(email = '') {
+  const storedName = localStorage.getItem(getLoginDisplayNameKey(email)) || ''
   return isGenericDisplayName(storedName) ? '' : storedName
 }
 
@@ -76,7 +81,7 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [form, setForm] = useState({ email: '', senha: '' })
-  const [displayName, setDisplayName] = useState(getStoredDisplayName)
+  const [displayName, setDisplayName] = useState('')
   const [errors, setErrors] = useState({})
   const [showPass, setShowPass] = useState(false)
   const [remember, setRemember] = useState(true)
@@ -100,6 +105,10 @@ export default function LoginPage() {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: '' }))
     if (apiError) setApiError('')
   }
+
+  useEffect(() => {
+    setDisplayName(getStoredDisplayName(form.email))
+  }, [form.email])
 
   function validate() {
     const e = {}
@@ -129,15 +138,22 @@ export default function LoginPage() {
         senha: form.senha,
       })
 
-      const { token, nome, email, nomeExibicao, nomeEstudio, nomeComercial } = res.data
+      const { token, nome, email, nomeExibicao, nomeEstudio, nomeComercial, onboardingConcluido } = res.data
       const loginDisplayName = [nomeExibicao, nomeComercial, nomeEstudio, nome]
         .find((value) => value && !isGenericDisplayName(value))
 
       localStorage.setItem('token', token)
       localStorage.setItem('fotografaNome', nome)
       localStorage.setItem('fotografaEmail', email)
+      const onboardingPrefix = `fotolhar:onboarding:${email.trim().toLowerCase()}`
+      if (onboardingConcluido) {
+        localStorage.setItem(`${onboardingPrefix}:complete`, 'true')
+      } else {
+        localStorage.removeItem(`${onboardingPrefix}:complete`)
+        localStorage.removeItem(`${onboardingPrefix}:completedAt`)
+      }
       if (loginDisplayName) {
-        localStorage.setItem(LOGIN_DISPLAY_NAME_KEY, loginDisplayName)
+        localStorage.setItem(getLoginDisplayNameKey(email), loginDisplayName)
         setDisplayName(loginDisplayName)
       }
 
@@ -182,11 +198,11 @@ export default function LoginPage() {
           <div className="hidden md:block" aria-hidden="true" />
 
           <div>
-           <div className="mx-auto mb-5 h-[132px] w-full max-w-[520px] overflow-visible">
+           <div className="mx-auto mb-5 h-[110px] w-full max-w-[480px] overflow-visible">
   <img
     src={loginBrand}
-    alt="FotoGest - Seu olhar cria. O FotoGest organiza."
-    className="h-full w-full object-cover object-center scale-[1.45]"
+    alt="Fotolhar - Seu olhar cria. O Fotolhar organiza."
+    className="h-full w-full object-cover object-center scale-[1.10]"
   />
 </div>
 

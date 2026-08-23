@@ -65,7 +65,7 @@ export default function AlbumAccessPage() {
     const dadosPublicos = await validarAlbumPorToken(token)
 
    sessionStorage.setItem(
-  `fotogest_album_${token}`,
+  `fotolhar_album_${token}`,
   JSON.stringify({
     ...dadosPublicos,
     fotos,
