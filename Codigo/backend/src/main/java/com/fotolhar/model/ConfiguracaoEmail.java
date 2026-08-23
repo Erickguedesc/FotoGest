@@ -19,8 +19,8 @@ public class ConfiguracaoEmail {
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "fotografa_id", nullable = false, unique = true)
-    private Fotografa fotografa;
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
+    private Usuario usuario;
 
     @Builder.Default
     @Column(nullable = false)
@@ -29,8 +29,8 @@ public class ConfiguracaoEmail {
     @Column(name = "nome_remetente", length = 120)
     private String nomeRemetente;
 
-    @Column(name = "email_fotografa_avisos", length = 180)
-    private String emailFotografaAvisos;
+    @Column(name = "email_usuario_avisos", length = 180)
+    private String emailUsuarioAvisos;
 
     @Builder.Default
     @Column(name = "enviar_album_publicado", nullable = false)

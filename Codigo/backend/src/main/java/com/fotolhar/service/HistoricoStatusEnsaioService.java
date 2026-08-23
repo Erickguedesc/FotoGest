@@ -19,13 +19,13 @@ public class HistoricoStatusEnsaioService {
 
     private final HistoricoStatusEnsaioRepository historicoRepository;
     private final EnsaioRepository ensaioRepository;
-    private final FotografaContextService fotografaContextService;
+    private final UsuarioContextService usuarioContextService;
 
     @Transactional(readOnly = true)
     public List<HistoricoStatusEnsaioResponse> listarPorEnsaio(UUID ensaioId) {
-        ensaioRepository.findByIdAndClienteFotografaId(
+        ensaioRepository.findByIdAndClienteUsuarioId(
                         ensaioId,
-                        fotografaContextService.getFotografaLogada().getId()
+                        usuarioContextService.getUsuarioLogado().getId()
                 )
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,

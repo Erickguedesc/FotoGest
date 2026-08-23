@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ConfiguracoesResponseDTO {
-    private FotografaConfigDTO fotografa;
+    private UsuarioConfigDTO usuario;
     private EstudioConfigDTO estudio;
     private PreferenciasConfigDTO preferencias;
     private MarcaDaguaConfigDTO marcaDagua;

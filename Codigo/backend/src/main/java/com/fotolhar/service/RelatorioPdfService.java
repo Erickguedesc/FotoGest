@@ -4,8 +4,8 @@ import com.fotolhar.dto.RelatorioFaturamentoResponse;
 import com.fotolhar.dto.RelatorioPeriodoResponse;
 import com.fotolhar.dto.RelatorioTipoEnsaioResponse;
 import com.fotolhar.enums.TipoPeriodoRelatorio;
-import com.fotolhar.model.Fotografa;
-import com.fotolhar.repository.FotografaRepository;
+import com.fotolhar.model.Usuario;
+import com.fotolhar.repository.UsuarioRepository;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
@@ -39,7 +39,7 @@ public class RelatorioPdfService {
     private static final Color MUTED_TEXT = new Color(100, 100, 100);
 
     private final RelatorioService relatorioService;
-    private final FotografaRepository fotografaRepository;
+    private final UsuarioRepository usuarioRepository;
 
     public byte[] gerarPdf(TipoPeriodoRelatorio tipo, Integer ano) {
         return gerarPdf(tipo, ano, null, null);
@@ -207,8 +207,8 @@ public class RelatorioPdfService {
                     .getAuthentication()
                     .getName();
 
-            return fotografaRepository.findByEmail(email)
-                    .map(Fotografa::getNome)
+            return usuarioRepository.findByEmail(email)
+                    .map(Usuario::getNome)
                     .filter(nome -> !nome.isBlank())
                     .orElse("Fotolhar");
         } catch (Exception e) {

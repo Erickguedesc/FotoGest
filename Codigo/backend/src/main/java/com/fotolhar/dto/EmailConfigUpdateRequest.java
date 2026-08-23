@@ -10,7 +10,7 @@ import lombok.*;
 public class EmailConfigUpdateRequest {
     private Boolean ativo;
     private String nomeRemetente;
-    private String emailFotografaAvisos;
+    private String emailUsuarioAvisos;
     private Boolean enviarAlbumPublicado;
     private Boolean avisarSelecaoRecebida;
     private Boolean enviarConfirmacaoSelecaoCliente;

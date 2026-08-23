@@ -11,23 +11,23 @@ import java.util.UUID;
 
 public interface ClienteRepository extends JpaRepository<Cliente, UUID> {
 
-    boolean existsByFotografaIdAndEmail(UUID fotografaId, String email);
+    boolean existsByUsuarioIdAndEmail(UUID usuarioId, String email);
 
-    boolean existsByFotografaIdAndCpf(UUID fotografaId, String cpf);
+    boolean existsByUsuarioIdAndCpf(UUID usuarioId, String cpf);
 
-    Optional<Cliente> findByFotografaIdAndEmail(UUID fotografaId, String email);
+    Optional<Cliente> findByUsuarioIdAndEmail(UUID usuarioId, String email);
 
-    Optional<Cliente> findByFotografaIdAndCpf(UUID fotografaId, String cpf);
+    Optional<Cliente> findByUsuarioIdAndCpf(UUID usuarioId, String cpf);
 
-    Optional<Cliente> findByIdAndFotografaId(UUID id, UUID fotografaId);
+    Optional<Cliente> findByIdAndUsuarioId(UUID id, UUID usuarioId);
 
-    List<Cliente> findByFotografaIdOrderByNomeAsc(UUID fotografaId);
+    List<Cliente> findByUsuarioIdOrderByNomeAsc(UUID usuarioId);
 
-    List<Cliente> findByFotografaIsNull();
+    List<Cliente> findByUsuarioIsNull();
 
     @Query("""
             SELECT c FROM Cliente c
-            WHERE c.fotografa.id = :fotografaId
+            WHERE c.usuario.id = :usuarioId
               AND (
                    LOWER(c.nome) LIKE LOWER(CONCAT('%', :busca, '%'))
                 OR LOWER(COALESCE(c.email, '')) LIKE LOWER(CONCAT('%', :busca, '%'))
@@ -38,7 +38,7 @@ public interface ClienteRepository extends JpaRepository<Cliente, UUID> {
             ORDER BY c.nome ASC
             """)
     List<Cliente> buscarPorTermo(
-            @Param("fotografaId") UUID fotografaId,
+            @Param("usuarioId") UUID usuarioId,
             @Param("busca") String busca,
             @Param("digitos") String digitos
     );

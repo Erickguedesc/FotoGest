@@ -21,8 +21,8 @@ public class PreferenciasSistema {
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "fotografa_id", nullable = false, unique = true)
-    private Fotografa fotografa;
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
+    private Usuario usuario;
 
     @Column(name = "qtd_fotos_padrao")
     private Integer qtdFotosPadrao;

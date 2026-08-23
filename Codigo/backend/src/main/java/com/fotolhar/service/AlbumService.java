@@ -5,7 +5,7 @@ import com.fotolhar.dto.AlbumResponseDTO;
 import com.fotolhar.enums.StatusEnsaio;
 import com.fotolhar.model.Album;
 import com.fotolhar.model.Ensaio;
-import com.fotolhar.model.Fotografa;
+import com.fotolhar.model.Usuario;
 import com.fotolhar.repository.AlbumRepository;
 import com.fotolhar.repository.EnsaioRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,15 +34,15 @@ private final PreferenciasSistemaRepository preferenciasSistemaRepository;
 private final SelecaoFotoRepository selecaoFotoRepository;
 private final PasswordEncoder passwordEncoder;
 private final EmailService emailService;
-private final FotografaContextService fotografaContextService;
+private final UsuarioContextService usuarioContextService;
 
     @Value("${app.frontend-url:http://localhost:5173}")
     private String frontendUrl;
 
     @Transactional
     public AlbumResponseDTO gerarAlbumCompleto(UUID ensaioId) {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
-        Ensaio ensaio = ensaioRepository.findByIdAndClienteFotografaId(ensaioId, fotografa.getId())
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
+        Ensaio ensaio = ensaioRepository.findByIdAndClienteUsuarioId(ensaioId, usuario.getId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Ensaio não encontrado"
@@ -50,7 +50,7 @@ private final FotografaContextService fotografaContextService;
 
         String senhaLimpa = gerarSenhaAleatoria(6).trim().toUpperCase();
 
-        Album album = albumRepository.findByEnsaioIdAndEnsaioClienteFotografaId(ensaioId, fotografa.getId())
+        Album album = albumRepository.findByEnsaioIdAndEnsaioClienteUsuarioId(ensaioId, usuario.getId())
                 .orElseGet(() -> Album.builder()
                         .ensaio(ensaio)
                         .tokenUrl(gerarTokenUnico())
@@ -87,8 +87,8 @@ private final FotografaContextService fotografaContextService;
 
     @Transactional(readOnly = true)
     public AlbumAdminResponseDTO buscarAlbumPorEnsaio(UUID ensaioId) {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
-        Album album = albumRepository.findByEnsaioIdAndEnsaioClienteFotografaId(ensaioId, fotografa.getId())
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
+        Album album = albumRepository.findByEnsaioIdAndEnsaioClienteUsuarioId(ensaioId, usuario.getId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Álbum ainda não foi criado para este ensaio"
@@ -99,8 +99,8 @@ private final FotografaContextService fotografaContextService;
 
     @Transactional
     public AlbumAdminResponseDTO reabrirAlbum(UUID ensaioId) {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
-        Album album = albumRepository.findByEnsaioIdAndEnsaioClienteFotografaId(ensaioId, fotografa.getId())
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
+        Album album = albumRepository.findByEnsaioIdAndEnsaioClienteUsuarioId(ensaioId, usuario.getId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Álbum ainda não foi criado para este ensaio"
@@ -204,9 +204,9 @@ private final FotografaContextService fotografaContextService;
     }
 
     private int buscarPrazoExpiracaoAlbumDias(Ensaio ensaio) {
-    UUID fotografaId = ensaio.getCliente().getFotografa().getId();
+    UUID usuarioId = ensaio.getCliente().getUsuario().getId();
 
-    return preferenciasSistemaRepository.findByFotografaId(fotografaId)
+    return preferenciasSistemaRepository.findByUsuarioId(usuarioId)
             .map(PreferenciasSistema::getPrazoExpiracaoAlbumDias)
             .filter(dias -> dias != null && dias > 0)
             .orElse(30);

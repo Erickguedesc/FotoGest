@@ -40,17 +40,17 @@ public class ConfiguracoesController {
                 .body(arquivo);
     }
 
-    @PutMapping("/fotografa")
-    public ResponseEntity<FotografaConfigDTO> atualizarFotografa(
-            @RequestBody @Valid FotografaUpdateRequest request
+    @PutMapping("/usuario")
+    public ResponseEntity<UsuarioConfigDTO> atualizarUsuario(
+            @RequestBody @Valid UsuarioUpdateRequest request
     ) {
-        return ResponseEntity.ok(configuracoesService.atualizarFotografa(request));
+        return ResponseEntity.ok(configuracoesService.atualizarUsuario(request));
     }
     @PatchMapping(
-        value = "/fotografa/foto",
+        value = "/usuario/foto",
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE
 )
-public ResponseEntity<FotografaConfigDTO> uploadFotoPerfil(
+public ResponseEntity<UsuarioConfigDTO> uploadFotoPerfil(
         @RequestParam("arquivo") MultipartFile arquivo
 ) {
     return ResponseEntity.ok(configuracoesService.uploadFotoPerfil(arquivo));

@@ -226,7 +226,7 @@ export default function HomePage() {
         <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 items-center px-5 py-12 sm:px-8 md:min-h-[668px] lg:grid-cols-[455px_minmax(0,1fr)] lg:py-0 xl:px-0">
           <div className="relative z-20 max-w-[540px] pt-3 lg:max-w-none">
             <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#bf4b25]">
-              Para fotógrafos que querem mais tempo para criar
+              Para profissionais que querem mais tempo para criar
             </p>
             <h1 className="mt-7 font-serif text-[44px] font-normal leading-[0.98] tracking-normal text-[#27323a] sm:text-[54px] lg:text-[58px]">
   <span className="block lg:whitespace-nowrap">Organize seu negócio.</span>
@@ -236,7 +236,7 @@ export default function HomePage() {
               Seu olhar cria. O Fotolhar organiza.
             </p>
             <p className="mt-7 max-w-[430px] text-[16px] leading-8 text-[#72808a]">
-              O Fotolhar é o sistema completo para fotógrafos que desejam organizar
+              O Fotolhar é o sistema completo para profissionais que desejam organizar
               clientes, ensaios, galerias, entregas e finanças em um só lugar.
             </p>
 
@@ -277,7 +277,7 @@ export default function HomePage() {
         <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 gap-10 px-5 py-[78px] sm:px-8 lg:grid-cols-[330px_minmax(0,1fr)] lg:gap-[92px] xl:px-0">
           <div className="pt-7">
             <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#bf4b25]">
-              Os desafios de ser fotógrafo
+              Os desafios do profissional criativo
             </p>
             <h2 className="mt-7 font-serif text-[43px] font-normal leading-[1.07] tracking-normal text-[#27323a]">
               Você cria memórias.
@@ -568,7 +568,7 @@ className="absolute inset-y-0 left-[24%] -z-10 hidden w-[50%] bg-[linear-gradien
               Tudo organizado com o Fotolhar.
             </h2>
             <p className="mt-6 max-w-[520px] text-[16px] leading-[1.75] text-[#72808a]">
-              Junte-se a fotógrafos que já transformaram sua rotina e entregam
+              Junte-se a profissionais que já transformaram sua rotina e entregam
               experiências incríveis todos os dias.
             </p>
 

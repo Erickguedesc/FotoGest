@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface NotificacaoDispensadaRepository extends JpaRepository<NotificacaoDispensada, UUID> {
 
-    List<NotificacaoDispensada> findByFotografaId(UUID fotografaId);
+    List<NotificacaoDispensada> findByUsuarioId(UUID usuarioId);
 
-    Optional<NotificacaoDispensada> findByFotografaIdAndChave(UUID fotografaId, String chave);
+    Optional<NotificacaoDispensada> findByUsuarioIdAndChave(UUID usuarioId, String chave);
 }

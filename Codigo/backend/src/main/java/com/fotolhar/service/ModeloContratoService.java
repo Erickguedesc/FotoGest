@@ -2,9 +2,9 @@ package com.fotolhar.service;
 
 import com.fotolhar.dto.ModeloContratoDTO;
 import com.fotolhar.dto.ModeloContratoRequest;
-import com.fotolhar.model.Fotografa;
+import com.fotolhar.model.Usuario;
 import com.fotolhar.model.ModeloContrato;
-import com.fotolhar.repository.FotografaRepository;
+import com.fotolhar.repository.UsuarioRepository;
 import com.fotolhar.repository.ModeloContratoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -34,13 +34,13 @@ public class ModeloContratoService {
             "Ao assinar este documento, as partes declaram ter lido e compreendido todos os termos acima, concordando com as condicoes estabelecidas neste pre-contrato de prestacao de servicos fotograficos.";
 
     private final ModeloContratoRepository modeloContratoRepository;
-    private final FotografaRepository fotografaRepository;
+    private final UsuarioRepository usuarioRepository;
 
     @Transactional(readOnly = true)
     public List<ModeloContratoDTO> listar() {
-        Fotografa fotografa = getFotografaLogada();
+        Usuario usuario = getUsuarioLogado();
         return modeloContratoRepository
-                .findByFotografaIdOrderByPadraoDescAtualizadoEmDesc(fotografa.getId())
+                .findByUsuarioIdOrderByPadraoDescAtualizadoEmDesc(usuario.getId())
                 .stream()
                 .map(this::toDTO)
                 .toList();
@@ -48,10 +48,10 @@ public class ModeloContratoService {
 
     @Transactional
     public List<ModeloContratoDTO> listarGarantindoPadrao() {
-        Fotografa fotografa = getFotografaLogada();
-        garantirModeloPadrao(fotografa);
+        Usuario usuario = getUsuarioLogado();
+        garantirModeloPadrao(usuario);
         return modeloContratoRepository
-                .findByFotografaIdOrderByPadraoDescAtualizadoEmDesc(fotografa.getId())
+                .findByUsuarioIdOrderByPadraoDescAtualizadoEmDesc(usuario.getId())
                 .stream()
                 .map(this::toDTO)
                 .toList();
@@ -59,10 +59,10 @@ public class ModeloContratoService {
 
     @Transactional
     public ModeloContratoDTO criar(ModeloContratoRequest request) {
-        Fotografa fotografa = getFotografaLogada();
+        Usuario usuario = getUsuarioLogado();
 
         ModeloContrato modelo = ModeloContrato.builder()
-                .fotografa(fotografa)
+                .usuario(usuario)
                 .nome(normalizarObrigatorio(request.getNome(), "Informe o nome do modelo"))
                 .tipoEnsaio(normalizarTexto(request.getTipoEnsaio()))
                 .clausulas(normalizarObrigatorio(request.getClausulas(), "Informe as clausulas do modelo"))
@@ -72,7 +72,7 @@ public class ModeloContratoService {
                 .build();
 
         if (Boolean.TRUE.equals(modelo.getPadrao())) {
-            limparPadrao(fotografa.getId(), null);
+            limparPadrao(usuario.getId(), null);
         }
 
         return toDTO(modeloContratoRepository.save(modelo));
@@ -80,8 +80,8 @@ public class ModeloContratoService {
 
     @Transactional
     public ModeloContratoDTO atualizar(UUID id, ModeloContratoRequest request) {
-        Fotografa fotografa = getFotografaLogada();
-        ModeloContrato modelo = buscarDoUsuario(id, fotografa.getId());
+        Usuario usuario = getUsuarioLogado();
+        ModeloContrato modelo = buscarDoUsuario(id, usuario.getId());
 
         modelo.setNome(normalizarObrigatorio(request.getNome(), "Informe o nome do modelo"));
         modelo.setTipoEnsaio(normalizarTexto(request.getTipoEnsaio()));
@@ -91,7 +91,7 @@ public class ModeloContratoService {
         modelo.setAtivo(request.getAtivo() == null || Boolean.TRUE.equals(request.getAtivo()));
 
         if (Boolean.TRUE.equals(modelo.getPadrao())) {
-            limparPadrao(fotografa.getId(), modelo.getId());
+            limparPadrao(usuario.getId(), modelo.getId());
         }
 
         return toDTO(modeloContratoRepository.save(modelo));
@@ -99,18 +99,18 @@ public class ModeloContratoService {
 
     @Transactional
     public void remover(UUID id) {
-        Fotografa fotografa = getFotografaLogada();
-        ModeloContrato modelo = buscarDoUsuario(id, fotografa.getId());
+        Usuario usuario = getUsuarioLogado();
+        ModeloContrato modelo = buscarDoUsuario(id, usuario.getId());
         modeloContratoRepository.delete(modelo);
     }
 
-    private void garantirModeloPadrao(Fotografa fotografa) {
-        if (modeloContratoRepository.existsByFotografaId(fotografa.getId())) {
+    private void garantirModeloPadrao(Usuario usuario) {
+        if (modeloContratoRepository.existsByUsuarioId(usuario.getId())) {
             return;
         }
 
         modeloContratoRepository.save(ModeloContrato.builder()
-                .fotografa(fotografa)
+                .usuario(usuario)
                 .nome("Contrato padrao")
                 .clausulas(CLAUSULAS_PADRAO)
                 .textoAceite(ACEITE_PADRAO)
@@ -119,8 +119,8 @@ public class ModeloContratoService {
                 .build());
     }
 
-    private void limparPadrao(UUID fotografaId, UUID manterId) {
-        modeloContratoRepository.findByFotografaIdOrderByPadraoDescAtualizadoEmDesc(fotografaId)
+    private void limparPadrao(UUID usuarioId, UUID manterId) {
+        modeloContratoRepository.findByUsuarioIdOrderByPadraoDescAtualizadoEmDesc(usuarioId)
                 .forEach(modelo -> {
                     if (manterId == null || !modelo.getId().equals(manterId)) {
                         modelo.setPadrao(false);
@@ -128,23 +128,23 @@ public class ModeloContratoService {
                 });
     }
 
-    private ModeloContrato buscarDoUsuario(UUID id, UUID fotografaId) {
-        return modeloContratoRepository.findByIdAndFotografaId(id, fotografaId)
+    private ModeloContrato buscarDoUsuario(UUID id, UUID usuarioId) {
+        return modeloContratoRepository.findByIdAndUsuarioId(id, usuarioId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Modelo de contrato nao encontrado"
                 ));
     }
 
-    private Fotografa getFotografaLogada() {
+    private Usuario getUsuarioLogado() {
         String email = SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getName();
 
-        return fotografaRepository.findByEmail(email)
+        return usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED,
-                        "Fotografa autenticada nao encontrada"
+                        "Usuario autenticado nao encontrada"
                 ));
     }
 

@@ -2,7 +2,7 @@ package com.fotolhar.enums;
 
 /**
  * Linha do tempo do ensaio (RF04, RF08).
- * A fotógrafa atualiza manualmente (R03).
+ * O usuário atualiza manualmente (R03).
  */
 public enum StatusEnsaio {
 

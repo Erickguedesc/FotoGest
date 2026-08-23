@@ -13,7 +13,7 @@ export default function SelectionSuccessModal({ open, onClose }) {
         </h2>
 
         <p className="mt-3 text-sm leading-7 text-[#887e74]">
-          Suas fotos favoritas foram enviadas para a fotógrafa. A seleção não
+          Suas fotos favoritas foram enviadas para o profissional. A seleção não
           poderá mais ser alterada por aqui.
         </p>
 

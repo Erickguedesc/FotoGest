@@ -7,7 +7,7 @@ import ConfirmActionModal from '../ui/ConfirmActionModal'
 const emptyForm = {
   ativo: false,
   nomeRemetente: '',
-  emailFotografaAvisos: '',
+  emailUsuarioAvisos: '',
   enviarAlbumPublicado: true,
   avisarSelecaoRecebida: true,
   enviarConfirmacaoSelecaoCliente: true,
@@ -52,7 +52,7 @@ export default function EmailConfigForm({
     setForm({
       ativo: Boolean(data?.ativo),
       nomeRemetente: data?.nomeRemetente || '',
-      emailFotografaAvisos: data?.emailFotografaAvisos || '',
+      emailUsuarioAvisos: data?.emailUsuarioAvisos || '',
       enviarAlbumPublicado: data?.enviarAlbumPublicado !== false,
       avisarSelecaoRecebida: data?.avisarSelecaoRecebida !== false,
       enviarConfirmacaoSelecaoCliente:
@@ -118,11 +118,22 @@ export default function EmailConfigForm({
 
   const smtpConfigurado = Boolean(data?.smtpConfigurado)
   const envioDisponivel = Boolean(form.ativo && smtpConfigurado)
+  const envioAtivoPendente = Boolean(form.ativo && !smtpConfigurado)
   const motivoIndisponivel =
     form.ativo
       ? data?.motivoIndisponivel ||
         'Os avisos automaticos nao serao enviados ate a configuracao ser concluida.'
       : '(Envio automático desativado.)'
+  const statusEmailTitulo = envioDisponivel
+    ? 'E-mail pronto para envio'
+    : envioAtivoPendente
+      ? 'Envio automático ativado'
+      : 'Envio de e-mail desativado'
+  const statusEmailDescricao = envioDisponivel
+    ? 'Os avisos automáticos já podem ser enviados pelo sistema.'
+    : envioAtivoPendente
+      ? motivoIndisponivel
+      : 'Envio automático desativado.'
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -173,14 +184,10 @@ export default function EmailConfigForm({
 
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-[var(--text)]">
-              {envioDisponivel
-                ? 'E-mail pronto para envio'
-                : 'Envio de e-mail desativado'}
+              {statusEmailTitulo}
             </p>
             <p className="theme-muted mt-1 text-sm leading-6">
-              {envioDisponivel
-                ? 'Os avisos automáticos já podem ser enviados pelo sistema.'
-                : motivoIndisponivel}
+              {statusEmailDescricao}
             </p>
             {!smtpConfigurado && (
               <p className="mt-2 text-xs text-[var(--text-muted)]">
@@ -202,9 +209,9 @@ export default function EmailConfigForm({
 
         <FormField
           label="Seu e-mail para receber avisos"
-          name="emailFotografaAvisos"
+          name="emailUsuarioAvisos"
           type="email"
-          value={form.emailFotografaAvisos}
+          value={form.emailUsuarioAvisos}
           onChange={handleChange}
           placeholder="user@email.com"
         />

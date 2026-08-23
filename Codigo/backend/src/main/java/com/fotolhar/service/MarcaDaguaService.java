@@ -6,10 +6,10 @@ import com.fotolhar.dto.MarcaDaguaUpdateRequest;
 import com.fotolhar.enums.MarcaDaguaPosicao;
 import com.fotolhar.enums.MarcaDaguaTamanho;
 import com.fotolhar.model.ConfiguracaoEstudio;
-import com.fotolhar.model.Fotografa;
+import com.fotolhar.model.Usuario;
 import com.fotolhar.model.Foto;
 import com.fotolhar.repository.ConfiguracaoEstudioRepository;
-import com.fotolhar.repository.FotografaRepository;
+import com.fotolhar.repository.UsuarioRepository;
 import com.fotolhar.repository.FotoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -40,22 +40,22 @@ import java.io.ByteArrayOutputStream;
 public class MarcaDaguaService {
 
     private final CloudinaryService cloudinaryService;
-    private final FotografaRepository fotografaRepository;
+    private final UsuarioRepository usuarioRepository;
     private final ConfiguracaoEstudioRepository configuracaoEstudioRepository;
     private final FotoRepository fotoRepository;
 
     @Transactional(readOnly = true)
     public MarcaDaguaConfigDTO buscarMarcaDagua() {
-        Fotografa fotografa = getFotografaLogada();
-        ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
+        Usuario usuario = getUsuarioLogado();
+        ConfiguracaoEstudio estudio = getOuCriarEstudio(usuario);
 
         return toDTO(estudio);
     }
 
     @Transactional
     public MarcaDaguaConfigDTO atualizarMarcaDagua(MarcaDaguaUpdateRequest request) {
-        Fotografa fotografa = getFotografaLogada();
-        ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
+        Usuario usuario = getUsuarioLogado();
+        ConfiguracaoEstudio estudio = getOuCriarEstudio(usuario);
 
         if (request.getMarcaDaguaAtiva() != null) {
             estudio.setMarcaDaguaAtiva(request.getMarcaDaguaAtiva());
@@ -88,8 +88,8 @@ public class MarcaDaguaService {
     public MarcaDaguaConfigDTO uploadImagemMarcaDagua(MultipartFile arquivo) {
         validarImagem(arquivo);
 
-        Fotografa fotografa = getFotografaLogada();
-        ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
+        Usuario usuario = getUsuarioLogado();
+        ConfiguracaoEstudio estudio = getOuCriarEstudio(usuario);
 
         try {
             if (estudio.getMarcaDaguaPublicId() != null && !estudio.getMarcaDaguaPublicId().isBlank()) {
@@ -128,8 +128,8 @@ public class MarcaDaguaService {
 
     @Transactional
     public MarcaDaguaConfigDTO removerImagemMarcaDagua() {
-        Fotografa fotografa = getFotografaLogada();
-        ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
+        Usuario usuario = getUsuarioLogado();
+        ConfiguracaoEstudio estudio = getOuCriarEstudio(usuario);
 
         try {
             if (estudio.getMarcaDaguaPublicId() != null && !estudio.getMarcaDaguaPublicId().isBlank()) {
@@ -153,10 +153,10 @@ public class MarcaDaguaService {
 
     @Transactional
     public MarcaDaguaReprocessarResponse reprocessarFotosExistentes() {
-        Fotografa fotografa = getFotografaLogada();
-        ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
+        Usuario usuario = getUsuarioLogado();
+        ConfiguracaoEstudio estudio = getOuCriarEstudio(usuario);
 
-        List<Foto> fotos = fotoRepository.findByEnsaioClienteFotografaId(fotografa.getId());
+        List<Foto> fotos = fotoRepository.findByEnsaioClienteUsuarioId(usuario.getId());
 
         int total = 0;
 
@@ -180,8 +180,8 @@ public class MarcaDaguaService {
 
     @Transactional(readOnly = true)
     public String gerarUrlComMarcaDagua(String urlOriginal) {
-        Fotografa fotografa = getFotografaLogada();
-        ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
+        Usuario usuario = getUsuarioLogado();
+        ConfiguracaoEstudio estudio = getOuCriarEstudio(usuario);
 
         return gerarUrlComMarcaDagua(urlOriginal, estudio);
     }
@@ -309,29 +309,29 @@ public class MarcaDaguaService {
         };
     }
 
-    private Fotografa getFotografaLogada() {
+    private Usuario getUsuarioLogado() {
         String email = SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getName();
 
-        return fotografaRepository.findByEmail(email)
+        return usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED,
                         "Fotógrafa autenticada não encontrada"
                 ));
     }
 
-    private ConfiguracaoEstudio getOuCriarEstudio(Fotografa fotografa) {
-        return configuracaoEstudioRepository.findByFotografaId(fotografa.getId())
+    private ConfiguracaoEstudio getOuCriarEstudio(Usuario usuario) {
+        return configuracaoEstudioRepository.findByUsuarioId(usuario.getId())
                 .orElseGet(() -> configuracaoEstudioRepository.save(
                         ConfiguracaoEstudio.builder()
-                                .fotografa(fotografa)
+                                .usuario(usuario)
                                 .nomeEstudio("Seu Estúdio Fotográfico")
                                 .nomeComercial("Seu Estúdio")
-                                .email(fotografa.getEmail())
-                                .telefone(fotografa.getTelefone())
-                                .cnpj(fotografa.getCnpj())
-                                .logoUrl(fotografa.getLogoUrl())
+                                .email(usuario.getEmail())
+                                .telefone(usuario.getTelefone())
+                                .cnpj(usuario.getCnpj())
+                                .logoUrl(usuario.getLogoUrl())
                                 .marcaDaguaAtiva(false)
                                 .marcaDaguaPosicao(MarcaDaguaPosicao.INFERIOR_DIREITA)
                                 .marcaDaguaOpacidade(35)
@@ -389,8 +389,8 @@ public class MarcaDaguaService {
 
     @Transactional
 public MarcaDaguaConfigDTO gerarMarcaDaguaTexto(MarcaDaguaTextoRequest request) {
-    Fotografa fotografa = getFotografaLogada();
-    ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
+    Usuario usuario = getUsuarioLogado();
+    ConfiguracaoEstudio estudio = getOuCriarEstudio(usuario);
 
     String texto = request.getTexto() == null ? "" : request.getTexto().trim();
 

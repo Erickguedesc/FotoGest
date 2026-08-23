@@ -2,7 +2,7 @@ import { Building2, Download, FileText, Image, LockKeyhole, Mail, SlidersHorizon
 
 const tabs = [
   {
-    id: 'fotografa',
+    id: 'usuario',
     label: 'Seus Dados',
     description: 'Perfil, login e foto do painel',
     icon: User,

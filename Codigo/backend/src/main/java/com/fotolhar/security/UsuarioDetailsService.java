@@ -1,24 +1,24 @@
 package com.fotolhar.security;
 
-import com.fotolhar.repository.FotografaRepository;
+import com.fotolhar.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class FotografaDetailsService implements UserDetailsService {
+public class UsuarioDetailsService implements UserDetailsService {
 
-    private final FotografaRepository fotografaRepository;
+    private final UsuarioRepository usuarioRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return fotografaRepository.findByEmail(email)
+        return usuarioRepository.findByEmail(email)
                 .map(f -> User.builder()
                         .username(f.getEmail())
                         .password(f.getSenhaHash())
-                        .roles("FOTOGRAFA")
+                        .roles("USUARIO")
                         .build())
-                .orElseThrow(() -> new UsernameNotFoundException("Fotógrafa não encontrada: " + email));
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
     }
 }

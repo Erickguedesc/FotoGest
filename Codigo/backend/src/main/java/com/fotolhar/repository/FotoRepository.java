@@ -12,7 +12,7 @@ public interface FotoRepository extends JpaRepository<Foto, UUID> {
 
     List<Foto> findByEnsaioId(UUID ensaioId);
 
-    List<Foto> findByEnsaioClienteFotografaId(UUID fotografaId);
+    List<Foto> findByEnsaioClienteUsuarioId(UUID usuarioId);
 
     List<Foto> findByEnsaioIdOrderByOrdemAscEnviadaEmAsc(UUID ensaioId);
 

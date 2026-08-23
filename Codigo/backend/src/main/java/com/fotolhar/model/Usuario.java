@@ -6,13 +6,13 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "fotografa")
+@Table(name = "usuario")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Fotografa {
+public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

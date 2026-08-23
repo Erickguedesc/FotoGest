@@ -9,7 +9,7 @@ import java.util.UUID;
 @Entity
 @Table(
         name = "notificacao_dispensada",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"fotografa_id", "chave"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"usuario_id", "chave"})
 )
 @Getter
 @Setter
@@ -23,8 +23,8 @@ public class NotificacaoDispensada {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "fotografa_id", nullable = false)
-    private Fotografa fotografa;
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 
     @Column(nullable = false, length = 180)
     private String chave;

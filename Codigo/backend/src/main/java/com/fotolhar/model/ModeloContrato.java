@@ -20,8 +20,8 @@ public class ModeloContrato {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "fotografa_id", nullable = false)
-    private Fotografa fotografa;
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 
     @Column(nullable = false, length = 140)
     private String nome;

@@ -73,8 +73,8 @@ export default function OnboardingPage() {
   const [themeSaved, setThemeSaved] = useState(false)
 
   const [perfil, setPerfil] = useState({
-    nome: localStorage.getItem('fotografaNome') || '',
-    email: localStorage.getItem('fotografaEmail') || '',
+    nome: localStorage.getItem('usuarioNome') || '',
+    email: localStorage.getItem('usuarioEmail') || '',
     telefone: '',
     cidade: '',
     fotoPerfilUrl: '',
@@ -83,7 +83,7 @@ export default function OnboardingPage() {
   const [marca, setMarca] = useState({
     nomeEstudio: '',
     nomeComercial: '',
-    email: localStorage.getItem('fotografaEmail') || '',
+    email: localStorage.getItem('usuarioEmail') || '',
     telefone: '',
     instagram: '',
     cidade: '',
@@ -110,11 +110,11 @@ export default function OnboardingPage() {
 
         setPerfil((current) => ({
           ...current,
-          nome: fieldValue(data?.fotografa?.nome, current.nome),
-          email: fieldValue(data?.fotografa?.email, current.email),
-          telefone: fieldValue(data?.fotografa?.telefone, current.telefone),
-          cidade: fieldValue(data?.fotografa?.cidade, current.cidade),
-          fotoPerfilUrl: fieldValue(data?.fotografa?.fotoPerfilUrl, current.fotoPerfilUrl),
+          nome: fieldValue(data?.usuario?.nome, current.nome),
+          email: fieldValue(data?.usuario?.email, current.email),
+          telefone: fieldValue(data?.usuario?.telefone, current.telefone),
+          cidade: fieldValue(data?.usuario?.cidade, current.cidade),
+          fotoPerfilUrl: fieldValue(data?.usuario?.fotoPerfilUrl, current.fotoPerfilUrl),
         }))
 
         setMarca((current) => ({
@@ -199,17 +199,17 @@ export default function OnboardingPage() {
     }
 
     await runSave(async () => {
-      let data = await configuracoesService.atualizarFotografa(perfil)
+      let data = await configuracoesService.atualizarUsuario(perfil)
 
       if (fotoPerfilFile) {
         data = await configuracoesService.uploadFotoPerfil(fotoPerfilFile)
         setFotoPerfilFile(null)
       }
 
-      localStorage.setItem('fotografaNome', data?.nome || perfil.nome)
-      localStorage.setItem('fotografaEmail', data?.email || perfil.email)
-      window.dispatchEvent(new CustomEvent('fotolhar:fotografa-atualizada', { detail: data }))
-      remember('Perfil da fotografa')
+      localStorage.setItem('usuarioNome', data?.nome || perfil.nome)
+      localStorage.setItem('usuarioEmail', data?.email || perfil.email)
+      window.dispatchEvent(new CustomEvent('fotolhar:usuario-atualizado', { detail: data }))
+      remember('Perfil do usuário')
       nextStep()
     })
   }
@@ -234,7 +234,7 @@ export default function OnboardingPage() {
       await configuracoesService.atualizarEmail({
         ativo: Boolean(marca.email),
         nomeRemetente: marca.nomeComercial || marca.nomeEstudio || perfil.nome,
-        emailFotografaAvisos: marca.email || perfil.email,
+        emailUsuarioAvisos: marca.email || perfil.email,
         enviarAlbumPublicado: true,
         avisarSelecaoRecebida: true,
         enviarConfirmacaoSelecaoCliente: true,

@@ -11,7 +11,7 @@ const emptyForm = {
   fotoPerfilUrl: '',
 }
 
-export default function DadosFotografaForm({
+export default function DadosUsuarioForm({
   data,
   loading,
   uploadLoading,
@@ -68,7 +68,7 @@ export default function DadosFotografaForm({
           {form.fotoPerfilUrl ? (
             <img
               src={form.fotoPerfilUrl}
-              alt="Foto da fotógrafa"
+              alt="Foto do usuário"
               className="h-full w-full object-cover"
             />
           ) : (

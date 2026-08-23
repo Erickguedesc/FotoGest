@@ -58,7 +58,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/album/*/selecao").permitAll()
                 .requestMatchers(HttpMethod.GET, "/album/*/selecao").permitAll()
 
-                // Álbum administrativo da fotógrafa
+                // Álbum administrativo do usuário
                 .requestMatchers(HttpMethod.POST, "/album/gerar/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/album/ensaio/**").authenticated()
                 .requestMatchers(HttpMethod.PATCH, "/album/reabrir/**").authenticated()

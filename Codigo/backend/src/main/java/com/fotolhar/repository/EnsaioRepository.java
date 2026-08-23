@@ -19,12 +19,12 @@ public interface EnsaioRepository extends JpaRepository<Ensaio, UUID>,
             StatusEnsaio status
     );
 
-    Optional<Ensaio> findByIdAndClienteFotografaId(UUID id, UUID fotografaId);
+    Optional<Ensaio> findByIdAndClienteUsuarioId(UUID id, UUID usuarioId);
 
-    List<Ensaio> findByClienteFotografaId(UUID fotografaId);
+    List<Ensaio> findByClienteUsuarioId(UUID usuarioId);
 
-    List<Ensaio> findByClienteFotografaIdAndDataEnsaioBetweenAndStatusNotOrderByDataEnsaioAsc(
-            UUID fotografaId,
+    List<Ensaio> findByClienteUsuarioIdAndDataEnsaioBetweenAndStatusNotOrderByDataEnsaioAsc(
+            UUID usuarioId,
             OffsetDateTime inicio,
             OffsetDateTime fim,
             StatusEnsaio status

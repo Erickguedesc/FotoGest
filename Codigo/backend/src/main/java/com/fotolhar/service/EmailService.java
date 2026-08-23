@@ -89,7 +89,7 @@ public class EmailService {
             return;
         }
 
-        String destino = config.getEmailFotografaAvisos();
+        String destino = config.getEmailUsuarioAvisos();
 
         if (isBlank(destino)) {
             return;
@@ -155,7 +155,7 @@ public class EmailService {
                     "Confirmacao de selecao finalizada",
                     corpo,
                     nomeRemetente,
-                    config.getEmailFotografaAvisos(),
+                    config.getEmailUsuarioAvisos(),
                     "resumo-da-selecao.pdf",
                     pdf
             );
@@ -251,7 +251,7 @@ public class EmailService {
             );
         }
 
-        String destino = config.getEmailFotografaAvisos();
+        String destino = config.getEmailUsuarioAvisos();
 
         if (isBlank(destino)) {
             throw new ResponseStatusException(
@@ -272,13 +272,13 @@ public class EmailService {
     private ConfiguracaoEmail buscarConfiguracao(Ensaio ensaio) {
         if (ensaio != null
                 && ensaio.getCliente() != null
-                && ensaio.getCliente().getFotografa() != null) {
+                && ensaio.getCliente().getUsuario() != null) {
             return configuracaoEmailRepository
-                    .findByFotografaId(ensaio.getCliente().getFotografa().getId())
+                    .findByUsuarioId(ensaio.getCliente().getUsuario().getId())
                     .orElse(null);
         }
 
-        return buscarConfiguracaoFotografaLogada().orElse(null);
+        return buscarConfiguracaoUsuarioLogada().orElse(null);
     }
 
     private boolean envioHabilitado(ConfiguracaoEmail config) {
@@ -291,7 +291,7 @@ public class EmailService {
                 assunto,
                 corpo,
                 valorOuPadrao(config.getNomeRemetente(), "Seu Estudio Fotografico"),
-                config.getEmailFotografaAvisos()
+                config.getEmailUsuarioAvisos()
         );
     }
 
@@ -301,11 +301,11 @@ public class EmailService {
                 assunto,
                 corpo,
                 valorOuPadrao(config.getNomeRemetente(), "Seu Estudio Fotografico"),
-                config.getEmailFotografaAvisos()
+                config.getEmailUsuarioAvisos()
         );
     }
 
-    private Optional<ConfiguracaoEmail> buscarConfiguracaoFotografaLogada() {
+    private Optional<ConfiguracaoEmail> buscarConfiguracaoUsuarioLogada() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -320,8 +320,8 @@ public class EmailService {
 
         return configuracaoEmailRepository.findAll()
                 .stream()
-                .filter(config -> config.getFotografa() != null
-                        && email.equalsIgnoreCase(config.getFotografa().getEmail()))
+                .filter(config -> config.getUsuario() != null
+                        && email.equalsIgnoreCase(config.getUsuario().getEmail()))
                 .findFirst();
     }
 

@@ -13,7 +13,7 @@ public class EmailConfigDTO {
     private UUID id;
     private Boolean ativo;
     private String nomeRemetente;
-    private String emailFotografaAvisos;
+    private String emailUsuarioAvisos;
     private Boolean enviarAlbumPublicado;
     private Boolean avisarSelecaoRecebida;
     private Boolean enviarConfirmacaoSelecaoCliente;

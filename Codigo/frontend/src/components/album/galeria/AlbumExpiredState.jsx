@@ -12,7 +12,7 @@ export default function AlbumExpiredState() {
 
         <p className="mt-6 text-sm leading-8 text-white/60">
           O prazo de acesso deste álbum foi encerrado. Entre em contato com a
-          fotógrafa para solicitar uma nova liberação.
+          pessoa responsável para solicitar uma nova liberação.
         </p>
       </div>
     </main>

@@ -6,8 +6,8 @@ const api = axios.create({
 
 function clearAuthData() {
   localStorage.removeItem('token')
-  localStorage.removeItem('fotografaNome')
-  localStorage.removeItem('fotografaEmail')
+  localStorage.removeItem('usuarioNome')
+  localStorage.removeItem('usuarioEmail')
 }
 
 function getRequestPath(config = {}) {

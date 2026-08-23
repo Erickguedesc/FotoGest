@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface ConfiguracaoEmailRepository extends JpaRepository<ConfiguracaoEmail, UUID> {
 
-    Optional<ConfiguracaoEmail> findByFotografaId(UUID fotografaId);
+    Optional<ConfiguracaoEmail> findByUsuarioId(UUID usuarioId);
 }

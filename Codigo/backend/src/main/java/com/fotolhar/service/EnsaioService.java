@@ -11,7 +11,7 @@ import com.fotolhar.model.Cliente;
 import com.fotolhar.model.Ensaio;
 import com.fotolhar.model.Foto;
 import com.fotolhar.model.Album;
-import com.fotolhar.model.Fotografa;
+import com.fotolhar.model.Usuario;
 import com.fotolhar.repository.AlbumRepository;
 import com.fotolhar.repository.ClienteRepository;
 import com.fotolhar.repository.EnsaioRepository;
@@ -48,16 +48,16 @@ public class EnsaioService {
     private final SelecaoFotoRepository selecaoFotoRepository;
     private final PreferenciasSistemaRepository preferenciasSistemaRepository;
     private final EmailService emailService;
-    private final FotografaContextService fotografaContextService;
+    private final UsuarioContextService usuarioContextService;
 
     
     
 
     @Transactional
     public EnsaioResponse criar(EnsaioRequest request) {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
         Cliente cliente = buscarCliente(request.getClienteId());
-        validarClienteDaFotografa(cliente, fotografa);
+        validarClienteDaUsuario(cliente, usuario);
         atualizarDadosCliente(cliente, request);
         cliente.setAtivo(true);
         
@@ -112,9 +112,9 @@ public List<EnsaioResponse> listar(
         OffsetDateTime dataFim,
         String clienteNome
 ) {
-    Fotografa fotografa = fotografaContextService.getFotografaLogada();
+    Usuario usuario = usuarioContextService.getUsuarioLogado();
     return ensaioRepository.findAll(
-            EnsaioSpecification.filtrar(fotografa.getId(), status, tipo, dataInicio, dataFim, clienteNome))
+            EnsaioSpecification.filtrar(usuario.getId(), status, tipo, dataInicio, dataFim, clienteNome))
             .stream()
             .map(this::toResponse)
             .collect(Collectors.toList());
@@ -135,11 +135,11 @@ public List<EnsaioResponse> listar(
 
         OffsetDateTime inicio = dataEnsaio.minusMinutes(90);
         OffsetDateTime fim = dataEnsaio.plusMinutes(90);
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
 
         return ensaioRepository
-                .findByClienteFotografaIdAndDataEnsaioBetweenAndStatusNotOrderByDataEnsaioAsc(
-                        fotografa.getId(),
+                .findByClienteUsuarioIdAndDataEnsaioBetweenAndStatusNotOrderByDataEnsaioAsc(
+                        usuario.getId(),
                         inicio,
                         fim,
                         StatusEnsaio.CANCELADO
@@ -157,10 +157,10 @@ public List<EnsaioResponse> listar(
 
     @Transactional
     public EnsaioResponse atualizar(UUID id, EnsaioRequest request) {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
         Ensaio ensaio = buscarEnsaio(id);
         Cliente cliente = buscarCliente(request.getClienteId());
-        validarClienteDaFotografa(cliente, fotografa);
+        validarClienteDaUsuario(cliente, usuario);
         atualizarDadosCliente(cliente, request);
 
         ensaio.setCliente(cliente);
@@ -256,9 +256,9 @@ public void deletar(UUID id) {
             );
         }
 
-        Album album = albumRepository.findByEnsaioIdAndEnsaioClienteFotografaId(
+        Album album = albumRepository.findByEnsaioIdAndEnsaioClienteUsuarioId(
                         id,
-                        ensaio.getCliente().getFotografa().getId()
+                        ensaio.getCliente().getUsuario().getId()
                 )
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -282,21 +282,21 @@ public void deletar(UUID id) {
     }
 
     private Ensaio buscarEnsaio(UUID id) {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
 
-        return ensaioRepository.findByIdAndClienteFotografaId(id, fotografa.getId())
+        return ensaioRepository.findByIdAndClienteUsuarioId(id, usuario.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Ensaio não encontrado com id: " + id));
     }
 
     private Cliente buscarCliente(UUID clienteId) {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
 
-        return clienteRepository.findByIdAndFotografaId(clienteId, fotografa.getId())
+        return clienteRepository.findByIdAndUsuarioId(clienteId, usuario.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado com id: " + clienteId));
     }
 
-    private void validarClienteDaFotografa(Cliente cliente, Fotografa fotografa) {
-        if (cliente.getFotografa() == null || !cliente.getFotografa().getId().equals(fotografa.getId())) {
+    private void validarClienteDaUsuario(Cliente cliente, Usuario usuario) {
+        if (cliente.getUsuario() == null || !cliente.getUsuario().getId().equals(usuario.getId())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado com id: " + cliente.getId());
         }
     }
@@ -471,9 +471,9 @@ private String buscarCapaUrl(UUID ensaioId) {
 }
 
 private String buscarCapaAlbumPadrao() {
-    Fotografa fotografa = fotografaContextService.getFotografaLogada();
+    Usuario usuario = usuarioContextService.getUsuarioLogado();
 
-    return preferenciasSistemaRepository.findByFotografaId(fotografa.getId())
+    return preferenciasSistemaRepository.findByUsuarioId(usuario.getId())
             .map(preferencias -> preferencias.getCapaAlbumPadraoUrl())
             .orElse(null);
 }

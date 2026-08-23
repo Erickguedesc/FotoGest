@@ -31,9 +31,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import com.fotolhar.model.ConfiguracaoEstudio;
-import com.fotolhar.model.Fotografa;
+import com.fotolhar.model.Usuario;
 import com.fotolhar.repository.ConfiguracaoEstudioRepository;
-import com.fotolhar.repository.FotografaRepository;
+import com.fotolhar.repository.UsuarioRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 
@@ -46,26 +46,26 @@ public class EnsaioPdfService {
     private static final Color MUTED_TEXT = new Color(110, 110, 110);
 
    private final EnsaioRepository ensaioRepository;
-private final FotografaRepository fotografaRepository;
+private final UsuarioRepository usuarioRepository;
 private final ConfiguracaoEstudioRepository configuracaoEstudioRepository;
-private final FotografaContextService fotografaContextService;
+private final UsuarioContextService usuarioContextService;
 
 public EnsaioPdfService(
         EnsaioRepository ensaioRepository,
-        FotografaRepository fotografaRepository,
+        UsuarioRepository usuarioRepository,
         ConfiguracaoEstudioRepository configuracaoEstudioRepository,
-        FotografaContextService fotografaContextService
+        UsuarioContextService usuarioContextService
 ) {
     this.ensaioRepository = ensaioRepository;
-    this.fotografaRepository = fotografaRepository;
+    this.usuarioRepository = usuarioRepository;
     this.configuracaoEstudioRepository = configuracaoEstudioRepository;
-    this.fotografaContextService = fotografaContextService;
+    this.usuarioContextService = usuarioContextService;
 }
 
     @Transactional
     public byte[] gerarPdf(UUID id) {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
-        Ensaio ensaio = ensaioRepository.findByIdAndClienteFotografaId(id, fotografa.getId())
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
+        Ensaio ensaio = ensaioRepository.findByIdAndClienteUsuarioId(id, usuario.getId())
                 .orElseThrow(() -> new RuntimeException("Ensaio não encontrado"));
 
         try {
@@ -365,14 +365,14 @@ private void adicionarRodape(Document document, ConfiguracaoEstudio estudio) thr
                 .getAuthentication()
                 .getName();
 
-        Fotografa fotografa = fotografaRepository.findByEmail(email)
+        Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElse(null);
 
-        if (fotografa == null) {
+        if (usuario == null) {
             return null;
         }
 
-        return configuracaoEstudioRepository.findByFotografaId(fotografa.getId())
+        return configuracaoEstudioRepository.findByUsuarioId(usuario.getId())
                 .orElse(null);
     } catch (Exception e) {
         return null;

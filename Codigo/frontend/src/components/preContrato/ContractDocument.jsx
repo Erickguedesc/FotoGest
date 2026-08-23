@@ -18,6 +18,11 @@ const PenIcon = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none
 export default function ContractDocument({ draft, onChange }) {
   const set = (field) => (value) => onChange({ ...draft, [field]: value })
   const setFinancial = (field) => (value) => onChange(recalculateFinancialDraft({ ...draft, [field]: value }, field))
+  const profissionalNome = draft.profissionalNome || ''
+  const profissionalEmail = draft.profissionalEmail || ''
+  const profissionalTelefone = draft.profissionalTelefone || ''
+  const profissionalCidade = draft.profissionalCidade || ''
+  const profissionalDocumento = draft.profissionalDocumento || ''
   const clauses = Array.isArray(draft.clausulasContrato) && draft.clausulasContrato.length
     ? draft.clausulasContrato
     : DEFAULT_CONTRACT_CLAUSES
@@ -30,14 +35,14 @@ export default function ContractDocument({ draft, onChange }) {
           <div className="precontrato-logo-row">
             <FotolharIcon />
             <span className="precontrato-logo-text">
-              <EditableField value={draft.fotografaNome} onChange={set('fotografaNome')} />
+              <EditableField value={profissionalNome} onChange={set('profissionalNome')} />
             </span>
           </div>
           <div className="precontrato-brand-sub">Fotografia Profissional</div>
           <div className="precontrato-brand-contact">
-            <EditableField value={draft.fotografaNome} onChange={set('fotografaNome')} /><br />
-            <span><EditableField value={draft.fotografaEmail} onChange={set('fotografaEmail')} /></span> - <span><EditableField value={draft.fotografaTelefone} onChange={set('fotografaTelefone')} /></span><br />
-            <EditableField value={draft.fotografaCidade} onChange={set('fotografaCidade')} />
+            <EditableField value={profissionalNome} onChange={set('profissionalNome')} /><br />
+            <span><EditableField value={profissionalEmail} onChange={set('profissionalEmail')} /></span> - <span><EditableField value={profissionalTelefone} onChange={set('profissionalTelefone')} /></span><br />
+            <EditableField value={profissionalCidade} onChange={set('profissionalCidade')} />
           </div>
         </div>
 
@@ -171,8 +176,8 @@ export default function ContractDocument({ draft, onChange }) {
             <div className="precontrato-sign-box">
               <div className="precontrato-data-key">Contratada(o) - Profissional</div>
               <div className="precontrato-sign-line" />
-              <div className="precontrato-sign-name"><EditableField value={draft.fotografaNome} onChange={set('fotografaNome')} /></div>
-              <div className="precontrato-sign-role">Profissional de fotografia - <EditableField value={draft.fotografaDocumento} onChange={set('fotografaDocumento')} /></div>
+              <div className="precontrato-sign-name"><EditableField value={profissionalNome} onChange={set('profissionalNome')} /></div>
+              <div className="precontrato-sign-role">Profissional de fotografia - <EditableField value={profissionalDocumento} onChange={set('profissionalDocumento')} /></div>
             </div>
             <div className="precontrato-sign-box">
               <div className="precontrato-data-key">Contratante - Cliente</div>
@@ -189,8 +194,8 @@ export default function ContractDocument({ draft, onChange }) {
 
       <footer className="precontrato-footer">
         <div>
-          {draft.fotografaNome} - {draft.fotografaEmail}<br />
-          {draft.fotografaCidade}, Brasil
+          {profissionalNome} - {profissionalEmail}<br />
+          {profissionalCidade}, Brasil
         </div>
         <div>
           Documento {draft.numeroDocumento} - Gerado em {draft.dataEmissaoCurta}<br />

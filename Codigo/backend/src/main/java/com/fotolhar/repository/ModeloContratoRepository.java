@@ -8,11 +8,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ModeloContratoRepository extends JpaRepository<ModeloContrato, UUID> {
-    List<ModeloContrato> findByFotografaIdOrderByPadraoDescAtualizadoEmDesc(UUID fotografaId);
+    List<ModeloContrato> findByUsuarioIdOrderByPadraoDescAtualizadoEmDesc(UUID usuarioId);
 
-    List<ModeloContrato> findByFotografaIdAndAtivoTrueOrderByPadraoDescAtualizadoEmDesc(UUID fotografaId);
+    List<ModeloContrato> findByUsuarioIdAndAtivoTrueOrderByPadraoDescAtualizadoEmDesc(UUID usuarioId);
 
-    Optional<ModeloContrato> findByIdAndFotografaId(UUID id, UUID fotografaId);
+    Optional<ModeloContrato> findByIdAndUsuarioId(UUID id, UUID usuarioId);
 
-    boolean existsByFotografaId(UUID fotografaId);
+    boolean existsByUsuarioId(UUID usuarioId);
 }

@@ -94,7 +94,7 @@ export default function SelectionSummary({
               </>
             ) : (
               <>
-                O valor adicional será combinado diretamente com a fotógrafa.
+                O valor adicional será combinado diretamente com o profissional.
               </>
             )}
           </p>

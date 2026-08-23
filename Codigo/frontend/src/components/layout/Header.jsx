@@ -90,7 +90,7 @@ export default function Header() {
   const menuRef = useRef(null)
 
   const [menuOpen, setMenuOpen] = useState(false)
-  const [fotografa, setFotografa] = useState(null)
+  const [usuario, setUsuario] = useState(null)
   const [theme, setTheme] = useState(() => localStorage.getItem('fotolhar-theme') || 'dark')
 
   useEffect(() => {
@@ -102,35 +102,35 @@ export default function Header() {
   useEffect(() => {
     let isMounted = true
 
-    async function carregarFotografa() {
+    async function carregarUsuario() {
       try {
         const data = await configuracoesService.buscar()
         if (isMounted) {
-          setFotografa(data?.fotografa || null)
+          setUsuario(data?.usuario || null)
         }
       } catch {
         if (isMounted) {
-          setFotografa(null)
+          setUsuario(null)
         }
       }
     }
 
-    function handleFotografaAtualizada(event) {
+    function handleUsuarioAtualizado(event) {
       if (event.detail) {
-        setFotografa(event.detail)
+        setUsuario(event.detail)
         return
       }
 
-      carregarFotografa()
+      carregarUsuario()
     }
 
-    carregarFotografa()
+    carregarUsuario()
 
-    window.addEventListener('fotolhar:fotografa-atualizada', handleFotografaAtualizada)
+    window.addEventListener('fotolhar:usuario-atualizado', handleUsuarioAtualizado)
 
     return () => {
       isMounted = false
-      window.removeEventListener('fotolhar:fotografa-atualizada', handleFotografaAtualizada)
+      window.removeEventListener('fotolhar:usuario-atualizado', handleUsuarioAtualizado)
     }
   }, [])
 
@@ -148,7 +148,7 @@ export default function Header() {
     }
   }, [])
 
-  const initials = useMemo(() => getInitials(fotografa?.nome), [fotografa])
+  const initials = useMemo(() => getInitials(usuario?.nome), [usuario])
 
   const isActive = (to) =>
     to === '/ensaios'
@@ -159,16 +159,16 @@ export default function Header() {
 
   const handleLogout = () => {
     const currentTheme = localStorage.getItem('fotolhar-theme')
-    const fotografaEmail = fotografa?.email || localStorage.getItem('fotografaEmail') || ''
-    const loginDisplayName = fotografa?.nome || localStorage.getItem('fotografaNome')
+    const usuarioEmail = usuario?.email || localStorage.getItem('usuarioEmail') || ''
+    const loginDisplayName = usuario?.nome || localStorage.getItem('usuarioNome')
     const onboardingEntries = getPreservedOnboardingEntries()
 
     localStorage.clear()
 
     if (currentTheme) localStorage.setItem('fotolhar-theme', currentTheme)
     onboardingEntries.forEach(([key, value]) => localStorage.setItem(key, value))
-    if (fotografaEmail && loginDisplayName && !isGenericLoginDisplayName(loginDisplayName)) {
-      localStorage.setItem(`${LOGIN_DISPLAY_NAME_KEY}:${fotografaEmail.trim().toLowerCase()}`, loginDisplayName)
+    if (usuarioEmail && loginDisplayName && !isGenericLoginDisplayName(loginDisplayName)) {
+      localStorage.setItem(`${LOGIN_DISPLAY_NAME_KEY}:${usuarioEmail.trim().toLowerCase()}`, loginDisplayName)
     }
 
     setMenuOpen(false)
@@ -250,10 +250,10 @@ export default function Header() {
           title="Seus Dados"
           className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[11px] font-medium text-[var(--gold)] transition hover:bg-[var(--gold-dim)]/80"
         >
-          {fotografa?.fotoPerfilUrl ? (
+          {usuario?.fotoPerfilUrl ? (
             <img
-              src={fotografa.fotoPerfilUrl}
-              alt={fotografa?.nome || 'Fotógrafa'}
+              src={usuario.fotoPerfilUrl}
+              alt={usuario?.nome || 'Fotógrafa'}
               className="h-full w-full object-cover"
             />
           ) : (
@@ -270,10 +270,10 @@ export default function Header() {
 
               <div className="flex min-w-0 items-center gap-3">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--gold-border)] bg-[var(--gold-dim)] font-serif text-[15px] text-[var(--gold)]">
-                  {fotografa?.fotoPerfilUrl ? (
+                  {usuario?.fotoPerfilUrl ? (
                     <img
-                      src={fotografa.fotoPerfilUrl}
-                      alt={fotografa?.nome || 'FotÃ³grafa'}
+                      src={usuario.fotoPerfilUrl}
+                      alt={usuario?.nome || 'FotÃ³grafa'}
                       className="h-full w-full object-cover"
                     />
                   ) : (
@@ -283,11 +283,11 @@ export default function Header() {
 
                 <div className="min-w-0">
               <p className="theme-title truncate text-sm font-semibold">
-                {fotografa?.nome || 'Fotógrafa'}
+                {usuario?.nome || 'Fotógrafa'}
               </p>
 
               <p className="theme-muted mt-0.5 truncate text-xs">
-                {fotografa?.email || 'Conta administrativa'}
+                {usuario?.email || 'Conta administrativa'}
               </p>
                 </div>
               </div>

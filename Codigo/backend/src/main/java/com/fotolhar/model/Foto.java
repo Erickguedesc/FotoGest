@@ -27,7 +27,7 @@ public class Foto {
     @Column(name = "cloudinary_id", nullable = false, unique = true, length = 300)
     private String cloudinaryId;
 
-    /** Nome original do arquivo enviado pela fotógrafa */
+    /** Nome original do arquivo enviado pelo usuário */
     @Column(name = "nome_original", length = 255)
     private String nomeOriginal;
 

@@ -3,9 +3,9 @@ package com.fotolhar.service;
 import com.fotolhar.dto.AuthRequest;
 import com.fotolhar.dto.AuthResponse;
 import com.fotolhar.model.ConfiguracaoEstudio;
-import com.fotolhar.model.Fotografa;
+import com.fotolhar.model.Usuario;
 import com.fotolhar.repository.ConfiguracaoEstudioRepository;
-import com.fotolhar.repository.FotografaRepository;
+import com.fotolhar.repository.UsuarioRepository;
 import com.fotolhar.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,43 +17,43 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final FotografaRepository fotografaRepository;
+    private final UsuarioRepository usuarioRepository;
     private final ConfiguracaoEstudioRepository configuracaoEstudioRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
     public AuthResponse login(AuthRequest request) {
-        Fotografa fotografa = fotografaRepository.findByEmail(request.getEmail())
+        Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED, "Email ou senha inválidos"));
 
-        if (!passwordEncoder.matches(request.getSenha(), fotografa.getSenhaHash())) {
+        if (!passwordEncoder.matches(request.getSenha(), usuario.getSenhaHash())) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED, "Email ou senha inválidos");
         }
 
-        if (!fotografa.getAtivo()) {
+        if (!usuario.getAtivo()) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN, "Conta desativada");
         }
 
-        String token = jwtUtil.gerarToken(fotografa.getEmail());
+        String token = jwtUtil.gerarToken(usuario.getEmail());
         ConfiguracaoEstudio estudio = configuracaoEstudioRepository
-                .findByFotografaId(fotografa.getId())
+                .findByUsuarioId(usuario.getId())
                 .orElse(null);
 
         String nomeEstudio = estudio != null ? estudio.getNomeEstudio() : null;
         String nomeComercial = estudio != null ? estudio.getNomeComercial() : null;
-        String nomeExibicao = primeiroPreenchido(nomeComercial, nomeEstudio, fotografa.getNome());
+        String nomeExibicao = primeiroPreenchido(nomeComercial, nomeEstudio, usuario.getNome());
 
         return new AuthResponse(
                 token,
-                fotografa.getNome(),
-                fotografa.getEmail(),
+                usuario.getNome(),
+                usuario.getEmail(),
                 nomeExibicao,
                 nomeEstudio,
                 nomeComercial,
-                Boolean.TRUE.equals(fotografa.getOnboardingConcluido())
+                Boolean.TRUE.equals(usuario.getOnboardingConcluido())
         );
     }
 

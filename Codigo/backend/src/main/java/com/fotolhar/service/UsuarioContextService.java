@@ -1,7 +1,7 @@
 package com.fotolhar.service;
 
-import com.fotolhar.model.Fotografa;
-import com.fotolhar.repository.FotografaRepository;
+import com.fotolhar.model.Usuario;
+import com.fotolhar.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -11,11 +11,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
-public class FotografaContextService {
+public class UsuarioContextService {
 
-    private final FotografaRepository fotografaRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public Fotografa getFotografaLogada() {
+    public Usuario getUsuarioLogado() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -28,10 +28,10 @@ public class FotografaContextService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sessao nao autenticada");
         }
 
-        return fotografaRepository.findByEmail(email)
+        return usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED,
-                        "Fotografa autenticada nao encontrada"
+                        "Usuario autenticado nao encontrada"
                 ));
     }
 }

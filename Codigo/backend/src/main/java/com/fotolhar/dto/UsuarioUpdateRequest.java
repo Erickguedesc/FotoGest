@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FotografaUpdateRequest {
+public class UsuarioUpdateRequest {
 
     @NotBlank(message = "Nome é obrigatório")
     private String nome;

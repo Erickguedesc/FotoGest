@@ -6,7 +6,7 @@ import com.fotolhar.enums.SituacaoCliente;
 import com.fotolhar.enums.StatusEnsaio;
 import com.fotolhar.model.Cliente;
 import com.fotolhar.model.Ensaio;
-import com.fotolhar.model.Fotografa;
+import com.fotolhar.model.Usuario;
 import com.fotolhar.repository.ClienteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,11 +22,11 @@ import java.util.UUID;
 public class ClienteService {
 
     private final ClienteRepository repository;
-    private final FotografaContextService fotografaContextService;
+    private final UsuarioContextService usuarioContextService;
 
     @Transactional
     public ClienteResponse criar(ClienteRequest request) {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
         String nome = normalizarTexto(request.getNome());
         String email = normalizarEmail(request.getEmail());
         String telefone = normalizarTelefone(request.getTelefone());
@@ -36,16 +36,16 @@ public class ClienteService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe o nome completo do cliente");
         }
 
-        if (email != null && repository.existsByFotografaIdAndEmail(fotografa.getId(), email)) {
+        if (email != null && repository.existsByUsuarioIdAndEmail(usuario.getId(), email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail ja cadastrado para outro cliente");
         }
 
-        if (cpf != null && repository.existsByFotografaIdAndCpf(fotografa.getId(), cpf)) {
+        if (cpf != null && repository.existsByUsuarioIdAndCpf(usuario.getId(), cpf)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF ja cadastrado para outro cliente");
         }
 
         Cliente cliente = Cliente.builder()
-                .fotografa(fotografa)
+                .usuario(usuario)
                 .nome(nome)
                 .email(email)
                 .telefone(telefone)
@@ -74,11 +74,11 @@ public class ClienteService {
 
     @Transactional(readOnly = true)
     public List<ClienteResponse> listar(String busca) {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
         String termo = normalizarTexto(busca);
         List<Cliente> clientes = termo == null
-                ? repository.findByFotografaIdOrderByNomeAsc(fotografa.getId())
-                : repository.buscarPorTermo(fotografa.getId(), termo, somenteDigitos(termo));
+                ? repository.findByUsuarioIdOrderByNomeAsc(usuario.getId())
+                : repository.buscarPorTermo(usuario.getId(), termo, somenteDigitos(termo));
 
         return clientes.stream()
                 .map(this::toResponse)
@@ -92,7 +92,7 @@ public class ClienteService {
 
     @Transactional
     public ClienteResponse atualizar(UUID id, ClienteRequest request) {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
         Cliente cliente = buscarCliente(id);
         String nome = normalizarTexto(request.getNome());
         String email = normalizarEmail(request.getEmail());
@@ -104,7 +104,7 @@ public class ClienteService {
         }
 
         if (email != null) {
-            repository.findByFotografaIdAndEmail(fotografa.getId(), email).ifPresent(existente -> {
+            repository.findByUsuarioIdAndEmail(usuario.getId(), email).ifPresent(existente -> {
                 if (!existente.getId().equals(id)) {
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail ja cadastrado em outro cliente");
                 }
@@ -112,7 +112,7 @@ public class ClienteService {
         }
 
         if (cpf != null) {
-            repository.findByFotografaIdAndCpf(fotografa.getId(), cpf).ifPresent(existente -> {
+            repository.findByUsuarioIdAndCpf(usuario.getId(), cpf).ifPresent(existente -> {
                 if (!existente.getId().equals(id)) {
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF ja cadastrado em outro cliente");
                 }
@@ -144,9 +144,9 @@ public class ClienteService {
     }
 
     private Cliente buscarCliente(UUID id) {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
 
-        return repository.findByIdAndFotografaId(id, fotografa.getId())
+        return repository.findByIdAndUsuarioId(id, usuario.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente nao encontrado"));
     }
 

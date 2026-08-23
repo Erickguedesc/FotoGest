@@ -46,7 +46,7 @@ END $$;
 --   TABELAS
 ------------------------------------
 
-CREATE TABLE IF NOT EXISTS fotografa (
+CREATE TABLE IF NOT EXISTS usuario (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   nome VARCHAR(200) NOT NULL,
   email VARCHAR(200) NOT NULL UNIQUE,
@@ -61,20 +61,20 @@ CREATE TABLE IF NOT EXISTS fotografa (
   atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-ALTER TABLE fotografa ADD COLUMN IF NOT EXISTS onboarding_concluido BOOLEAN;
-UPDATE fotografa
+ALTER TABLE usuario ADD COLUMN IF NOT EXISTS onboarding_concluido BOOLEAN;
+UPDATE usuario
 SET onboarding_concluido = true
 WHERE onboarding_concluido IS NULL;
-ALTER TABLE fotografa ALTER COLUMN onboarding_concluido SET DEFAULT false;
-ALTER TABLE fotografa ALTER COLUMN onboarding_concluido SET NOT NULL;
-ALTER TABLE fotografa ADD COLUMN IF NOT EXISTS onboarding_concluido_em TIMESTAMPTZ;
-UPDATE fotografa
+ALTER TABLE usuario ALTER COLUMN onboarding_concluido SET DEFAULT false;
+ALTER TABLE usuario ALTER COLUMN onboarding_concluido SET NOT NULL;
+ALTER TABLE usuario ADD COLUMN IF NOT EXISTS onboarding_concluido_em TIMESTAMPTZ;
+UPDATE usuario
 SET onboarding_concluido_em = COALESCE(onboarding_concluido_em, atualizado_em, NOW())
 WHERE onboarding_concluido = true;
 
 CREATE TABLE IF NOT EXISTS cliente (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  fotografa_id UUID NOT NULL REFERENCES fotografa(id) ON DELETE CASCADE,
+  usuario_id UUID NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
   nome VARCHAR(200) NOT NULL,
   email VARCHAR(200),
   telefone VARCHAR(30),
@@ -84,45 +84,45 @@ CREATE TABLE IF NOT EXISTS cliente (
   ativo BOOLEAN NOT NULL DEFAULT true,
   criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (fotografa_id, email),
-  UNIQUE (fotografa_id, cpf)
+  UNIQUE (usuario_id, email),
+  UNIQUE (usuario_id, cpf)
 );
 
-ALTER TABLE cliente ADD COLUMN IF NOT EXISTS fotografa_id UUID;
+ALTER TABLE cliente ADD COLUMN IF NOT EXISTS usuario_id UUID;
 
 UPDATE cliente
-SET fotografa_id = (
+SET usuario_id = (
   SELECT id
-  FROM fotografa
+  FROM usuario
   ORDER BY criado_em ASC
   LIMIT 1
 )
-WHERE fotografa_id IS NULL;
+WHERE usuario_id IS NULL;
 
 ALTER TABLE cliente
   DROP CONSTRAINT IF EXISTS cliente_email_key,
   DROP CONSTRAINT IF EXISTS cliente_cpf_key,
-  DROP CONSTRAINT IF EXISTS cliente_fotografa_id_fkey;
+  DROP CONSTRAINT IF EXISTS cliente_usuario_id_fkey;
 
 ALTER TABLE cliente
-  ADD CONSTRAINT cliente_fotografa_id_fkey
-  FOREIGN KEY (fotografa_id) REFERENCES fotografa(id) ON DELETE CASCADE
+  ADD CONSTRAINT cliente_usuario_id_fkey
+  FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE
   NOT VALID;
 
-ALTER TABLE cliente VALIDATE CONSTRAINT cliente_fotografa_id_fkey;
+ALTER TABLE cliente VALIDATE CONSTRAINT cliente_usuario_id_fkey;
 
-ALTER TABLE cliente ALTER COLUMN fotografa_id SET NOT NULL;
+ALTER TABLE cliente ALTER COLUMN usuario_id SET NOT NULL;
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_cliente_fotografa_email
-ON cliente(fotografa_id, email)
+CREATE UNIQUE INDEX IF NOT EXISTS uq_cliente_usuario_email
+ON cliente(usuario_id, email)
 WHERE email IS NOT NULL;
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_cliente_fotografa_cpf
-ON cliente(fotografa_id, cpf)
+CREATE UNIQUE INDEX IF NOT EXISTS uq_cliente_usuario_cpf
+ON cliente(usuario_id, cpf)
 WHERE cpf IS NOT NULL;
 
-CREATE INDEX IF NOT EXISTS idx_cliente_fotografa_id
-ON cliente(fotografa_id);
+CREATE INDEX IF NOT EXISTS idx_cliente_usuario_id
+ON cliente(usuario_id);
 
 CREATE TABLE IF NOT EXISTS ensaio (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -165,14 +165,14 @@ ON historico_status_ensaio(status);
 
 CREATE TABLE IF NOT EXISTS notificacao_dispensada (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  fotografa_id UUID NOT NULL REFERENCES fotografa(id) ON DELETE CASCADE,
+  usuario_id UUID NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
   chave VARCHAR(180) NOT NULL,
   dispensada_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (fotografa_id, chave)
+  UNIQUE (usuario_id, chave)
 );
 
-CREATE INDEX IF NOT EXISTS idx_notificacao_dispensada_fotografa_id
-ON notificacao_dispensada(fotografa_id);
+CREATE INDEX IF NOT EXISTS idx_notificacao_dispensada_usuario_id
+ON notificacao_dispensada(usuario_id);
 
 CREATE TABLE IF NOT EXISTS foto (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -275,9 +275,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS trg_fotografa_ts ON fotografa;
-CREATE TRIGGER trg_fotografa_ts
-BEFORE UPDATE ON fotografa
+DROP TRIGGER IF EXISTS trg_usuario_ts ON usuario;
+CREATE TRIGGER trg_usuario_ts
+BEFORE UPDATE ON usuario
 FOR EACH ROW
 EXECUTE FUNCTION fn_atualiza_timestamp();
 
@@ -312,7 +312,7 @@ EXECUTE FUNCTION fn_registra_historico_status_ensaio();
 
 CREATE TABLE IF NOT EXISTS configuracao_estudio (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  fotografa_id UUID NOT NULL UNIQUE REFERENCES fotografa(id) ON DELETE CASCADE,
+  usuario_id UUID NOT NULL UNIQUE REFERENCES usuario(id) ON DELETE CASCADE,
   nome_estudio VARCHAR(160),
   nome_comercial VARCHAR(160),
   email VARCHAR(200),
@@ -344,7 +344,7 @@ ADD COLUMN IF NOT EXISTS marca_dagua_texto_modo VARCHAR(20) DEFAULT 'REPETIDA';
 
 CREATE TABLE IF NOT EXISTS preferencias_sistema (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  fotografa_id UUID NOT NULL UNIQUE REFERENCES fotografa(id) ON DELETE CASCADE,
+  usuario_id UUID NOT NULL UNIQUE REFERENCES usuario(id) ON DELETE CASCADE,
   qtd_fotos_padrao INTEGER DEFAULT 20,
   valor_foto_extra_padrao NUMERIC(10,2),
   prazo_expiracao_album_dias INTEGER DEFAULT 30,
@@ -362,10 +362,10 @@ ALTER TABLE preferencias_sistema ADD COLUMN IF NOT EXISTS ultimo_backup_metadado
 
 CREATE TABLE IF NOT EXISTS configuracao_email (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  fotografa_id UUID NOT NULL UNIQUE REFERENCES fotografa(id) ON DELETE CASCADE,
+  usuario_id UUID NOT NULL UNIQUE REFERENCES usuario(id) ON DELETE CASCADE,
   ativo BOOLEAN NOT NULL DEFAULT false,
   nome_remetente VARCHAR(120),
-  email_fotografa_avisos VARCHAR(180),
+  email_usuario_avisos VARCHAR(180),
   enviar_album_publicado BOOLEAN NOT NULL DEFAULT true,
   avisar_selecao_recebida BOOLEAN NOT NULL DEFAULT true,
   enviar_confirmacao_selecao_cliente BOOLEAN NOT NULL DEFAULT true,
@@ -379,7 +379,7 @@ ADD COLUMN IF NOT EXISTS enviar_confirmacao_selecao_cliente BOOLEAN NOT NULL DEF
 
 CREATE TABLE IF NOT EXISTS modelo_contrato (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  fotografa_id UUID NOT NULL REFERENCES fotografa(id) ON DELETE CASCADE,
+  usuario_id UUID NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
   nome VARCHAR(140) NOT NULL,
   tipo_ensaio VARCHAR(40),
   clausulas TEXT NOT NULL,
@@ -390,8 +390,8 @@ CREATE TABLE IF NOT EXISTS modelo_contrato (
   atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_modelo_contrato_fotografa_id
-ON modelo_contrato(fotografa_id);
+CREATE INDEX IF NOT EXISTS idx_modelo_contrato_usuario_id
+ON modelo_contrato(usuario_id);
 
 DROP TRIGGER IF EXISTS trg_preferencias_sistema_ts ON preferencias_sistema;
 CREATE TRIGGER trg_preferencias_sistema_ts
@@ -414,7 +414,7 @@ EXECUTE FUNCTION fn_atualiza_timestamp();
 --   DADOS DE EXEMPLO
 ------------------------------------
 
-INSERT INTO fotografa (
+INSERT INTO usuario (
   nome,
   email,
   senha_hash,

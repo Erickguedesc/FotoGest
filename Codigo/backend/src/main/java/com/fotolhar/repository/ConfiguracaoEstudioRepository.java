@@ -7,5 +7,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ConfiguracaoEstudioRepository extends JpaRepository<ConfiguracaoEstudio, UUID> {
-    Optional<ConfiguracaoEstudio> findByFotografaId(UUID fotografaId);
+    Optional<ConfiguracaoEstudio> findByUsuarioId(UUID usuarioId);
 }

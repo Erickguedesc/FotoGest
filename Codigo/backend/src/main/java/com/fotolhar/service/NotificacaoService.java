@@ -4,13 +4,13 @@ import com.fotolhar.dto.NotificacaoResponse;
 import com.fotolhar.enums.StatusEnsaio;
 import com.fotolhar.model.Album;
 import com.fotolhar.model.Ensaio;
-import com.fotolhar.model.Fotografa;
+import com.fotolhar.model.Usuario;
 import com.fotolhar.model.HistoricoStatusEnsaio;
 import com.fotolhar.model.NotificacaoDispensada;
 import com.fotolhar.model.SelecaoFoto;
 import com.fotolhar.repository.AlbumRepository;
 import com.fotolhar.repository.EnsaioRepository;
-import com.fotolhar.repository.FotografaRepository;
+import com.fotolhar.repository.UsuarioRepository;
 import com.fotolhar.repository.HistoricoStatusEnsaioRepository;
 import com.fotolhar.repository.NotificacaoDispensadaRepository;
 import com.fotolhar.repository.SelecaoFotoRepository;
@@ -42,18 +42,18 @@ public class NotificacaoService {
     private final AlbumRepository albumRepository;
     private final SelecaoFotoRepository selecaoFotoRepository;
     private final HistoricoStatusEnsaioRepository historicoStatusEnsaioRepository;
-    private final FotografaRepository fotografaRepository;
+    private final UsuarioRepository usuarioRepository;
     private final NotificacaoDispensadaRepository notificacaoDispensadaRepository;
 
     @Transactional(readOnly = true)
     public List<NotificacaoResponse> listar() {
-        Fotografa fotografa = buscarFotografaLogada();
-        Set<String> dispensadas = notificacaoDispensadaRepository.findByFotografaId(fotografa.getId())
+        Usuario usuario = buscarUsuarioLogado();
+        Set<String> dispensadas = notificacaoDispensadaRepository.findByUsuarioId(usuario.getId())
                 .stream()
                 .map(NotificacaoDispensada::getChave)
                 .collect(Collectors.toCollection(HashSet::new));
 
-        List<NotificacaoResponse> notificacoes = gerarNotificacoes(fotografa);
+        List<NotificacaoResponse> notificacoes = gerarNotificacoes(usuario);
 
         return notificacoes.stream()
                 .filter(notificacao -> !dispensadas.contains(notificacao.getChave()))
@@ -72,20 +72,20 @@ public class NotificacaoService {
             return;
         }
 
-        Fotografa fotografa = buscarFotografaLogada();
+        Usuario usuario = buscarUsuarioLogado();
 
-        notificacaoDispensadaRepository.findByFotografaIdAndChave(fotografa.getId(), chave.trim())
+        notificacaoDispensadaRepository.findByUsuarioIdAndChave(usuario.getId(), chave.trim())
                 .orElseGet(() -> notificacaoDispensadaRepository.save(
                         NotificacaoDispensada.builder()
-                                .fotografa(fotografa)
+                                .usuario(usuario)
                                 .chave(chave.trim())
                                 .build()));
     }
 
-    private List<NotificacaoResponse> gerarNotificacoes(Fotografa fotografa) {
-        List<Ensaio> ensaios = ensaioRepository.findByClienteFotografaId(fotografa.getId());
+    private List<NotificacaoResponse> gerarNotificacoes(Usuario usuario) {
+        List<Ensaio> ensaios = ensaioRepository.findByClienteUsuarioId(usuario.getId());
         OffsetDateTime agora = OffsetDateTime.now();
-        var albumPorEnsaio = albumRepository.findByEnsaioClienteFotografaId(fotografa.getId())
+        var albumPorEnsaio = albumRepository.findByEnsaioClienteUsuarioId(usuario.getId())
                 .stream()
                 .filter(album -> album.getEnsaio() != null && album.getEnsaio().getId() != null)
                 .collect(Collectors.toMap(
@@ -321,11 +321,11 @@ public class NotificacaoService {
                 .orElse(ensaio.getAtualizadoEm());
     }
 
-    private Fotografa buscarFotografaLogada() {
+    private Usuario buscarUsuarioLogado() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        return fotografaRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Fotografa nao encontrada"));
+        return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario nao encontrada"));
     }
 
     private boolean albumPublicado(Album album) {

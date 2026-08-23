@@ -23,14 +23,14 @@ public class Cliente {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "fotografa_id")
-    private Fotografa fotografa;
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
 
     @Column(nullable = false, length = 200)
     @NotBlank(message = "O nome do cliente é obrigatório")
     private String nome;
 
-    @Column(unique = true, length = 200)
+    @Column(length = 200)
     @Email(message = "E-mail inválido")
     private String email;
 
@@ -42,7 +42,7 @@ public class Cliente {
     @Column(length = 30)
     private String telefone;
 
-    @Column(unique = true, length = 20)
+    @Column(length = 20)
     private String cpf;
 
     @Column(length = 120)

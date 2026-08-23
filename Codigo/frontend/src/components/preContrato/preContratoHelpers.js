@@ -123,8 +123,7 @@ export function buildContractVariables(draft) {
     sinal: draft.sinal || '',
     saldo: draft.saldo || '',
     condicoes_comerciais: draft.condicoesComerciais || '',
-    nome_fotografo: draft.fotografaNome || '',
-    nome_profissional: draft.fotografaNome || '',
+    nome_profissional: draft.profissionalNome || '',
     cidade_assinatura: draft.cidadeAssinatura || '',
     data_emissao: draft.dataEmissao || '',
     validade: draft.validade || '',
@@ -227,12 +226,12 @@ export function buildInitialDraft({ ensaio, cliente, configuracoes }) {
   const clienteNome = cliente?.nome || ensaio?.clienteNome || ''
   const tipo = ensaio?.tipo || ''
   const tipoExibicao = ensaio?.tipoExibicao || formatTipo(tipo)
-  const fotografa = configuracoes?.fotografa || {}
+  const usuario = configuracoes?.usuario || {}
   const estudio = configuracoes?.estudio || {}
-  const nomeEstudio = estudio.nomeComercial || estudio.nomeEstudio || fotografa.nome || 'Fotolhar Fotografia'
-  const emailEstudio = estudio.email || fotografa.email || ''
-  const telefoneEstudio = estudio.telefone || fotografa.telefone || ''
-  const cidadeEstudio = estudio.cidade || fotografa.cidade || ''
+  const nomeEstudio = estudio.nomeComercial || estudio.nomeEstudio || usuario.nome || 'Fotolhar Fotografia'
+  const emailEstudio = estudio.email || usuario.email || ''
+  const telefoneEstudio = estudio.telefone || usuario.telefone || ''
+  const cidadeEstudio = estudio.cidade || usuario.cidade || ''
   const documentoEstudio = estudio.cnpj ? `CNPJ ${estudio.cnpj}` : ''
 
   const initialDraft = {
@@ -242,11 +241,11 @@ export function buildInitialDraft({ ensaio, cliente, configuracoes }) {
     validade: formatLongDate(validade),
     cidadeAssinatura: cidadeEstudio || 'Belo Horizonte',
 
-    fotografaNome: nomeEstudio,
-    fotografaEmail: emailEstudio,
-    fotografaTelefone: telefoneEstudio,
-    fotografaCidade: cidadeEstudio,
-    fotografaDocumento: documentoEstudio,
+    profissionalNome: nomeEstudio,
+    profissionalEmail: emailEstudio,
+    profissionalTelefone: telefoneEstudio,
+    profissionalCidade: cidadeEstudio,
+    profissionalDocumento: documentoEstudio,
 
     clienteNome,
     clienteCpf: cliente?.cpf || '',

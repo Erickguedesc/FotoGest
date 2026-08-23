@@ -4,7 +4,7 @@ import com.fotolhar.dto.FotoResponse;
 import com.fotolhar.model.Album;
 import com.fotolhar.model.Ensaio;
 import com.fotolhar.model.Foto;
-import com.fotolhar.model.Fotografa;
+import com.fotolhar.model.Usuario;
 import com.fotolhar.repository.AlbumRepository;
 import com.fotolhar.repository.EnsaioRepository;
 import com.fotolhar.repository.FotoRepository;
@@ -37,7 +37,7 @@ public class FotoService {
     private final SelecaoFotoRepository selecaoFotoRepository;
     private final AlbumRepository albumRepository;
     private final MarcaDaguaService marcaDaguaService;
-    private final FotografaContextService fotografaContextService;
+    private final UsuarioContextService usuarioContextService;
 
     @Transactional
     public List<FotoResponse> salvarFotos(
@@ -57,8 +57,8 @@ public class FotoService {
             );
         }
 
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
-        Ensaio ensaio = ensaioRepository.findByIdAndClienteFotografaId(ensaioId, fotografa.getId())
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
+        Ensaio ensaio = ensaioRepository.findByIdAndClienteUsuarioId(ensaioId, usuario.getId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Ensaio não encontrado"
@@ -192,9 +192,9 @@ public class FotoService {
 
     @Transactional(readOnly = true)
     public List<FotoResponse> listarPorEnsaio(UUID ensaioId) {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
 
-        ensaioRepository.findByIdAndClienteFotografaId(ensaioId, fotografa.getId())
+        ensaioRepository.findByIdAndClienteUsuarioId(ensaioId, usuario.getId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Ensaio não encontrado"
@@ -215,7 +215,7 @@ public class FotoService {
                 ));
 
         UUID ensaioId = fotoCapa.getEnsaio().getId();
-        validarEnsaioDaFotografa(ensaioId);
+        validarEnsaioDaUsuario(ensaioId);
 
         bloquearSeAlbumPublicado(ensaioId);
 
@@ -234,7 +234,7 @@ public class FotoService {
 
     @Transactional
     public List<FotoResponse> reordenarFotos(UUID ensaioId, List<UUID> fotosIds) {
-        validarEnsaioDaFotografa(ensaioId);
+        validarEnsaioDaUsuario(ensaioId);
         bloquearSeAlbumPublicado(ensaioId);
 
         if (fotosIds == null || fotosIds.isEmpty()) {
@@ -281,7 +281,7 @@ public class FotoService {
                 ));
 
         UUID ensaioId = foto.getEnsaio().getId();
-        validarEnsaioDaFotografa(ensaioId);
+        validarEnsaioDaUsuario(ensaioId);
 
         bloquearSeAlbumPublicado(ensaioId);
 
@@ -305,8 +305,8 @@ public class FotoService {
     }
 
     private void bloquearSeAlbumPublicado(UUID ensaioId) {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
-        Optional<Album> albumOptional = albumRepository.findByEnsaioIdAndEnsaioClienteFotografaId(ensaioId, fotografa.getId());
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
+        Optional<Album> albumOptional = albumRepository.findByEnsaioIdAndEnsaioClienteUsuarioId(ensaioId, usuario.getId());
 
         if (albumOptional.isEmpty()) {
             return;
@@ -326,10 +326,10 @@ public class FotoService {
         }
     }
 
-    private void validarEnsaioDaFotografa(UUID ensaioId) {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
+    private void validarEnsaioDaUsuario(UUID ensaioId) {
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
 
-        ensaioRepository.findByIdAndClienteFotografaId(ensaioId, fotografa.getId())
+        ensaioRepository.findByIdAndClienteUsuarioId(ensaioId, usuario.getId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Ensaio não encontrado"

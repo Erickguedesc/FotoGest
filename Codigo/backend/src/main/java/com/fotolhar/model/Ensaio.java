@@ -63,7 +63,7 @@ private BigDecimal valorPacote;
      @Column(name = "valor_foto_extra", precision = 10, scale = 2)
      private BigDecimal valorFotoExtra;
 
- //✅ Sem default — fotógrafa decide explicitamente
+ //✅ Sem default — usuário decide explicitamente
 @Column(name = "cobrar_foto_extra")
 private Boolean cobrarFotoExtra;
 
@@ -93,7 +93,7 @@ private Boolean cobrarFotoExtra;
     @Builder.Default
     private List<Foto> fotos = new ArrayList<>();
 
-    /** Álbum online (criado quando fotógrafa publicar) */
+    /** Álbum online (criado quando usuário publicar) */
     @OneToOne(mappedBy = "ensaio", cascade = CascadeType.ALL, orphanRemoval = true)
     private Album album;
 

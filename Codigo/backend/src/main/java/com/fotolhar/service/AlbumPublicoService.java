@@ -242,7 +242,7 @@ public class AlbumPublicoService {
 
                 return new AlbumPublicoResponse(
                                 album.getEnsaio().getCliente().getNome(),
-                                buscarNomeFotografa(album),
+                                buscarNomeUsuario(album),
                                 resolverTipoExibicao(album.getEnsaio()),
                                 album.getEnsaio().getQtdFotosPacote(),
                                 album.getEnsaio().getDataEnsaio(),
@@ -253,14 +253,14 @@ public class AlbumPublicoService {
                                 album.getExpiraEm());
         }
 
-        private String buscarNomeFotografa(Album album) {
+        private String buscarNomeUsuario(Album album) {
                 if (album.getEnsaio() == null
                                 || album.getEnsaio().getCliente() == null
-                                || album.getEnsaio().getCliente().getFotografa() == null) {
+                                || album.getEnsaio().getCliente().getUsuario() == null) {
                         return null;
                 }
 
-                String nome = album.getEnsaio().getCliente().getFotografa().getNome();
+                String nome = album.getEnsaio().getCliente().getUsuario().getNome();
                 return nome == null || nome.isBlank() ? null : nome;
         }
 
@@ -281,13 +281,13 @@ public class AlbumPublicoService {
         private String buscarCapaAlbumPadrao(Album album) {
                 if (album.getEnsaio() == null
                                 || album.getEnsaio().getCliente() == null
-                                || album.getEnsaio().getCliente().getFotografa() == null) {
+                                || album.getEnsaio().getCliente().getUsuario() == null) {
                         return null;
                 }
 
-                UUID fotografaId = album.getEnsaio().getCliente().getFotografa().getId();
+                UUID usuarioId = album.getEnsaio().getCliente().getUsuario().getId();
 
-                return preferenciasSistemaRepository.findByFotografaId(fotografaId)
+                return preferenciasSistemaRepository.findByUsuarioId(usuarioId)
                                 .map(preferencias -> preferencias.getCapaAlbumPadraoUrl())
                                 .orElse(null);
         }

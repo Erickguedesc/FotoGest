@@ -4,7 +4,7 @@ import Header from '../components/layout/Header'
 import Toast from '../components/ui/Toast'
 import ConfiguracoesHeader from '../components/configuracoes/ConfiguracoesHeader'
 import ConfiguracoesMenu from '../components/configuracoes/ConfiguracoesMenu'
-import DadosFotografaForm from '../components/configuracoes/DadosFotografaForm'
+import DadosUsuarioForm from '../components/configuracoes/DadosUsuarioForm'
 import DadosEstudioForm from '../components/configuracoes/DadosEstudioForm'
 import MarcaDaguaForm from '../components/configuracoes/MarcaDaguaForm'
 import PreferenciasSistemaForm from '../components/configuracoes/PreferenciasSistemaForm'
@@ -16,7 +16,7 @@ import { configuracoesService } from '../services/configuracoesService'
 import ConfirmActionModal from '../components/ui/ConfirmActionModal'
 
 export default function ConfiguracoesPage() {
-  const [activeTab, setActiveTab] = useState('fotografa')
+  const [activeTab, setActiveTab] = useState('usuario')
   const [configuracoes, setConfiguracoes] = useState(null)
 
   const [loading, setLoading] = useState(true)
@@ -34,10 +34,10 @@ export default function ConfiguracoesPage() {
     setToast({ message, type })
   }
 
-  const notificarFotografaAtualizada = (fotografa) => {
+  const notificarUsuarioAtualizado = (usuario) => {
     window.dispatchEvent(
-      new CustomEvent('fotolhar:fotografa-atualizada', {
-        detail: fotografa,
+      new CustomEvent('fotolhar:usuario-atualizado', {
+        detail: usuario,
       }),
     )
   }
@@ -95,18 +95,18 @@ async function handleUploadCapaAlbumPadrao(arquivo) {
 }
 
 
-  async function handleSalvarFotografa(dados) {
+  async function handleSalvarUsuario(dados) {
     try {
       setSaving(true)
 
-      const data = await configuracoesService.atualizarFotografa(dados)
+      const data = await configuracoesService.atualizarUsuario(dados)
 
       setConfiguracoes((current) => ({
         ...(current || {}),
-        fotografa: data,
+        usuario: data,
       }))
 
-      notificarFotografaAtualizada(data)
+      notificarUsuarioAtualizado(data)
       showToast('Dados atualizados com sucesso.')
     } catch (error) {
       console.error('[ConfiguracoesPage] Erro ao salvar:', error)
@@ -132,10 +132,10 @@ async function handleUploadCapaAlbumPadrao(arquivo) {
 
       setConfiguracoes((current) => ({
         ...(current || {}),
-        fotografa: data,
+        usuario: data,
       }))
 
-      notificarFotografaAtualizada(data)
+      notificarUsuarioAtualizado(data)
       showToast('Foto de perfil atualizada com sucesso.')
     } catch (error) {
       console.error('[ConfiguracoesPage] Erro ao enviar foto de perfil:', error)
@@ -564,12 +564,12 @@ setAlertModal({
               </div>
             ) : (
               <>
-                {activeTab === 'fotografa' && (
-                  <DadosFotografaForm
-                    data={configuracoes?.fotografa}
+                {activeTab === 'usuario' && (
+                  <DadosUsuarioForm
+                    data={configuracoes?.usuario}
                     loading={saving}
                     uploadLoading={uploadFotoLoading}
-                    onSubmit={handleSalvarFotografa}
+                    onSubmit={handleSalvarUsuario}
                     onUploadFoto={handleUploadFotoPerfil}
                   />
                 )}

@@ -14,7 +14,7 @@ import java.util.UUID;
 public class EnsaioSpecification {
 
     public static Specification<Ensaio> filtrar(
-            UUID fotografaId,
+            UUID usuarioId,
             StatusEnsaio status,
             TipoEnsaio tipo,
             OffsetDateTime dataInicio,
@@ -24,7 +24,7 @@ public class EnsaioSpecification {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            predicates.add(cb.equal(root.get("cliente").get("fotografa").get("id"), fotografaId));
+            predicates.add(cb.equal(root.get("cliente").get("usuario").get("id"), usuarioId));
 
             if (status != null) {
                 predicates.add(cb.equal(root.get("status"), status));

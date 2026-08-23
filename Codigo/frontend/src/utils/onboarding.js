@@ -1,7 +1,7 @@
 const ONBOARDING_PREFIX = 'fotolhar:onboarding'
 
 function getAccountKey() {
-  const email = localStorage.getItem('fotografaEmail')
+  const email = localStorage.getItem('usuarioEmail')
   return (email || 'default').trim().toLowerCase()
 }
 

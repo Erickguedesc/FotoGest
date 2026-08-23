@@ -9,7 +9,7 @@ import com.fotolhar.enums.TipoEnsaio;
 import com.fotolhar.enums.TipoPeriodoRelatorio;
 import com.fotolhar.model.Album;
 import com.fotolhar.model.Ensaio;
-import com.fotolhar.model.Fotografa;
+import com.fotolhar.model.Usuario;
 import com.fotolhar.repository.AlbumRepository;
 import com.fotolhar.repository.EnsaioRepository;
 import com.fotolhar.repository.SelecaoFotoRepository;
@@ -41,7 +41,7 @@ public class RelatorioService {
         private final EnsaioRepository ensaioRepository;
         private final AlbumRepository albumRepository;
         private final SelecaoFotoRepository selecaoFotoRepository;
-        private final FotografaContextService fotografaContextService;
+        private final UsuarioContextService usuarioContextService;
 
         @Transactional(readOnly = true)
         public RelatorioFaturamentoResponse buscarFaturamento(TipoPeriodoRelatorio tipo, Integer ano) {
@@ -59,10 +59,10 @@ public class RelatorioService {
 
                 List<PeriodoRelatorioInterno> periodosInternos = gerarPeriodos(tipoFinal, anoFinal, dataInicio, dataFim);
 
-                Fotografa fotografa = fotografaContextService.getFotografaLogada();
-                List<Ensaio> ensaios = ensaioRepository.findByClienteFotografaId(fotografa.getId());
+                Usuario usuario = usuarioContextService.getUsuarioLogado();
+                List<Ensaio> ensaios = ensaioRepository.findByClienteUsuarioId(usuario.getId());
 
-                Map<UUID, Album> albumPorEnsaio = albumRepository.findByEnsaioClienteFotografaId(fotografa.getId())
+                Map<UUID, Album> albumPorEnsaio = albumRepository.findByEnsaioClienteUsuarioId(usuario.getId())
                                 .stream()
                                 .filter(album -> album.getEnsaio() != null)
                                 .filter(album -> album.getEnsaio().getId() != null)

@@ -8,7 +8,7 @@ import com.fotolhar.enums.TipoEnsaio;
 import com.fotolhar.model.Album;
 import com.fotolhar.model.Ensaio;
 import com.fotolhar.model.Foto;
-import com.fotolhar.model.Fotografa;
+import com.fotolhar.model.Usuario;
 import com.fotolhar.repository.AlbumRepository;
 import com.fotolhar.repository.EnsaioRepository;
 import com.fotolhar.repository.FotoRepository;
@@ -40,13 +40,13 @@ public class DashboardService {
     private final AlbumRepository albumRepository;
     private final SelecaoFotoRepository selecaoFotoRepository;
     private final PreferenciasSistemaRepository preferenciasSistemaRepository;
-    private final FotografaContextService fotografaContextService;
+    private final UsuarioContextService usuarioContextService;
 
     @Transactional(readOnly = true)
     public DashboardResumoResponse buscarResumo() {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
-        List<Ensaio> ensaios = ensaioRepository.findByClienteFotografaId(fotografa.getId());
-        Map<UUID, Album> albumPorEnsaio = buscarAlbunsPorEnsaio(fotografa);
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
+        List<Ensaio> ensaios = ensaioRepository.findByClienteUsuarioId(usuario.getId());
+        Map<UUID, Album> albumPorEnsaio = buscarAlbunsPorEnsaio(usuario);
 
         OffsetDateTime agora = OffsetDateTime.now();
         YearMonth mesAtual = YearMonth.from(agora);
@@ -138,8 +138,8 @@ public class DashboardService {
                 .build();
     }
 
-    private Map<UUID, Album> buscarAlbunsPorEnsaio(Fotografa fotografa) {
-        return albumRepository.findByEnsaioClienteFotografaId(fotografa.getId())
+    private Map<UUID, Album> buscarAlbunsPorEnsaio(Usuario usuario) {
+        return albumRepository.findByEnsaioClienteUsuarioId(usuario.getId())
                 .stream()
                 .filter(album -> album.getEnsaio() != null)
                 .filter(album -> album.getEnsaio().getId() != null)
@@ -429,9 +429,9 @@ public class DashboardService {
     }
 
     private String buscarCapaAlbumPadrao() {
-        Fotografa fotografa = fotografaContextService.getFotografaLogada();
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
 
-        return preferenciasSistemaRepository.findByFotografaId(fotografa.getId())
+        return preferenciasSistemaRepository.findByUsuarioId(usuario.getId())
                 .map(preferencias -> preferencias.getCapaAlbumPadraoUrl())
                 .orElse(null);
     }

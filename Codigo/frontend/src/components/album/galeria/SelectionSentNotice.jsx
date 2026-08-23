@@ -11,7 +11,7 @@ export default function SelectionSentNotice({ visible }) {
           Seleção enviada
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#5c5248]">
-          Suas fotos favoritas foram enviadas para a fotógrafa. A seleção não
+          Suas fotos favoritas foram enviadas para o profissional. A seleção não
           pode mais ser alterada por aqui.
         </p>
       </div>

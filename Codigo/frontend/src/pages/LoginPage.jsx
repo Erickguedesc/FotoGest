@@ -129,8 +129,8 @@ export default function LoginPage() {
     setLoading(true)
     setApiError('')
     localStorage.removeItem('token')
-    localStorage.removeItem('fotografaNome')
-    localStorage.removeItem('fotografaEmail')
+    localStorage.removeItem('usuarioNome')
+    localStorage.removeItem('usuarioEmail')
 
     try {
       const res = await api.post('/auth/login', {
@@ -143,8 +143,8 @@ export default function LoginPage() {
         .find((value) => value && !isGenericDisplayName(value))
 
       localStorage.setItem('token', token)
-      localStorage.setItem('fotografaNome', nome)
-      localStorage.setItem('fotografaEmail', email)
+      localStorage.setItem('usuarioNome', nome)
+      localStorage.setItem('usuarioEmail', email)
       const onboardingPrefix = `fotolhar:onboarding:${email.trim().toLowerCase()}`
       if (onboardingConcluido) {
         localStorage.setItem(`${onboardingPrefix}:complete`, 'true')

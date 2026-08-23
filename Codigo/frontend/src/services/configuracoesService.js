@@ -11,8 +11,8 @@ export const configuracoesService = {
     return response.data
   },
 
-  atualizarFotografa: async (dados) => {
-    const response = await api.put('/configuracoes/fotografa', dados)
+  atualizarUsuario: async (dados) => {
+    const response = await api.put('/configuracoes/usuario', dados)
     return response.data
   },
 
@@ -20,7 +20,7 @@ export const configuracoesService = {
     const formData = new FormData()
     formData.append('arquivo', arquivo)
 
-    const response = await api.patch('/configuracoes/fotografa/foto', formData)
+    const response = await api.patch('/configuracoes/usuario/foto', formData)
 
     return response.data
   },

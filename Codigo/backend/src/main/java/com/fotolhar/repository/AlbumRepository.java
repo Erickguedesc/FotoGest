@@ -13,9 +13,9 @@ public interface AlbumRepository extends JpaRepository<Album, UUID> {
 
     Optional<Album> findByEnsaioId(UUID ensaioId);
 
-    Optional<Album> findByEnsaioIdAndEnsaioClienteFotografaId(UUID ensaioId, UUID fotografaId);
+    Optional<Album> findByEnsaioIdAndEnsaioClienteUsuarioId(UUID ensaioId, UUID usuarioId);
 
-    List<Album> findByEnsaioClienteFotografaId(UUID fotografaId);
+    List<Album> findByEnsaioClienteUsuarioId(UUID usuarioId);
 
     boolean existsByTokenUrl(String tokenUrl);
 }

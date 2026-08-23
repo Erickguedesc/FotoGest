@@ -3,7 +3,7 @@ package com.fotolhar.service;
 import com.fotolhar.dto.*;
 import com.fotolhar.model.ConfiguracaoEstudio;
 import com.fotolhar.model.ConfiguracaoEmail;
-import com.fotolhar.model.Fotografa;
+import com.fotolhar.model.Usuario;
 import com.fotolhar.model.PreferenciasSistema;
 import com.fotolhar.model.*;
 import com.fotolhar.repository.AlbumRepository;
@@ -12,7 +12,7 @@ import com.fotolhar.repository.ConfiguracaoEmailRepository;
 import com.fotolhar.repository.ConfiguracaoEstudioRepository;
 import com.fotolhar.repository.EnsaioRepository;
 import com.fotolhar.repository.FotoRepository;
-import com.fotolhar.repository.FotografaRepository;
+import com.fotolhar.repository.UsuarioRepository;
 import com.fotolhar.repository.HistoricoStatusEnsaioRepository;
 import com.fotolhar.repository.ModeloContratoRepository;
 import com.fotolhar.repository.PreferenciasSistemaRepository;
@@ -55,7 +55,7 @@ import java.util.zip.ZipOutputStream;
 
 public class ConfiguracoesService {
 
-    private final FotografaRepository fotografaRepository;
+    private final UsuarioRepository usuarioRepository;
     private final ConfiguracaoEstudioRepository configuracaoEstudioRepository;
     private final ConfiguracaoEmailRepository configuracaoEmailRepository;
     private final PreferenciasSistemaRepository preferenciasSistemaRepository;
@@ -81,34 +81,34 @@ public class ConfiguracoesService {
 
     @Transactional
     public ConfiguracoesResponseDTO buscarConfiguracoes() {
-        Fotografa fotografa = getFotografaLogada();
-        ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
-        PreferenciasSistema preferencias = getOuCriarPreferencias(fotografa);
-        ConfiguracaoEmail email = getOuCriarEmail(fotografa);
+        Usuario usuario = getUsuarioLogado();
+        ConfiguracaoEstudio estudio = getOuCriarEstudio(usuario);
+        PreferenciasSistema preferencias = getOuCriarPreferencias(usuario);
+        ConfiguracaoEmail email = getOuCriarEmail(usuario);
 
        return ConfiguracoesResponseDTO.builder()
-        .fotografa(toFotografaDTO(fotografa))
+        .usuario(toUsuarioDTO(usuario))
         .estudio(toEstudioDTO(estudio))
         .preferencias(toPreferenciasDTO(preferencias))
         .marcaDagua(marcaDaguaService.buscarMarcaDagua())
         .email(toEmailDTO(email))
         .modelosContrato(modeloContratoService.listarGarantindoPadrao())
-        .onboardingConcluido(Boolean.TRUE.equals(fotografa.getOnboardingConcluido()))
-        .onboardingConcluidoEm(fotografa.getOnboardingConcluidoEm())
+        .onboardingConcluido(Boolean.TRUE.equals(usuario.getOnboardingConcluido()))
+        .onboardingConcluidoEm(usuario.getOnboardingConcluidoEm())
         .build();
     }
 
     @Transactional
     public ConfiguracoesResponseDTO concluirOnboarding() {
-        Fotografa fotografa = getFotografaLogada();
+        Usuario usuario = getUsuarioLogado();
 
-        if (!Boolean.TRUE.equals(fotografa.getOnboardingConcluido())) {
-            fotografa.setOnboardingConcluido(true);
-            fotografa.setOnboardingConcluidoEm(OffsetDateTime.now());
-            fotografaRepository.save(fotografa);
-        } else if (fotografa.getOnboardingConcluidoEm() == null) {
-            fotografa.setOnboardingConcluidoEm(OffsetDateTime.now());
-            fotografaRepository.save(fotografa);
+        if (!Boolean.TRUE.equals(usuario.getOnboardingConcluido())) {
+            usuario.setOnboardingConcluido(true);
+            usuario.setOnboardingConcluidoEm(OffsetDateTime.now());
+            usuarioRepository.save(usuario);
+        } else if (usuario.getOnboardingConcluidoEm() == null) {
+            usuario.setOnboardingConcluidoEm(OffsetDateTime.now());
+            usuarioRepository.save(usuario);
         }
 
         return buscarConfiguracoes();
@@ -142,18 +142,18 @@ public class ConfiguracoesService {
 
     @Transactional
     public Map<String, Object> gerarBackupMetadados() {
-        Fotografa fotografa = getFotografaLogada();
-        ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
-        PreferenciasSistema preferencias = getOuCriarPreferencias(fotografa);
-        ConfiguracaoEmail email = getOuCriarEmail(fotografa);
+        Usuario usuario = getUsuarioLogado();
+        ConfiguracaoEstudio estudio = getOuCriarEstudio(usuario);
+        PreferenciasSistema preferencias = getOuCriarPreferencias(usuario);
+        ConfiguracaoEmail email = getOuCriarEmail(usuario);
         OffsetDateTime geradoEm = OffsetDateTime.now();
 
         preferencias.setUltimoBackupMetadadosEm(geradoEm);
         preferenciasSistemaRepository.save(preferencias);
 
-        List<Cliente> clientes = clienteRepository.findByFotografaIdOrderByNomeAsc(fotografa.getId());
-        List<Ensaio> ensaios = ensaioRepository.findByClienteFotografaId(fotografa.getId());
-        List<Album> albuns = albumRepository.findByEnsaioClienteFotografaId(fotografa.getId());
+        List<Cliente> clientes = clienteRepository.findByUsuarioIdOrderByNomeAsc(usuario.getId());
+        List<Ensaio> ensaios = ensaioRepository.findByClienteUsuarioId(usuario.getId());
+        List<Album> albuns = albumRepository.findByEnsaioClienteUsuarioId(usuario.getId());
         Set<java.util.UUID> ensaioIds = ensaios.stream().map(Ensaio::getId).collect(java.util.stream.Collectors.toSet());
         Set<java.util.UUID> albumIds = albuns.stream().map(Album::getId).collect(java.util.stream.Collectors.toSet());
         List<Foto> fotos = fotoRepository.findAll()
@@ -169,7 +169,7 @@ public class ConfiguracoesService {
                 .filter(item -> item.getEnsaio() != null && ensaioIds.contains(item.getEnsaio().getId()))
                 .toList();
         List<ModeloContrato> modelos = modeloContratoRepository
-                .findByFotografaIdOrderByPadraoDescAtualizadoEmDesc(fotografa.getId());
+                .findByUsuarioIdOrderByPadraoDescAtualizadoEmDesc(usuario.getId());
 
         return mapa(
                 "tipo", "FOTOLHAR_BACKUP_METADADOS",
@@ -185,20 +185,20 @@ public class ConfiguracoesService {
                         "selecoes", selecoes.size()
                 ),
                 "dados", mapa(
-                        "fotografa", mapa(
-                                "id", fotografa.getId(),
-                                "nome", fotografa.getNome(),
-                                "email", fotografa.getEmail(),
-                                "telefone", fotografa.getTelefone(),
-                                "cidade", fotografa.getCidade(),
-                                "cnpj", fotografa.getCnpj(),
-                                "logoUrl", fotografa.getLogoUrl(),
-                                "fotoPerfilUrl", fotografa.getFotoPerfilUrl(),
-                                "ativo", fotografa.getAtivo(),
-                                "onboardingConcluido", fotografa.getOnboardingConcluido(),
-                                "onboardingConcluidoEm", fotografa.getOnboardingConcluidoEm(),
-                                "criadoEm", fotografa.getCriadoEm(),
-                                "atualizadoEm", fotografa.getAtualizadoEm()
+                        "usuario", mapa(
+                                "id", usuario.getId(),
+                                "nome", usuario.getNome(),
+                                "email", usuario.getEmail(),
+                                "telefone", usuario.getTelefone(),
+                                "cidade", usuario.getCidade(),
+                                "cnpj", usuario.getCnpj(),
+                                "logoUrl", usuario.getLogoUrl(),
+                                "fotoPerfilUrl", usuario.getFotoPerfilUrl(),
+                                "ativo", usuario.getAtivo(),
+                                "onboardingConcluido", usuario.getOnboardingConcluido(),
+                                "onboardingConcluidoEm", usuario.getOnboardingConcluidoEm(),
+                                "criadoEm", usuario.getCriadoEm(),
+                                "atualizadoEm", usuario.getAtualizadoEm()
                         ),
                         "estudio", mapa(
                                 "id", estudio.getId(),
@@ -241,7 +241,7 @@ public class ConfiguracoesService {
                                 "id", email.getId(),
                                 "ativo", email.getAtivo(),
                                 "nomeRemetente", email.getNomeRemetente(),
-                                "emailFotografaAvisos", email.getEmailFotografaAvisos(),
+                                "emailUsuarioAvisos", email.getEmailUsuarioAvisos(),
                                 "enviarAlbumPublicado", email.getEnviarAlbumPublicado(),
                                 "avisarSelecaoRecebida", email.getAvisarSelecaoRecebida(),
                                 "enviarConfirmacaoSelecaoCliente", email.getEnviarConfirmacaoSelecaoCliente(),
@@ -261,12 +261,12 @@ public class ConfiguracoesService {
     }
 
     @Transactional
-    public FotografaConfigDTO atualizarFotografa(FotografaUpdateRequest request) {
-        Fotografa fotografa = getFotografaLogada();
+    public UsuarioConfigDTO atualizarUsuario(UsuarioUpdateRequest request) {
+        Usuario usuario = getUsuarioLogado();
 
-        if (!fotografa.getEmail().equalsIgnoreCase(request.getEmail())) {
-            boolean emailJaExiste = fotografaRepository.findByEmail(request.getEmail())
-                    .filter(f -> !f.getId().equals(fotografa.getId()))
+        if (!usuario.getEmail().equalsIgnoreCase(request.getEmail())) {
+            boolean emailJaExiste = usuarioRepository.findByEmail(request.getEmail())
+                    .filter(f -> !f.getId().equals(usuario.getId()))
                     .isPresent();
 
             if (emailJaExiste) {
@@ -277,21 +277,21 @@ public class ConfiguracoesService {
             }
         }
 
-        fotografa.setNome(request.getNome());
-        fotografa.setEmail(request.getEmail());
-        fotografa.setTelefone(request.getTelefone());
-        fotografa.setCidade(request.getCidade());
-        fotografa.setFotoPerfilUrl(request.getFotoPerfilUrl());
+        usuario.setNome(request.getNome());
+        usuario.setEmail(request.getEmail());
+        usuario.setTelefone(request.getTelefone());
+        usuario.setCidade(request.getCidade());
+        usuario.setFotoPerfilUrl(request.getFotoPerfilUrl());
 
-        fotografaRepository.save(fotografa);
+        usuarioRepository.save(usuario);
 
-        return toFotografaDTO(fotografa);
+        return toUsuarioDTO(usuario);
     }
 
     @Transactional
     public EstudioConfigDTO atualizarEstudio(EstudioUpdateRequest request) {
-        Fotografa fotografa = getFotografaLogada();
-        ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
+        Usuario usuario = getUsuarioLogado();
+        ConfiguracaoEstudio estudio = getOuCriarEstudio(usuario);
 
         estudio.setNomeEstudio(request.getNomeEstudio());
         estudio.setNomeComercial(request.getNomeComercial());
@@ -310,8 +310,8 @@ public class ConfiguracoesService {
 
     @Transactional
     public PreferenciasConfigDTO atualizarPreferencias(PreferenciasUpdateRequest request) {
-        Fotografa fotografa = getFotografaLogada();
-        PreferenciasSistema preferencias = getOuCriarPreferencias(fotografa);
+        Usuario usuario = getUsuarioLogado();
+        PreferenciasSistema preferencias = getOuCriarPreferencias(usuario);
 
         preferencias.setQtdFotosPadrao(request.getQtdFotosPadrao());
         preferencias.setValorFotoExtraPadrao(request.getValorFotoExtraPadrao());
@@ -328,12 +328,12 @@ public class ConfiguracoesService {
 
     @Transactional
     public EmailConfigDTO atualizarEmail(EmailConfigUpdateRequest request) {
-        Fotografa fotografa = getFotografaLogada();
-        ConfiguracaoEmail email = getOuCriarEmail(fotografa);
+        Usuario usuario = getUsuarioLogado();
+        ConfiguracaoEmail email = getOuCriarEmail(usuario);
 
         email.setAtivo(Boolean.TRUE.equals(request.getAtivo()));
         email.setNomeRemetente(normalizarTexto(request.getNomeRemetente()));
-        email.setEmailFotografaAvisos(normalizarTexto(request.getEmailFotografaAvisos()));
+        email.setEmailUsuarioAvisos(normalizarTexto(request.getEmailUsuarioAvisos()));
         email.setEnviarAlbumPublicado(Boolean.TRUE.equals(request.getEnviarAlbumPublicado()));
         email.setAvisarSelecaoRecebida(Boolean.TRUE.equals(request.getAvisarSelecaoRecebida()));
         email.setEnviarConfirmacaoSelecaoCliente(Boolean.TRUE.equals(request.getEnviarConfirmacaoSelecaoCliente()));
@@ -348,8 +348,8 @@ public class ConfiguracoesService {
 
     @Transactional
     public EmailConfigDTO enviarEmailTeste() {
-        Fotografa fotografa = getFotografaLogada();
-        ConfiguracaoEmail email = getOuCriarEmail(fotografa);
+        Usuario usuario = getUsuarioLogado();
+        ConfiguracaoEmail email = getOuCriarEmail(usuario);
 
         emailService.enviarTeste(email);
 
@@ -358,9 +358,9 @@ public class ConfiguracoesService {
 
     @Transactional
     public void alterarSenha(AlterarSenhaRequest request) {
-        Fotografa fotografa = getFotografaLogada();
+        Usuario usuario = getUsuarioLogado();
 
-        if (!passwordEncoder.matches(request.getSenhaAtual(), fotografa.getSenhaHash())) {
+        if (!passwordEncoder.matches(request.getSenhaAtual(), usuario.getSenhaHash())) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
                     "Senha atual incorreta"
@@ -381,42 +381,42 @@ public class ConfiguracoesService {
             );
         }
 
-        fotografa.setSenhaHash(passwordEncoder.encode(request.getNovaSenha()));
-        fotografaRepository.save(fotografa);
+        usuario.setSenhaHash(passwordEncoder.encode(request.getNovaSenha()));
+        usuarioRepository.save(usuario);
     }
 
-    private Fotografa getFotografaLogada() {
+    private Usuario getUsuarioLogado() {
         String email = SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getName();
 
-        return fotografaRepository.findByEmail(email)
+        return usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED,
                         "Fotógrafa autenticada não encontrada"
                 ));
     }
 
-    private ConfiguracaoEstudio getOuCriarEstudio(Fotografa fotografa) {
-        return configuracaoEstudioRepository.findByFotografaId(fotografa.getId())
+    private ConfiguracaoEstudio getOuCriarEstudio(Usuario usuario) {
+        return configuracaoEstudioRepository.findByUsuarioId(usuario.getId())
                 .orElseGet(() -> configuracaoEstudioRepository.save(
                         ConfiguracaoEstudio.builder()
-                                .fotografa(fotografa)
+                                .usuario(usuario)
                                 .nomeEstudio("Seu Estúdio Fotográfico")
                                 .nomeComercial("Seu Estúdio")
-                                .email(fotografa.getEmail())
-                                .telefone(fotografa.getTelefone())
-                                .cnpj(fotografa.getCnpj())
-                                .logoUrl(fotografa.getLogoUrl())
+                                .email(usuario.getEmail())
+                                .telefone(usuario.getTelefone())
+                                .cnpj(usuario.getCnpj())
+                                .logoUrl(usuario.getLogoUrl())
                                 .build()
                 ));
     }
 
-    private PreferenciasSistema getOuCriarPreferencias(Fotografa fotografa) {
-        return preferenciasSistemaRepository.findByFotografaId(fotografa.getId())
+    private PreferenciasSistema getOuCriarPreferencias(Usuario usuario) {
+        return preferenciasSistemaRepository.findByUsuarioId(usuario.getId())
                 .orElseGet(() -> preferenciasSistemaRepository.save(
                         PreferenciasSistema.builder()
-                                .fotografa(fotografa)
+                                .usuario(usuario)
                                 .qtdFotosPadrao(20)
                                 .prazoExpiracaoAlbumDias(30)
                                 .mensagemEnvioAlbum("Olá! Seu álbum já está disponível. Acesse pelo link usando a senha enviada.")
@@ -425,14 +425,14 @@ public class ConfiguracoesService {
                 ));
     }
 
-    private ConfiguracaoEmail getOuCriarEmail(Fotografa fotografa) {
-        return configuracaoEmailRepository.findByFotografaId(fotografa.getId())
+    private ConfiguracaoEmail getOuCriarEmail(Usuario usuario) {
+        return configuracaoEmailRepository.findByUsuarioId(usuario.getId())
                 .orElseGet(() -> configuracaoEmailRepository.save(
                         ConfiguracaoEmail.builder()
-                                .fotografa(fotografa)
+                                .usuario(usuario)
                                 .ativo(false)
                                 .nomeRemetente("Seu Estúdio Fotográfico")
-                                .emailFotografaAvisos(fotografa.getEmail())
+                                .emailUsuarioAvisos(usuario.getEmail())
                                 .enviarAlbumPublicado(true)
                                 .avisarSelecaoRecebida(true)
                                 .enviarConfirmacaoSelecaoCliente(true)
@@ -443,14 +443,14 @@ public class ConfiguracoesService {
                 ));
     }
 
-    private FotografaConfigDTO toFotografaDTO(Fotografa fotografa) {
-        return FotografaConfigDTO.builder()
-                .id(fotografa.getId())
-                .nome(fotografa.getNome())
-                .email(fotografa.getEmail())
-                .telefone(fotografa.getTelefone())
-                .cidade(fotografa.getCidade())
-                .fotoPerfilUrl(fotografa.getFotoPerfilUrl())
+    private UsuarioConfigDTO toUsuarioDTO(Usuario usuario) {
+        return UsuarioConfigDTO.builder()
+                .id(usuario.getId())
+                .nome(usuario.getNome())
+                .email(usuario.getEmail())
+                .telefone(usuario.getTelefone())
+                .cidade(usuario.getCidade())
+                .fotoPerfilUrl(usuario.getFotoPerfilUrl())
                 .build();
     }
 
@@ -502,7 +502,7 @@ public class ConfiguracoesService {
                 .id(email.getId())
                 .ativo(email.getAtivo())
                 .nomeRemetente(email.getNomeRemetente())
-                .emailFotografaAvisos(email.getEmailFotografaAvisos())
+                .emailUsuarioAvisos(email.getEmailUsuarioAvisos())
                 .enviarAlbumPublicado(email.getEnviarAlbumPublicado())
                 .avisarSelecaoRecebida(email.getAvisarSelecaoRecebida())
                 .enviarConfirmacaoSelecaoCliente(email.getEnviarConfirmacaoSelecaoCliente())
@@ -535,10 +535,10 @@ public class ConfiguracoesService {
         return valor == null || valor.trim().isEmpty();
     }
     @Transactional
-public FotografaConfigDTO uploadFotoPerfil(MultipartFile arquivo) {
+public UsuarioConfigDTO uploadFotoPerfil(MultipartFile arquivo) {
     validarImagem(arquivo);
 
-    Fotografa fotografa = getFotografaLogada();
+    Usuario usuario = getUsuarioLogado();
 
     try {
         Map<String, Object> uploadResult =
@@ -546,10 +546,10 @@ public FotografaConfigDTO uploadFotoPerfil(MultipartFile arquivo) {
 
         String url = String.valueOf(uploadResult.get("secure_url"));
 
-        fotografa.setFotoPerfilUrl(url);
-        fotografaRepository.save(fotografa);
+        usuario.setFotoPerfilUrl(url);
+        usuarioRepository.save(usuario);
 
-        return toFotografaDTO(fotografa);
+        return toUsuarioDTO(usuario);
     } catch (IOException e) {
         throw new ResponseStatusException(
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -562,8 +562,8 @@ public FotografaConfigDTO uploadFotoPerfil(MultipartFile arquivo) {
 public EstudioConfigDTO uploadLogoEstudio(MultipartFile arquivo) {
     validarImagem(arquivo);
 
-    Fotografa fotografa = getFotografaLogada();
-    ConfiguracaoEstudio estudio = getOuCriarEstudio(fotografa);
+    Usuario usuario = getUsuarioLogado();
+    ConfiguracaoEstudio estudio = getOuCriarEstudio(usuario);
 
     try {
         Map<String, Object> uploadResult =
@@ -608,8 +608,8 @@ private void validarImagem(MultipartFile arquivo) {
 public PreferenciasConfigDTO uploadCapaAlbumPadrao(MultipartFile arquivo) {
     validarImagem(arquivo);
 
-    Fotografa fotografa = getFotografaLogada();
-    PreferenciasSistema preferencias = getOuCriarPreferencias(fotografa);
+    Usuario usuario = getUsuarioLogado();
+    PreferenciasSistema preferencias = getOuCriarPreferencias(usuario);
 
     String publicIdAntigo = preferencias.getCapaAlbumPadraoPublicId();
 
@@ -733,7 +733,7 @@ private Map<String, Object> backupHistorico(HistoricoStatusEnsaio historico) {
 private Map<String, Object> backupModeloContrato(ModeloContrato modelo) {
     return mapa(
             "id", modelo.getId(),
-            "fotografaId", modelo.getFotografa().getId(),
+            "usuarioId", modelo.getUsuario().getId(),
             "nome", modelo.getNome(),
             "tipoEnsaio", modelo.getTipoEnsaio(),
             "clausulas", modelo.getClausulas(),
@@ -773,11 +773,11 @@ private byte[] gerarResumoBackupPdf(Map<String, Object> backup) throws Exception
     document.add(tabelaResumo(resumo, texto, destaque));
 
     Map<String, Object> dados = (Map<String, Object>) backup.get("dados");
-    Map<String, Object> fotografa = (Map<String, Object>) dados.get("fotografa");
+    Map<String, Object> usuario = (Map<String, Object>) dados.get("usuario");
     document.add(new Paragraph("Profissional", secao));
-    document.add(paragrafo("Nome: " + valorTexto(fotografa.get("nome")) +
-            " | Email: " + valorTexto(fotografa.get("email")) +
-            " | Telefone: " + valorTexto(fotografa.get("telefone")), texto));
+    document.add(paragrafo("Nome: " + valorTexto(usuario.get("nome")) +
+            " | Email: " + valorTexto(usuario.get("email")) +
+            " | Telefone: " + valorTexto(usuario.get("telefone")), texto));
 
     List<Map<String, Object>> clientes = (List<Map<String, Object>>) dados.get("clientes");
     List<Map<String, Object>> ensaios = (List<Map<String, Object>>) dados.get("ensaios");

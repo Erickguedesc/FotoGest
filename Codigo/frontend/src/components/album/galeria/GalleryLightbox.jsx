@@ -84,7 +84,7 @@ export default function GalleryLightbox({
 
         <p className="mt-2 text-sm leading-6 text-[#887e74]">
           Se desejar, use este espaço para indicar ajustes, preferências ou
-          detalhes importantes para a fotógrafa.
+          detalhes importantes para o profissional.
         </p>
 
         <button

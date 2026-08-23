@@ -112,7 +112,7 @@ function getDashboardTip(dashboard, agenda, today) {
 
 export default function DashboardHeader({ dashboard }) {
     const hoje = new Date()
-    const primeiroNome = getFirstName(localStorage.getItem('fotografaNome') || '')
+    const primeiroNome = getFirstName(localStorage.getItem('usuarioNome') || '')
     const onboardingCompletedAt = localStorage.getItem(getOnboardingKey('completedAt'))
     const onboardingDate = onboardingCompletedAt ? new Date(onboardingCompletedAt) : null
     const firstAccess =

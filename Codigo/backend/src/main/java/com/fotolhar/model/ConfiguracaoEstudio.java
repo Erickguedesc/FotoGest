@@ -29,8 +29,8 @@ public class ConfiguracaoEstudio {
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "fotografa_id", nullable = false, unique = true)
-    private Fotografa fotografa;
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
+    private Usuario usuario;
 
     @Column(name = "nome_estudio", length = 160)
     private String nomeEstudio;

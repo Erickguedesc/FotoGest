@@ -21,7 +21,7 @@ export default function ConfirmSelectionModal({
           Deseja finalizar?
         </h2>
         <p className="mt-3 text-sm leading-7 text-[#887e74]">
-          Após confirmar, sua seleção será enviada à fotógrafa e não poderá ser
+          Após confirmar, sua seleção será enviada ao profissional e não poderá ser
           alterada.
         </p>
 
