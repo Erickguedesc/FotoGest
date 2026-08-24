@@ -128,10 +128,6 @@ export default function LoginPage() {
 
     setLoading(true)
     setApiError('')
-    localStorage.removeItem('token')
-    localStorage.removeItem('usuarioNome')
-    localStorage.removeItem('usuarioEmail')
-    localStorage.removeItem('fotolhar-usuario-perfil')
 
     try {
       const res = await api.post('/auth/login', {
@@ -143,6 +139,7 @@ export default function LoginPage() {
       const loginDisplayName = [nomeExibicao, nomeComercial, nomeEstudio, nome]
         .find((value) => value && !isGenericDisplayName(value))
 
+      localStorage.removeItem('fotolhar-usuario-perfil')
       localStorage.setItem('token', token)
       localStorage.setItem('usuarioNome', nome)
       localStorage.setItem('usuarioEmail', email)

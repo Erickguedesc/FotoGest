@@ -4,37 +4,6 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
 })
 
-function clearAuthData() {
-  localStorage.removeItem('token')
-  localStorage.removeItem('usuarioNome')
-  localStorage.removeItem('usuarioEmail')
-  localStorage.removeItem('fotolhar-usuario-perfil')
-}
-
-function getRequestPath(config = {}) {
-  try {
-    return new URL(config.url || '', config.baseURL || api.defaults.baseURL).pathname
-  } catch {
-    return config.url || ''
-  }
-}
-
-function isPublicRequest(config = {}) {
-  const path = getRequestPath(config)
-
-  if (path.startsWith('/auth/')) {
-    return true
-  }
-
-  return /^\/album\/[^/]+(\/acessar|\/selecao)?$/.test(path)
-}
-
-function redirectToLogin() {
-  if (window.location.pathname !== '/login') {
-    window.location.href = '/login?motivo=sessao-expirada'
-  }
-}
-
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
 
@@ -63,10 +32,6 @@ api.interceptors.response.use(
 
       case 401:
         console.warn('Não autorizado:', message)
-        if (!isPublicRequest(error.config)) {
-          clearAuthData()
-          redirectToLogin()
-        }
         break
 
       case 403:
