@@ -8,6 +8,7 @@ function clearAuthData() {
   localStorage.removeItem('token')
   localStorage.removeItem('usuarioNome')
   localStorage.removeItem('usuarioEmail')
+  localStorage.removeItem('fotolhar-usuario-perfil')
 }
 
 function getRequestPath(config = {}) {

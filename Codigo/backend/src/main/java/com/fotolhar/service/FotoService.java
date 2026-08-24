@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FotoService {
 
-    private static final int MAX_UPLOAD_CONCURRENCY = 4;
+    private static final int MAX_UPLOAD_CONCURRENCY = 2;
 
     private final CloudinaryService cloudinaryService;
     private final FotoRepository fotoRepository;

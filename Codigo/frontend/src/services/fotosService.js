@@ -37,7 +37,30 @@ upload: (ensaioId, arquivos = [], onProgress) => {
     return api.delete(`/fotos/${fotoId}`)
   },
 
-    removerVarios: (fotosIds = []) => {
-    return Promise.all(fotosIds.map((fotoId) => api.delete(`/fotos/${fotoId}`)))
+  removerVarios: async (fotosIds = [], onProgress) => {
+    const removidas = []
+    const falhas = []
+
+    for (const fotoId of fotosIds) {
+      try {
+        await api.delete(`/fotos/${fotoId}`)
+        removidas.push(fotoId)
+      } catch (error) {
+        falhas.push({ fotoId, error })
+
+        if (error?.response?.status === 401) {
+          throw error
+        }
+      } finally {
+        onProgress?.({
+          total: fotosIds.length,
+          concluidas: removidas.length + falhas.length,
+          removidas: removidas.length,
+          falhas: falhas.length,
+        })
+      }
+    }
+
+    return { removidas, falhas }
   },
 }

@@ -131,6 +131,7 @@ export default function LoginPage() {
     localStorage.removeItem('token')
     localStorage.removeItem('usuarioNome')
     localStorage.removeItem('usuarioEmail')
+    localStorage.removeItem('fotolhar-usuario-perfil')
 
     try {
       const res = await api.post('/auth/login', {

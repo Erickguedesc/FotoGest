@@ -32,16 +32,57 @@
     return partes[partes.length - 1] || ''
   }
 
-  const UPLOAD_BATCH_SIZE = 10
+  const UPLOAD_BATCH_SIZE = 3
+  const MAX_UPLOAD_FILE_SIZE_MB = 20
+  const MAX_UPLOAD_BATCH_SIZE_MB = 45
+  const MAX_UPLOAD_FILE_SIZE = MAX_UPLOAD_FILE_SIZE_MB * 1024 * 1024
+  const MAX_UPLOAD_BATCH_SIZE = MAX_UPLOAD_BATCH_SIZE_MB * 1024 * 1024
 
   const dividirEmLotes = (arquivos, tamanhoLote = UPLOAD_BATCH_SIZE) => {
     const lotes = []
+    let loteAtual = []
+    let tamanhoAtual = 0
 
-    for (let index = 0; index < arquivos.length; index += tamanhoLote) {
-      lotes.push(arquivos.slice(index, index + tamanhoLote))
+    for (const arquivo of arquivos) {
+      const excedeQuantidade = loteAtual.length >= tamanhoLote
+      const excedeTamanho =
+        loteAtual.length > 0 && tamanhoAtual + arquivo.size > MAX_UPLOAD_BATCH_SIZE
+
+      if (excedeQuantidade || excedeTamanho) {
+        lotes.push(loteAtual)
+        loteAtual = []
+        tamanhoAtual = 0
+      }
+
+      loteAtual.push(arquivo)
+      tamanhoAtual += arquivo.size
     }
 
+    if (loteAtual.length) lotes.push(loteAtual)
+
     return lotes
+  }
+
+  const validarArquivosUpload = (arquivos) => {
+    const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp']
+
+    const invalidos = arquivos.filter((arquivo) => !tiposPermitidos.includes(arquivo.type))
+    const grandes = arquivos.filter((arquivo) => arquivo.size > MAX_UPLOAD_FILE_SIZE)
+
+    if (invalidos.length) {
+      return `Remova arquivos fora do formato permitido. Envie apenas JPG, PNG ou WEBP.`
+    }
+
+    if (grandes.length) {
+      const nomes = grandes
+        .slice(0, 3)
+        .map((arquivo) => arquivo.name)
+        .join(', ')
+
+      return `Algumas fotos passam de ${MAX_UPLOAD_FILE_SIZE_MB}MB: ${nomes}${grandes.length > 3 ? '...' : ''}. Reduza o tamanho e tente novamente.`
+    }
+
+    return null
   }
 
   const pluralizarFotos = (total) => `${total} foto${total === 1 ? '' : 's'}`
@@ -368,6 +409,13 @@
 
   if (!arquivos?.length) return
 
+  const erroValidacao = validarArquivosUpload(arquivos)
+
+  if (erroValidacao) {
+    showToast(erroValidacao, 'error')
+    return
+  }
+
   setUploadLoading(true)
   setUploadProgress(0)
   setUploadTotal(arquivos.length)
@@ -396,6 +444,7 @@
 
       fotosEnviadas += lote.length
       setUploadProgress(Math.min(Math.round((fotosEnviadas * 100) / arquivos.length), 99))
+      await loadFotos()
     }
 
     setUploadStatus('Finalizando e atualizando a galeria...')
@@ -405,7 +454,7 @@
   } catch (error) {
     const msg =
       error?.response?.data?.message ||
-      'Não foi possível enviar todas as fotos. As fotos já concluídas permanecem salvas.'
+      'Não foi possível enviar todas as fotos. As fotos já concluídas permanecem salvas. Tente enviar as restantes em grupos menores.'
 
     showToast(msg, 'error')
 
@@ -499,9 +548,22 @@
       setUploadLoading(true)
 
       try {
-        await fotosService.removerVarios(fotosIds)
-        showToast('Fotos removidas com sucesso.')
-        setConfirmAction(null)
+        const resultado = await fotosService.removerVarios(fotosIds, (progresso) => {
+          setUploadStatus(
+            `Removendo fotos... ${progresso.concluidas} de ${progresso.total} processadas.`,
+          )
+        })
+
+        if (resultado.falhas.length) {
+          showToast(
+            `${resultado.removidas.length} foto${resultado.removidas.length === 1 ? '' : 's'} removida${resultado.removidas.length === 1 ? '' : 's'}. ${resultado.falhas.length} não pôde${resultado.falhas.length === 1 ? '' : 'ram'} ser removida${resultado.falhas.length === 1 ? '' : 's'}.`,
+            'error',
+          )
+        } else {
+          showToast('Fotos removidas com sucesso.')
+          setConfirmAction(null)
+        }
+
         await loadFotos()
       } catch (error) {
         const msg =

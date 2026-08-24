@@ -17,6 +17,28 @@ import { getPreservedOnboardingEntries } from '../../utils/onboarding'
 import NotificationBell from './NotificationBell'
 
 const LOGIN_DISPLAY_NAME_KEY = 'fotolhar-login-display-name'
+const USER_PROFILE_CACHE_KEY = 'fotolhar-usuario-perfil'
+
+function readCachedUsuario() {
+  try {
+    const cached = localStorage.getItem(USER_PROFILE_CACHE_KEY)
+    return cached ? JSON.parse(cached) : null
+  } catch {
+    localStorage.removeItem(USER_PROFILE_CACHE_KEY)
+    return null
+  }
+}
+
+function cacheUsuario(usuario) {
+  if (!usuario) {
+    localStorage.removeItem(USER_PROFILE_CACHE_KEY)
+    return
+  }
+
+  localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(usuario))
+  if (usuario.nome) localStorage.setItem('usuarioNome', usuario.nome)
+  if (usuario.email) localStorage.setItem('usuarioEmail', usuario.email)
+}
 
 function isGenericLoginDisplayName(name = '') {
   const normalized = name.trim().toLowerCase()
@@ -90,7 +112,7 @@ export default function Header() {
   const menuRef = useRef(null)
 
   const [menuOpen, setMenuOpen] = useState(false)
-  const [usuario, setUsuario] = useState(null)
+  const [usuario, setUsuario] = useState(() => readCachedUsuario())
   const [theme, setTheme] = useState(() => localStorage.getItem('fotolhar-theme') || 'dark')
 
   useEffect(() => {
@@ -106,7 +128,9 @@ export default function Header() {
       try {
         const data = await configuracoesService.buscar()
         if (isMounted) {
-          setUsuario(data?.usuario || null)
+          const nextUsuario = data?.usuario || null
+          setUsuario(nextUsuario)
+          cacheUsuario(nextUsuario)
         }
       } catch {
         if (isMounted) {
@@ -118,6 +142,7 @@ export default function Header() {
     function handleUsuarioAtualizado(event) {
       if (event.detail) {
         setUsuario(event.detail)
+        cacheUsuario(event.detail)
         return
       }
 
@@ -133,6 +158,13 @@ export default function Header() {
       window.removeEventListener('fotolhar:usuario-atualizado', handleUsuarioAtualizado)
     }
   }, [])
+
+  useEffect(() => {
+    if (!usuario?.fotoPerfilUrl) return
+
+    const image = new Image()
+    image.src = usuario.fotoPerfilUrl
+  }, [usuario?.fotoPerfilUrl])
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -253,7 +285,7 @@ export default function Header() {
           {usuario?.fotoPerfilUrl ? (
             <img
               src={usuario.fotoPerfilUrl}
-              alt={usuario?.nome || 'Fotógrafa'}
+              alt={usuario?.nome || 'Usuário'}
               className="h-full w-full object-cover"
             />
           ) : (
@@ -273,7 +305,7 @@ export default function Header() {
                   {usuario?.fotoPerfilUrl ? (
                     <img
                       src={usuario.fotoPerfilUrl}
-                      alt={usuario?.nome || 'FotÃ³grafa'}
+                      alt={usuario?.nome || 'Usuário'}
                       className="h-full w-full object-cover"
                     />
                   ) : (
@@ -283,7 +315,7 @@ export default function Header() {
 
                 <div className="min-w-0">
               <p className="theme-title truncate text-sm font-semibold">
-                {usuario?.nome || 'Fotógrafa'}
+                {usuario?.nome || 'Usuário'}
               </p>
 
               <p className="theme-muted mt-0.5 truncate text-xs">
