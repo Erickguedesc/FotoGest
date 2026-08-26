@@ -51,7 +51,7 @@ export default function GalleryLightbox({
         onClick={(event) => event.stopPropagation()}
       >
         <img
-          src={getFotoUrl(foto)}
+          src={getFotoUrl(foto, { width: 1800 })}
           alt="Foto ampliada"
           className="max-h-[52vh] max-w-[92vw] object-contain xl:max-h-[82vh] xl:max-w-[calc(86vw-380px)]"
         />

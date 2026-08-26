@@ -187,30 +187,6 @@
       }
     }, [uploadLoading])
 
-    useEffect(() => {
-      if (!albumToken || !albumPublicado) {
-        setSelecao(null)
-        return
-      }
-
-      let cancelado = false
-
-      const carregarSelecaoSilenciosa = async () => {
-        try {
-          const response = await albumService.buscarSelecao(albumToken)
-          if (!cancelado) setSelecao(response.data)
-        } catch {
-          if (!cancelado) setSelecao(null)
-        }
-      }
-
-      carregarSelecaoSilenciosa()
-
-      return () => {
-        cancelado = true
-      }
-    }, [albumToken, albumPublicado])
-
     const showToast = (message, type = 'success') => {
       setToast({ message, type })
     }
@@ -271,13 +247,26 @@
     setLoading(true)
 
     try {
-    await Promise.all([
-  loadEnsaio(),
-  loadFotos(),
-  loadAlbum(),
-  loadHistoricoStatus(),
-  loadConfiguracoes(),
-])
+      const [detalhesResponse] = await Promise.all([
+        ensaiosService.buscarDetalhes(id),
+        loadConfiguracoes(),
+      ])
+
+      const detalhes = detalhesResponse.data || {}
+
+      setEnsaio(detalhes.ensaio || null)
+      setFotos(Array.isArray(detalhes.fotos) ? detalhes.fotos : [])
+      setAlbum(detalhes.album || null)
+      setHistoricoStatus(Array.isArray(detalhes.historicoStatus) ? detalhes.historicoStatus : [])
+      setSelecao(detalhes.selecao || null)
+    } catch (error) {
+      console.error('[DetalhesEnsaio] Erro ao carregar detalhes:', error?.response?.data || error)
+      showToast('Não foi possível carregar os detalhes do ensaio.', 'error')
+      setEnsaio(null)
+      setFotos([])
+      setAlbum(null)
+      setHistoricoStatus([])
+      setSelecao(null)
     } finally {
       setLoading(false)
     }
@@ -1238,7 +1227,7 @@ const texto =
 
             {excedente > 0 ? (
               <div className="mt-5 rounded-xl border border-red-400/30 bg-red-400/10 p-4 text-[12px] leading-5 text-red-300">
-                A cliente selecionou além do pacote. Confirme o valor antes da entrega.
+                Cliente selecionou além do pacote. Confirme o valor antes da entrega.
               </div>
             ) : null}
 

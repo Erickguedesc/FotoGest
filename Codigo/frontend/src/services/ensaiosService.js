@@ -19,6 +19,8 @@ export const ensaiosService = {
 
   buscarPorId: (id) => api.get(`/ensaios/${id}`),
 
+  buscarDetalhes: (id) => api.get(`/ensaios/${id}/detalhes`),
+
   buscarConflitoAgenda: (dataEnsaio) => api.get('/ensaios/conflitos', {
     params: { dataEnsaio },
   }),

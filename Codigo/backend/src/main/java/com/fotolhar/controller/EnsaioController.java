@@ -2,6 +2,7 @@ package com.fotolhar.controller;
 
 import com.fotolhar.dto.EnsaioRequest;
 import com.fotolhar.dto.EnsaioConflitoAgendaResponse;
+import com.fotolhar.dto.EnsaioDetalhesResponse;
 import com.fotolhar.dto.EnsaioNotasInternasRequest;
 import com.fotolhar.dto.EnsaioObservacoesRequest;
 import com.fotolhar.dto.EnsaioResponse;
@@ -47,6 +48,11 @@ public List<EnsaioResponse> listar(
     @GetMapping("/{id}")
     public EnsaioResponse buscar(@PathVariable UUID id) {
         return service.buscarPorId(id);
+    }
+
+    @GetMapping("/{id}/detalhes")
+    public EnsaioDetalhesResponse buscarDetalhes(@PathVariable UUID id) {
+        return service.buscarDetalhes(id);
     }
 
     @GetMapping("/conflitos")

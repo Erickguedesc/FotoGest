@@ -1,8 +1,18 @@
 export const LIMITE_PADRAO = 30
 export const VALOR_EXTRA_PADRAO = 35
 
-export function getFotoUrl(foto) {
-  return foto?.urlWatermark || foto?.url || foto?.src || ''
+export function otimizarCloudinaryUrl(url, width = 1200) {
+  if (!url || !url.includes('/image/upload/')) return url || ''
+
+  return url.replace(
+    '/image/upload/',
+    `/image/upload/f_auto,q_auto,w_${width},c_limit/`,
+  )
+}
+
+export function getFotoUrl(foto, { width = 1200 } = {}) {
+  const url = foto?.urlWatermark || foto?.url || foto?.src || ''
+  return otimizarCloudinaryUrl(url, width)
 }
 
 export function formatMoney(value) {

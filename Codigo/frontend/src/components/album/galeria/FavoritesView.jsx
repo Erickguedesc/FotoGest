@@ -80,7 +80,7 @@ export default function FavoritesView({
                       className="block w-full"
                     >
                       <img
-                        src={getFotoUrl(foto)}
+                        src={getFotoUrl(foto, { width: 720 })}
                         alt="Foto favorita"
                         loading="lazy"
                         className="h-auto w-full object-cover transition group-hover:brightness-75"

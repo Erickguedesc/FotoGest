@@ -2,10 +2,15 @@ package com.fotolhar.service;
 
 import com.fotolhar.dto.EnsaioRequest;
 import com.fotolhar.dto.EnsaioConflitoAgendaResponse;
+import com.fotolhar.dto.EnsaioDetalhesResponse;
 import com.fotolhar.dto.EnsaioNotasInternasRequest;
 import com.fotolhar.dto.EnsaioObservacoesRequest;
 import com.fotolhar.dto.EnsaioResponse;
 import com.fotolhar.dto.EnsaioStatusRequest;
+import com.fotolhar.dto.FotoResponse;
+import com.fotolhar.dto.HistoricoStatusEnsaioResponse;
+import com.fotolhar.dto.AlbumAdminResponseDTO;
+import com.fotolhar.dto.SelecaoResponse;
 import com.fotolhar.enums.StatusEnsaio;
 import com.fotolhar.model.Cliente;
 import com.fotolhar.model.Ensaio;
@@ -49,6 +54,10 @@ public class EnsaioService {
     private final PreferenciasSistemaRepository preferenciasSistemaRepository;
     private final EmailService emailService;
     private final UsuarioContextService usuarioContextService;
+    private final FotoService fotoService;
+    private final AlbumService albumService;
+    private final AlbumPublicoService albumPublicoService;
+    private final HistoricoStatusEnsaioService historicoStatusEnsaioService;
 
     
     
@@ -123,6 +132,41 @@ public List<EnsaioResponse> listar(
     @Transactional(readOnly = true)
     public EnsaioResponse buscarPorId(UUID id) {
         return toResponse(buscarEnsaio(id));
+    }
+
+    @Transactional(readOnly = true)
+    public EnsaioDetalhesResponse buscarDetalhes(UUID id) {
+        EnsaioResponse ensaio = buscarPorId(id);
+        List<FotoResponse> fotos = fotoService.listarPorEnsaio(id);
+        List<HistoricoStatusEnsaioResponse> historicoStatus =
+                historicoStatusEnsaioService.listarPorEnsaio(id);
+
+        AlbumAdminResponseDTO album = null;
+        SelecaoResponse selecao = null;
+
+        try {
+            album = albumService.buscarAlbumPorEnsaio(id);
+
+            boolean albumPublicado =
+                    Boolean.TRUE.equals(album.getAtivo()) &&
+                    Boolean.TRUE.equals(album.getAcessoLiberado());
+
+            if (albumPublicado && album.getTokenUrl() != null) {
+                selecao = albumPublicoService.buscarSelecao(album.getTokenUrl());
+            }
+        } catch (ResponseStatusException ex) {
+            if (ex.getStatusCode() != HttpStatus.NOT_FOUND) {
+                throw ex;
+            }
+        }
+
+        return EnsaioDetalhesResponse.builder()
+                .ensaio(ensaio)
+                .fotos(fotos)
+                .album(album)
+                .historicoStatus(historicoStatus)
+                .selecao(selecao)
+                .build();
     }
 
     @Transactional(readOnly = true)

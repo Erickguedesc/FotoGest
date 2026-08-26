@@ -22,7 +22,7 @@ export default function GalleryGrid({
         <div className="columns-2 gap-2 md:columns-3 lg:columns-4">
           {fotos.map((foto, index) => {
             const selecionada = favoritas.includes(foto.id)
-            const url = getFotoUrl(foto)
+            const url = getFotoUrl(foto, { width: 720 })
 
             return (
               <article

@@ -51,7 +51,7 @@ export default function ConfiguracoesPage() {
     try {
       setLoading(true)
 
-      const data = await configuracoesService.buscar()
+      const data = await configuracoesService.buscar({ force: true })
       setConfiguracoes(data)
     } catch (error) {
       console.error('[ConfiguracoesPage] Erro ao carregar:', error)
