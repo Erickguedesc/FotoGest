@@ -112,6 +112,7 @@ export default function CalendarioEnsaios({
   )
   const [anoDigitado, setAnoDigitado] = useState(String(hoje.getFullYear()))
   const [diaSelecionado, setDiaSelecionado] = useState(toInputDate(hoje))
+  const hojeKey = toInputDate(hoje)
 
   const ensaiosPorDia = useMemo(() => {
     return ensaios.reduce((acc, ensaio) => {
@@ -147,10 +148,11 @@ export default function CalendarioEnsaios({
       return (
         year === mesAtual.getFullYear() &&
         month === mesAtual.getMonth() + 1 &&
-        itens.length > 1
+        itens.length > 1 &&
+        key >= hojeKey
       )
     }).length
-  }, [ensaiosPorDia, mesAtual])
+  }, [ensaiosPorDia, mesAtual, hojeKey])
 
   const conflitosDetalhesNoMes = useMemo(() => {
     return Object.entries(ensaiosPorDia)
@@ -159,7 +161,8 @@ export default function CalendarioEnsaios({
         return (
           year === mesAtual.getFullYear() &&
           month === mesAtual.getMonth() + 1 &&
-          itens.length > 1
+          itens.length > 1 &&
+          key >= hojeKey
         )
       })
       .sort(([a], [b]) => a.localeCompare(b))
@@ -175,7 +178,7 @@ export default function CalendarioEnsaios({
           ),
         }
       })
-  }, [ensaiosPorDia, mesAtual])
+  }, [ensaiosPorDia, mesAtual, hojeKey])
 
   const ensaiosSelecionados = [...(ensaiosPorDia[diaSelecionado] || [])].sort(
     (a, b) => new Date(a.dataEnsaio).getTime() - new Date(b.dataEnsaio).getTime()
@@ -186,6 +189,7 @@ export default function CalendarioEnsaios({
     const date = new Date(year, month - 1, day)
     return isValidDate(date) ? date : hoje
   })()
+  const deveAlertarConflitoSelecionado = ensaiosSelecionados.length > 1 && diaSelecionado >= hojeKey
 
   const irParaMes = (delta) => {
     setMesAtual((prev) => {
@@ -330,8 +334,8 @@ export default function CalendarioEnsaios({
               const eventos = ensaiosPorDia[key] || []
               const foraDoMes = date.getMonth() !== mesAtual.getMonth()
               const selecionado = key === diaSelecionado
-              const hojeKey = key === toInputDate(hoje)
-              const conflito = eventos.length > 1
+              const hojeSelecionado = key === hojeKey
+              const conflito = eventos.length > 1 && key >= hojeKey
 
               return (
                 <button
@@ -345,7 +349,7 @@ export default function CalendarioEnsaios({
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <span
                       className={`flex h-7 w-7 items-center justify-center rounded-full text-[12px] ${
-                        hojeKey
+                        hojeSelecionado
                           ? 'bg-[var(--gold)] text-[#1A1200]'
                           : selecionado
                             ? 'text-[var(--gold)]'
@@ -423,7 +427,7 @@ export default function CalendarioEnsaios({
             Novo nessa data
           </button>
 
-          {ensaiosSelecionados.length > 1 && (
+          {deveAlertarConflitoSelecionado && (
             <div className="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 p-4 text-[13px] leading-6 text-red-200">
               Há mais de um ensaio neste dia. Confira horários e deslocamento antes de confirmar novos agendamentos.
             </div>

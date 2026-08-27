@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   AlertCircle,
+  ArrowLeft,
   CircleCheck,
   Eye,
   EyeOff,
@@ -192,17 +193,25 @@ export default function LoginPage() {
         />
         <div className="pointer-events-none absolute inset-y-0 left-[42%] hidden w-[28%] bg-[linear-gradient(90deg,rgba(244,236,228,0)_0%,#f4ece4_78%)] md:block" />
 
+        <Link
+          to="/"
+          className="absolute left-5 top-5 z-20 inline-flex items-center gap-2 rounded-[8px] border border-[#d8d2cc] bg-white/[0.78] px-3 py-2 text-[13px] font-medium text-[#6e6259] shadow-[0_8px_22px_rgba(48,38,29,0.08)] backdrop-blur transition hover:border-[#c8b8aa] hover:bg-white hover:text-[#bf4b25] sm:left-8 sm:top-8"
+        >
+          <ArrowLeft size={16} />
+          Voltar para homepage
+        </Link>
+
         <div className="relative z-10 mx-auto grid w-full max-w-[1244px] items-start gap-7 px-5 pt-8 sm:px-8 md:grid-cols-[minmax(0,1fr)_minmax(520px,568px)] md:pt-12 lg:px-0 lg:pt-14">
           <div className="hidden md:block" aria-hidden="true" />
 
           <div>
-           <div className="mx-auto mb-5 h-[110px] w-full max-w-[480px] overflow-visible">
-  <img
-    src={loginBrand}
-    alt="Fotolhar - Seu olhar cria. O Fotolhar organiza."
-    className="h-full w-full object-cover object-center scale-[1.10]"
-  />
-</div>
+            <div className="mx-auto mb-5 h-[110px] w-full max-w-[480px] overflow-visible">
+              <img
+                src={loginBrand}
+                alt="Fotolhar - Seu olhar cria. O Fotolhar organiza."
+                className="h-full w-full object-cover object-center scale-[1.10]"
+              />
+            </div>
 
             <form onSubmit={handleSubmit} noValidate className={`${loginCardSurface} w-full px-6 py-7 sm:px-10 sm:py-9`}>
               <p className="mb-3 text-[13px] font-bold uppercase tracking-normal text-[#bf4b25]">

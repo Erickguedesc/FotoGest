@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import {
     ArrowRight,
     CalendarDays,
-    Plus,
     Sparkles,
 } from 'lucide-react'
 
@@ -136,7 +135,7 @@ export default function DashboardHeader({ dashboard }) {
     )
 
     return (
-        <section className="grid gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(340px,0.9fr)]">
+        <section className="grid items-stretch gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(340px,0.75fr)]">
             <div>
                 <div className="flex items-center gap-3">
                     <span className="flex h-9 w-9 items-center justify-center rounded-[9px] border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]">
@@ -177,18 +176,8 @@ export default function DashboardHeader({ dashboard }) {
                 </Link>
             </div>
 
-            <div className="flex flex-col gap-4">
-                <div className="flex justify-end">
-                    <Link
-                        to="/novo-ensaio"
-                        className="inline-flex h-12 items-center gap-2 rounded-[14px] bg-[#b7833a] px-6 text-sm font-semibold tracking-wide text-[#fff7e6] shadow-[0_14px_30px_rgba(183,131,58,0.22)] transition hover:bg-[#a87532]"
-                    >
-                        <Plus size={17} />
-                        Novo ensaio
-                    </Link>
-                </div>
-
-                <section className="theme-card rounded-[14px] border p-4">
+            <div className="flex h-full flex-col">
+                <section className="theme-card flex h-full flex-col justify-between rounded-[18px] border p-5">
                     <div className="mb-4 flex items-center justify-between gap-3">
                         <h2 className="theme-muted text-xs font-semibold uppercase tracking-[0.18em]">
                             Agenda da semana
@@ -203,7 +192,7 @@ export default function DashboardHeader({ dashboard }) {
                         </Link>
                     </div>
 
-                    <div className="grid grid-cols-7 gap-1">
+                    <div className="grid grid-cols-7 gap-1.5">
                         {weekDays.map((date, index) => {
                             const ensaiosDia = getEnsaiosDoDia(agenda, date)
                             const active = index === 0
@@ -211,7 +200,7 @@ export default function DashboardHeader({ dashboard }) {
                             return (
                                 <div
                                     key={date.toISOString()}
-                                    className={`flex min-h-[56px] flex-col items-center justify-center rounded-[12px] border text-center transition ${
+                                    className={`flex min-h-[68px] flex-col items-center justify-center rounded-[12px] border text-center transition ${
                                         active
                                             ? 'border-[var(--gold-border)] bg-[var(--gold-dim)]'
                                             : 'border-transparent'
@@ -220,7 +209,7 @@ export default function DashboardHeader({ dashboard }) {
                                     <span className="theme-muted text-[10px] font-semibold uppercase">
                                         {date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')}
                                     </span>
-                                    <span className="theme-title mt-1 text-sm">
+                                    <span className="theme-title mt-1 text-base">
                                         {String(date.getDate()).padStart(2, '0')}
                                     </span>
                                     <span className={`mt-1 h-1.5 w-1.5 rounded-full ${ensaiosDia.length ? 'bg-[var(--gold)]' : 'bg-transparent'}`} />
