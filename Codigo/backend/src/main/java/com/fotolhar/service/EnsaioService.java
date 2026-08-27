@@ -152,7 +152,13 @@ public List<EnsaioResponse> listar(
                     Boolean.TRUE.equals(album.getAcessoLiberado());
 
             if (albumPublicado && album.getTokenUrl() != null) {
-                selecao = albumPublicoService.buscarSelecao(album.getTokenUrl());
+                try {
+                    selecao = albumPublicoService.buscarSelecao(album.getTokenUrl());
+                } catch (ResponseStatusException ex) {
+                    if (ex.getStatusCode() != HttpStatus.NOT_FOUND) {
+                        throw ex;
+                    }
+                }
             }
         } catch (ResponseStatusException ex) {
             if (ex.getStatusCode() != HttpStatus.NOT_FOUND) {

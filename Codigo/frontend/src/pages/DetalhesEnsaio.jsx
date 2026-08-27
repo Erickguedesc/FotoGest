@@ -261,12 +261,43 @@
       setSelecao(detalhes.selecao || null)
     } catch (error) {
       console.error('[DetalhesEnsaio] Erro ao carregar detalhes:', error?.response?.data || error)
-      showToast('Não foi possível carregar os detalhes do ensaio.', 'error')
-      setEnsaio(null)
-      setFotos([])
-      setAlbum(null)
-      setHistoricoStatus([])
-      setSelecao(null)
+
+      const ensaioFallback = await loadEnsaio()
+
+      if (!ensaioFallback) {
+        setEnsaio(null)
+        setFotos([])
+        setAlbum(null)
+        setHistoricoStatus([])
+        setSelecao(null)
+        return
+      }
+
+      const [albumFallback] = await Promise.all([
+        loadAlbum(),
+        loadFotos(),
+        loadHistoricoStatus(),
+      ])
+
+      const tokenFallback = albumFallback?.tokenUrl || extrairTokenDoLink(albumFallback?.urlAcesso)
+      const albumFallbackPublicado = Boolean(
+        albumFallback?.urlAcesso &&
+        albumFallback?.ativo !== false &&
+        albumFallback?.acessoLiberado !== false
+      )
+
+      if (albumFallbackPublicado && tokenFallback) {
+        try {
+          const selecaoResponse = await albumService.buscarSelecao(tokenFallback)
+          setSelecao(selecaoResponse.data)
+        } catch {
+          setSelecao(null)
+        }
+      } else {
+        setSelecao(null)
+      }
+
+      showToast('O ensaio foi aberto, mas alguns dados complementares não carregaram.', 'error')
     } finally {
       setLoading(false)
     }
