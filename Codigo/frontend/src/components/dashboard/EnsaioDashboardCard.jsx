@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { CalendarDays, MapPin } from 'lucide-react'
+import { CalendarDays, ImageOff, MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import logoFotolhar from '../../assets/logofotolhar.png'
 
 const STATUS_CONFIG = {
   EM_EDICAO: {
@@ -59,11 +58,9 @@ export default function EnsaioDashboardCard({ ensaio }) {
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center bg-[#111111] px-4 text-center">
-            <img
-              src={logoFotolhar}
-              alt="Fotolhar"
-              className="mb-2 w-20 opacity-80"
-            />
+            <span className="mb-2 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/42">
+              <ImageOff size={19} strokeWidth={1.8} />
+            </span>
 
             <p className="text-[11px] tracking-wide text-white/45">
               Sem fotos publicadas no momento

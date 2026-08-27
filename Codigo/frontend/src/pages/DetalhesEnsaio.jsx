@@ -63,6 +63,10 @@
     return lotes
   }
 
+  const aguardar = (tempoMs) => new Promise((resolve) => {
+    window.setTimeout(resolve, tempoMs)
+  })
+
   const validarArquivosUpload = (arquivos) => {
     const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp']
 
@@ -297,11 +301,25 @@
         setSelecao(null)
       }
 
-      showToast('O ensaio foi aberto, mas alguns dados complementares não carregaram.', 'error')
+      console.warn('[DetalhesEnsaio] Ensaio aberto com carregamento complementar parcial.')
     } finally {
       setLoading(false)
     }
   }
+
+  const shouldRetryUpload = (error) => {
+    const status = error?.response?.status
+
+    if (!status) return true
+
+    return status === 408 || status === 429 || status >= 500
+  }
+
+  const getUploadErrorMessage = (error) =>
+    getApiErrorMessage(
+      error,
+      'Não foi possível concluir o envio agora. Tente novamente em instantes.',
+    )
 
     useEffect(() => {
       loadInitialData()
@@ -444,6 +462,28 @@
   try {
     const lotes = dividirEmLotes(arquivos)
     let fotosEnviadas = 0
+    let fotosProcessadas = 0
+    const falhas = []
+
+    const atualizarProgressoTotal = (progressoItem = 0) => {
+      const progressoSeguro = Math.max(0, Math.min(100, Number(progressoItem || 0)))
+      const progressoTotal = Math.round(
+        ((fotosProcessadas + (progressoSeguro / 100)) * 100) / arquivos.length,
+      )
+
+      setUploadProgress(Math.min(progressoTotal, 99))
+    }
+
+    const enviarArquivos = async (arquivosDoEnvio, progressoCallback = atualizarProgressoTotal) => {
+      try {
+        return await fotosService.upload(id, arquivosDoEnvio, progressoCallback)
+      } catch (error) {
+        if (!shouldRetryUpload(error)) throw error
+
+        await aguardar(900)
+        return fotosService.upload(id, arquivosDoEnvio, progressoCallback)
+      }
+    }
 
     for (let index = 0; index < lotes.length; index += 1) {
       const lote = lotes[index]
@@ -453,28 +493,70 @@
         `Enviando lote ${loteAtual} de ${lotes.length} - ${fotosEnviadas} de ${arquivos.length} fotos concluídas.`,
       )
 
-      await fotosService.upload(id, lote, (progressoLote) => {
-        const fotosDoLoteEnviadas = Math.floor((progressoLote / 100) * lote.length)
-        const progressoTotal = Math.round(
-          ((fotosEnviadas + fotosDoLoteEnviadas) * 100) / arquivos.length,
+      try {
+        await enviarArquivos(lote, (progressoLote) => {
+          const fotosDoLoteEnviadas = Math.floor((progressoLote / 100) * lote.length)
+          const progressoTotal = Math.round(
+            ((fotosEnviadas + fotosDoLoteEnviadas) * 100) / arquivos.length,
+          )
+
+          setUploadProgress(Math.min(progressoTotal, 99))
+        })
+
+        fotosEnviadas += lote.length
+        fotosProcessadas += lote.length
+      } catch (error) {
+        if (lote.length === 1) {
+          falhas.push({ arquivo: lote[0], error })
+          fotosProcessadas += 1
+          atualizarProgressoTotal(100)
+          continue
+        }
+
+        setUploadStatus(
+          `Lote ${loteAtual} falhou. Tentando as ${lote.length} fotos uma por uma...`,
         )
 
-        setUploadProgress(Math.min(progressoTotal, 99))
-      })
+        for (const arquivo of lote) {
+          try {
+            await enviarArquivos([arquivo])
+            fotosEnviadas += 1
+          } catch (individualError) {
+            falhas.push({ arquivo, error: individualError })
+          } finally {
+            fotosProcessadas += 1
+            atualizarProgressoTotal(100)
+          }
+        }
+      }
 
-      fotosEnviadas += lote.length
-      setUploadProgress(Math.min(Math.round((fotosEnviadas * 100) / arquivos.length), 99))
+      setUploadProgress(Math.min(Math.round((fotosProcessadas * 100) / arquivos.length), 99))
       await loadFotos()
     }
 
     setUploadStatus('Finalizando e atualizando a galeria...')
     setUploadProgress(100)
-    showToast(`${arquivos.length} foto${arquivos.length === 1 ? '' : 's'} enviada${arquivos.length === 1 ? '' : 's'} com sucesso.`)
     await loadFotos()
+
+    if (falhas.length) {
+      const primeiraFalha = falhas[0]?.error
+      const detalheFalha = getUploadErrorMessage(primeiraFalha)
+      const restante = falhas.length
+      const enviadasLabel = `${fotosEnviadas} de ${arquivos.length} foto${arquivos.length === 1 ? '' : 's'}`
+
+      showToast(
+        fotosEnviadas > 0
+          ? `${enviadasLabel} foram enviadas. ${restante} falhou${restante === 1 ? '' : 'ram'}. ${detalheFalha}`
+          : detalheFalha,
+        'error',
+      )
+
+      return
+    }
+
+    showToast(`${arquivos.length} foto${arquivos.length === 1 ? '' : 's'} enviada${arquivos.length === 1 ? '' : 's'} com sucesso.`)
   } catch (error) {
-    const msg =
-      error?.response?.data?.message ||
-      'Não foi possível enviar todas as fotos. As fotos já concluídas permanecem salvas. Tente enviar as restantes em grupos menores.'
+    const msg = getUploadErrorMessage(error)
 
     showToast(msg, 'error')
 

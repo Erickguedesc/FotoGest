@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, CalendarDays, Grid2X2, List, MapPin } from 'lucide-react'
+import { ArrowRight, CalendarDays, Grid2X2, ImageOff, List, MapPin } from 'lucide-react'
 
 import EnsaioDashboardCard from './EnsaioDashboardCard'
-import logoFotolhar from '../../assets/logofotolhar.png'
 import {
     formatarDataCurta,
     formatarStatusEnsaio,
@@ -162,11 +161,9 @@ function EnsaioRow({ ensaio }) {
                     />
                 ) : (
                     <div className="flex h-full w-full flex-col items-center justify-center bg-[#111111] px-4 text-center">
-                        <img
-                            src={logoFotolhar}
-                            alt="Fotolhar"
-                            className="mb-2 w-20 opacity-80"
-                        />
+                        <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/42">
+                            <ImageOff size={18} strokeWidth={1.8} />
+                        </span>
 
                         <p className="text-[11px] tracking-wide text-white/45">
                             Sem fotos publicadas
