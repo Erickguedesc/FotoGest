@@ -145,7 +145,7 @@ export default function EnsaioHero({
   }, [ensaio?.id, ensaio?.notasInternas])
 
   const notesChanged = notes.trim() !== String(ensaio?.notasInternas || '').trim()
-  const notesPreview = notes.trim() || 'Adicionar lembrete ou anotação'
+  const notesPreview = notes.trim() || 'Adicionar lembrete ou anotação sobre esse ensaio'
 
   const fotoCapa =
     fotos.find((foto) => foto.ehCapa)?.urlWatermark ||

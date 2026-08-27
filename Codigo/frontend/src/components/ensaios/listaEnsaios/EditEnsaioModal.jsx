@@ -103,10 +103,10 @@ export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave
       {form && (
         <form id="edit-ensaio-form" onSubmit={submit} className="space-y-5">
           <div className="space-y-4">
-            <p className={sectionTitleClass}>Dados da cliente</p>
+            <p className={sectionTitleClass}>Dados do cliente</p>
 
             <label className="block">
-              <span className={labelClass}>Nome da cliente</span>
+              <span className={labelClass}>Nome do cliente</span>
               <input
                 required
                 value={form.clienteNome}

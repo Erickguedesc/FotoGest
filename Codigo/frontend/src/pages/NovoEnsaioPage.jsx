@@ -308,10 +308,13 @@ export default function NovoEnsaioPage() {
         status:          'AGENDADO',
       }
 
-      await ensaiosService.criar(ensaioPayload)
+      const ensaioRes = await ensaiosService.criar(ensaioPayload)
+      const ensaioCriadoId = ensaioRes.data?.id
 
       setToast({ message: 'Ensaio cadastrado com sucesso!', type: 'success' })
-      setTimeout(() => navigate('/ensaios'), 1500)
+      setTimeout(() => {
+        navigate(ensaioCriadoId ? `/ensaios/${ensaioCriadoId}` : '/ensaios')
+      }, 900)
 
     } catch (err) {
       console.error('[NovoEnsaio] Erro:', err?.response?.data)
@@ -354,10 +357,12 @@ export default function NovoEnsaioPage() {
 
         <div className="mb-8">
           <h1 className="theme-title font-serif text-[32px] font-light tracking-[0.04em]">
-            Novo Ensaio
+            {clienteIdExistente && form.cliente ? `Novo ensaio para ${form.cliente}` : 'Novo Ensaio'}
           </h1>
           <p className="theme-muted mt-1 text-[13px]">
-            Preencha os dados do cliente e do ensaio para registrar.
+            {clienteIdExistente
+              ? 'Registre um novo ensaio para este cliente. Ele terá seu próprio álbum, fotos, link, senha, seleção e entrega.'
+              : 'Preencha os dados do cliente e do ensaio para registrar.'}
           </p>
         </div>
 

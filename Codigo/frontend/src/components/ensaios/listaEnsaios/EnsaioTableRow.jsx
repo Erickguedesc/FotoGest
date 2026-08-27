@@ -16,12 +16,32 @@ export default function EnsaioTableRow({
   onDelete,
   onPreContrato,
 }) {
+  const handleOpen = () => {
+    onView(ensaio)
+  }
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      handleOpen()
+    }
+  }
+
   return (
-    <tr className="border-b border-white/[0.06] transition hover:bg-white/[0.025]">
+    <tr
+      role="button"
+      tabIndex={0}
+      onClick={handleOpen}
+      onKeyDown={handleKeyDown}
+      className="cursor-pointer border-b border-white/[0.06] outline-none transition hover:bg-white/[0.025] focus-visible:bg-white/[0.035]"
+    >
       <td className="w-[220px] px-4 py-4">
         <button
           type="button"
-          onClick={() => onView(ensaio)}
+          onClick={(event) => {
+            event.stopPropagation()
+            handleOpen()
+          }}
           className="flex w-full items-center gap-3 text-left"
         >
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.10] bg-[#222] text-[11px] text-white/45">

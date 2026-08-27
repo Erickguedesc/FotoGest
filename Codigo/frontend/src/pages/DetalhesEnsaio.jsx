@@ -172,8 +172,8 @@
 
     const tabs = [
       { id: 'informacoes', label: 'Informações', icon: Info },
-      { id: 'album', label: 'Álbum & Entrega', icon: Images, badge: pluralizarFotos(fotos.length) },
-      { id: 'selecao', label: 'Seleção da cliente', icon: Heart, badge: badgeSelecao },
+      { id: 'album', label: 'Criar álbum', icon: Images, badge: pluralizarFotos(fotos.length) },
+      { id: 'selecao', label: 'Seleção do cliente', icon: Heart, badge: badgeSelecao },
     ]
 
     useEffect(() => {
@@ -1029,16 +1029,6 @@ const texto =
             <span className="theme-text">{ensaio.clienteNome}</span>
           </div>
 
-          <div className="mb-5 flex justify-end">
-            <button
-              type="button"
-              onClick={() => navigate(`/clientes/${ensaio.clienteId}`)}
-              className="rounded-lg border border-[var(--gold-border)] px-4 py-2 text-[12px] text-[var(--gold)] transition hover:bg-[var(--gold-dim)]"
-            >
-              Ver histórico da cliente
-            </button>
-          </div>
-
           <EnsaioHero
             ensaio={ensaio}
             fotos={fotos}
@@ -1273,7 +1263,7 @@ const texto =
 
     return (
       <section className="theme-card rounded-2xl border border-[var(--gold-border)]">
-        <SectionTitle title="Dados da cliente" />
+        <SectionTitle title="Dados do cliente" />
 
         <div className="divide-y divide-[var(--gold-border)] p-5">
           {dados.map((item) => (

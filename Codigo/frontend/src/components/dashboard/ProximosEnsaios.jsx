@@ -39,7 +39,7 @@ function getRelativeDay(value) {
     const diffDays = Math.round((startOfDate - startOfToday) / 86400000)
 
     if (diffDays === 0) return 'Hoje'
-    if (diffDays === 1) return 'Amanha'
+    if (diffDays === 1) return 'Amanhã'
     if (diffDays > 1) return `Em ${diffDays} dias`
 
     return date.toLocaleDateString('pt-BR', {
@@ -48,14 +48,23 @@ function getRelativeDay(value) {
     })
 }
 
-function formatarDataCompleta(value) {
+function formatarDataCurta(value) {
     const date = getDate(value)
-    if (!date) return 'Data nao definida'
+    if (!date) return '-- --- ----'
+
+    const dia = date.toLocaleDateString('pt-BR', { day: '2-digit' })
+    const mes = date.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')
+    const ano = date.toLocaleDateString('pt-BR', { year: 'numeric' })
+
+    return `${dia} ${mes.toUpperCase()} ${ano}`
+}
+
+function formatarDiaSemana(value) {
+    const date = getDate(value)
+    if (!date) return 'Sem data'
 
     return capitalize(date.toLocaleDateString('pt-BR', {
         weekday: 'long',
-        day: '2-digit',
-        month: 'long',
     }))
 }
 
@@ -71,7 +80,7 @@ export default function ProximosEnsaios({ ensaios }) {
                     </span>
 
                     <h2 className="theme-muted whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.18em]">
-                        Proximo ensaio
+                        Próximo ensaio
                     </h2>
                 </div>
 
@@ -82,7 +91,7 @@ export default function ProximosEnsaios({ ensaios }) {
                         </h3>
 
                         <p className="theme-muted mx-auto mt-3 max-w-[260px] text-sm leading-6">
-                            Os proximos ensaios aparecem aqui quando forem agendados.
+                            Os próximos ensaios aparecem aqui quando forem agendados.
                         </p>
 
                         <Link
@@ -111,45 +120,7 @@ export default function ProximosEnsaios({ ensaios }) {
     }
 
     return (
-        <section className="theme-card overflow-hidden rounded-[18px] border p-4">
-            <div className="theme-divider mb-4 flex items-center justify-between gap-3 border-b pb-4">
-                <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--gold-border)] bg-[var(--gold)] text-[#1A1200] shadow-[0_12px_24px_rgba(183,131,58,0.18)]">
-                        <Camera size={18} />
-                    </span>
-
-                    <h2 className="theme-muted whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.18em]">
-                        Proximo ensaio
-                    </h2>
-                </div>
-
-                <div className="flex shrink-0 items-center gap-1.5">
-                    <span className="theme-muted min-w-10 text-center text-sm font-semibold">
-                        {indexAtual + 1} de {ensaios.length}
-                    </span>
-
-                    <button
-                        type="button"
-                        onClick={anterior}
-                        title="Ensaio anterior"
-                        aria-label="Ensaio anterior"
-                        className="theme-icon-button flex h-9 w-9 items-center justify-center rounded-full border transition"
-                    >
-                        <ChevronLeft size={17} />
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={proximo}
-                        title="Proximo ensaio"
-                        aria-label="Proximo ensaio"
-                        className="theme-icon-button flex h-9 w-9 items-center justify-center rounded-full border transition"
-                    >
-                        <ChevronRight size={17} />
-                    </button>
-                </div>
-            </div>
-
+        <section className="theme-card overflow-hidden rounded-[18px] border p-3 shadow-[0_18px_42px_rgba(0,0,0,0.10)]">
             <div className="overflow-hidden">
                 <div
                     className="flex transition-transform duration-300"
@@ -159,13 +130,19 @@ export default function ProximosEnsaios({ ensaios }) {
                 >
                     {ensaios.map((ensaio) => (
                         <div key={ensaio.id} className="min-w-full">
-                            <EnsaioSlide ensaio={ensaio} />
+                            <EnsaioSlide
+                                ensaio={ensaio}
+                                total={ensaios.length}
+                                current={indexAtual + 1}
+                                onPrevious={anterior}
+                                onNext={proximo}
+                            />
                         </div>
                     ))}
                 </div>
             </div>
 
-            <div className="mt-4 flex justify-center gap-2">
+            <div className="mt-3 flex justify-center gap-2">
                 {ensaios.map((_, index) => (
                     <button
                         key={index}
@@ -174,7 +151,7 @@ export default function ProximosEnsaios({ ensaios }) {
                         aria-label={`Ver ensaio ${index + 1}`}
                         className={`h-2 rounded-full transition-all ${
                             index === indexAtual
-                                ? 'w-9 bg-[var(--gold)]'
+                                ? 'w-8 bg-[var(--gold)]'
                                 : 'w-2 bg-[var(--border)]'
                         }`}
                     />
@@ -184,52 +161,96 @@ export default function ProximosEnsaios({ ensaios }) {
     )
 }
 
-function EnsaioSlide({ ensaio }) {
-    const tipo = ensaio.tipoExibicao || ensaio.tipo || 'Nao informado'
+function EnsaioSlide({ ensaio, total, current, onPrevious, onNext }) {
+    const tipo = ensaio.tipoExibicao || ensaio.tipo || 'Não informado'
 
     return (
-        <article className="overflow-hidden rounded-[16px] border border-[var(--gold-border)] bg-[var(--gold-dim)] p-4">
-            <div className="flex items-start justify-between gap-4">
-                <span className="inline-flex max-w-[68%] items-center gap-2 truncate rounded-full border border-[var(--gold-border)] bg-[var(--card)] px-3 py-1.5 text-[11px] font-semibold uppercase text-[var(--gold)]">
-                    <span className="h-2 w-2 rounded-full bg-[var(--gold)]" />
+        <article className="relative overflow-hidden rounded-[16px] border border-[var(--gold-border)] bg-[var(--card)] px-4 pb-4 pt-3">
+            <div className="pointer-events-none absolute inset-x-[-18%] top-4 h-24 rounded-[0_0_50%_50%] bg-[var(--card-hover)] opacity-70" />
+
+            <div className="relative flex flex-col items-center text-center">
+                <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full border-[5px] border-[var(--card)] bg-[var(--gold-dim)] text-[var(--gold)] shadow-[0_14px_28px_rgba(0,0,0,0.12)]">
+                    <Camera size={21} strokeWidth={1.8} />
+                </span>
+
+                <p className="theme-muted mt-3 text-[10px] font-bold uppercase tracking-[0.22em]">
+                    Próximo ensaio
+                </p>
+
+                <p className="theme-title mt-0.5 text-sm font-semibold">
+                    {current} de {total}
+                </p>
+
+                <div className="mt-2 flex items-center justify-center gap-2">
+                    <button
+                        type="button"
+                        onClick={onPrevious}
+                        title="Ensaio anterior"
+                        aria-label="Ensaio anterior"
+                        className="theme-icon-button flex h-8 w-8 items-center justify-center rounded-full border transition"
+                    >
+                        <ChevronLeft size={17} />
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={onNext}
+                        title="Próximo ensaio"
+                        aria-label="Próximo ensaio"
+                        className="theme-icon-button flex h-8 w-8 items-center justify-center rounded-full border transition"
+                    >
+                        <ChevronRight size={17} />
+                    </button>
+                </div>
+            </div>
+
+            <div className="relative mt-4 flex items-center justify-between gap-3">
+                <span className="inline-flex max-w-[58%] items-center gap-2 truncate rounded-full border border-[var(--gold-border)] bg-[var(--card)] px-3 py-1.5 text-[11px] font-semibold uppercase text-[var(--gold)]">
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-[var(--gold)]" />
                     <span className="truncate">{formatarStatusEnsaio(ensaio.status)}</span>
                 </span>
 
-                <span className="theme-muted shrink-0 text-[11px] font-semibold uppercase tracking-[0.18em]">
+                <span className="theme-muted shrink-0 text-[11px] font-semibold uppercase tracking-[0.12em]">
                     {getRelativeDay(ensaio.dataEnsaio)}
                 </span>
             </div>
 
-            <h3 className="theme-title mt-6 truncate font-serif text-3xl font-light leading-tight">
+            <h3 className="theme-title relative mt-3 truncate font-serif text-2xl font-light leading-tight">
                 {ensaio.clienteNome}
             </h3>
 
-            <div className="mt-4 h-0.5 w-14 rounded-full bg-[var(--gold)]" />
+            <div className="mt-2 h-0.5 w-12 rounded-full bg-[var(--gold)]" />
 
-            <div className="mt-5 rounded-[16px] border border-[var(--border)] bg-[var(--card)] p-3">
-                <InfoDateTime
-                    date={formatarDataCompleta(ensaio.dataEnsaio)}
-                    time={formatarHora(ensaio.dataEnsaio)}
+            <div className="mt-4 grid grid-cols-2 gap-2.5">
+                <InfoBox
+                    icon={CalendarDays}
+                    label="Data"
+                    value={formatarDataCurta(ensaio.dataEnsaio)}
+                    meta={formatarDiaSemana(ensaio.dataEnsaio)}
                 />
 
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                    <InfoBox
-                        icon={Camera}
-                        label="Tipo"
-                        value={tipo}
-                    />
+                <InfoBox
+                    icon={Clock3}
+                    label="Horário"
+                    value={formatarHora(ensaio.dataEnsaio)}
+                />
 
-                    <InfoBox
-                        icon={MapPin}
-                        label="Local"
-                        value={ensaio.local || 'Nao informado'}
-                    />
-                </div>
+                <InfoBox
+                    icon={Camera}
+                    label="Tipo"
+                    value={tipo}
+                />
+
+                <InfoBox
+                    icon={MapPin}
+                    label="Local"
+                    value={ensaio.local || 'Não informado'}
+                />
             </div>
 
             <Link
                 to={`/ensaios/${ensaio.id}`}
-                className="mt-4 flex h-12 w-full items-center justify-center rounded-[13px] border border-[var(--gold-border)] bg-[var(--card)] px-5 text-sm font-semibold text-[var(--gold)] transition hover:bg-[var(--gold)] hover:text-[#1A1200]"
+                className="mt-4 flex h-11 w-full items-center justify-center rounded-[13px] border border-[var(--gold-border)] bg-[var(--card)] px-5 text-sm font-semibold text-[var(--gold)] transition hover:bg-[var(--gold)] hover:text-[#1A1200]"
             >
                 Abrir ensaio
                 <ArrowRight size={18} className="ml-2" />
@@ -238,38 +259,26 @@ function EnsaioSlide({ ensaio }) {
     )
 }
 
-function InfoDateTime({ date, time }) {
+function InfoBox({ icon: Icon, label, value, meta }) {
     return (
-        <div className="rounded-[13px] border border-[var(--border)] bg-[var(--card-hover)] px-4 py-3">
-            <span className="theme-muted block text-[10px] font-semibold uppercase tracking-[0.18em]">
-                Data e horario
+        <div className="flex min-h-[66px] min-w-0 items-center gap-2.5 rounded-[13px] border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 shadow-[0_8px_18px_rgba(0,0,0,0.04)]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--gold-dim)] text-[var(--gold)]">
+                <Icon size={16} strokeWidth={1.8} />
             </span>
 
-            <span className="theme-title mt-2 flex min-w-0 items-center gap-2 text-sm font-semibold">
-                <CalendarDays size={16} className="shrink-0 text-[var(--gold)]" />
-                <span className="truncate">{date}</span>
-            </span>
-
-            <span className="theme-muted mt-1.5 flex items-center gap-2 text-sm">
-                <Clock3 size={15} className="shrink-0" />
-                {time}
-            </span>
-        </div>
-    )
-}
-
-function InfoBox({ icon: Icon, label, value }) {
-    return (
-        <div className="min-h-[78px] rounded-[13px] border border-[var(--border)] bg-[var(--card-hover)] px-3 py-3">
-            <span className="theme-muted block text-[10px] font-semibold uppercase tracking-[0.18em]">
-                {label}
-            </span>
-
-            <span className="mt-2 flex min-w-0 items-center gap-2">
-                <Icon size={16} className="shrink-0 text-[var(--gold)]" strokeWidth={1.8} />
-
-                <span className="theme-title block truncate text-sm font-medium">
+            <span className="min-w-0 flex-1 text-left">
+                <span className="theme-title block truncate text-[12px] font-bold">
                     {value}
+                </span>
+
+                {meta ? (
+                    <span className="theme-muted mt-0.5 block truncate text-[10px]">
+                        {meta}
+                    </span>
+                ) : null}
+
+                <span className="mt-1.5 block text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--gold)]">
+                    {label}
                 </span>
             </span>
         </div>

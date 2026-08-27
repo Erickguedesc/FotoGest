@@ -101,11 +101,31 @@ function EnsaioListCard({
   const hasImage = Boolean(ensaio.capaUrl)
   const isCapaPadrao = hasImage && totalFotos === 0
 
+  const handleOpen = () => {
+    onView(ensaio)
+  }
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      handleOpen()
+    }
+  }
+
   return (
-    <article className="theme-card group grid overflow-hidden rounded-xl border transition hover:-translate-y-0.5 hover:border-[var(--gold-border)] max-lg:grid-cols-1 lg:h-[128px] lg:grid-cols-[170px_minmax(0,1fr)_176px]">
+    <article
+      role="button"
+      tabIndex={0}
+      onClick={handleOpen}
+      onKeyDown={handleKeyDown}
+      className="theme-card group grid cursor-pointer overflow-hidden rounded-xl border outline-none transition hover:-translate-y-0.5 hover:border-[var(--gold-border)] focus-visible:border-[var(--gold-border)] focus-visible:ring-2 focus-visible:ring-[var(--gold)]/25 max-lg:grid-cols-1 lg:h-[128px] lg:grid-cols-[170px_minmax(0,1fr)_176px]"
+    >
       <button
         type="button"
-        onClick={() => onView(ensaio)}
+        onClick={(event) => {
+          event.stopPropagation()
+          handleOpen()
+        }}
         className="theme-panel relative h-full min-h-0 overflow-hidden text-left max-lg:h-[180px] max-sm:h-[148px]"
       >
         {hasImage ? (
@@ -127,7 +147,10 @@ function EnsaioListCard({
 
       <button
         type="button"
-        onClick={() => onView(ensaio)}
+        onClick={(event) => {
+          event.stopPropagation()
+          handleOpen()
+        }}
         className="flex min-w-0 flex-col justify-center overflow-hidden px-5 py-3 text-left max-md:px-4"
       >
         <div className="mb-2.5 flex flex-wrap items-center gap-2.5">

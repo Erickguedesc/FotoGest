@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ArrowDownUp, LayoutGrid, List, MessageCircle, Search, UserRound } from 'lucide-react'
 
 import Header from '../components/layout/Header'
@@ -27,7 +27,7 @@ const SITUACAO_CLIENTE_LABELS = {
 }
 const ORDENACOES_CLIENTES = [
   ['nome', 'Nome'],
-  ['ultimaSessao', 'Última sessão'],
+  ['ultimaSessao', 'Último entregue'],
   ['valor', 'Valor'],
   ['quantidade', 'Qtd. ensaios'],
 ]
@@ -36,6 +36,12 @@ const VIEW_MODES = [
   ['lista', List, 'Lista'],
 ]
 const LIMITE_CLIENTES_SEM_SCROLL = 9
+const CLIENTES_VIEW_MODE_STORAGE_KEY = 'fotolhar-clientes-view-mode'
+
+function getInitialViewMode() {
+  const savedViewMode = localStorage.getItem(CLIENTES_VIEW_MODE_STORAGE_KEY)
+  return VIEW_MODES.some(([value]) => value === savedViewMode) ? savedViewMode : 'cards'
+}
 
 function clienteTemFluxoAtivo(resumo) {
   return resumo.ensaios.some((ensaio) => STATUS_FLUXO_ATIVO.includes(ensaio.status))
@@ -143,12 +149,14 @@ function ClienteAvatar({ nome, src, size = 'md' }) {
 }
 
 export default function ClientesPage() {
+  const navigate = useNavigate()
+
   const [clientes, setClientes] = useState([])
   const [ensaios, setEnsaios] = useState([])
   const [busca, setBusca] = useState('')
   const [statusFiltro, setStatusFiltro] = useState('andamento')
   const [ordenacao, setOrdenacao] = useState('nome')
-  const [viewMode, setViewMode] = useState('cards')
+  const [viewMode, setViewMode] = useState(getInitialViewMode)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [clienteParaArquivar, setClienteParaArquivar] = useState(null)
@@ -176,6 +184,10 @@ export default function ClientesPage() {
 
     carregarDados()
   }, [])
+
+  useEffect(() => {
+    localStorage.setItem(CLIENTES_VIEW_MODE_STORAGE_KEY, viewMode)
+  }, [viewMode])
 
   const clientesComResumo = useMemo(() => {
     const termo = busca.trim().toLowerCase()
@@ -279,6 +291,17 @@ export default function ClientesPage() {
       setToast({ message: 'Não foi possível reativar o cliente.', type: 'error' })
     } finally {
       setActionLoading(false)
+    }
+  }
+
+  const abrirHistoricoCliente = (clienteId) => {
+    navigate(`/clientes/${clienteId}`)
+  }
+
+  const handleCardKeyDown = (event, clienteId) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      abrirHistoricoCliente(clienteId)
     }
   }
 
@@ -414,7 +437,7 @@ export default function ClientesPage() {
               <span>Cliente</span>
               <span>Situação</span>
               <span>Ensaios</span>
-              <span>Última sessão</span>
+              <span>Último entregue</span>
               <span>Próximo ensaio</span>
               <span>Total</span>
               <span>Ações</span>
@@ -432,7 +455,11 @@ export default function ClientesPage() {
                 return (
                   <article
                     key={cliente.id}
-                    className="grid grid-cols-[minmax(210px,1.25fr)_118px_78px_118px_140px_112px_230px] items-center gap-3 px-5 py-4 text-[13px] max-xl:grid-cols-1 max-xl:gap-3"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => abrirHistoricoCliente(cliente.id)}
+                    onKeyDown={(event) => handleCardKeyDown(event, cliente.id)}
+                    className="grid cursor-pointer grid-cols-[minmax(210px,1.25fr)_118px_78px_118px_140px_112px_230px] items-center gap-3 px-5 py-4 text-[13px] outline-none transition hover:bg-white/[0.025] focus-visible:bg-white/[0.035] max-xl:grid-cols-1 max-xl:gap-3"
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <ClienteAvatar nome={cliente.nome} src={avatarUrl} size="sm" />
@@ -451,7 +478,7 @@ export default function ClientesPage() {
                     </span>
 
                     <InfoInline label="Ensaios" value={resumo.totalEnsaios} />
-                    <InfoInline label="Última sessão" value={formatDate(resumo.ultimaSessao?.dataEnsaio)} />
+                    <InfoInline label="Último entregue" value={formatDate(resumo.ultimaSessao?.dataEnsaio)} />
                     <InfoInline
                       label="Próximo ensaio"
                       value={proximoEnsaio ? `${proximoEnsaio.date} ${proximoEnsaio.time}` : '-'}
@@ -461,13 +488,17 @@ export default function ClientesPage() {
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
                       <Link
                         to={`/clientes/${cliente.id}`}
+                        onClick={(event) => event.stopPropagation()}
                         className="inline-flex h-9 items-center justify-center rounded-lg border border-[var(--gold-border)] px-3 text-[12px] text-[var(--gold)] transition hover:bg-[var(--gold-dim)]"
                       >
                         Histórico
                       </Link>
                       <button
                         type="button"
-                        onClick={() => abrirWhatsApp(telefone)}
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          abrirWhatsApp(telefone)
+                        }}
                         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--text-muted)] transition hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300"
                         title="Chamar no WhatsApp"
                       >
@@ -477,7 +508,10 @@ export default function ClientesPage() {
                         <button
                           type="button"
                           disabled={actionLoading}
-                          onClick={() => handleReativar(cliente.id)}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            handleReativar(cliente.id)
+                          }}
                           className="inline-flex h-9 min-w-[82px] items-center justify-center rounded-lg border border-emerald-400/30 px-3 text-[12px] text-emerald-300 transition hover:bg-emerald-400/10 disabled:opacity-50"
                         >
                           Reativar
@@ -485,7 +519,10 @@ export default function ClientesPage() {
                       ) : (
                         <button
                           type="button"
-                          onClick={() => setClienteParaArquivar(cliente)}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            setClienteParaArquivar(cliente)
+                          }}
                           className="inline-flex h-9 min-w-[82px] items-center justify-center rounded-lg border border-white/[0.10] px-3 text-[12px] text-white/45 transition hover:border-red-400/30 hover:bg-red-400/10 hover:text-red-200"
                         >
                           Arquivar
@@ -514,12 +551,16 @@ export default function ClientesPage() {
                 : null
               const ultimoTipo = resumo.ultimaSessao
                 ? getTipoLabel(resumo.ultimaSessao.tipo)
-                : 'Sem sessão concluída'
+                : 'Sem entrega'
 
               return (
                 <article
                   key={cliente.id}
-                  className={`rounded-2xl border p-5 transition hover:-translate-y-0.5 ${
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => abrirHistoricoCliente(cliente.id)}
+                  onKeyDown={(event) => handleCardKeyDown(event, cliente.id)}
+                  className={`cursor-pointer rounded-2xl border p-5 outline-none transition hover:-translate-y-0.5 focus-visible:border-[var(--gold-border)] focus-visible:ring-2 focus-visible:ring-[var(--gold)]/25 ${
                     arquivado
                       ? 'border-white/[0.06] bg-[#101010] opacity-75 hover:border-white/20'
                       : 'border-white/[0.08] bg-[#141414] hover:border-[var(--gold-border)]'
@@ -548,7 +589,10 @@ export default function ClientesPage() {
 
                     <button
                       type="button"
-                      onClick={() => abrirWhatsApp(telefone)}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        abrirWhatsApp(telefone)
+                      }}
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300"
                       title="Chamar no WhatsApp"
                     >
@@ -559,8 +603,8 @@ export default function ClientesPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <Info label="Ensaios" value={resumo.totalEnsaios} />
                     <Info label="Total" value={formatCurrency(resumo.totalContratado)} />
-                    <Info label="Última sessão" value={formatDate(resumo.ultimaSessao?.dataEnsaio)} />
-                    <Info label="Tipo recente" value={ultimoTipo} />
+                    <Info label="Último entregue" value={formatDate(resumo.ultimaSessao?.dataEnsaio)} />
+                    <Info label="Tipo entregue" value={ultimoTipo} />
                   </div>
 
                   {proximoEnsaio ? (
@@ -593,27 +637,26 @@ export default function ClientesPage() {
                     </div>
                   )}
 
-                  <Link
-                    to={`/clientes/${cliente.id}`}
-                    className="mt-5 inline-flex w-full items-center justify-center rounded-lg border border-[var(--gold-border)] px-4 py-2.5 text-[12px] text-[var(--gold)] transition hover:bg-[var(--gold-dim)]"
-                  >
-                    Ver histórico
-                  </Link>
-
                   {arquivado ? (
                     <button
                       type="button"
                       disabled={actionLoading}
-                      onClick={() => handleReativar(cliente.id)}
-                      className="mt-3 inline-flex w-full items-center justify-center rounded-lg border border-emerald-400/30 px-4 py-2.5 text-[12px] text-emerald-300 transition hover:bg-emerald-400/10 disabled:opacity-50"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        handleReativar(cliente.id)
+                      }}
+                      className="mt-5 inline-flex w-full items-center justify-center rounded-lg border border-emerald-400/30 px-4 py-2.5 text-[12px] text-emerald-300 transition hover:bg-emerald-400/10 disabled:opacity-50"
                     >
                       Reativar cliente
                     </button>
                   ) : (
                     <button
                       type="button"
-                      onClick={() => setClienteParaArquivar(cliente)}
-                      className="mt-3 inline-flex w-full items-center justify-center rounded-lg border border-white/[0.10] px-4 py-2.5 text-[12px] text-white/45 transition hover:border-red-400/30 hover:bg-red-400/10 hover:text-red-200"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        setClienteParaArquivar(cliente)
+                      }}
+                      className="mt-5 inline-flex w-full items-center justify-center rounded-lg border border-white/[0.10] px-4 py-2.5 text-[12px] text-white/45 transition hover:border-red-400/30 hover:bg-red-400/10 hover:text-red-200"
                     >
                       Arquivar cliente
                     </button>

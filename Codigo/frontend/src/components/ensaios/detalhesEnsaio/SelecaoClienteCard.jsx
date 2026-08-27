@@ -250,7 +250,7 @@ export default function SelecaoClienteCard({
                 <div className="flex items-center justify-between gap-4 border-b border-white/[0.08] px-7 py-6 max-sm:px-5">
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--gold)]">
-                      Seleção da cliente
+                      Seleção do cliente
                     </p>
                     <h3 className="mt-1 font-serif text-2xl font-light text-white">
                       Todas as fotos selecionadas

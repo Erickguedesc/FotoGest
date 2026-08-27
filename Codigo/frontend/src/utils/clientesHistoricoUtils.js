@@ -95,12 +95,14 @@ export const calcularResumoCliente = (cliente, ensaios = []) => {
 
   const ensaiosValidos = ensaiosCliente.filter((ensaio) => ensaio.status !== 'CANCELADO')
 
-  const ultimaSessao = ensaiosValidos
+  const ensaiosEntregues = ensaiosValidos
     .filter((ensaio) => {
       const date = new Date(ensaio.dataEnsaio)
-      return !Number.isNaN(date.getTime()) && date <= agora && ensaio.status !== 'AGENDADO'
+      return !Number.isNaN(date.getTime()) && ensaio.status === 'FINALIZADO'
     })
-    .sort((a, b) => new Date(b.dataEnsaio).getTime() - new Date(a.dataEnsaio).getTime())[0]
+    .sort((a, b) => new Date(b.dataEnsaio).getTime() - new Date(a.dataEnsaio).getTime())
+
+  const ultimaSessao = ensaiosEntregues[0]
 
   const proximoEnsaio = ensaiosValidos
     .filter((ensaio) => {
@@ -117,6 +119,7 @@ export const calcularResumoCliente = (cliente, ensaios = []) => {
     totalContratado,
     ticketMedio: ensaiosCliente.length ? totalContratado / ensaiosCliente.length : 0,
     ultimaSessao,
+    ensaiosEntregues,
     proximoEnsaio,
     tipos,
   }
