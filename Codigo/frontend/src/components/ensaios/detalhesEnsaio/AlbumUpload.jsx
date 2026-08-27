@@ -113,6 +113,12 @@ export default function AlbumUpload({
                 : 'ou clique para selecionar arquivos — JPG, PNG, WEBP'}
           </p>
 
+          {!disabled && !loading && (
+            <p className="mt-3 rounded-lg border border-[var(--gold-border)] bg-[var(--gold-dim)] px-3 py-2 text-[11.5px] font-semibold text-[var(--gold)]">
+              Atenção: o tamanho máximo por imagem é de 10 MB.
+            </p>
+          )}
+
           {loading && (
             <div className="mt-5 w-full max-w-[420px]">
               <div className="mb-2 flex items-center justify-between text-[11px] text-white/35">
