@@ -86,11 +86,13 @@ export default function EmailConfigForm({
   }
 
   function handleRequestTest() {
+    if (!smtpConfigurado) return
+
     setConfirmAction({
       type: 'warning',
       title: 'Enviar e-mail de teste?',
       description:
-        'O sistema enviara uma mensagem de teste para o e-mail configurado para receber avisos.',
+        'O sistema enviará uma mensagem de teste para o e-mail configurado para receber avisos.',
       confirmText: 'Enviar teste',
       action: 'test',
     })
@@ -119,15 +121,18 @@ export default function EmailConfigForm({
   const smtpConfigurado = Boolean(data?.smtpConfigurado)
   const envioDisponivel = Boolean(form.ativo && smtpConfigurado)
   const envioAtivoPendente = Boolean(form.ativo && !smtpConfigurado)
+  const motivoEmailIncompleto =
+    data?.ativo && data?.motivoIndisponivel
+      ? data.motivoIndisponivel
+      : 'Servidor de e-mail não configurado. Configure MAIL_USERNAME e MAIL_PASSWORD no backend para liberar os envios.'
   const motivoIndisponivel =
     form.ativo
-      ? data?.motivoIndisponivel ||
-        'Os avisos automaticos nao serao enviados ate a configuracao ser concluida.'
+      ? motivoEmailIncompleto
       : '(Envio automático desativado.)'
   const statusEmailTitulo = envioDisponivel
     ? 'E-mail pronto para envio'
     : envioAtivoPendente
-      ? 'Envio automático ativado'
+      ? 'Envio automático ativado, mas incompleto'
       : 'Envio de e-mail desativado'
   const statusEmailDescricao = envioDisponivel
     ? 'Os avisos automáticos já podem ser enviados pelo sistema.'
@@ -191,7 +196,7 @@ export default function EmailConfigForm({
             </p>
             {!smtpConfigurado && (
               <p className="mt-2 text-xs text-[var(--text-muted)]">
-                Entre em contato com o suporte responsavel pelo sistema.
+                Configure as variáveis MAIL_USERNAME e MAIL_PASSWORD no backend para liberar os envios.
               </p>
             )}
           </div>
@@ -277,8 +282,13 @@ export default function EmailConfigForm({
 
         <button
           type="button"
-          disabled={testLoading}
+          disabled={testLoading || !smtpConfigurado}
           onClick={handleRequestTest}
+          title={
+            smtpConfigurado
+              ? undefined
+              : 'Configure MAIL_USERNAME e MAIL_PASSWORD no backend antes de enviar teste.'
+          }
           className="theme-button inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Send size={16} />
@@ -291,10 +301,10 @@ export default function EmailConfigForm({
         description="Use esta area para confirmar quais avisos o sistema pode enviar automaticamente durante o atendimento."
         items={[
           'Publicar album envia link, senha e validade para a cliente.',
-          'Confirmacao para cliente envia um e-mail com PDF do resumo da selecao.',
-          'Mudanca de status tambem avisa a cliente quando um novo ensaio e cadastrado como agendado.',
+          'Confirmação para cliente envia um e-mail com PDF do resumo da seleção.',
+          'Mudança de status também avisa a cliente quando um novo ensaio é cadastrado como agendado.',
           'O e-mail de teste confirma se os envios estao chegando antes de voce usar com clientes.',
-          'Seu e-mail para receber avisos tambem recebe respostas das clientes aos e-mails do sistema.',
+          'Seu e-mail para receber avisos também recebe respostas das clientes aos e-mails do sistema.',
         ]}
       />
 

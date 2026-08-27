@@ -22,17 +22,18 @@ export default function Toast({ message, type = 'gold', onClose }) {
     <div
       className={`
         fixed bottom-6 right-6 z-[400]
-        flex items-center gap-2.5
+        flex max-w-[min(520px,calc(100vw-32px))] items-start gap-2.5
         bg-[#1E1E1E] border border-[rgba(201,164,89,0.45)]
         rounded-[10px] px-4 py-3
-        text-[13px] text-[#F8F3E9]
+        text-[13px] leading-5 text-[#F8F3E9]
         pointer-events-none
         transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]
+        max-sm:left-4 max-sm:right-4 max-sm:bottom-4
         ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}
       `}
     >
-      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotColor}`} />
-      {message}
+      <span className={`mt-1.5 h-2 w-2 flex-shrink-0 rounded-full ${dotColor}`} />
+      <span className="min-w-0 break-words">{message}</span>
     </div>
   )
 }

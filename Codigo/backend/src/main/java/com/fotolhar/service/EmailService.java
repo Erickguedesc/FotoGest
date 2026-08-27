@@ -247,7 +247,7 @@ public class EmailService {
         if (!smtpConfigurado()) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Servidor de e-mail nao configurado. Defina MAIL_USERNAME e MAIL_PASSWORD no backend."
+                    "Servidor de e-mail não configurado. Configure MAIL_USERNAME e MAIL_PASSWORD no backend para liberar os envios."
             );
         }
 

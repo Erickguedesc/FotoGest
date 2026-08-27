@@ -525,7 +525,7 @@ public class ConfiguracoesService {
         }
 
         if (!smtpConfigurado) {
-            return "Os avisos automaticos nao serao enviados ate a configuracao ser concluida.";
+            return "Servidor de e-mail não configurado. Configure MAIL_USERNAME e MAIL_PASSWORD no backend para liberar os envios.";
         }
 
         return null;
