@@ -26,6 +26,11 @@ import {
   getDemoEnsaioId,
   setDemoEnsaioId,
 } from '../utils/onboarding'
+import {
+  getCurrentAuthSessionKey,
+  isCurrentAuthSession,
+  isStaleSessionError,
+} from '../utils/authSession'
 
 const steps = [
   { id: 'perfil', label: 'Perfil', icon: UserRound },
@@ -101,12 +106,13 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     let mounted = true
+    const sessionKey = getCurrentAuthSessionKey()
 
     async function loadConfig() {
       try {
-        const data = await configuracoesService.buscar()
+        const data = await configuracoesService.buscar({ force: true })
 
-        if (!mounted) return
+        if (!mounted || !isCurrentAuthSession(sessionKey)) return
 
         setPerfil((current) => ({
           ...current,
@@ -138,9 +144,11 @@ export default function OnboardingPage() {
         }))
 
       } catch (err) {
-        console.error(err)
+        if (!isStaleSessionError(err)) {
+          console.error(err)
+        }
       } finally {
-        if (mounted) setLoading(false)
+        if (mounted && isCurrentAuthSession(sessionKey)) setLoading(false)
       }
     }
 

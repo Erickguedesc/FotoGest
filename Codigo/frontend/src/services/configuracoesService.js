@@ -1,179 +1,246 @@
 import api from './api'
+import {
+  createStaleSessionError,
+  getCurrentAuthSessionKey,
+  isCurrentAuthSession,
+} from '../utils/authSession'
 
 const CONFIG_CACHE_MS = 60 * 1000
 
 let configuracoesCache = null
 let configuracoesCacheAt = 0
+let configuracoesCacheSessionKey = null
 let configuracoesRequest = null
+let configuracoesRequestSessionKey = null
 
-function invalidateCache() {
-  configuracoesCache = null
-  configuracoesCacheAt = 0
-  configuracoesRequest = null
+function invalidateCache(sessionKey = null) {
+  if (!sessionKey || configuracoesCacheSessionKey === sessionKey) {
+    configuracoesCache = null
+    configuracoesCacheAt = 0
+    configuracoesCacheSessionKey = null
+  }
+
+  if (!sessionKey || configuracoesRequestSessionKey === sessionKey) {
+    configuracoesRequest = null
+    configuracoesRequestSessionKey = null
+  }
 }
 
-function setCache(data) {
+function invalidateAllUserCaches() {
+  invalidateCache()
+}
+
+function assertCurrentSession(sessionKey) {
+  if (!isCurrentAuthSession(sessionKey)) {
+    throw createStaleSessionError()
+  }
+}
+
+function setCache(data, sessionKey) {
+  assertCurrentSession(sessionKey)
   configuracoesCache = data
   configuracoesCacheAt = Date.now()
+  configuracoesCacheSessionKey = sessionKey
   return data
+}
+
+async function guardedRequest(requestFactory, { invalidate = false } = {}) {
+  const sessionKey = getCurrentAuthSessionKey()
+  const response = await requestFactory()
+
+  assertCurrentSession(sessionKey)
+
+  if (invalidate) {
+    invalidateCache(sessionKey)
+  }
+
+  return response.data
+}
+
+function clearRequestIfCurrent(requestSessionKey) {
+  if (configuracoesRequestSessionKey === requestSessionKey) {
+    configuracoesRequest = null
+    configuracoesRequestSessionKey = null
+  }
 }
 
 export const configuracoesService = {
   invalidateCache,
+  invalidateAllUserCaches,
 
   buscar: async ({ force = false } = {}) => {
+    const sessionKey = getCurrentAuthSessionKey()
     const cacheValido =
       configuracoesCache &&
+      configuracoesCacheSessionKey === sessionKey &&
       Date.now() - configuracoesCacheAt < CONFIG_CACHE_MS
 
     if (!force && cacheValido) {
       return configuracoesCache
     }
 
-    if (!force && configuracoesRequest) {
+    if (!force && configuracoesRequest && configuracoesRequestSessionKey === sessionKey) {
       return configuracoesRequest
     }
 
+    const requestSessionKey = sessionKey
+    configuracoesRequestSessionKey = requestSessionKey
     configuracoesRequest = api.get('/configuracoes')
-      .then((response) => setCache(response.data))
+      .then((response) => setCache(response.data, requestSessionKey))
       .finally(() => {
-        configuracoesRequest = null
+        clearRequestIfCurrent(requestSessionKey)
       })
 
     return configuracoesRequest
   },
 
   concluirOnboarding: async () => {
-    const response = await api.post('/configuracoes/onboarding/concluir')
-    invalidateCache()
-    return response.data
+    return guardedRequest(
+      () => api.post('/configuracoes/onboarding/concluir'),
+      { invalidate: true },
+    )
   },
 
   atualizarUsuario: async (dados) => {
-    const response = await api.put('/configuracoes/usuario', dados)
-    invalidateCache()
-    return response.data
+    return guardedRequest(
+      () => api.put('/configuracoes/usuario', dados),
+      { invalidate: true },
+    )
   },
 
   uploadFotoPerfil: async (arquivo) => {
     const formData = new FormData()
     formData.append('arquivo', arquivo)
 
-    const response = await api.patch('/configuracoes/usuario/foto', formData)
-
-    invalidateCache()
-    return response.data
+    return guardedRequest(
+      () => api.patch('/configuracoes/usuario/foto', formData),
+      { invalidate: true },
+    )
   },
 
   atualizarEstudio: async (dados) => {
-    const response = await api.put('/configuracoes/estudio', dados)
-    invalidateCache()
-    return response.data
+    return guardedRequest(
+      () => api.put('/configuracoes/estudio', dados),
+      { invalidate: true },
+    )
   },
 
   uploadLogoEstudio: async (arquivo) => {
     const formData = new FormData()
     formData.append('arquivo', arquivo)
 
-    const response = await api.patch('/configuracoes/estudio/logo', formData)
-
-    invalidateCache()
-    return response.data
+    return guardedRequest(
+      () => api.patch('/configuracoes/estudio/logo', formData),
+      { invalidate: true },
+    )
   },
 
   buscarMarcaDagua: async () => {
-    const response = await api.get('/configuracoes/marca-dagua')
-    return response.data
+    return guardedRequest(() => api.get('/configuracoes/marca-dagua'))
   },
 
   atualizarMarcaDagua: async (dados) => {
-    const response = await api.put('/configuracoes/marca-dagua', dados)
-    invalidateCache()
-    return response.data
+    return guardedRequest(
+      () => api.put('/configuracoes/marca-dagua', dados),
+      { invalidate: true },
+    )
   },
 
   uploadMarcaDagua: async (arquivo) => {
     const formData = new FormData()
     formData.append('arquivo', arquivo)
 
-    const response = await api.patch('/configuracoes/marca-dagua/imagem', formData)
-
-    invalidateCache()
-    return response.data
+    return guardedRequest(
+      () => api.patch('/configuracoes/marca-dagua/imagem', formData),
+      { invalidate: true },
+    )
   },
 
   removerMarcaDagua: async () => {
-    const response = await api.delete('/configuracoes/marca-dagua/imagem')
-    invalidateCache()
-    return response.data
+    return guardedRequest(
+      () => api.delete('/configuracoes/marca-dagua/imagem'),
+      { invalidate: true },
+    )
   },
 
   reprocessarMarcaDagua: async () => {
-    const response = await api.post('/configuracoes/marca-dagua/reprocessar')
-    invalidateCache()
-    return response.data
+    return guardedRequest(
+      () => api.post('/configuracoes/marca-dagua/reprocessar'),
+      { invalidate: true },
+    )
   },
 
   atualizarPreferencias: async (dados) => {
-    const response = await api.put('/configuracoes/preferencias', dados)
-    invalidateCache()
-    return response.data
+    return guardedRequest(
+      () => api.put('/configuracoes/preferencias', dados),
+      { invalidate: true },
+    )
   },
 
   atualizarEmail: async (dados) => {
-    const response = await api.put('/configuracoes/email', dados)
-    invalidateCache()
-    return response.data
+    return guardedRequest(
+      () => api.put('/configuracoes/email', dados),
+      { invalidate: true },
+    )
   },
 
   enviarEmailTeste: async () => {
-    const response = await api.post('/configuracoes/email/teste')
-    invalidateCache()
-    return response.data
+    return guardedRequest(
+      () => api.post('/configuracoes/email/teste'),
+      { invalidate: true },
+    )
   },
 
   listarModelosContrato: async () => {
-    const response = await api.get('/configuracoes/modelos-contrato')
-    return response.data
+    return guardedRequest(() => api.get('/configuracoes/modelos-contrato'))
   },
 
   criarModeloContrato: async (dados) => {
-    const response = await api.post('/configuracoes/modelos-contrato', dados)
-    invalidateCache()
-    return response.data
+    return guardedRequest(
+      () => api.post('/configuracoes/modelos-contrato', dados),
+      { invalidate: true },
+    )
   },
 
   atualizarModeloContrato: async (id, dados) => {
-    const response = await api.put(`/configuracoes/modelos-contrato/${id}`, dados)
-    invalidateCache()
-    return response.data
+    return guardedRequest(
+      () => api.put(`/configuracoes/modelos-contrato/${id}`, dados),
+      { invalidate: true },
+    )
   },
 
   removerModeloContrato: async (id) => {
-    await api.delete(`/configuracoes/modelos-contrato/${id}`)
-    invalidateCache()
+    await guardedRequest(
+      () => api.delete(`/configuracoes/modelos-contrato/${id}`),
+      { invalidate: true },
+    )
   },
 
   uploadCapaAlbumPadrao: async (arquivo) => {
-  const formData = new FormData()
-  formData.append('arquivo', arquivo)
+    const formData = new FormData()
+    formData.append('arquivo', arquivo)
 
-  const response = await api.patch('/configuracoes/preferencias/capa-album', formData)
-
-  invalidateCache()
-  return response.data
-},
+    return guardedRequest(
+      () => api.patch('/configuracoes/preferencias/capa-album', formData),
+      { invalidate: true },
+    )
+  },
 
   alterarSenha: async (dados) => {
-    const response = await api.patch('/configuracoes/senha', dados)
-    invalidateCache()
-    return response.data
+    return guardedRequest(
+      () => api.patch('/configuracoes/senha', dados),
+      { invalidate: true },
+    )
   },
 
   gerarBackupMetadados: async () => {
+    const sessionKey = getCurrentAuthSessionKey()
     const response = await api.post('/configuracoes/backup/metadados', null, {
       responseType: 'blob',
     })
+
+    assertCurrentSession(sessionKey)
+
     const agora = new Date().toISOString()
     const nomeArquivo = `fotolhar-backup-${agora.slice(0, 10)}.zip`
     const blob = new Blob([response.data], {
@@ -193,8 +260,9 @@ export const configuracoesService = {
   },
 
   gerarMarcaDaguaTexto: async (dados) => {
-  const response = await api.post('/configuracoes/marca-dagua/texto', dados)
-  invalidateCache()
-  return response.data
-},
+    return guardedRequest(
+      () => api.post('/configuracoes/marca-dagua/texto', dados),
+      { invalidate: true },
+    )
+  },
 }

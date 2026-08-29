@@ -3,20 +3,26 @@ import { Navigate, useLocation } from 'react-router-dom'
 
 import { configuracoesService } from '../../services/configuracoesService'
 import { isOnboardingComplete, syncOnboardingStatus } from '../../utils/onboarding'
-
-// fora do componente — persiste entre renders
-const CACHE_MS = 5000
-let cachedOnboarding = null
-let cachedAt = 0
+import {
+  getCurrentAuthSessionKey,
+  isCurrentAuthSession,
+  isStaleSessionError,
+} from '../../utils/authSession'
+import {
+  getCachedOnboarding,
+  setCachedOnboarding,
+} from '../../utils/onboardingRouteCache'
 
 export default function PrivateRoute({ children }) {
   const location = useLocation()
   const token = localStorage.getItem('token')
+  const sessionKey = getCurrentAuthSessionKey()
   const [loading, setLoading] = useState(Boolean(token))
   const [onboardingComplete, setOnboardingComplete] = useState(() => isOnboardingComplete())
 
   useEffect(() => {
     let active = true
+    const effectSessionKey = sessionKey
 
     if (!token) {
       setLoading(false)
@@ -25,18 +31,18 @@ export default function PrivateRoute({ children }) {
 
     setLoading(true)
 
-    const now = Date.now()
     const localOnboardingComplete = isOnboardingComplete()
 
     if (localOnboardingComplete) {
-      cachedOnboarding = true
-      cachedAt = now
+      setCachedOnboarding(effectSessionKey, true)
       setOnboardingComplete(true)
       setLoading(false)
       return () => { active = false }
     }
 
-    if (cachedOnboarding !== null && now - cachedAt < CACHE_MS) {
+    const cachedOnboarding = getCachedOnboarding(effectSessionKey)
+
+    if (cachedOnboarding !== null) {
       setOnboardingComplete(cachedOnboarding)
       setLoading(false)
       return () => { active = false }
@@ -44,23 +50,22 @@ export default function PrivateRoute({ children }) {
 
     configuracoesService.buscar()
       .then((data) => {
-        if (!active) return
+        if (!active || !isCurrentAuthSession(effectSessionKey)) return
         const complete = Boolean(data?.onboardingConcluido)
-        cachedOnboarding = complete
-        cachedAt = Date.now()
+        setCachedOnboarding(effectSessionKey, complete)
         setOnboardingComplete(complete)
         syncOnboardingStatus(complete, data?.onboardingConcluidoEm)
       })
-      .catch(() => {
-        if (!active) return
+      .catch((error) => {
+        if (!active || isStaleSessionError(error) || !isCurrentAuthSession(effectSessionKey)) return
         setOnboardingComplete(isOnboardingComplete())
       })
       .finally(() => {
-        if (active) setLoading(false)
+        if (active && isCurrentAuthSession(effectSessionKey)) setLoading(false)
       })
 
     return () => { active = false }
-  }, [token, location.pathname])
+  }, [token, location.pathname, sessionKey])
 
   if (!token) return <Navigate to="/login" replace />
   if (loading) return (

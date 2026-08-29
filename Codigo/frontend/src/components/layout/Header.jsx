@@ -14,18 +14,49 @@ import {
 
 import { configuracoesService } from '../../services/configuracoesService'
 import { getPreservedOnboardingEntries } from '../../utils/onboarding'
+import {
+  getCurrentAuthSessionKey,
+  isCurrentAuthSession,
+  isStaleSessionError,
+  normalizeAccountEmail,
+} from '../../utils/authSession'
+import { invalidateOnboardingRouteCache } from '../../utils/onboardingRouteCache'
 import NotificationBell from './NotificationBell'
 
 const LOGIN_DISPLAY_NAME_KEY = 'fotolhar-login-display-name'
 const USER_PROFILE_CACHE_KEY = 'fotolhar-usuario-perfil'
 
+function readStoredUsuarioIdentity() {
+  const nome = localStorage.getItem('usuarioNome') || ''
+  const email = localStorage.getItem('usuarioEmail') || ''
+
+  return nome || email ? { nome, email } : null
+}
+
+function isCachedUsuarioForCurrentAccount(usuario) {
+  const currentEmail = normalizeAccountEmail(localStorage.getItem('usuarioEmail') || '')
+  const cachedEmail = normalizeAccountEmail(usuario?.email || '')
+
+  return !currentEmail || !cachedEmail || currentEmail === cachedEmail
+}
+
 function readCachedUsuario() {
   try {
     const cached = localStorage.getItem(USER_PROFILE_CACHE_KEY)
-    return cached ? JSON.parse(cached) : null
+    const usuario = cached ? JSON.parse(cached) : null
+
+    if (usuario && isCachedUsuarioForCurrentAccount(usuario)) {
+      return usuario
+    }
+
+    if (usuario) {
+      localStorage.removeItem(USER_PROFILE_CACHE_KEY)
+    }
+
+    return readStoredUsuarioIdentity()
   } catch {
     localStorage.removeItem(USER_PROFILE_CACHE_KEY)
-    return null
+    return readStoredUsuarioIdentity()
   }
 }
 
@@ -125,15 +156,17 @@ export default function Header() {
     let isMounted = true
 
     async function carregarUsuario() {
+      const sessionKey = getCurrentAuthSessionKey()
+
       try {
         const data = await configuracoesService.buscar()
-        if (isMounted) {
+        if (isMounted && isCurrentAuthSession(sessionKey)) {
           const nextUsuario = data?.usuario || null
           setUsuario(nextUsuario)
           cacheUsuario(nextUsuario)
         }
-      } catch {
-        if (isMounted) {
+      } catch (error) {
+        if (isMounted && !isStaleSessionError(error) && isCurrentAuthSession(sessionKey)) {
           setUsuario(null)
         }
       }
@@ -195,6 +228,8 @@ export default function Header() {
     const loginDisplayName = usuario?.nome || localStorage.getItem('usuarioNome')
     const onboardingEntries = getPreservedOnboardingEntries()
 
+    configuracoesService.invalidateAllUserCaches()
+    invalidateOnboardingRouteCache()
     localStorage.clear()
 
     if (currentTheme) localStorage.setItem('fotolhar-theme', currentTheme)

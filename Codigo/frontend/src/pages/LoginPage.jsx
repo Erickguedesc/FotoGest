@@ -12,6 +12,8 @@ import {
   Mail,
 } from 'lucide-react'
 import api from '../services/api'
+import { configuracoesService } from '../services/configuracoesService'
+import { invalidateOnboardingRouteCache } from '../utils/onboardingRouteCache'
 import loginBrand from '../assets/login-brand.png'
 import loginScene from '../assets/login-scene.png'
 
@@ -140,6 +142,8 @@ export default function LoginPage() {
       const loginDisplayName = [nomeExibicao, nomeComercial, nomeEstudio, nome]
         .find((value) => value && !isGenericDisplayName(value))
 
+      configuracoesService.invalidateAllUserCaches()
+      invalidateOnboardingRouteCache()
       localStorage.removeItem('fotolhar-usuario-perfil')
       localStorage.setItem('token', token)
       localStorage.setItem('usuarioNome', nome)
