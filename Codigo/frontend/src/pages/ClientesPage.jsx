@@ -154,7 +154,7 @@ export default function ClientesPage() {
   const [clientes, setClientes] = useState([])
   const [ensaios, setEnsaios] = useState([])
   const [busca, setBusca] = useState('')
-  const [statusFiltro, setStatusFiltro] = useState('andamento')
+  const [statusFiltro, setStatusFiltro] = useState('todos')
   const [ordenacao, setOrdenacao] = useState('nome')
   const [viewMode, setViewMode] = useState(getInitialViewMode)
   const [loading, setLoading] = useState(true)
@@ -350,10 +350,10 @@ export default function ClientesPage() {
 
         <div className="mb-5 flex flex-wrap gap-2 rounded-xl border border-white/[0.08] bg-[#141414] p-2">
           {[
+            ['todos', 'Todos'],
             ['andamento', 'Em andamento'],
             ['entregues', 'Entregues'],
             ['arquivados', 'Arquivados'],
-            ['todos', 'Todos'],
           ].map(([value, label]) => (
             <button
               key={value}
