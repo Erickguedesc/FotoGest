@@ -1,8 +1,8 @@
-# FotoGest
+# Fotolhar
 
-FotoGest é um sistema web de gestão para fotógrafos, pensado para organizar o fluxo de trabalho de ensaios, clientes, álbuns, fotos, seleção de imagens, configurações profissionais e acompanhamento do negócio.
+Fotolhar é um sistema web de gestão para fotógrafos, pensado para organizar o fluxo de trabalho de ensaios, clientes, álbuns, fotos, seleção de imagens, configurações profissionais e acompanhamento do negócio.
 
-Este repositório é mantido separadamente para evolução do FotoGest como produto voltado ao mercado.
+Este repositório é mantido separadamente para evolução do Fotolhar como produto voltado ao mercado.
 
 ## Tecnologias
 
@@ -26,7 +26,7 @@ Este repositório é mantido separadamente para evolução do FotoGest como prod
 ## Estrutura do projeto
 
 ~~~text
-FotoGest/
+Fotolhar/
 ├── Codigo/
 │   ├── backend/
 │   └── frontend/
@@ -48,7 +48,7 @@ cd Codigo/backend
 Suba o banco de dados:
 
 ~~~bash
-docker compose up fotogest-db -d
+docker compose up fotolhar-db -d
 ~~~
 
 Verifique os containers:
@@ -60,7 +60,7 @@ docker compose ps
 Acesse o banco via terminal:
 
 ~~~bash
-docker exec -it fotogest_postgres psql -U fotogest_user -d fotogest_db
+docker exec -it fotolhar_postgres psql -U fotolhar_user -d fotolhar_db
 ~~~
 
 Para subir a API junto com o banco:
@@ -117,4 +117,4 @@ Na pasta `Codigo/backend`, execute:
 
 ## Observação sobre a migração
 
-O FotoGest é mantido para permitir evolução independente, com mudanças de marca, site institucional, regras de negócio e funcionalidades voltadas ao uso por diferentes fotógrafos no mercado.
+O Fotolhar é mantido para permitir evolução independente, com mudanças de marca, site institucional, regras de negócio e funcionalidades voltadas ao uso por diferentes fotógrafos no mercado.
