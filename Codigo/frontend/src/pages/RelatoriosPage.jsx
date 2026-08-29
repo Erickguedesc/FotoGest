@@ -32,6 +32,12 @@ export default function RelatoriosPage() {
 
   const [tipo, setTipo] = useState('MENSAL')
   const [ano, setAno] = useState(anoAtual)
+  const [filtrosAplicados, setFiltrosAplicados] = useState({
+    tipo: 'MENSAL',
+    ano: anoAtual,
+    dataInicio: '',
+    dataFim: '',
+  })
   const [dataInicio, setDataInicio] = useState('')
   const [dataFim, setDataFim] = useState('')
   const [relatorio, setRelatorio] = useState(null)
@@ -43,16 +49,16 @@ export default function RelatoriosPage() {
 
   const periodos = relatorio?.periodos || []
 
-  async function carregarRelatorio() {
+  async function carregarRelatorio(filtros = filtrosAplicados) {
     try {
       setLoading(true)
       setErro('')
 
       const resultado = await relatoriosService.buscarFaturamento({
-        tipo,
-        ano,
-        dataInicio: dataInicio || undefined,
-        dataFim: dataFim || undefined,
+        tipo: filtros.tipo,
+        ano: filtros.ano,
+        dataInicio: filtros.dataInicio || undefined,
+        dataFim: filtros.dataFim || undefined,
       })
 
       setRelatorio(resultado?.data ?? resultado)
@@ -74,7 +80,52 @@ export default function RelatoriosPage() {
     carregarRelatorio()
   }, [])
 
-  const tituloFallback = `${getTipoPeriodoLabel(tipo)} - ${ano}`
+  function aplicarFiltros(nextFiltros) {
+    setFiltrosAplicados(nextFiltros)
+    carregarRelatorio(nextFiltros)
+  }
+
+  function handleTipoChange(nextTipo) {
+    setTipo(nextTipo)
+    aplicarFiltros({
+      ...filtrosAplicados,
+      tipo: nextTipo,
+      dataInicio: '',
+      dataFim: '',
+    })
+  }
+
+  function handleAnoChange(nextAno) {
+    setAno(nextAno)
+    aplicarFiltros({
+      ...filtrosAplicados,
+      ano: nextAno,
+      dataInicio: '',
+      dataFim: '',
+    })
+  }
+
+  function handleFiltrarDatas() {
+    aplicarFiltros({
+      tipo,
+      ano,
+      dataInicio,
+      dataFim,
+    })
+  }
+
+  function handleLimparDatas() {
+    setDataInicio('')
+    setDataFim('')
+    aplicarFiltros({
+      tipo,
+      ano,
+      dataInicio: '',
+      dataFim: '',
+    })
+  }
+
+  const tituloFallback = `${getTipoPeriodoLabel(filtrosAplicados.tipo)} - ${filtrosAplicados.ano}`
   const tituloRelatorio = relatorio?.periodoDescricao || tituloFallback
 
   const handleExportPdf = async () => {
@@ -92,10 +143,10 @@ export default function RelatoriosPage() {
       setErro('')
 
       const response = await relatoriosService.exportarFaturamentoPdf({
-        tipo,
-        ano,
-        dataInicio: dataInicio || undefined,
-        dataFim: dataFim || undefined,
+        tipo: filtrosAplicados.tipo,
+        ano: filtrosAplicados.ano,
+        dataInicio: filtrosAplicados.dataInicio || undefined,
+        dataFim: filtrosAplicados.dataFim || undefined,
       })
 
       downloadBlob(
@@ -117,8 +168,8 @@ return (
     <main className="theme-page min-h-screen px-4 pt-24 pb-8 md:px-8">
       <div className="mx-auto max-w-7xl">
   <RelatorioHeader
-  tipo={tipo}
-  ano={ano}
+  tipo={filtrosAplicados.tipo}
+  ano={filtrosAplicados.ano}
   periodoDescricao={relatorio?.periodoDescricao}
 />
 
@@ -143,11 +194,12 @@ return (
               dataFim={dataFim}
               anosDisponiveis={anosDisponiveis}
               loading={loading}
-              onTipoChange={setTipo}
-              onAnoChange={setAno}
+              onTipoChange={handleTipoChange}
+              onAnoChange={handleAnoChange}
               onDataInicioChange={setDataInicio}
               onDataFimChange={setDataFim}
-              onFiltrar={carregarRelatorio}
+              onLimparDatas={handleLimparDatas}
+              onFiltrar={handleFiltrarDatas}
             />
 
             <RelatorioDestaques

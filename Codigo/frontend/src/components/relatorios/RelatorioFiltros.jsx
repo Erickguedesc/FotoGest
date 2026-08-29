@@ -12,6 +12,7 @@ export default function RelatorioFiltros({
   onAnoChange,
   onDataInicioChange,
   onDataFimChange,
+  onLimparDatas,
   onFiltrar,
 }) {
   return (
@@ -96,36 +97,33 @@ export default function RelatorioFiltros({
           {(dataInicio || dataFim) && (
             <button
               type="button"
-              onClick={() => {
-                onDataInicioChange('')
-                onDataFimChange('')
-              }}
+              onClick={onLimparDatas}
               className="text-xs uppercase tracking-[0.12em] text-white/45 transition hover:text-white"
             >
               Limpar datas
             </button>
           )}
+
+          <button
+            type="button"
+            onClick={onFiltrar}
+            disabled={loading}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-black transition hover:bg-[var(--gold-light)] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Carregando
+              </>
+            ) : (
+              <>
+                <Calendar size={16} />
+                Filtrar datas
+              </>
+            )}
+          </button>
         </div>
       </section>
-
-      <button
-        type="button"
-        onClick={onFiltrar}
-        disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-black transition hover:bg-[var(--gold-light)] disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {loading ? (
-          <>
-            <Loader2 size={16} className="animate-spin" />
-            Carregando
-          </>
-        ) : (
-          <>
-            <Calendar size={16} />
-            Filtrar
-          </>
-        )}
-      </button>
     </>
   )
 }
