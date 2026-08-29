@@ -2,6 +2,7 @@ package com.fotolhar.dto;
 
 import lombok.*;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Getter
@@ -16,4 +17,7 @@ public class UsuarioConfigDTO {
     private String telefone;
     private String cidade;
     private String fotoPerfilUrl;
+    private String token;
+    private Boolean onboardingConcluido;
+    private OffsetDateTime onboardingConcluidoEm;
 }

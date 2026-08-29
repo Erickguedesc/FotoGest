@@ -14,6 +14,8 @@ import ModelosContratoForm from '../components/configuracoes/ModelosContratoForm
 import BackupDadosForm from '../components/configuracoes/BackupDadosForm'
 import { configuracoesService } from '../services/configuracoesService'
 import ConfirmActionModal from '../components/ui/ConfirmActionModal'
+import { migrateOnboardingAccountKeys } from '../utils/onboarding'
+import { invalidateOnboardingRouteCache } from '../utils/onboardingRouteCache'
 
 export default function ConfiguracoesPage() {
   const [activeTab, setActiveTab] = useState('usuario')
@@ -99,7 +101,23 @@ async function handleUploadCapaAlbumPadrao(arquivo) {
     try {
       setSaving(true)
 
+      const previousEmail = configuracoes?.usuario?.email || localStorage.getItem('usuarioEmail') || ''
       const data = await configuracoesService.atualizarUsuario(dados)
+      const nextEmail = data?.email || dados.email || ''
+
+      migrateOnboardingAccountKeys(previousEmail, nextEmail, {
+        onboardingConcluido: data?.onboardingConcluido,
+        onboardingConcluidoEm: data?.onboardingConcluidoEm,
+      })
+
+      if (data?.token) {
+        localStorage.setItem('token', data.token)
+        configuracoesService.invalidateAllUserCaches()
+        invalidateOnboardingRouteCache()
+      }
+
+      if (data?.nome) localStorage.setItem('usuarioNome', data.nome)
+      if (data?.email) localStorage.setItem('usuarioEmail', data.email)
 
       setConfiguracoes((current) => ({
         ...(current || {}),

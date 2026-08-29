@@ -66,9 +66,18 @@ function cacheUsuario(usuario) {
     return
   }
 
-  localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(usuario))
-  if (usuario.nome) localStorage.setItem('usuarioNome', usuario.nome)
-  if (usuario.email) localStorage.setItem('usuarioEmail', usuario.email)
+  const usuarioCache = {
+    id: usuario.id,
+    nome: usuario.nome,
+    email: usuario.email,
+    telefone: usuario.telefone,
+    cidade: usuario.cidade,
+    fotoPerfilUrl: usuario.fotoPerfilUrl,
+  }
+
+  localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(usuarioCache))
+  if (usuarioCache.nome) localStorage.setItem('usuarioNome', usuarioCache.nome)
+  if (usuarioCache.email) localStorage.setItem('usuarioEmail', usuarioCache.email)
 }
 
 function isGenericLoginDisplayName(name = '') {

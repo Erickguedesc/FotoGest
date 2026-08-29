@@ -308,12 +308,11 @@ export default function NovoEnsaioPage() {
         status:          'AGENDADO',
       }
 
-      const ensaioRes = await ensaiosService.criar(ensaioPayload)
-      const ensaioCriadoId = ensaioRes.data?.id
+      await ensaiosService.criar(ensaioPayload)
 
       setToast({ message: 'Ensaio cadastrado com sucesso!', type: 'success' })
       setTimeout(() => {
-        navigate(ensaioCriadoId ? `/ensaios/${ensaioCriadoId}` : '/ensaios')
+        navigate('/ensaios?grupo=ativos')
       }, 900)
 
     } catch (err) {

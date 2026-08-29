@@ -59,6 +59,29 @@ function getResumoHoje(ensaios = [], today) {
     return `Hoje: ${ensaiosHoje.length} ${label}${primeiroHorario ? ` as ${formatarHora(primeiroHorario)}` : ''}`
 }
 
+function getAgendaDaySummary(ensaiosDia = [], date) {
+    const data = date.toLocaleDateString('pt-BR', {
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit',
+    })
+    const dataLabel = data.charAt(0).toUpperCase() + data.slice(1)
+
+    if (!ensaiosDia.length) {
+        return `${dataLabel}: nenhum ensaio agendado`
+    }
+
+    const label = ensaiosDia.length === 1 ? 'ensaio agendado' : 'ensaios agendados'
+    const horarios = ensaiosDia
+        .map((ensaio) => new Date(ensaio.dataEnsaio))
+        .filter((ensaioDate) => !Number.isNaN(ensaioDate.getTime()))
+        .sort((left, right) => left - right)
+        .map(formatarHora)
+        .join(', ')
+
+    return `${dataLabel}: ${ensaiosDia.length} ${label}${horarios ? ` as ${horarios}` : ''}`
+}
+
 function getDashboardTip(dashboard, agenda, today) {
     const ensaiosHoje = getEnsaiosDoDia(agenda, today)
 
@@ -198,14 +221,20 @@ export default function DashboardHeader({ dashboard }) {
                             const active = index === 0
 
                             return (
-                                <div
+                                <button
                                     key={date.toISOString()}
-                                    className={`flex min-h-[68px] flex-col items-center justify-center rounded-[12px] border text-center transition ${
+                                    type="button"
+                                    title={getAgendaDaySummary(ensaiosDia, date)}
+                                    aria-label={getAgendaDaySummary(ensaiosDia, date)}
+                                    className={`group relative flex min-h-[68px] flex-col items-center justify-center rounded-[12px] border text-center outline-none transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] focus-visible:border-[var(--gold-border)] focus-visible:bg-[var(--gold-dim)] focus-visible:ring-2 focus-visible:ring-[var(--gold)]/20 ${
                                         active
                                             ? 'border-[var(--gold-border)] bg-[var(--gold-dim)]'
                                             : 'border-transparent'
                                     }`}
                                 >
+                                    <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-max max-w-[220px] -translate-x-1/2 rounded-lg border border-[var(--gold-border)] bg-[var(--card)] px-3 py-2 text-center text-[11px] font-medium leading-4 text-[var(--text)] opacity-0 shadow-xl shadow-black/20 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                                        {getAgendaDaySummary(ensaiosDia, date)}
+                                    </span>
                                     <span className="theme-muted text-[10px] font-semibold uppercase">
                                         {date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')}
                                     </span>
@@ -213,7 +242,7 @@ export default function DashboardHeader({ dashboard }) {
                                         {String(date.getDate()).padStart(2, '0')}
                                     </span>
                                     <span className={`mt-1 h-1.5 w-1.5 rounded-full ${ensaiosDia.length ? 'bg-[var(--gold)]' : 'bg-transparent'}`} />
-                                </div>
+                                </button>
                             )
                         })}
                     </div>

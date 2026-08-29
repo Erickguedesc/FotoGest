@@ -17,6 +17,7 @@ import com.fotolhar.repository.HistoricoStatusEnsaioRepository;
 import com.fotolhar.repository.ModeloContratoRepository;
 import com.fotolhar.repository.PreferenciasSistemaRepository;
 import com.fotolhar.repository.SelecaoFotoRepository;
+import com.fotolhar.security.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
@@ -72,6 +73,7 @@ public class ConfiguracoesService {
     private final ModeloContratoRepository modeloContratoRepository;
     private final ObjectMapper objectMapper;
     private final EmailService emailService;
+    private final JwtUtil jwtUtil;
 
     @Value("${spring.mail.username:}")
     private String mailUsername;
@@ -263,8 +265,9 @@ public class ConfiguracoesService {
     @Transactional
     public UsuarioConfigDTO atualizarUsuario(UsuarioUpdateRequest request) {
         Usuario usuario = getUsuarioLogado();
+        boolean emailAlterado = !usuario.getEmail().equalsIgnoreCase(request.getEmail());
 
-        if (!usuario.getEmail().equalsIgnoreCase(request.getEmail())) {
+        if (emailAlterado) {
             boolean emailJaExiste = usuarioRepository.findByEmail(request.getEmail())
                     .filter(f -> !f.getId().equals(usuario.getId()))
                     .isPresent();
@@ -285,7 +288,13 @@ public class ConfiguracoesService {
 
         usuarioRepository.save(usuario);
 
-        return toUsuarioDTO(usuario);
+        UsuarioConfigDTO dto = toUsuarioDTO(usuario);
+
+        if (emailAlterado) {
+            dto.setToken(jwtUtil.gerarToken(usuario.getEmail()));
+        }
+
+        return dto;
     }
 
     @Transactional
@@ -451,6 +460,8 @@ public class ConfiguracoesService {
                 .telefone(usuario.getTelefone())
                 .cidade(usuario.getCidade())
                 .fotoPerfilUrl(usuario.getFotoPerfilUrl())
+                .onboardingConcluido(Boolean.TRUE.equals(usuario.getOnboardingConcluido()))
+                .onboardingConcluidoEm(usuario.getOnboardingConcluidoEm())
                 .build();
     }
 
