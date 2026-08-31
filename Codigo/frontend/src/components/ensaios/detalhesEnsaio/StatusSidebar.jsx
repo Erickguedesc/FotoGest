@@ -1,9 +1,4 @@
-import {
-  STATUS_OPTIONS,
-  getStatusInfo,
-} from '../listaEnsaios/ensaioHelpers'
-
-import SectionTitle from './SectionTitle'
+import { STATUS_OPTIONS } from '../listaEnsaios/ensaioHelpers'
 
 const STATUS_DOT_COLORS = {
   AGENDADO: 'bg-indigo-300',
@@ -15,46 +10,46 @@ const STATUS_DOT_COLORS = {
 }
 
 const STATUS_TEXT_COLORS = {
-  AGENDADO: 'text-indigo-200',
-  REALIZADO: 'text-lime-200',
-  EM_SELECAO: 'text-amber-200',
-  EM_EDICAO: 'text-sky-200',
-  FINALIZADO: 'text-emerald-200',
-  CANCELADO: 'text-red-200',
+  AGENDADO: 'text-indigo-700',
+  REALIZADO: 'text-lime-700',
+  EM_SELECAO: 'text-amber-700',
+  EM_EDICAO: 'text-sky-700',
+  FINALIZADO: 'text-emerald-700',
+  CANCELADO: 'text-red-700',
 }
 
 const STATUS_ACTIVE_BG = {
-  AGENDADO: 'bg-indigo-400/10 border-indigo-400/25',
-  REALIZADO: 'bg-lime-400/10 border-lime-400/25',
-  EM_SELECAO: 'bg-amber-400/10 border-amber-400/25',
-  EM_EDICAO: 'bg-sky-400/10 border-sky-400/25',
-  FINALIZADO: 'bg-emerald-400/10 border-emerald-400/25',
-  CANCELADO: 'bg-red-400/10 border-red-400/25',
+  AGENDADO: 'bg-indigo-50 border-indigo-100',
+  REALIZADO: 'bg-lime-50 border-lime-100',
+  EM_SELECAO: 'bg-amber-50 border-amber-100',
+  EM_EDICAO: 'bg-sky-50 border-sky-100',
+  FINALIZADO: 'bg-emerald-50 border-emerald-100',
+  CANCELADO: 'bg-red-50 border-red-100',
 }
 
 export default function StatusSidebar({ ensaio, loading, onStatusChange }) {
-  const statusInfo = getStatusInfo(ensaio?.status)
-
   return (
     <section
       id="status-sidebar"
-      className="theme-card rounded-2xl border border-[var(--gold-border)]"
+      className="rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]"
     >
-      <SectionTitle title="Status atual" />
-
-      <div className="p-5">
-        <span
-          className={`mb-4 inline-flex rounded-full border px-3 py-1 text-[11px] ${statusInfo.chipClass}`}
-        >
-          {statusInfo.label}
+      <div className="flex items-center gap-3 px-5 pt-4">
+        <span className="flex h-6 w-6 items-center justify-center rounded-[7px] border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[10px] text-[var(--gold)]">
+          ○
         </span>
 
-        <div className="space-y-2">
+        <h2 className="text-[14px] font-semibold text-[var(--text)]">
+          Status atual
+        </h2>
+      </div>
+
+      <div className="px-5 pb-4 pt-3">
+        <div className="overflow-hidden rounded-[12px] border border-[var(--border)] bg-white/45">
           {STATUS_OPTIONS.map((status) => {
             const active = ensaio.status === status.value
             const dotColor = STATUS_DOT_COLORS[status.value] || 'bg-white/40'
-            const textColor = STATUS_TEXT_COLORS[status.value] || 'text-white/70'
-            const activeBg = STATUS_ACTIVE_BG[status.value] || 'bg-white/[0.04] border-white/[0.10]'
+            const textColor = STATUS_TEXT_COLORS[status.value] || 'text-[var(--text)]'
+            const activeBg = STATUS_ACTIVE_BG[status.value] || 'bg-white/55 border-[var(--border)]'
 
             return (
               <button
@@ -62,14 +57,14 @@ export default function StatusSidebar({ ensaio, loading, onStatusChange }) {
                 type="button"
                 disabled={loading}
                 onClick={() => onStatusChange(status.value)}
-                className={`flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left text-[13px] transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                className={`flex w-full items-center justify-between border-b px-3 py-3 text-left text-[13px] transition last:border-b-0 disabled:cursor-not-allowed disabled:opacity-60 ${
                   active
                     ? `${activeBg} ${textColor}`
-                    : 'border-transparent text-[var(--text-muted)] hover:border-[var(--border)] hover:bg-[var(--card-hover)] hover:text-[var(--text)]'
+                    : 'border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--card-hover)] hover:text-[var(--text)]'
                 }`}
               >
                 <span className="flex items-center gap-3">
-                  <span className={`h-2.5 w-2.5 rounded-full ${dotColor}`} />
+                  <span className={`h-2 w-2 rounded-full ${dotColor}`} />
                   <span className={active ? textColor : 'text-[var(--text)]'}>
                     {status.label}
                   </span>

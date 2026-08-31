@@ -3,7 +3,7 @@ import { formatMoney } from '../../utils/relatoriosUtils'
 
 export default function RelatorioKpiGrid({ relatorio }) {
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
       <KpiCard
         title="Valor previsto total"
         value={formatMoney(relatorio?.faturamentoTotal)}
@@ -33,7 +33,7 @@ export default function RelatorioKpiGrid({ relatorio }) {
       <KpiCard
         title="Clientes novos"
         value={relatorio?.clientesNovos ?? 0}
-        description="Clientes cadastrados no periodo"
+        description="Clientes cadastrados no período"
         icon={<Users size={18} />}
         variant="blue"
       />
@@ -47,7 +47,7 @@ export default function RelatorioKpiGrid({ relatorio }) {
       />
 
       <KpiCard
-        title="Ticket medio por ensaio"
+        title="Ticket médio por ensaio"
         value={formatMoney(relatorio?.ticketMedioEnsaio)}
         description="Total previsto dividido pelos ensaios entregues"
         icon={<Wallet size={18} />}
@@ -66,48 +66,48 @@ function KpiCard({
   variant = 'white',
 }) {
   const valueColor = {
-    gold: 'text-[var(--gold)]',
-    green: 'text-green-300',
-    blue: 'text-sky-300',
-    white: 'text-white',
+    gold: 'text-[#a96718]',
+    green: 'text-green-700',
+    blue: 'text-sky-700',
+    white: 'text-[#2b2520]',
   }
 
   const iconStyle = {
-    gold: 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]',
-    green: 'border-green-400/20 bg-green-400/10 text-green-300',
-    blue: 'border-sky-400/20 bg-sky-400/10 text-sky-300',
-    white: 'border-white/10 bg-white/[0.03] text-white/60',
+    gold: 'border-[#f0d7ad] bg-[#fff4df] text-[#bd7920]',
+    green: 'border-green-100 bg-green-50 text-green-700',
+    blue: 'border-sky-100 bg-sky-50 text-sky-700',
+    white: 'border-[#e5ddd3] bg-[#f7f3ed] text-[#6d6258]',
   }
 
   const tendenciaStyle = {
-    ALTA: 'bg-green-400/10 text-green-300',
-    QUEDA: 'bg-red-400/10 text-red-300',
-    NEUTRO: 'bg-white/5 text-white/45',
-    SEM_BASE: 'bg-[var(--gold-dim)] text-[var(--gold)]',
+    ALTA: 'text-green-700',
+    QUEDA: 'text-red-600',
+    NEUTRO: 'text-[#756a61]',
+    SEM_BASE: 'text-[#a96718]',
   }
 
   return (
-    <article className="rounded-2xl border border-[var(--gold-border)] bg-[#111111] p-5">
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <p className="text-xs uppercase tracking-[0.16em] text-white/40">
+    <article className="flex min-h-[124px] flex-col rounded-[16px] border border-[#e7ded3] bg-white p-4 shadow-[0_10px_24px_rgba(82,58,35,0.045)]">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <p className="max-w-[142px] text-[10px] font-semibold uppercase leading-4 tracking-[0.12em] text-[#8a7e73]">
           {title}
         </p>
 
-        <span className={`rounded-full border p-2 ${iconStyle[variant]}`}>
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border ${iconStyle[variant]}`}>
           {icon}
         </span>
       </div>
 
-      <p className={`font-serif text-3xl font-light ${valueColor[variant]}`}>
+      <p className={`text-[26px] font-medium leading-none tracking-normal ${valueColor[variant]}`}>
         {value}
       </p>
 
       {description && (
         <p
-          className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs ${
+          className={`mt-auto pt-3 text-[11px] leading-4 ${
             tendencia
               ? tendenciaStyle[tendencia] || tendenciaStyle.NEUTRO
-              : 'bg-white/5 text-white/55'
+              : 'text-[#756a61]'
           }`}
         >
           {description}

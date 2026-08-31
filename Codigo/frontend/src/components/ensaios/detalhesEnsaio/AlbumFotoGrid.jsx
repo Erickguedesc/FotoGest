@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { ImageIcon, LayoutGrid } from 'lucide-react'
 
 import useBodyScrollLock from '../../../hooks/useBodyScrollLock'
 import FotoPreviewImage from './FotoPreviewImage'
@@ -70,10 +71,10 @@ export default function AlbumFotoGrid({
     return (
       <article
         key={foto.id}
-        className={`group overflow-hidden rounded-xl border bg-black/20 transition ${
+        className={`group overflow-hidden rounded-xl border bg-white/55 transition ${
           selecionada
             ? 'border-[var(--gold-border)] ring-1 ring-[var(--gold-border)]'
-            : 'border-white/[0.08]'
+            : 'border-[var(--border)]'
         }`}
       >
         <div className="relative">
@@ -85,8 +86,8 @@ export default function AlbumFotoGrid({
               onClick={() => toggleFoto(foto.id)}
               className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full border text-[12px] transition ${
                 selecionada
-                  ? 'border-[var(--gold-border)] bg-[var(--gold)] text-[#1A1200]'
-                  : 'border-white/25 bg-black/60 text-white/45 hover:border-[var(--gold-border)] hover:text-[var(--gold)]'
+                  ? 'border-[var(--gold-border)] bg-[#a65f00] text-white'
+                  : 'border-[var(--border)] bg-white/80 text-[var(--text-muted)] hover:border-[var(--gold-border)] hover:text-[var(--gold)]'
               }`}
               title={selecionada ? 'Desmarcar foto' : 'Selecionar foto'}
             >
@@ -95,14 +96,14 @@ export default function AlbumFotoGrid({
           )}
 
           {foto.ehCapa && (
-            <span className="absolute left-2 top-2 rounded-full border border-[var(--gold-border)] bg-black/70 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-[var(--gold)]">
+            <span className="absolute left-2 top-2 rounded-full border border-[var(--gold-border)] bg-white/90 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-[var(--gold)]">
               Capa
             </span>
           )}
         </div>
 
         <div className="p-3">
-          <p className="truncate text-[12px] text-white/70">
+          <p className="truncate text-[12px] text-[var(--text)]">
             {getNomeFoto(foto)}
           </p>
 
@@ -111,7 +112,7 @@ export default function AlbumFotoGrid({
               type="button"
               disabled={disabled || foto.ehCapa}
               onClick={() => onDefinirCapa(foto.id)}
-              className="flex-1 rounded-lg border border-white/[0.10] px-2 py-2 text-[11px] text-white/55 transition enabled:hover:border-[var(--gold-border)] enabled:hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-35"
+              className="flex-1 rounded-lg border border-[var(--border)] px-2 py-2 text-[11px] text-[var(--text-muted)] transition enabled:hover:border-[var(--gold-border)] enabled:hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-35"
             >
               Capa
             </button>
@@ -120,7 +121,7 @@ export default function AlbumFotoGrid({
               type="button"
               disabled={disabled}
               onClick={() => onRemoverFoto(foto.id)}
-              className="flex-1 rounded-lg border border-red-400/30 px-2 py-2 text-[11px] text-red-300 transition enabled:hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-35"
+              className="flex-1 rounded-lg border border-red-200 px-2 py-2 text-[11px] text-red-700 transition enabled:hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-35"
             >
               Remover
             </button>
@@ -132,7 +133,7 @@ export default function AlbumFotoGrid({
 
   if (loading) {
     return (
-      <section className="rounded-2xl border border-[var(--gold-border)] bg-[#121212] p-5 text-[13px] text-white/45">
+      <section className="rounded-[14px] border border-[var(--border)] bg-white/78 p-5 text-[13px] text-[var(--text-muted)] shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
         Carregando fotos...
       </section>
     )
@@ -140,23 +141,52 @@ export default function AlbumFotoGrid({
 
   if (!fotos.length) {
     return (
-      <section className="rounded-2xl border border-[var(--gold-border)] bg-[#121212] p-6 text-center">
-        <p className="text-[13px] text-white/55">
-          Nenhuma foto enviada ainda.
-        </p>
+      <section className="rounded-[14px] border border-[var(--border)] bg-white/78 p-4 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+        <div className="mb-4 flex items-center gap-3">
+          <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-[var(--gold-dim)] text-[var(--gold)]">
+            <LayoutGrid size={16} strokeWidth={1.8} />
+          </span>
+
+          <h2 className="text-[15px] font-semibold text-[var(--text)]">
+            Galeria do álbum
+          </h2>
+        </div>
+
+        <div className="grid gap-3 rounded-xl border border-[var(--border)] bg-white/45 p-3 md:grid-cols-[minmax(0,1fr)_minmax(260px,1.4fr)]">
+          <div className="grid grid-cols-5 gap-2 max-sm:hidden" aria-hidden="true">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div
+                key={index}
+                className="flex min-h-[70px] items-center justify-center rounded-[8px] bg-[linear-gradient(135deg,#f6f3ee,#ebe5dc)] text-[#d8d0c6]"
+              >
+                <ImageIcon size={28} strokeWidth={1.5} />
+              </div>
+            ))}
+          </div>
+
+          <div className="flex min-h-[82px] flex-col items-center justify-center rounded-[10px] border border-dashed border-[var(--border)] bg-white/55 px-5 text-center">
+            <p className="text-[13px] text-[var(--text-muted)]">
+              Nenhuma foto enviada ainda.
+            </p>
+
+            <p className="mt-1 text-[11px] text-[var(--text-muted)] opacity-75">
+              As imagens aparecerão aqui após o upload.
+            </p>
+          </div>
+        </div>
       </section>
     )
   }
 
   return (
-    <section className="rounded-2xl border border-[var(--gold-border)] bg-[#121212] p-5">
+    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 p-5 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-[12px] uppercase tracking-[0.16em] text-white/35">
+          <p className="text-[12px] uppercase tracking-[0.08em] text-[var(--gold)]">
             Fotos do álbum
           </p>
 
-          <p className="mt-1 text-[13px] text-white/55">
+          <p className="mt-1 text-[13px] text-[var(--text-muted)]">
             {totalSelecionadas > 0
               ? `${totalSelecionadas} foto${totalSelecionadas === 1 ? '' : 's'} selecionada${totalSelecionadas === 1 ? '' : 's'}`
               : `${fotos.length} foto${fotos.length === 1 ? '' : 's'} enviada${fotos.length === 1 ? '' : 's'}`}
@@ -168,7 +198,7 @@ export default function AlbumFotoGrid({
             <button
               type="button"
               onClick={selecionarTodas}
-              className="rounded-lg border border-white/[0.10] px-4 py-2 text-[11px] font-medium text-white/55 transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]"
+              className="rounded-lg border border-[var(--border)] bg-white/55 px-4 py-2 text-[11px] font-medium text-[var(--text-muted)] transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]"
             >
               {todasSelecionadas ? 'Desmarcar todas' : 'Selecionar todas'}
             </button>
@@ -178,7 +208,7 @@ export default function AlbumFotoGrid({
                 <button
                   type="button"
                   onClick={limparSelecao}
-                  className="rounded-lg border border-white/[0.10] px-4 py-2 text-[11px] font-medium text-white/55 transition hover:border-white/20 hover:text-white"
+                  className="rounded-lg border border-[var(--border)] bg-white/55 px-4 py-2 text-[11px] font-medium text-[var(--text-muted)] transition hover:border-[var(--gold-border)] hover:text-[var(--text)]"
                 >
                   Limpar seleção
                 </button>
@@ -186,7 +216,7 @@ export default function AlbumFotoGrid({
                 <button
                   type="button"
                   onClick={removerSelecionadas}
-                  className="rounded-lg border border-red-400/30 bg-red-400/10 px-4 py-2 text-[11px] font-medium text-red-300 transition hover:bg-red-400/15"
+                  className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-[11px] font-medium text-red-700 transition hover:bg-red-100"
                 >
                   Apagar selecionadas
                 </button>
@@ -201,8 +231,8 @@ export default function AlbumFotoGrid({
       </div>
 
       {temMaisFotos && (
-        <div className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-black/20 p-4 max-sm:flex-col max-sm:items-start">
-          <p className="text-[13px] text-white/45">
+        <div className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-white/55 p-4 max-sm:flex-col max-sm:items-start">
+          <p className="text-[13px] text-[var(--text-muted)]">
             Exibindo {LIMITE_PREVIA} de {fotos.length} fotos neste card.
           </p>
 

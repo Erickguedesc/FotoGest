@@ -1,4 +1,4 @@
-import { BarChart3, Camera, TrendingDown, TrendingUp } from 'lucide-react'
+import { Camera, Star, TrendingDown, TrendingUp } from 'lucide-react'
 import { formatMoney } from '../../utils/relatoriosUtils'
 import { getTipoLabel } from '../ensaios/listaEnsaios/ensaioHelpers'
 
@@ -21,14 +21,14 @@ export default function RelatorioDestaques({ destaques, periodos = [] }) {
     : 'Sem receita'
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-[#111111] p-5">
-      <h2 className="mb-4 text-xs uppercase tracking-[0.18em] text-[var(--gold)]">
+    <div className="space-y-3">
+      <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a96d1f]">
         Destaques
       </h2>
 
-      <div className="space-y-4">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
         <DestaqueItem
-          icon={<BarChart3 size={18} />}
+          icon={<Star size={15} />}
           label="Melhor período"
           value={melhorPeriodoLabel}
           variant={periodosComReceita.length > 0 ? 'gold' : 'neutral'}
@@ -55,31 +55,31 @@ export default function RelatorioDestaques({ destaques, periodos = [] }) {
           variant="blue"
         />
       </div>
-    </section>
+    </div>
   )
 }
 
 function DestaqueItem({ icon, label, value, variant }) {
   const variants = {
-    gold: 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]',
-    green: 'border-green-400/20 bg-green-400/10 text-green-300',
-    red: 'border-red-400/20 bg-red-400/10 text-red-300',
-    blue: 'border-sky-400/20 bg-sky-400/10 text-sky-300',
-    neutral: 'border-white/10 bg-white/[0.04] text-white/45',
+    gold: 'border-[#f0d7ad] bg-[#fff6e8] text-[#bd7920]',
+    green: 'border-green-100 bg-green-50 text-green-700',
+    red: 'border-red-100 bg-red-50 text-red-600',
+    blue: 'border-sky-100 bg-sky-50 text-sky-700',
+    neutral: 'border-[#e5ddd3] bg-[#fbfaf8] text-[#9b9187]',
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <span className={`rounded-xl border p-2 ${variants[variant]}`}>
+    <div className="flex min-h-[42px] items-center gap-3 rounded-[9px] border border-[#e8dfd5] bg-white px-3 py-2">
+      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border ${variants[variant]}`}>
         {icon}
       </span>
 
-      <div>
-        <p className="text-xs uppercase tracking-[0.12em] text-white/40">
+      <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <p className="truncate text-xs font-medium text-[#71665d]">
           {label}
         </p>
 
-        <p className="mt-1 font-serif text-xl font-light text-white">
+        <p className="max-w-[180px] truncate text-right text-sm font-semibold text-[#2f2924]">
           {value}
         </p>
       </div>

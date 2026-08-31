@@ -6,10 +6,11 @@ const TIPOS = [
 ]
 
 const inputClass = `
-  theme-input w-full border rounded-[9px]
+  w-full rounded-[9px] border border-[var(--border)] bg-white/64
   px-3.5 py-[11px] text-[13.5px] font-light
-  outline-none transition-all duration-200
-  focus:border-[var(--gold-border)] focus:bg-[var(--gold-dim)]
+  text-[var(--text)] outline-none shadow-[0_8px_20px_rgba(92,82,72,0.04)]
+  transition-all duration-200 placeholder:text-[var(--text-muted)]
+  focus:border-[var(--gold-border)] focus:bg-white
 `
 
 const errorInputClass = 'border-[rgba(201,123,123,0.5)] bg-[rgba(201,123,123,0.07)]'
@@ -49,11 +50,11 @@ function formatConflictDate(value) {
 // ── Ícone de seção reutilizável ──────────────────────────────────────────────
 function SectionHeader({ icon, label }) {
   return (
-    <div className="theme-divider flex items-center gap-2.5 border-b px-5 py-4">
-      <div className="w-7 h-7 rounded-lg bg-[var(--gold-dim)] border border-[var(--gold-border)] flex items-center justify-center flex-shrink-0">
+    <div className="flex items-center gap-3 border-b border-[var(--border)] px-5 py-4">
+      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]">
         {icon}
       </div>
-      <span className="theme-text text-[11px] uppercase tracking-[0.16em]">
+      <span className="text-[15px] font-medium text-[var(--text)]">
         {label}
       </span>
     </div>
@@ -75,7 +76,7 @@ export default function FormInfoSection({
     <>
       {/* ── CARD 1: Dados do cliente ───────────────────────────────────────── */}
       <div
-        className="theme-card mb-4 overflow-hidden rounded-[14px] border"
+        className="mb-4 overflow-visible rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]"
         onPointerDownCapture={() => onSectionFocus?.('cliente')}
         onFocusCapture={() => onSectionFocus?.('cliente')}
       >
@@ -105,19 +106,19 @@ export default function FormInfoSection({
               />
 
               {clientesSugeridos.length > 0 && (
-                <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-[0_18px_36px_rgba(0,0,0,0.16)]">
+                <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-white shadow-[0_18px_36px_rgba(78,56,35,0.18)]">
                   {clientesSugeridos.map((cliente) => (
                     <button
                       key={cliente.id}
                       type="button"
                       onClick={() => onSelectCliente(cliente)}
-                      className="theme-divider flex w-full items-center justify-between gap-3 border-b px-3.5 py-3 text-left transition last:border-b-0 hover:bg-[var(--gold-dim)]"
+                      className="flex w-full items-center justify-between gap-3 border-b border-[var(--border)] px-3.5 py-3 text-left transition last:border-b-0 hover:bg-[var(--gold-dim)]"
                     >
                       <span className="min-w-0">
-                        <span className="theme-title block truncate text-[13px]">
+                        <span className="block truncate text-[13px] text-[var(--text)]">
                           {cliente.nome}
                         </span>
-                        <span className="theme-muted mt-0.5 block truncate text-[11px]">
+                        <span className="mt-0.5 block truncate text-[11px] text-[var(--text-muted)]">
                           {[cliente.telefone, cliente.email].filter(Boolean).join(' · ') || 'Cliente já cadastrado'}
                         </span>
                       </span>
@@ -132,7 +133,7 @@ export default function FormInfoSection({
           </FormInput>
 
           {/* Telefone + Email */}
-          <div className="grid grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
             <FormInput label="Telefone" error={errors.telefone}>
               <input
                 type="tel"
@@ -155,7 +156,7 @@ export default function FormInfoSection({
           </div>
 
           {/* CPF + Cidade */}
-          <div className="grid grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
             <FormInput label="CPF" error={errors.cpf}>
               <input
                 type="text"
@@ -197,7 +198,7 @@ export default function FormInfoSection({
               <svg
                 width="11" height="11" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" strokeWidth="2"
-                className="theme-muted pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 opacity-70"
+                className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] opacity-70"
               >
                 <polyline points="6 9 12 15 18 9" />
               </svg>
@@ -209,7 +210,7 @@ export default function FormInfoSection({
 
       {/* ── CARD 2: Informações do ensaio ─────────────────────────────────── */}
       <div
-        className="theme-card mb-4 overflow-hidden rounded-[14px] border"
+        className="mb-4 overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]"
         onPointerDownCapture={() => onSectionFocus?.('ensaio')}
         onFocusCapture={() => onSectionFocus?.('ensaio')}
       >
@@ -234,7 +235,7 @@ export default function FormInfoSection({
               <span className="text-[var(--gold)] ml-0.5">*</span>
             </label>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-5 gap-2 max-xl:grid-cols-4 max-md:grid-cols-2">
               {TIPOS.map((t) => (
                 <button
                   key={t}
@@ -244,11 +245,11 @@ export default function FormInfoSection({
                     if (t !== 'Outro') set('tipoCustom', '')
                   }}
                   className={`
-                    px-3.5 py-1.5 rounded-full text-[12px] tracking-[0.04em]
+                    min-h-9 rounded-full px-3.5 py-1.5 text-[12px] tracking-normal
                     border transition-all duration-200 cursor-pointer font-light
                     ${form.tipo === t
-                      ? 'bg-[var(--gold-dim)] border-[var(--gold-border)] text-[var(--gold)]'
-                      : 'border-[var(--border)] bg-transparent text-[var(--text-muted)] hover:border-[var(--gold-border)] hover:text-[var(--text)]'}
+                      ? 'bg-[var(--gold-dim)] border-[var(--gold-border)] text-[var(--gold)] shadow-[0_8px_18px_rgba(92,82,72,0.08)]'
+                      : 'border-[var(--border)] bg-white/50 text-[var(--text-muted)] hover:border-[var(--gold-border)] hover:text-[var(--text)]'}
                   `}
                 >
                   {t}
@@ -272,7 +273,7 @@ export default function FormInfoSection({
           </div>
 
           {/* Data + Horário */}
-          <div className="grid grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
             <FormInput label="Data" required error={errors.data}>
               <input
                 type="date"
@@ -293,7 +294,7 @@ export default function FormInfoSection({
           </div>
 
           {conflitoAgenda && (
-            <div className="rounded-xl border border-amber-400/35 bg-amber-400/10 px-3.5 py-3 text-[12px] leading-5 text-[var(--warning-text)]">
+            <div className="rounded-xl border border-amber-300 bg-amber-50 px-3.5 py-3 text-[12px] leading-5 text-amber-800">
               Já existe um ensaio neste dia por volta de {formatConflictDate(conflitoAgenda.dataEnsaio)}
               {conflitoAgenda.clienteNome ? ` para ${conflitoAgenda.clienteNome}` : ''}.
             </div>
@@ -305,7 +306,7 @@ export default function FormInfoSection({
               <svg
                 width="14" height="14" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" strokeWidth="1.8"
-                className="theme-muted pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 opacity-70"
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] opacity-70"
               >
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
                 <circle cx="12" cy="10" r="3" />

@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react'
-
-import SectionTitle from './SectionTitle'
+import { ImageIcon, TriangleAlert, UploadCloud } from 'lucide-react'
 
 export default function AlbumUpload({
   totalFotos = 0,
@@ -31,10 +30,24 @@ export default function AlbumUpload({
   }
 
   return (
-    <section className="rounded-2xl border border-[var(--gold-border)] bg-[#121212]">
-      <SectionTitle title="Álbum do cliente" rightText={`${totalFotos} fotos`} />
+    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 p-4 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-[var(--gold-dim)] text-[var(--gold)]">
+            <ImageIcon size={18} strokeWidth={1.8} />
+          </span>
 
-      <div className="p-6">
+          <h2 className="text-[17px] font-semibold text-[var(--text)]">
+            Álbum do cliente
+          </h2>
+        </div>
+
+        <span className="rounded-full bg-[var(--gold-dim)] px-3 py-1 text-[11px] font-semibold text-[var(--gold)]">
+          {totalFotos} fotos
+        </span>
+      </div>
+
+      <div>
         <input
           ref={inputRef}
           type="file"
@@ -68,31 +81,31 @@ export default function AlbumUpload({
             setDragActive(false)
             handleFiles(event.dataTransfer.files)
           }}
-          className={`flex min-h-[170px] w-full flex-col items-center justify-center rounded-xl border border-dashed px-6 text-center transition disabled:cursor-not-allowed ${
+          className={`flex min-h-[190px] w-full flex-col items-center justify-center rounded-xl border border-dashed px-6 text-center transition disabled:cursor-not-allowed ${
             disabled
-              ? 'border-emerald-400/25 bg-emerald-400/5 opacity-80'
+              ? 'border-emerald-200 bg-emerald-50 opacity-80'
               : dragActive
                 ? 'border-[var(--gold-border)] bg-[var(--gold-dim)]'
-                : 'border-white/[0.12] bg-black/10 hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)]'
+                : 'border-[var(--gold-border)]/65 bg-white/45 hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)]'
           }`}
         >
           <div
-            className={`mb-3 flex h-10 w-10 items-center justify-center rounded-full border ${
+            className={`mb-4 flex h-12 w-12 items-center justify-center rounded-full border ${
               disabled
-                ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-300'
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                 : 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]'
             }`}
           >
-            {disabled ? '✓' : loading ? '...' : '↑'}
+            {disabled ? '✓' : loading ? '...' : <UploadCloud size={24} strokeWidth={1.7} />}
           </div>
 
           <p
-            className={`text-[13px] ${
+            className={`text-[13px] font-semibold ${
               disabled
-                ? 'text-emerald-300/80'
+                ? 'text-emerald-700'
                 : loading
                   ? 'text-[var(--gold)]'
-                  : 'text-white/70'
+                  : 'text-[var(--text)]'
             }`}
           >
             {disabled
@@ -105,7 +118,7 @@ export default function AlbumUpload({
                 : 'Arraste fotos aqui'}
           </p>
 
-          <p className="mt-1 text-[12px] text-white/35">
+          <p className="mt-1 text-[12px] text-[var(--text-muted)]">
             {disabled
               ? 'Uploads bloqueados para não alterar a galeria enviada.'
               : loading
@@ -114,14 +127,15 @@ export default function AlbumUpload({
           </p>
 
           {!disabled && !loading && (
-            <p className="mt-3 rounded-lg border border-[var(--gold-border)] bg-[var(--gold-dim)] px-3 py-2 text-[11.5px] font-semibold text-[var(--gold)]">
-              Atenção: o tamanho máximo por imagem é de 10 MB.
+            <p className="mt-4 inline-flex items-center gap-2 rounded-lg border border-[var(--gold-border)] bg-[var(--gold-dim)] px-3 py-2 text-[11.5px] font-semibold text-[var(--gold)]">
+              <TriangleAlert size={13} strokeWidth={1.8} />
+              <span>Atenção: o tamanho máximo por imagem é de 10 MB.</span>
             </p>
           )}
 
           {loading && (
             <div className="mt-5 w-full max-w-[420px]">
-              <div className="mb-2 flex items-center justify-between text-[11px] text-white/35">
+              <div className="mb-2 flex items-center justify-between text-[11px] text-[var(--text-muted)]">
                 <span>
                   {isFinalizando ? 'Processando imagens' : 'Progresso total do upload'}
                 </span>
@@ -131,7 +145,7 @@ export default function AlbumUpload({
                 </span>
               </div>
 
-              <div className="h-2 overflow-hidden rounded-full bg-white/[0.08]">
+              <div className="h-2 overflow-hidden rounded-full bg-[var(--border)]">
                       <div
                         className="h-full rounded-full bg-emerald-500/80 transition-all duration-300"
                         style={{ width: `${uploadProgress}%` }}

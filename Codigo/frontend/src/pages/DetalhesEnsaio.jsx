@@ -1,6 +1,6 @@
   import { useEffect, useMemo, useState } from 'react'
   import { useNavigate, useParams } from 'react-router-dom'
-  import { Heart, Images, Info } from 'lucide-react'
+  import { Heart, Images, Info, ListChecks, UserRound } from 'lucide-react'
 
   import Header from '../components/layout/Header'
   import Toast from '../components/ui/Toast'
@@ -171,7 +171,7 @@
       : 'Pendente'
 
     const tabs = [
-      { id: 'informacoes', label: 'Informações', icon: Info },
+      { id: 'informacoes', label: 'Informações', icon: Info, description: 'Resumo do ensaio' },
       { id: 'album', label: 'Criar álbum', icon: Images, badge: pluralizarFotos(fotos.length) },
       { id: 'selecao', label: 'Seleção do cliente', icon: Heart, badge: badgeSelecao },
     ]
@@ -974,8 +974,8 @@ const texto =
         <>
           <Header />
 
-          <main className="theme-page mx-auto max-w-[1200px] px-8 pt-[110px] max-md:px-4">
-            <div className="theme-card rounded-2xl border p-8 text-[var(--text-muted)]">
+          <main className="ensaios-management-page mx-auto max-w-[1280px] px-8 pt-[110px] max-md:px-4">
+            <div className="rounded-[14px] border border-[var(--border)] bg-white/78 p-8 text-[var(--text-muted)] shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
               Carregando detalhes do ensaio...
             </div>
           </main>
@@ -988,13 +988,13 @@ const texto =
         <>
           <Header />
 
-          <main className="theme-page mx-auto max-w-[1200px] px-8 pt-[110px] max-md:px-4">
-            <div className="theme-card rounded-2xl border p-8">
-              <h1 className="theme-title font-serif text-2xl">
+          <main className="ensaios-management-page mx-auto max-w-[1280px] px-8 pt-[110px] max-md:px-4">
+            <div className="rounded-[14px] border border-[var(--border)] bg-white/78 p-8 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+              <h1 className="font-serif text-2xl text-[var(--text)]">
                 Ensaio não encontrado
               </h1>
 
-              <p className="theme-muted mt-2 text-sm">
+              <p className="mt-2 text-sm text-[var(--text-muted)]">
                 Não foi possível encontrar os dados deste ensaio.
               </p>
 
@@ -1015,8 +1015,8 @@ const texto =
       <>
         <Header />
 
-        <main className="theme-page mx-auto max-w-[1200px] px-8 pb-16 pt-[92px] max-md:px-4">
-          <div className="theme-muted mb-5 text-[11px]">
+        <main className="ensaios-management-page mx-auto max-w-[1280px] px-8 pb-16 pt-[92px] max-md:px-4 lg:pt-8">
+          <div className="mb-6 flex items-center gap-2 border-b border-[var(--border)] pb-6 text-[13px] text-[var(--text-muted)]">
             <button
               type="button"
               onClick={() => navigate('/ensaios')}
@@ -1025,8 +1025,8 @@ const texto =
               Ensaios
             </button>
 
-            <span className="mx-2 text-white/20">›</span>
-            <span className="theme-text">{ensaio.clienteNome}</span>
+            <span>›</span>
+            <span className="font-medium text-[var(--text)]">{ensaio.clienteNome}</span>
           </div>
 
           <EnsaioHero
@@ -1040,61 +1040,68 @@ const texto =
             onBack={() => navigate('/ensaios')}
           />
 
-          <div className="mt-5 border-b border-[var(--gold-border)]">
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <section className="mt-7 rounded-[14px] border border-[var(--border)] bg-white/78 p-5 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+            <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-1">
               {tabs.map((tab) => {
                 const active = activeTab === tab.id
                 const Icon = tab.icon
+                const tone = tab.id === 'informacoes'
+                  ? 'border-[#ead6bd] bg-[#f7eee4] text-[#a65f00]'
+                  : tab.id === 'album'
+                    ? 'border-violet-100 bg-violet-50 text-violet-600'
+                    : 'border-rose-100 bg-rose-50 text-rose-600'
 
                 return (
                   <button
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`group relative inline-flex min-h-[52px] items-center gap-2.5 px-1 pb-4 pt-2 text-[15px] font-medium transition ${
+                    className={`group relative min-h-[86px] overflow-hidden rounded-[10px] border bg-white/55 px-5 py-4 text-left transition hover:-translate-y-0.5 hover:border-[var(--gold-border)] hover:bg-white ${
                       active
-                        ? 'text-[var(--gold)]'
-                        : 'text-[var(--text)] hover:text-[var(--gold)]'
+                        ? 'border-[var(--gold-border)] shadow-[0_12px_24px_rgba(78,56,35,0.08)]'
+                        : 'border-transparent'
                     }`}
                   >
-                    <Icon size={17} strokeWidth={1.9} />
-
-                    {tab.label}
-
-                    {tab.badge ? (
-                      <span
-                        className={`ml-1 rounded-full px-2.5 py-1 text-[10px] font-semibold ${
-                          active
-                            ? 'bg-[var(--gold-dim)] text-[var(--gold)]'
-                            : 'bg-[var(--card-hover)] text-[var(--text-muted)]'
-                        }`}
-                      >
-                        {tab.badge}
+                    <span className="flex items-center gap-4">
+                      <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border ${tone}`}>
+                        <Icon size={21} strokeWidth={1.8} />
                       </span>
-                    ) : null}
+
+                      <span className="min-w-0">
+                        <span className="block text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--text)]">
+                          {tab.label}
+                        </span>
+
+                        {tab.description || tab.badge ? (
+                          <span className="mt-2 block text-[13px] text-[var(--text-muted)]">
+                            {tab.description || tab.badge}
+                          </span>
+                        ) : null}
+                      </span>
+                    </span>
 
                     {active ? (
-                      <span className="absolute inset-x-0 bottom-[-1px] h-0.5 bg-[var(--gold)]" />
+                      <span className={`absolute inset-x-0 bottom-0 h-[2px] ${tab.id === 'album' ? 'bg-violet-500' : tab.id === 'selecao' ? 'bg-rose-500' : 'bg-[var(--gold)]'}`} />
                     ) : null}
                   </button>
                 )
               })}
             </div>
-          </div>
+          </section>
 
           {activeTab === 'informacoes' && (
-            <div className="mt-5 grid grid-cols-[1fr_360px] gap-5 max-lg:grid-cols-1">
+            <div className="mt-6 grid grid-cols-[minmax(0,1fr)_320px] gap-6 max-lg:grid-cols-1">
               <div className="space-y-5">
-                            <LinhaTempo
-                ensaio={ensaio}
-                historicoStatus={historicoStatus}
-              />
+                <LinhaTempo
+                  ensaio={ensaio}
+                  historicoStatus={historicoStatus}
+                />
 
-              <InformacoesCard
-                ensaio={ensaio}
-                selecao={selecao}
-                onEdit={() => setEditModalOpen(true)}
-              />
+                <InformacoesCard
+                  ensaio={ensaio}
+                  selecao={selecao}
+                  onEdit={() => setEditModalOpen(true)}
+                />
 
                 <AcoesGerais
                   variant="administrativo"
@@ -1116,7 +1123,7 @@ const texto =
           )}
 
           {activeTab === 'album' && (
-            <div className="mt-5 grid grid-cols-[1fr_360px] gap-5 max-lg:grid-cols-1">
+            <div className="mt-6 grid grid-cols-[minmax(0,1fr)_320px] gap-6 max-lg:grid-cols-1">
               <div className="space-y-5">
                 {albumPublicado ? (
                   <AlbumPublicadoResumo fotos={fotos} />
@@ -1164,7 +1171,7 @@ const texto =
           )}
 
           {activeTab === 'selecao' && (
-            <div className="mt-5 grid grid-cols-[1fr_320px] gap-5 max-lg:grid-cols-1">
+            <div className="mt-6 grid grid-cols-[minmax(0,1fr)_320px] gap-6 max-lg:grid-cols-1">
               <SelecaoClienteCard
                 fotos={fotos}
                 selecao={selecao}
@@ -1262,17 +1269,17 @@ const texto =
     ]
 
     return (
-      <section className="theme-card rounded-2xl border border-[var(--gold-border)]">
-        <SectionTitle title="Dados do cliente" />
+      <section className="rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+        <SectionTitle title="Dados do cliente" icon={UserRound} />
 
-        <div className="divide-y divide-[var(--gold-border)] p-5">
+        <div className="divide-y divide-[var(--border)] p-5">
           {dados.map((item) => (
             <div key={item.label} className="py-3 first:pt-0 last:pb-0">
-              <p className="theme-muted text-[10px] uppercase tracking-[0.16em]">
+              <p className="text-[11px] text-[var(--text-muted)]">
                 {item.label}
               </p>
 
-              <p className="theme-text mt-1 break-words text-[13px]">
+              <p className="mt-1 break-words text-[13px] text-[var(--text)]">
                 {item.value}
               </p>
             </div>
@@ -1305,8 +1312,8 @@ const texto =
 
     return (
       <aside className="space-y-5">
-        <section className="theme-card rounded-2xl border border-[var(--gold-border)]">
-          <SectionTitle title="Resumo" />
+        <section className="rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+          <SectionTitle title="Resumo" icon={ListChecks} />
 
           <div className="p-5">
             <ResumoSelecaoLinha
@@ -1329,7 +1336,7 @@ const texto =
             />
 
             {excedente > 0 ? (
-              <div className="mt-5 rounded-xl border border-red-400/30 bg-red-400/10 p-4 text-[12px] leading-5 text-red-300">
+              <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-[12px] leading-5 text-red-700">
                 Cliente selecionou além do pacote. Confirme o valor antes da entrega.
               </div>
             ) : null}
@@ -1338,7 +1345,7 @@ const texto =
               type="button"
               disabled={loading}
               onClick={onBuscarSelecao}
-              className="mt-5 w-full rounded-lg border border-[var(--gold-border)] px-4 py-3 text-[12px] font-medium text-[var(--gold)] transition hover:bg-[var(--gold-dim)] disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-5 w-full rounded-[10px] border border-[var(--gold-border)] bg-white/55 px-4 py-3 text-[12px] font-medium text-[var(--gold)] transition hover:bg-[var(--gold-dim)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? 'Consultando...' : 'Atualizar seleção'}
             </button>
@@ -1350,18 +1357,18 @@ const texto =
 
   function ResumoSelecaoLinha({ label, value, danger, highlight }) {
     return (
-      <div className="flex items-center justify-between gap-4 border-b border-[var(--gold-border)] py-3 first:pt-0 last:border-b-0 last:pb-0">
-        <span className="theme-text text-[13px]">
+      <div className="flex items-center justify-between gap-4 border-b border-[var(--border)] py-3 first:pt-0 last:border-b-0 last:pb-0">
+        <span className="text-[13px] text-[var(--text)]">
           {label}
         </span>
 
         <span
           className={`text-right text-[13px] font-medium ${
             danger
-              ? 'text-red-300'
+              ? 'text-red-700'
               : highlight
                 ? 'text-[var(--gold)]'
-                : 'theme-title'
+                : 'text-[var(--text)]'
           }`}
         >
           {value}

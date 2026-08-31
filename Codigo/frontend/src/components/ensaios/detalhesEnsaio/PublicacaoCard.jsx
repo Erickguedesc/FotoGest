@@ -1,4 +1,4 @@
-import SectionTitle from './SectionTitle'
+import { Eye, ImageIcon, Send, Shield } from 'lucide-react'
 
 const formatarDataHora = (valor) => {
   if (!valor) return null
@@ -54,16 +54,25 @@ export default function PublicacaoCard({
         : 'Publicar álbum'
 
   return (
-    <section className="theme-card rounded-2xl border border-[var(--gold-border)]">
-      <SectionTitle title="Publicação" />
+    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 p-4 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+      <div className="mb-4 flex items-center gap-3">
+        <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-[var(--gold-dim)] text-[var(--gold)]">
+          <Send size={16} strokeWidth={1.8} />
+        </span>
 
-      <div className="p-5">
+        <h2 className="text-[16px] font-semibold text-[var(--text)]">
+          Publicação
+        </h2>
+      </div>
+
+      <div>
         <button
           type="button"
           disabled={loading}
           onClick={onPublicar}
-          className="w-full rounded-lg bg-[var(--gold)] px-5 py-3 text-[13px] font-semibold tracking-[0.12em] text-[#1A1200] transition hover:bg-[var(--gold-light)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-[8px] bg-[#b97804] px-5 py-3 text-[13px] font-semibold text-white shadow-[0_12px_24px_rgba(166,95,0,0.18)] transition hover:bg-[#a65f00] disabled:cursor-not-allowed disabled:opacity-60"
         >
+          <Send size={15} strokeWidth={1.9} />
           {buttonLabel}
         </button>
 
@@ -72,19 +81,19 @@ export default function PublicacaoCard({
             type="button"
             disabled={loading}
             onClick={onReabrir}
-            className="mt-3 w-full rounded-lg border border-orange-400/40 bg-orange-400/10 px-5 py-3 text-[12px] font-semibold tracking-[0.10em] text-orange-300 transition hover:bg-orange-400/15 disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-3 w-full rounded-[10px] border border-orange-200 bg-orange-50 px-5 py-3 text-[12px] font-semibold text-orange-700 transition hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Reabrir álbum para edição
           </button>
         )}
 
         {temAlbum && (
-          <div className="theme-panel mt-4 rounded-xl border p-4">
-            <p className="theme-muted mb-1 text-[10px] uppercase tracking-[0.16em]">
+          <div className="mt-4 rounded-xl border border-[var(--border)] bg-white/55 p-4">
+            <p className="mb-1 text-[11px] text-[var(--text-muted)]">
               Link gerado
             </p>
 
-            <p className="theme-text break-all text-[12px]">
+            <p className="break-all text-[12px] text-[var(--text)]">
               {album.urlAcesso}
             </p>
 
@@ -93,12 +102,12 @@ export default function PublicacaoCard({
     className={`mt-3 flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-[11px] ${
       expirado
         ? 'border-red-400/25 bg-red-400/10'
-        : 'border-[var(--border)] bg-[var(--card)]'
+        : 'border-[var(--border)] bg-white/65'
     }`}
   >
     <span
       className={`uppercase tracking-[0.14em] ${
-        expirado ? 'text-red-300' : 'text-[var(--text-muted)]'
+        expirado ? 'text-red-700' : 'text-[var(--text-muted)]'
       }`}
     >
       {expirado ? 'Expirado em' : 'link válido até'}
@@ -106,7 +115,7 @@ export default function PublicacaoCard({
 
     <span
       className={`whitespace-nowrap font-medium ${
-        expirado ? 'text-red-200' : 'text-[var(--gold)]'
+        expirado ? 'text-red-700' : 'text-[var(--gold)]'
       }`}
     >
       {expiraEmFormatado}
@@ -116,7 +125,7 @@ export default function PublicacaoCard({
 
             {album?.senhaAcesso && (
               <>
-                <p className="theme-muted mb-1 mt-4 text-[10px] uppercase tracking-[0.16em]">
+                <p className="mb-1 mt-4 text-[11px] text-[var(--text-muted)]">
                   Senha
                 </p>
 
@@ -130,27 +139,29 @@ export default function PublicacaoCard({
         )}
 
         {!albumPublicado && temAlbum && (
-          <div className="mt-4 rounded-xl border border-orange-400/35 bg-orange-400/10 p-4 text-[12px] font-medium leading-5 text-orange-300">
+          <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 p-4 text-[12px] font-medium leading-5 text-orange-700">
             Álbum reaberto para edição. O acesso da cliente está pausado até a próxima publicação.
           </div>
         )}
 
-        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-          <Stat label="Fotos" value={totalFotos} />
-          <Stat label="Views" value={album?.views ?? 0} />
-          <Stat label="Seguro" value={albumPublicado ? 'Sim' : temAlbum ? 'Pausado' : 'Não'} />
+        <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+          <Stat icon={ImageIcon} label="Fotos" value={totalFotos} />
+          <Stat icon={Eye} label="Views" value={album?.views ?? 0} />
+          <Stat icon={Shield} label="Seguro" value={albumPublicado ? 'Sim' : temAlbum ? 'Pausado' : 'Não'} />
         </div>
       </div>
     </section>
   )
 }
 
-function Stat({ label, value }) {
+function Stat({ icon: Icon, label, value }) {
   return (
-    <div className="theme-panel rounded-lg border px-2 py-3">
-      <p className="theme-title text-[13px]">{value}</p>
+    <div className="rounded-[8px] border border-[var(--border)] bg-white/55 px-2 py-3">
+      <Icon className="mx-auto mb-2 text-[var(--gold)]" size={15} strokeWidth={1.8} />
 
-      <p className="theme-muted mt-1 text-[10px] uppercase tracking-[0.14em]">
+      <p className="text-[13px] font-semibold uppercase text-[var(--text)]">{value}</p>
+
+      <p className="mt-1 text-[10px] uppercase tracking-[0.08em] text-[var(--text-muted)]">
         {label}
       </p>
     </div>

@@ -1,11 +1,13 @@
 export const STATUS_OPTIONS = [
-  { value: 'AGENDADO', label: 'Agendado', chipClass: 'bg-indigo-400/10 text-indigo-300 border-indigo-400/30', progress: 0 },
-  { value: 'REALIZADO', label: 'Realizado', chipClass: 'bg-lime-400/10 text-lime-300 border-lime-400/30', progress: 25 },
-  { value: 'EM_SELECAO', label: 'Em seleção', chipClass: 'bg-amber-400/10 text-amber-300 border-amber-400/30', progress: 50 },
-  { value: 'EM_EDICAO', label: 'Em edição', chipClass: 'bg-sky-400/10 text-sky-300 border-sky-400/30', progress: 75 },
-  { value: 'FINALIZADO', label: 'Entregue', chipClass: 'bg-emerald-400/10 text-emerald-300 border-emerald-400/30', progress: 100 },
-  { value: 'CANCELADO', label: 'Cancelado', chipClass: 'bg-red-400/10 text-red-300 border-red-400/30', progress: 0 },
+  { value: 'AGENDADO', label: 'Agendado', chipClass: 'bg-indigo-50 text-indigo-700 border-indigo-200', progress: 0, progressColor: '#635bff' },
+  { value: 'REALIZADO', label: 'Realizado', chipClass: 'bg-lime-50 text-lime-700 border-lime-200', progress: 25, progressColor: '#4d7c0f' },
+  { value: 'EM_SELECAO', label: 'Em seleção', chipClass: 'bg-amber-50 text-amber-700 border-amber-200', progress: 50, progressColor: '#f59e0b' },
+  { value: 'EM_EDICAO', label: 'Em edição', chipClass: 'bg-sky-50 text-sky-700 border-sky-200', progress: 75, progressColor: '#3b82f6' },
+  { value: 'FINALIZADO', label: 'Entregue', chipClass: 'bg-emerald-50 text-emerald-700 border-emerald-200', progress: 100, progressColor: '#14b8a6' },
+  { value: 'CANCELADO', label: 'Cancelado', chipClass: 'bg-red-50 text-red-700 border-red-200', progress: 0, progressColor: '#ef4444' },
 ]
+
+export const STATUS_ATIVOS = ['AGENDADO', 'REALIZADO', 'EM_SELECAO', 'EM_EDICAO']
 
 export const TIPO_OPTIONS = [
   { value: 'NEWBORN', label: 'Newborn' },
@@ -25,6 +27,18 @@ export const TIPO_OPTIONS = [
 
 export const getStatusInfo = (status) =>
   STATUS_OPTIONS.find((item) => item.value === status) || STATUS_OPTIONS[0]
+
+export const getEnsaioProgress = (ensaioOrStatus) => {
+  const status = typeof ensaioOrStatus === 'string' ? ensaioOrStatus : ensaioOrStatus?.status
+  const rawProgress = typeof ensaioOrStatus === 'string' ? undefined : ensaioOrStatus?.progresso
+  const progress = rawProgress === undefined || rawProgress === null
+    ? getStatusInfo(status).progress
+    : Number(rawProgress)
+
+  if (Number.isNaN(progress)) return 0
+
+  return Math.max(0, Math.min(100, progress))
+}
 
 export const getTipoLabel = (tipo, tipoPersonalizado) => {
   const personalizado = String(tipoPersonalizado || '').trim()

@@ -3,18 +3,18 @@ import { Loader2 } from 'lucide-react'
 import { formatMoney } from '../../utils/relatoriosUtils'
 
 const CORES_PERIODOS = [
-  '#2563EB',
-  '#F97316',
-  '#16A34A',
-  '#DC2626',
-  '#9333EA',
-  '#EAB308',
-  '#0891B2',
-  '#DB2777',
-  '#65A30D',
-  '#02b9de',
-  '#0F766E',
-  '#C2410C',
+  '#bf812b',
+  '#3b82f6',
+  '#22c55e',
+  '#ef4444',
+  '#8b5cf6',
+  '#eab308',
+  '#0891b2',
+  '#ec4899',
+  '#65a30d',
+  '#14b8a6',
+  '#64748b',
+  '#f97316',
 ]
 
 export default function RelatorioGrafico({ periodos = [], loading }) {
@@ -25,19 +25,19 @@ export default function RelatorioGrafico({ periodos = [], loading }) {
   )
 
   return (
-    <section className="theme-card rounded-2xl border border-[var(--gold-border)] p-6">
-      <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+    <section className="rounded-[18px] border border-[#e7ded3] bg-white p-5 shadow-[0_16px_46px_rgba(82,58,35,0.065)] md:p-6">
+      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div>
-          <h2 className="theme-title font-serif text-2xl font-light">
+          <h2 className="font-serif text-3xl font-light leading-tight text-[#211b17]">
             Valores por período
           </h2>
 
-          <p className="theme-muted mt-1 text-sm">
+          <p className="mt-1 text-sm text-[#756a61]">
             Compare receita, volume e concentração dos períodos filtrados.
           </p>
         </div>
 
-        <div className="theme-panel inline-flex w-fit rounded-full border p-1">
+        <div className="inline-flex w-fit rounded-full border border-[#e6ddd2] bg-[#fbfaf8] p-1">
           <ToggleButton active={modo === 'barras'} onClick={() => setModo('barras')}>
             Barras
           </ToggleButton>
@@ -53,7 +53,7 @@ export default function RelatorioGrafico({ periodos = [], loading }) {
       </div>
 
       {loading ? (
-        <div className="theme-muted flex h-64 items-center justify-center">
+        <div className="flex h-[300px] items-center justify-center text-sm text-[#756a61]">
           <Loader2 className="mr-2 animate-spin" size={20} />
           Carregando gráfico...
         </div>
@@ -79,10 +79,10 @@ function ToggleButton({ active, children, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+      className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
         active
-          ? 'bg-[var(--gold)] text-[#1a1200]'
-          : 'theme-muted hover:bg-[var(--gold-dim)] hover:text-[var(--text)]'
+          ? 'bg-[#bd7920] text-white shadow-[0_8px_18px_rgba(189,121,32,0.16)]'
+          : 'text-[#7a6d62] hover:bg-white hover:text-[#9b5f13]'
       }`}
     >
       {children}
@@ -101,67 +101,96 @@ function BarrasChart({ periodos }) {
     ...periodos.map((item) => Number(item.quantidadeEnsaios || 0)),
   )
 
+  const marcas = [1, 0.75, 0.5, 0.25, 0]
+
   return (
     <>
-      <div className="theme-text mb-4 flex gap-4 text-xs">
+      <div className="mb-4 flex flex-wrap gap-4 text-xs text-[#6d6258]">
         <span className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-[var(--gold)]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#d49a45]" />
           Valor previsto
         </span>
 
         <span className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-[var(--chart-count)]" />
-          Nº de Ensaios
+          <span className="h-2.5 w-2.5 rounded-full bg-[#9ca3af]" />
+          Nº de ensaios
         </span>
       </div>
 
-      <div className="theme-scrollbar flex h-80 items-end gap-3 overflow-x-visible px-2 pb-8 pt-12 max-sm:overflow-x-auto">
-        {periodos.map((item) => {
-          const alturaReceita = Math.max(
-            6,
-            ((item.totalLiquido || 0) / maiorTotal) * 100,
-          )
+      <div className="theme-scrollbar overflow-x-auto pb-1">
+        <div className="relative min-w-[720px] px-3 pt-20">
+          <div className="absolute inset-x-3 top-20 h-[178px]">
+            {marcas.map((marca) => (
+              <div
+                key={marca}
+                className="absolute left-0 right-0 border-t border-dashed border-[#e9e1d7]"
+                style={{ top: `${(1 - marca) * 100}%` }}
+              />
+            ))}
+          </div>
 
-          const alturaEnsaios = Math.max(
-            6,
-            ((item.quantidadeEnsaios || 0) / maiorQuantidade) * 100,
-          )
+          <div className="relative z-10 flex h-[178px] items-end gap-3">
+            {periodos.map((item) => {
+              const alturaReceita = Math.max(
+                3,
+                ((item.totalLiquido || 0) / maiorTotal) * 100,
+              )
 
-          return (
-            <div
-              key={`${item.label}-${item.inicio}`}
-              className="flex min-w-[70px] flex-1 flex-col items-center justify-end"
-            >
-              <div className="flex h-56 w-full items-end justify-center gap-1">
+              const alturaEnsaios = Math.max(
+                3,
+                ((item.quantidadeEnsaios || 0) / maiorQuantidade) * 100,
+              )
+
+              return (
                 <div
-                  className="group relative w-5 rounded-t-md bg-[var(--gold)]/90 transition hover:bg-[var(--gold-light)]"
-                  style={{ height: `${alturaReceita}%` }}
+                  key={`${item.label}-${item.inicio}`}
+                  className="flex min-w-[62px] flex-1 flex-col items-center justify-end"
                 >
-                  <Tooltip
-                    label={item.label}
-                    value={formatMoney(item.totalLiquido)}
-                    variant="gold"
-                  />
-                </div>
+                  <div className="flex h-[178px] w-full items-end justify-center gap-1.5">
+                    <button
+                      type="button"
+                      aria-label={`${item.label}: ${formatMoney(item.totalLiquido)} previstos`}
+                      className="group relative w-6 rounded-t-[6px] bg-gradient-to-b from-[#efc77e] to-[#c9862c] shadow-[0_8px_16px_rgba(189,121,32,0.12)] transition hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd7920]"
+                      style={{ height: `${alturaReceita}%` }}
+                    >
+                      <Tooltip
+                        label={item.label}
+                        value={formatMoney(item.totalLiquido)}
+                        description="Valor previsto"
+                        variant="gold"
+                      />
+                    </button>
 
-                <div
-                  className="group relative w-5 rounded-t-md bg-[var(--chart-count)] opacity-80 transition hover:opacity-100"
-                  style={{ height: `${alturaEnsaios}%` }}
-                >
-                  <Tooltip
-                    label={item.label}
-                    value={`${item.quantidadeEnsaios || 0} ensaio(s)`}
-                    variant="white"
-                  />
+                    <button
+                      type="button"
+                      aria-label={`${item.label}: ${item.quantidadeEnsaios || 0} ensaio(s)`}
+                      className="group relative w-3 rounded-t-[5px] bg-[#d7d1ca] transition hover:bg-[#9ca3af] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9ca3af]"
+                      style={{ height: `${alturaEnsaios}%` }}
+                    >
+                      <Tooltip
+                        label={item.label}
+                        value={`${item.quantidadeEnsaios || 0} ensaio(s)`}
+                        description="Ensaios realizados"
+                        variant="gray"
+                      />
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )
+            })}
+          </div>
 
-              <span className="theme-muted mt-3 text-xs">
+          <div className="mt-3 flex gap-3">
+            {periodos.map((item) => (
+              <span
+                key={`${item.label}-${item.inicio}-label`}
+                className="min-w-[62px] flex-1 text-center text-xs font-medium text-[#756a61]"
+              >
                 {item.label}
               </span>
-            </div>
-          )
-        })}
+            ))}
+          </div>
+        </div>
       </div>
     </>
   )
@@ -193,7 +222,7 @@ function DonutChart({ periodos }) {
             cy="21"
             r="15.915"
             fill="transparent"
-            stroke="rgba(0,0,0,0.10)"
+            stroke="#eee7df"
             strokeWidth="6"
           />
 
@@ -207,7 +236,7 @@ function DonutChart({ periodos }) {
             return (
               <circle
                 key={`${item.label}-${item.inicio}`}
-                className="cursor-pointer opacity-90 transition duration-200 hover:opacity-100 hover:[filter:saturate(1.2)_brightness(1.06)]"
+                className="cursor-pointer opacity-90 transition duration-200 hover:opacity-100 hover:[filter:saturate(1.16)_brightness(1.04)]"
                 cx="21"
                 cy="21"
                 r="15.915"
@@ -229,15 +258,15 @@ function DonutChart({ periodos }) {
         </svg>
 
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-          <p className="theme-muted text-[10px] uppercase tracking-[0.18em]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8a7e73]">
             Maior fatia
           </p>
 
-          <p className="theme-title mt-1 max-w-[150px] truncate text-lg font-semibold">
+          <p className="mt-1 max-w-[150px] truncate text-lg font-semibold text-[#2b2520]">
             {principal?.label}
           </p>
 
-          <p className="font-serif text-4xl text-[var(--gold)]">
+          <p className="font-serif text-4xl text-[#a96718]">
             {percentualPrincipal.toLocaleString('pt-BR', {
               maximumFractionDigits: 1,
             })}%
@@ -254,7 +283,7 @@ function DonutChart({ periodos }) {
           return (
             <div
               key={`${item.label}-${item.inicio}`}
-              className="flex items-center justify-between gap-4 rounded-xl border border-[var(--border)] bg-black/10 px-4 py-3"
+              className="flex items-center justify-between gap-4 rounded-[12px] border border-[#e7ded3] bg-[#fbfaf8] px-4 py-3"
             >
               <div className="flex min-w-0 items-center gap-3">
                 <span
@@ -263,17 +292,17 @@ function DonutChart({ periodos }) {
                 />
 
                 <div className="min-w-0">
-                  <p className="theme-title truncate text-sm font-semibold">
+                  <p className="truncate text-sm font-semibold text-[#2b2520]">
                     {item.label}
                   </p>
 
-                  <p className="theme-muted text-xs">
+                  <p className="text-xs text-[#756a61]">
                     {formatMoney(item.totalLiquido)} · {item.quantidadeEnsaios || 0} ensaio{item.quantidadeEnsaios === 1 ? '' : 's'}
                   </p>
                 </div>
               </div>
 
-              <span className="font-serif text-xl text-[var(--gold)]">
+              <span className="font-serif text-xl text-[#a96718]">
                 {percentual.toLocaleString('pt-BR', {
                   maximumFractionDigits: 1,
                 })}%
@@ -287,14 +316,16 @@ function DonutChart({ periodos }) {
 }
 
 function LinhaChart({ periodos }) {
+  const [tooltip, setTooltip] = useState(null)
+
   const maiorTotal = Math.max(
     1,
     ...periodos.map((item) => Number(item.totalLiquido || 0)),
   )
-  const largura = 640
-  const altura = 260
-  const paddingX = 34
-  const paddingY = 28
+  const largura = 700
+  const altura = 230
+  const paddingX = 44
+  const paddingY = 34
   const larguraUtil = largura - paddingX * 2
   const alturaUtil = altura - paddingY * 2
   const divisor = Math.max(1, periodos.length - 1)
@@ -310,83 +341,149 @@ function LinhaChart({ periodos }) {
     .join(' ')
 
   return (
-    <div className="overflow-x-auto">
-      <svg
-        viewBox={`0 0 ${largura} ${altura}`}
-        className="min-h-[320px] min-w-[680px]"
-        role="img"
-        aria-label="Linha de receita por período"
-      >
-        <line
-          x1={paddingX}
-          y1={altura - paddingY}
-          x2={largura - paddingX}
-          y2={altura - paddingY}
-          stroke="var(--border)"
-          strokeWidth="1"
-        />
+    <div className="theme-scrollbar overflow-x-auto">
+      <div className="relative min-w-[720px]">
+        <svg
+          viewBox={`0 0 ${largura} ${altura}`}
+          className="min-h-[270px] min-w-[720px]"
+          role="img"
+          aria-label="Linha de receita por período"
+        >
+          {[0.25, 0.5, 0.75, 1].map((marca) => (
+            <line
+              key={marca}
+              x1={paddingX}
+              y1={paddingY + alturaUtil - marca * alturaUtil}
+              x2={largura - paddingX}
+              y2={paddingY + alturaUtil - marca * alturaUtil}
+              stroke="#e9e1d7"
+              strokeDasharray="5 5"
+              strokeWidth="1"
+            />
+          ))}
 
-        <path
-          d={path}
-          fill="none"
-          stroke="var(--gold)"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+          <line
+            x1={paddingX}
+            y1={altura - paddingY}
+            x2={largura - paddingX}
+            y2={altura - paddingY}
+            stroke="#d9cec1"
+            strokeWidth="1"
+          />
 
-        {pontos.map((ponto) => (
-          <g key={`${ponto.item.label}-${ponto.item.inicio}`} className="group">
-            <circle
-              cx={ponto.x}
-              cy={ponto.y}
-              r="5"
-              fill="var(--gold)"
-              className="cursor-pointer transition group-hover:r-[7px]"
-            >
-              <title>
-                {`${ponto.item.label} · ${formatMoney(ponto.item.totalLiquido)}`}
-              </title>
-            </circle>
+          <path
+            d={path}
+            fill="none"
+            stroke="#bd7920"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
 
-            <text
-              x={ponto.x}
-              y={altura - 8}
-              textAnchor="middle"
-              className="fill-[var(--text-muted)] text-[11px]"
-            >
-              {ponto.item.label}
-            </text>
-          </g>
-        ))}
-      </svg>
+          {pontos.map((ponto) => (
+            <g key={`${ponto.item.label}-${ponto.item.inicio}`} className="group">
+              <circle
+                cx={ponto.x}
+                cy={ponto.y}
+                r="7"
+                fill="transparent"
+                className="cursor-pointer"
+                tabIndex={0}
+                onMouseEnter={() =>
+                  setTooltip({
+                    description: `${ponto.item.quantidadeEnsaios || 0} ensaio(s)`,
+                    label: ponto.item.label,
+                    placement: ponto.y < 80 ? 'below' : 'above',
+                    value: formatMoney(ponto.item.totalLiquido),
+                    x: `${(ponto.x / largura) * 100}%`,
+                    y: `${(ponto.y / altura) * 100}%`,
+                  })
+                }
+                onMouseLeave={() => setTooltip(null)}
+                onFocus={() =>
+                  setTooltip({
+                    description: `${ponto.item.quantidadeEnsaios || 0} ensaio(s)`,
+                    label: ponto.item.label,
+                    placement: ponto.y < 80 ? 'below' : 'above',
+                    value: formatMoney(ponto.item.totalLiquido),
+                    x: `${(ponto.x / largura) * 100}%`,
+                    y: `${(ponto.y / altura) * 100}%`,
+                  })
+                }
+                onBlur={() => setTooltip(null)}
+              />
+
+              <circle
+                cx={ponto.x}
+                cy={ponto.y}
+                r="5"
+                fill="#bd7920"
+                className="pointer-events-none transition group-hover:r-[7px]"
+              />
+
+              <text
+                x={ponto.x}
+                y={altura - 8}
+                textAnchor="middle"
+                className="fill-[#756a61] text-[11px]"
+              >
+                {ponto.item.label}
+              </text>
+            </g>
+          ))}
+        </svg>
+
+        {tooltip ? (
+          <div
+            className={`pointer-events-none absolute z-20 min-w-[150px] rounded-[10px] border border-[#e2d7cb] bg-white px-3 py-2 text-xs shadow-[0_12px_26px_rgba(82,58,35,0.12)] ${
+              tooltip.placement === 'below'
+                ? '-translate-x-1/2 translate-y-3'
+                : '-translate-x-1/2 -translate-y-[calc(100%+10px)]'
+            }`}
+            style={{ left: tooltip.x, top: tooltip.y }}
+          >
+            <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9a6a2d]">
+              {tooltip.label}
+            </span>
+
+            <span className="mt-0.5 block font-semibold text-[#a96718]">
+              {tooltip.value}
+            </span>
+
+            <span className="block text-[11px] text-[#7b7066]">
+              {tooltip.description}
+            </span>
+          </div>
+        ) : null}
+      </div>
     </div>
   )
 }
 
 function EmptyState({ children }) {
   return (
-    <div className="theme-muted flex h-64 items-center justify-center rounded-xl border border-dashed border-[var(--border)] text-sm">
+    <div className="flex h-[300px] items-center justify-center rounded-[14px] border border-dashed border-[#d9cec1] bg-[#fbfaf8] text-sm text-[#756a61]">
       {children}
     </div>
   )
 }
 
-function Tooltip({ label, value, variant = 'gold' }) {
-  const valueColor =
-    variant === 'gold' ? 'text-[var(--gold)]' : 'text-[var(--chart-count)]'
+function Tooltip({ label, value, description, variant = 'gold' }) {
+  const valueColor = variant === 'gold' ? 'text-[#a96718]' : 'text-[#4b5563]'
 
   return (
-    <div className="theme-card pointer-events-none absolute bottom-full left-1/2 z-30 mb-3 -translate-x-1/2 translate-y-2 whitespace-nowrap rounded-lg border px-3 py-2 text-xs opacity-0 shadow-2xl transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
-      <span className="theme-muted block text-[10px] uppercase tracking-[0.12em]">
+    <span className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-[10px] border border-[#e2d7cb] bg-white px-3 py-2 text-left text-xs opacity-0 shadow-[0_12px_26px_rgba(82,58,35,0.12)] transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
+      <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9a6a2d]">
         {label}
       </span>
 
-      <span className={`font-medium ${valueColor}`}>
+      <span className={`mt-0.5 block font-semibold ${valueColor}`}>
         {value}
       </span>
 
-      <span className="absolute left-1/2 top-full h-2 w-2 -translate-x-1/2 -translate-y-1 rotate-45 border-b border-r border-[var(--border)] bg-[var(--card)]" />
-    </div>
+      <span className="block text-[11px] text-[#7b7066]">
+        {description}
+      </span>
+    </span>
   )
 }

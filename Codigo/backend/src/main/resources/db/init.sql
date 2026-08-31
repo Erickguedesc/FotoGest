@@ -168,8 +168,12 @@ CREATE TABLE IF NOT EXISTS notificacao_dispensada (
   usuario_id UUID NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
   chave VARCHAR(180) NOT NULL,
   dispensada_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expira_em TIMESTAMPTZ,
   UNIQUE (usuario_id, chave)
 );
+
+ALTER TABLE notificacao_dispensada
+ADD COLUMN IF NOT EXISTS expira_em TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_notificacao_dispensada_usuario_id
 ON notificacao_dispensada(usuario_id);

@@ -29,6 +29,7 @@ public class DashboardResumoResponse {
     private Map<String, Integer> pipelineStatus;
 
     private DashboardEnsaioResumoResponse proximoEnsaio;
+    private List<DashboardEnsaioResumoResponse> ensaiosDoDia;
     private List<DashboardEnsaioResumoResponse> agendaProxima;
     private List<DashboardEnsaioResumoResponse> proximosEnsaios;
     private List<DashboardEnsaioResumoResponse> ensaiosEmAndamento;

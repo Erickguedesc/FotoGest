@@ -93,7 +93,7 @@ export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave
             type="submit"
             form="edit-ensaio-form"
             disabled={loading}
-            className="rounded-lg bg-[var(--gold)] px-5 py-2.5 text-[12px] font-medium tracking-[0.1em] text-[#1A1200] transition hover:bg-[var(--gold-light)] disabled:opacity-60"
+            className="rounded-lg bg-[#a65f00] px-5 py-2.5 text-[12px] font-medium tracking-[0.1em] text-white transition hover:bg-[#884e00] disabled:opacity-60"
           >
             {loading ? 'Salvando...' : 'Salvar alterações'}
           </button>

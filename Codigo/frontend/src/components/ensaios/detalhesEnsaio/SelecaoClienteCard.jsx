@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, Heart } from 'lucide-react'
 
 import useBodyScrollLock from '../../../hooks/useBodyScrollLock'
 import FotoPreviewImage from './FotoPreviewImage'
@@ -85,7 +85,7 @@ export default function SelecaoClienteCard({
     return (
       <article
         key={foto.id}
-        className="overflow-hidden rounded-xl border border-white/[0.08] bg-black/20"
+        className="overflow-hidden rounded-xl border border-[var(--border)] bg-white/55"
       >
         <div className="relative">
           <FotoPreviewImage
@@ -96,7 +96,7 @@ export default function SelecaoClienteCard({
         </div>
 
         <div className="p-3">
-          <p className="truncate text-[12px] text-white/70">
+          <p className="truncate text-[12px] text-[var(--text)]">
             {getNomeFoto(foto)}
           </p>
 
@@ -105,7 +105,7 @@ export default function SelecaoClienteCard({
               <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-[var(--gold)]">
                 Observação da cliente
               </p>
-              <p className="text-[12px] leading-5 text-white/75">
+              <p className="text-[12px] leading-5 text-[var(--text)]">
                 {observacao}
               </p>
             </div>
@@ -116,8 +116,8 @@ export default function SelecaoClienteCard({
   }
 
   return (
-    <section className="rounded-2xl border border-[var(--gold-border)] bg-[#121212]">
-      <SectionTitle title="Fotos selecionadas pela cliente" />
+    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+      <SectionTitle title="Fotos selecionadas pela cliente" icon={Heart} />
 
       {semSelecao ? (
         <div className="flex min-h-[190px] flex-col items-center justify-center p-8 text-center">
@@ -127,31 +127,31 @@ export default function SelecaoClienteCard({
 
           {erroConsulta ? (
             <>
-              <p className="text-[14px] text-red-300">
+              <p className="text-[14px] text-red-700">
                 {erroConsulta}
               </p>
 
-              <p className="mt-1 text-[12px] text-white/40">
+              <p className="mt-1 text-[12px] text-[var(--text-muted)]">
                 Tente consultar novamente em alguns instantes.
               </p>
             </>
           ) : jaConsultouSelecao ? (
             <>
-              <p className="text-[14px] text-white/75">
+              <p className="text-[14px] text-[var(--text)]">
                 Seleção ainda não feita pela cliente.
               </p>
 
-              <p className="mt-1 text-[12px] text-white/40">
+              <p className="mt-1 text-[12px] text-[var(--text-muted)]">
                 Quando a cliente finalizar a escolha, as fotos selecionadas aparecerão aqui.
               </p>
             </>
           ) : (
             <>
-              <p className="text-[14px] text-white/75">
+              <p className="text-[14px] text-[var(--text)]">
                 Aguardando seleção da cliente.
               </p>
 
-              <p className="mt-1 text-[12px] text-white/40">
+              <p className="mt-1 text-[12px] text-[var(--text-muted)]">
                 Quando a cliente finalizar a escolha, a seleção aparecerá aqui.
               </p>
             </>
@@ -189,7 +189,7 @@ export default function SelecaoClienteCard({
               </div>
 
               {selecao.excedente > 0 && (
-                <div className="mb-5 rounded-xl border border-red-400/30 bg-red-400/10 p-4 text-[13px] text-red-200">
+                <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-[13px] text-red-700">
                   A cliente selecionou fotos acima do limite do pacote.
                 </div>
               )}
@@ -205,8 +205,8 @@ export default function SelecaoClienteCard({
           </div>
 
           {temMaisFotos && (
-            <div className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-black/20 p-4 max-sm:flex-col max-sm:items-start">
-              <p className="text-[13px] text-white/45">
+            <div className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-white/55 p-4 max-sm:flex-col max-sm:items-start">
+              <p className="text-[13px] text-[var(--text-muted)]">
                 Exibindo {LIMITE_PREVIA} de {fotosSelecionadas.length} fotos selecionadas.
               </p>
 
@@ -234,7 +234,7 @@ export default function SelecaoClienteCard({
                 type="button"
                 disabled={aprovandoSelecao}
                 onClick={onAprovarSelecao}
-                className="inline-flex items-center gap-2 rounded-lg bg-[var(--gold)] px-4 py-2 text-[12px] font-medium text-black transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-lg bg-[#a65f00] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#884e00] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <CheckCircle2 size={15} strokeWidth={1.8} />
                 {aprovandoSelecao
@@ -285,7 +285,7 @@ export default function SelecaoClienteCard({
                         type="button"
                         disabled={aprovandoSelecao}
                         onClick={onAprovarSelecao}
-                        className="inline-flex items-center gap-2 rounded-lg bg-[var(--gold)] px-4 py-2 text-[12px] font-medium text-black transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex items-center gap-2 rounded-lg bg-[#a65f00] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#884e00] disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         <CheckCircle2 size={15} strokeWidth={1.8} />
                         {aprovandoSelecao
@@ -309,15 +309,15 @@ function Resumo({ label, value, danger }) {
     <div
       className={`rounded-xl border px-3 py-4 text-center ${
         danger
-          ? 'border-red-400/30 bg-red-400/10'
-          : 'border-white/[0.08] bg-black/10'
+          ? 'border-red-200 bg-red-50'
+          : 'border-[var(--border)] bg-white/55'
       }`}
     >
-      <p className={danger ? 'text-[15px] text-red-300' : 'text-[15px] text-white'}>
+      <p className={danger ? 'text-[15px] text-red-700' : 'text-[15px] text-[var(--text)]'}>
         {value}
       </p>
 
-      <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-white/35">
+      <p className="mt-1 text-[10px] uppercase tracking-[0.08em] text-[var(--text-muted)]">
         {label}
       </p>
     </div>

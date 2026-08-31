@@ -8,10 +8,12 @@ import com.fotolhar.enums.TipoEnsaio;
 import com.fotolhar.model.Album;
 import com.fotolhar.model.Ensaio;
 import com.fotolhar.model.Foto;
+import com.fotolhar.model.HistoricoStatusEnsaio;
 import com.fotolhar.model.Usuario;
 import com.fotolhar.repository.AlbumRepository;
 import com.fotolhar.repository.EnsaioRepository;
 import com.fotolhar.repository.FotoRepository;
+import com.fotolhar.repository.HistoricoStatusEnsaioRepository;
 import com.fotolhar.repository.PreferenciasSistemaRepository;
 import com.fotolhar.repository.SelecaoFotoRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
@@ -35,9 +38,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DashboardService {
 
+    private static final int DIAS_EDICAO_ATRASADA = 14;
+
     private final EnsaioRepository ensaioRepository;
     private final FotoRepository fotoRepository;
     private final AlbumRepository albumRepository;
+    private final HistoricoStatusEnsaioRepository historicoStatusEnsaioRepository;
     private final SelecaoFotoRepository selecaoFotoRepository;
     private final PreferenciasSistemaRepository preferenciasSistemaRepository;
     private final UsuarioContextService usuarioContextService;
@@ -71,7 +77,8 @@ public class DashboardService {
                 ))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        int ensaiosHoje = contarEnsaiosHoje(ensaios, agora);
+        List<Ensaio> ensaiosDoDia = buscarEnsaiosDoDia(ensaios, agora);
+        int ensaiosHoje = ensaiosDoDia.size();
         int selecoesEnviadas = contarSelecoesEnviadas(ensaios, albumPorEnsaio);
         int ensaiosSemFotosEnviadas = contarEnsaiosSemFotos(ensaios);
         int ensaiosFinalizadosMes = contarFinalizados(ensaiosEsteMes);
@@ -89,6 +96,10 @@ public class DashboardService {
                 .map(ensaio -> toEnsaioResumo(ensaio, albumPorEnsaio))
                 .toList();
 
+        List<DashboardEnsaioResumoResponse> ensaiosDoDiaResumo = ensaiosDoDia.stream()
+                .map(ensaio -> toEnsaioResumo(ensaio, albumPorEnsaio))
+                .toList();
+
         List<Ensaio> ensaiosAtivos = ensaios.stream()
                 .filter(this::isEnsaioEmAndamento)
                 .sorted(Comparator.comparing(
@@ -98,7 +109,7 @@ public class DashboardService {
                 .toList();
 
         List<DashboardEnsaioResumoResponse> ensaiosEmAndamento = ensaiosAtivos.stream()
-                .limit(6)
+                .limit(8)
                 .map(ensaio -> toEnsaioResumo(ensaio, albumPorEnsaio))
                 .toList();
 
@@ -130,6 +141,7 @@ public class DashboardService {
                 .ensaiosFinalizadosMes(ensaiosFinalizadosMes)
                 .pipelineStatus(montarPipelineStatus(ensaios))
                 .proximoEnsaio(proximosEnsaios.isEmpty() ? null : proximosEnsaios.get(0))
+                .ensaiosDoDia(ensaiosDoDiaResumo)
                 .agendaProxima(agendaProxima)
                 .proximosEnsaios(proximosEnsaios)
                 .ensaiosEmAndamento(ensaiosEmAndamento)
@@ -165,6 +177,15 @@ public class DashboardService {
                 .filter(ensaio -> ensaio.getDataEnsaio() != null)
                 .filter(ensaio -> ensaio.getDataEnsaio().toLocalDate().equals(agora.toLocalDate()))
                 .count();
+    }
+
+    private List<Ensaio> buscarEnsaiosDoDia(List<Ensaio> ensaios, OffsetDateTime agora) {
+        return ensaios.stream()
+                .filter(ensaio -> ensaio.getStatus() != StatusEnsaio.CANCELADO)
+                .filter(ensaio -> ensaio.getDataEnsaio() != null)
+                .filter(ensaio -> ensaio.getDataEnsaio().toLocalDate().equals(agora.toLocalDate()))
+                .sorted(Comparator.comparing(Ensaio::getDataEnsaio))
+                .toList();
     }
 
     private int contarSelecoesEnviadas(
@@ -264,6 +285,35 @@ public class DashboardService {
                         .dataReferencia(ensaio.getAtualizadoEm())
                         .build());
             }
+
+            if (ensaio.getStatus() == StatusEnsaio.EM_EDICAO) {
+                OffsetDateTime desde = buscarDataStatusAtual(ensaio);
+                long diasEmEdicao = desde == null ? 0 : Duration.between(desde, agora).toDays();
+
+                if (diasEmEdicao >= DIAS_EDICAO_ATRASADA) {
+                    itens.add(DashboardAtencaoResponse.builder()
+                            .tipo("ENTREGA_ATRASADA")
+                            .titulo("Edição atrasada")
+                            .descricao("Ensaio em edição há " + diasEmEdicao + " dias")
+                            .ensaioId(ensaio.getId())
+                            .clienteNome(ensaio.getCliente().getNome())
+                            .dataReferencia(desde)
+                            .build());
+                }
+            }
+
+            if (ensaio.getStatus() == StatusEnsaio.FINALIZADO
+                    && ensaio.getStatusValores() != null
+                    && "PENDENTE".equalsIgnoreCase(ensaio.getStatusValores())) {
+                itens.add(DashboardAtencaoResponse.builder()
+                        .tipo("PAGAMENTO_PENDENTE")
+                        .titulo("Pagamento pendente")
+                        .descricao("Entrega finalizada com valores pendentes")
+                        .ensaioId(ensaio.getId())
+                        .clienteNome(ensaio.getCliente().getNome())
+                        .dataReferencia(ensaio.getAtualizadoEm())
+                        .build());
+            }
         }
 
         return itens.stream()
@@ -271,7 +321,6 @@ public class DashboardService {
                         DashboardAtencaoResponse::getDataReferencia,
                         Comparator.nullsLast(Comparator.reverseOrder())
                 ))
-                .limit(6)
                 .toList();
     }
 
@@ -403,6 +452,18 @@ public class DashboardService {
         Album album = albumPorEnsaio.get(ensaio.getId());
 
         return album != null && selecaoFotoRepository.existsByAlbumId(album.getId());
+    }
+
+    private OffsetDateTime buscarDataStatusAtual(Ensaio ensaio) {
+        List<HistoricoStatusEnsaio> historico = historicoStatusEnsaioRepository
+                .findByEnsaioIdOrderByAlteradoEmAsc(ensaio.getId());
+
+        return historico.stream()
+                .filter(item -> item.getStatus() == ensaio.getStatus())
+                .map(HistoricoStatusEnsaio::getAlteradoEm)
+                .filter(data -> data != null)
+                .max(OffsetDateTime::compareTo)
+                .orElse(ensaio.getAtualizadoEm());
     }
 
     private String buscarCapaUrl(UUID ensaioId) {

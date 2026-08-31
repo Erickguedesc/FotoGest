@@ -1,23 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import {
-  Activity,
-  CalendarDays,
-  Camera,
-  Image as ImageIcon,
-  ListFilter,
-  PackageCheck,
-  PencilLine,
-  XCircle,
-} from 'lucide-react'
 
 import Toast from '../../ui/Toast'
+import AppTopControls from '../../layout/AppTopControls'
 import { ensaiosService } from '../../../services/ensaiosService'
+import { STATUS_ATIVOS } from './ensaioHelpers'
 import ConfirmDeleteModal from './ConfirmDeleteModal'
 import EditEnsaioModal from './EditEnsaioModal'
 import EmptyState from './EmptyState'
 import CalendarioEnsaios from './CalendarioEnsaios'
 import EnsaiosGrid from './EnsaiosGrid'
+import EnsaiosListHeader from './EnsaiosListHeader'
+import EnsaiosStats from './EnsaiosStats'
 import EnsaiosTable from './EnsaiosTable'
 import EnsaiosToolbar from './EnsaiosToolbar'
 import Icon from './Icon'
@@ -35,7 +29,6 @@ const INITIAL_FILTERS = {
 }
 
 const STATUS_EM_ANDAMENTO = ['REALIZADO', 'EM_SELECAO', 'EM_EDICAO']
-const STATUS_ATIVOS = ['AGENDADO', 'REALIZADO', 'EM_SELECAO', 'EM_EDICAO']
 
 const GRUPO_STATUS = {
   ativos: STATUS_ATIVOS,
@@ -77,6 +70,8 @@ const normalizeDateParam = (value) => {
 
 const getInitialFilters = (searchParams) => ({
   ...INITIAL_FILTERS,
+  clienteNome: searchParams.get('clienteNome') || '',
+  tipo: searchParams.get('tipo') || '',
   status: searchParams.get('status') || '',
   dataInicio: normalizeDateParam(searchParams.get('dataInicio')),
   dataFim: normalizeDateParam(searchParams.get('dataFim')),
@@ -115,6 +110,10 @@ const sortValue = (ensaio, key) => {
   }
 
   if (key === 'valorPacote' || key === 'progresso') {
+    if (key === 'valorPacote') {
+      return Number(ensaio.valorFinalEnsaio ?? ensaio.valorPacote ?? 0)
+    }
+
     return Number(ensaio[key] || 0)
   }
 
@@ -154,43 +153,59 @@ export default function ListaEnsaios() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [loading, setLoading] = useState(true)
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
   const [toast, setToast] = useState(null)
   const [selected, setSelected] = useState(null)
   const [modal, setModal] = useState(null)
+  const loadSequenceRef = useRef(0)
+
+  useEffect(() => {
+    document.body.classList.add('fotolhar-ensaios-page')
+
+    return () => {
+      document.body.classList.remove('fotolhar-ensaios-page')
+    }
+  }, [])
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
   }
 
   const loadEnsaios = async () => {
+    const requestId = loadSequenceRef.current + 1
+    loadSequenceRef.current = requestId
     setLoading(true)
 
     try {
-      const [response, statusResponse] = await Promise.all([
-        ensaiosService.listar(buildParams(filters)),
-        ensaiosService.listar(buildParams({
-          ...filters,
-          status: '',
-          grupo: '',
-        })),
-      ])
+      const baseParams = buildParams({
+        ...filters,
+        status: '',
+        grupo: '',
+      })
+      const response = await ensaiosService.listar(baseParams)
+
+      if (requestId !== loadSequenceRef.current) return
 
       const data = Array.isArray(response.data) ? response.data : []
-      const statusData = Array.isArray(statusResponse.data) ? statusResponse.data : []
       const ensaiosFiltrados = filters.status
-        ? data
+        ? data.filter((ensaio) => ensaio.status === filters.status)
         : filters.grupo === 'andamento'
           ? data.filter((ensaio) => STATUS_EM_ANDAMENTO.includes(ensaio.status))
           : filtrarPorGrupo(data, filters.grupo)
 
       setEnsaios(ensaiosFiltrados)
-      setStatusCounts(buildStatusCounts(statusData))
+      setStatusCounts(buildStatusCounts(data))
     } catch (error) {
+      if (requestId !== loadSequenceRef.current) return
+
       console.error('[Ensaios] Erro ao listar:', error?.response?.data || error)
       showToast('Não foi possível carregar os ensaios.', 'error')
     } finally {
-      setLoading(false)
+      if (requestId === loadSequenceRef.current) {
+        setLoading(false)
+        setHasLoaded(true)
+      }
     }
   }
 
@@ -210,26 +225,6 @@ export default function ListaEnsaios() {
     setFiltersResetKey((current) => current + 1)
     setPage(1)
   }, [searchParams])
-
-  useEffect(() => {
-    if (viewMode !== 'calendar' || filters.status || filters.grupo === 'todos') {
-      return
-    }
-
-    setFilters((prev) => {
-      if (prev.status || prev.grupo === 'todos') return prev
-
-      const next = {
-        ...prev,
-        grupo: 'todos',
-      }
-
-      updateUrlFilters(next)
-
-      return next
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewMode, filters.status, filters.grupo])
 
   const sortedEnsaios = useMemo(() => {
     return [...ensaios].sort((a, b) => {
@@ -254,6 +249,8 @@ export default function ListaEnsaios() {
     const params = {}
 
     if (nextViewMode === 'calendar') params.view = 'calendar'
+    if (nextFilters.clienteNome?.trim()) params.clienteNome = nextFilters.clienteNome.trim()
+    if (nextFilters.tipo) params.tipo = nextFilters.tipo
     if (nextFilters.status) params.status = nextFilters.status
     if (nextFilters.dataInicio) params.dataInicio = nextFilters.dataInicio
     if (nextFilters.dataFim) params.dataFim = nextFilters.dataFim
@@ -446,47 +443,40 @@ export default function ListaEnsaios() {
     todos: Number(statusCounts.total || 0),
   }
   const activeFiltroPrincipal = filters.status || filters.grupo || 'ativos'
+  const initialLoading = loading && !hasLoaded
 
   const totalEnsaios = Number(statusCounts.total || 0)
-  const hasDisplayFilter =
-    filters.status ||
-    filters.grupo !== 'todos' ||
-    filters.clienteNome ||
-    filters.tipo ||
-    filters.dataInicio ||
-    filters.dataFim
-
-  const countLabel = hasDisplayFilter
-    ? `${ensaios.length} ensaio${ensaios.length === 1 ? '' : 's'} exibido${
-        ensaios.length === 1 ? '' : 's'
-      } · ${totalEnsaios} no total`
-    : `${totalEnsaios} ensaio${totalEnsaios === 1 ? '' : 's'} cadastrado${
-        totalEnsaios === 1 ? '' : 's'
-      }`
+  const countLabel = `${ensaios.length} ensaio${ensaios.length === 1 ? '' : 's'} exibido${
+    ensaios.length === 1 ? '' : 's'
+  } • ${totalEnsaios} no total`
 
   return (
     <>
-      <main className="relative z-[1] mx-auto max-w-[1200px] px-8 pb-16 pt-[88px] animate-[fadeUp_0.55s_cubic-bezier(0.22,1,0.36,1)_both] max-md:px-4">
-        <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+      <main className="ensaios-management-page relative z-[1] mx-auto max-w-[1280px] px-8 pb-16 pt-[84px] animate-[fadeUp_0.55s_cubic-bezier(0.22,1,0.36,1)_both] max-md:px-4 lg:pt-8">
+        <div className="absolute right-8 top-6 hidden lg:block">
+          <AppTopControls />
+        </div>
+
+        <div className="mb-7 flex flex-wrap items-end justify-between gap-4 rounded-[8px] border border-transparent">
           <div>
-            <div className="mb-1 text-[10.5px] uppercase tracking-[0.2em] text-white/30">
+            <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--gold)]">
               Gestão
             </div>
 
-            <h1 className="font-serif text-[32px] font-light tracking-[0.04em] text-white">
+            <h1 className="font-serif text-[38px] font-light leading-none tracking-normal text-[var(--text)]">
               Ensaios
             </h1>
 
-            <p className="mt-0.5 text-[12px] text-white/35">
-              {countLabel}
+            <p className="mt-3 text-[14px] text-[var(--text)]">
+              {initialLoading ? 'Carregando ensaios...' : loading ? 'Atualizando ensaios...' : countLabel}
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={loadEnsaios}
-              className="inline-flex items-center gap-2 rounded-lg border border-white/[0.10] bg-[#181818] px-4 py-2.5 text-[12px] tracking-[0.08em] text-white/60 transition hover:border-[var(--gold-border)] hover:text-white"
+              className="inline-flex items-center gap-2 rounded-[8px] border border-[var(--border)] bg-[rgba(250,248,244,0.68)] px-4 py-2.5 text-[13px] text-[var(--text)] shadow-[0_12px_28px_rgba(92,82,72,0.08)] transition hover:border-[var(--gold-border)] hover:text-[var(--gold)]"
             >
               <Icon name="refresh" size={13} />
               Atualizar
@@ -495,7 +485,7 @@ export default function ListaEnsaios() {
             <button
               type="button"
               onClick={() => navigate('/novo-ensaio')}
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--gold)] px-5 py-2.5 text-[12px] font-medium tracking-[0.1em] text-[#1A1200] transition hover:-translate-y-0.5 hover:bg-[var(--gold-light)]"
+              className="inline-flex items-center gap-2 rounded-[8px] bg-[linear-gradient(180deg,#c57a08,#a96200)] px-5 py-2.5 text-[13px] font-medium text-white shadow-[0_12px_28px_rgba(137,76,0,0.22)] transition hover:-translate-y-0.5 hover:brightness-110"
             >
               <Icon name="plus" size={14} />
               Novo Ensaio
@@ -512,13 +502,14 @@ export default function ListaEnsaios() {
           onClear={handleClearFilters}
         />
 
-        <GrupoEnsaiosTabs
+        <EnsaiosStats
           activeGrupo={activeFiltroPrincipal}
           counts={grupoCounts}
+          loading={initialLoading}
           onChange={handleFiltroPrincipalChange}
         />
 
-        {loading ? (
+        {initialLoading ? (
           <LoadingState />
         ) : sortedEnsaios.length === 0 ? (
           <EmptyState
@@ -533,26 +524,30 @@ export default function ListaEnsaios() {
                 onView={handleOpenDetails}
                 onCreateForDate={handleCreateForDate}
               />
-            ) : viewMode === 'table' ? (
-              <EnsaiosTable
-                ensaios={paginatedEnsaios}
-                sort={sort}
-                onSort={handleSort}
-                onView={handleOpenDetails}
-                onEdit={(ensaio) => openModal('edit', ensaio)}
-                onStatus={(ensaio) => openModal('status', ensaio)}
-                onDelete={(ensaio) => openModal('delete', ensaio)}
-                onPreContrato={handlePreContrato}
-              />
             ) : (
-              <EnsaiosGrid
-                ensaios={paginatedEnsaios}
-                onView={handleOpenDetails}
-                onEdit={(ensaio) => openModal('edit', ensaio)}
-                onStatus={(ensaio) => openModal('status', ensaio)}
-                onDelete={(ensaio) => openModal('delete', ensaio)}
-                onPreContrato={handlePreContrato}
-              />
+              <>
+                <EnsaiosListHeader sort={sort} onSort={handleSort} />
+
+                {viewMode === 'table' ? (
+                  <EnsaiosTable
+                    ensaios={paginatedEnsaios}
+                    onView={handleOpenDetails}
+                    onEdit={(ensaio) => openModal('edit', ensaio)}
+                    onStatus={(ensaio) => openModal('status', ensaio)}
+                    onDelete={(ensaio) => openModal('delete', ensaio)}
+                    onPreContrato={handlePreContrato}
+                  />
+                ) : (
+                  <EnsaiosGrid
+                    ensaios={paginatedEnsaios}
+                    onView={handleOpenDetails}
+                    onEdit={(ensaio) => openModal('edit', ensaio)}
+                    onStatus={(ensaio) => openModal('status', ensaio)}
+                    onDelete={(ensaio) => openModal('delete', ensaio)}
+                    onPreContrato={handlePreContrato}
+                  />
+                )}
+              </>
             )}
 
             {viewMode !== 'calendar' && (
@@ -604,58 +599,5 @@ export default function ListaEnsaios() {
         />
       )}
     </>
-  )
-}
-
-const STATUS_TAB_ICONS = {
-  ativos: { icon: Activity, className: 'text-emerald-400' },
-  AGENDADO: { icon: CalendarDays, className: 'text-indigo-400' },
-  REALIZADO: { icon: Camera, className: 'text-lime-400' },
-  EM_SELECAO: { icon: ImageIcon, className: 'text-amber-400' },
-  EM_EDICAO: { icon: PencilLine, className: 'text-sky-400' },
-  FINALIZADO: { icon: PackageCheck, className: 'text-emerald-400' },
-  CANCELADO: { icon: XCircle, className: 'text-red-400' },
-  todos: { icon: ListFilter, className: 'text-[var(--gold)]' },
-}
-
-function GrupoEnsaiosTabs({ activeGrupo, counts, onChange }) {
-  const grupos = [
-    { value: 'ativos', label: 'Ativos' },
-    { value: 'AGENDADO', label: 'Agendado' },
-    { value: 'REALIZADO', label: 'Realizado' },
-    { value: 'EM_SELECAO', label: 'Em seleção' },
-    { value: 'EM_EDICAO', label: 'Em edição' },
-    { value: 'FINALIZADO', label: 'Entregue' },
-    { value: 'CANCELADO', label: 'Cancelado' },
-    { value: 'todos', label: 'Todos' },
-  ]
-
-  return (
-    <div className="mb-6 flex flex-wrap gap-2">
-      {grupos.map((grupo) => {
-        const active = activeGrupo === grupo.value
-        const iconConfig = STATUS_TAB_ICONS[grupo.value] || STATUS_TAB_ICONS.todos
-        const StatusIcon = iconConfig.icon
-
-        return (
-          <button
-            key={grupo.value}
-            type="button"
-            onClick={() => onChange(grupo.value)}
-            className={`ensaios-filter-tab ${active ? 'is-active' : ''}`}
-          >
-            <span className={`ensaios-filter-icon ${iconConfig.className}`}>
-              <StatusIcon size={15} strokeWidth={1.9} />
-            </span>
-            <span>{grupo.label}</span>
-            <span
-              className={`ensaios-filter-count ${active ? 'is-active' : ''}`}
-            >
-              {counts[grupo.value] || 0}
-            </span>
-          </button>
-        )
-      })}
-    </div>
   )
 }

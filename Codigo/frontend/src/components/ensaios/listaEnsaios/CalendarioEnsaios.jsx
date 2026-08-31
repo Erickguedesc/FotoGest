@@ -1,4 +1,13 @@
 import { useMemo, useState } from 'react'
+import {
+  CalendarDays,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  Info,
+  MoreVertical,
+} from 'lucide-react'
 
 import Icon from './Icon'
 import StatusBadge from './StatusBadge'
@@ -44,6 +53,48 @@ const STATUS_DOT = {
   EM_EDICAO: 'bg-sky-300',
   FINALIZADO: 'bg-emerald-300',
   CANCELADO: 'bg-red-300',
+}
+
+const STATUS_TONE = {
+  AGENDADO: {
+    event: 'border-indigo-100 bg-indigo-50 text-indigo-900',
+    accent: 'bg-indigo-300',
+    icon: 'text-indigo-500',
+  },
+  REALIZADO: {
+    event: 'border-lime-100 bg-lime-50 text-lime-900',
+    accent: 'bg-lime-500',
+    icon: 'text-lime-600',
+  },
+  EM_SELECAO: {
+    event: 'border-amber-100 bg-amber-50 text-amber-900',
+    accent: 'bg-amber-400',
+    icon: 'text-amber-600',
+  },
+  EM_EDICAO: {
+    event: 'border-sky-100 bg-sky-50 text-sky-900',
+    accent: 'bg-sky-400',
+    icon: 'text-sky-600',
+  },
+  FINALIZADO: {
+    event: 'border-emerald-100 bg-emerald-50 text-emerald-900',
+    accent: 'bg-emerald-400',
+    icon: 'text-emerald-600',
+  },
+  CANCELADO: {
+    event: 'border-red-100 bg-red-50 text-red-900',
+    accent: 'bg-red-400',
+    icon: 'text-red-600',
+  },
+}
+
+const STATUS_ICON = {
+  AGENDADO: 'calendar',
+  REALIZADO: 'check',
+  EM_SELECAO: 'eye',
+  EM_EDICAO: 'edit',
+  FINALIZADO: 'file',
+  CANCELADO: 'close',
 }
 
 const MIN_YEAR = 2000
@@ -238,119 +289,120 @@ export default function CalendarioEnsaios({
   }
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-[var(--gold-border)] bg-[#121212]">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] px-5 py-4">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--gold)]">
-            Calendário de ensaios
-          </p>
-          <h2 className="mt-1 font-serif text-2xl font-light capitalize text-white">
-            {MONTH_LABEL.format(mesAtual)}
-          </h2>
-        </div>
+    <section className="overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/84 shadow-[0_18px_42px_rgba(78,56,35,0.07)]">
+      <div className="grid grid-cols-[minmax(0,1fr)_330px] max-xl:grid-cols-1">
+        <div className="min-w-0 p-5">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-[9px] bg-[var(--gold-dim)] text-[var(--gold)]">
+                <CalendarDays size={20} strokeWidth={1.8} />
+              </span>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => irParaMes(-1)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.10] text-lg text-white/55 transition hover:border-[var(--gold-border)] hover:text-[var(--gold)]"
-            title="Mês anterior"
-          >
-            ‹
-          </button>
+              <div>
+                <h2 className="text-[17px] font-semibold text-[var(--text)]">
+                  Calendário de ensaios
+                </h2>
+                <p className="mt-1 text-[12px] text-[var(--text-muted)]">
+                  Visualize e gerencie seus ensaios do mês.
+                </p>
+              </div>
+            </div>
 
-          <div className="flex items-center gap-2 rounded-lg border border-white/[0.10] bg-[#181818] px-2 py-1.5">
-            <select
-              value={mesAtual.getMonth()}
-              onChange={(event) => handleMesChange(event.target.value)}
-              className="bg-transparent px-2 py-1 text-[12px] text-white/70 outline-none"
-              title="Selecionar mês"
-            >
-              {MONTH_OPTIONS.map((mes, index) => (
-                <option key={mes} value={index}>
-                  {mes}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => irParaMes(-1)}
+                className="flex h-9 w-9 items-center justify-center rounded-[8px] border border-[var(--border)] bg-white/70 text-[var(--text)] transition hover:border-[var(--gold-border)] hover:text-[var(--gold)]"
+                title="Mês anterior"
+              >
+                <ChevronLeft size={16} strokeWidth={1.8} />
+              </button>
 
-            <input
-              type="text"
-              inputMode="numeric"
-              value={anoDigitado}
-              onChange={(event) => handleAnoChange(event.target.value)}
-              onBlur={handleAnoBlur}
-              maxLength={4}
-              className="w-[74px] bg-transparent px-2 py-1 text-[12px] text-white/70 outline-none"
-              title="Selecionar ano"
-            />
+              <div className="flex h-9 items-center gap-1 rounded-[8px] border border-[var(--border)] bg-white/70 px-2">
+                <select
+                  value={mesAtual.getMonth()}
+                  onChange={(event) => handleMesChange(event.target.value)}
+                  className="bg-transparent px-1 text-[12px] text-[var(--text)] outline-none"
+                  title="Selecionar mês"
+                >
+                  {MONTH_OPTIONS.map((mes, index) => (
+                    <option key={mes} value={index}>
+                      {mes}
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={anoDigitado}
+                  onChange={(event) => handleAnoChange(event.target.value)}
+                  onBlur={handleAnoBlur}
+                  maxLength={4}
+                  className="w-[52px] bg-transparent text-[12px] text-[var(--text)] outline-none"
+                  title="Selecionar ano"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => irParaMes(1)}
+                className="flex h-9 w-9 items-center justify-center rounded-[8px] border border-[var(--border)] bg-white/70 text-[var(--text)] transition hover:border-[var(--gold-border)] hover:text-[var(--gold)]"
+                title="Próximo mês"
+              >
+                <ChevronRight size={16} strokeWidth={1.8} />
+              </button>
+            </div>
           </div>
 
-          <button
-            type="button"
-            onClick={irParaHoje}
-            className="rounded-lg border border-white/[0.10] px-4 py-2 text-[12px] text-white/55 transition hover:border-[var(--gold-border)] hover:text-white"
-          >
-            Hoje
-          </button>
-
-          <button
-            type="button"
-            onClick={() => irParaMes(1)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.10] text-lg text-white/55 transition hover:border-[var(--gold-border)] hover:text-[var(--gold)]"
-            title="Próximo mês"
-          >
-            ›
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-[1fr_320px] gap-0 max-lg:grid-cols-1">
-        <div className="p-5">
-          <div className="mb-4 grid grid-cols-3 gap-3 md:grid-cols-4">
-            <ResumoCalendario label="Ensaios no mês" value={ensaiosDoMes.length} />
-            <ResumoCalendario label="Dias ocupados" value={diasOcupadosNoMes} />
+          <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <ResumoCalendario icon={CalendarDays} label="Ensaios no mês" value={ensaiosDoMes.length} />
+            <ResumoCalendario icon={Clock3} label="Dias ocupados" value={diasOcupadosNoMes} tone="violet" />
+            <ResumoCalendario icon={CheckCircle2} label="Hoje selecionado" value={diaSelecionado === hojeKey ? 'Sim' : 'Não'} tone="amber" />
             <ResumoCalendario
+              icon={CheckCircle2}
               label="Possíveis conflitos"
               value={conflitosNoMes}
+              tone="emerald"
               danger={conflitosNoMes > 0}
               tooltipTitle="Dias com possíveis conflitos"
               tooltipItems={conflitosDetalhesNoMes}
             />
-            <ResumoCalendario label="Dia selecionado" value={ensaiosSelecionados.length} />
           </div>
 
-          <div className="grid grid-cols-7 rounded-xl border border-white/[0.08] bg-black/10">
+          <div className="grid grid-cols-7 overflow-hidden rounded-[12px] border border-[var(--border)] bg-white/62">
             {WEEK_DAYS.map((dia) => (
               <div
                 key={dia}
-                className="border-b border-white/[0.08] px-2 py-3 text-center text-[10px] uppercase tracking-[0.14em] text-white/35"
+                className="border-b border-r border-[var(--border)] px-2 py-3 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)] last:border-r-0"
               >
                 {dia}
               </div>
             ))}
 
-            {diasDoMes.map((date) => {
+            {diasDoMes.map((date, index) => {
               const key = toInputDate(date)
               const eventos = ensaiosPorDia[key] || []
               const foraDoMes = date.getMonth() !== mesAtual.getMonth()
               const selecionado = key === diaSelecionado
               const hojeSelecionado = key === hojeKey
-              const conflito = eventos.length > 1 && key >= hojeKey
 
               return (
                 <button
                   key={key}
                   type="button"
                   onClick={() => setDiaSelecionado(key)}
-                  className={`min-h-[118px] border-b border-r border-white/[0.06] p-2 text-left transition hover:bg-white/[0.035] ${
-                    foraDoMes ? 'bg-black/20 text-white/20' : 'text-white/70'
+                  className={`min-h-[92px] border-b border-r border-[var(--border)] p-2 text-left transition hover:bg-white ${
+                    (index + 1) % 7 === 0 ? 'border-r-0' : ''
+                  } ${index >= 35 ? 'border-b-0' : ''} ${
+                    foraDoMes ? 'bg-white/35 text-[var(--text-muted)]/35' : 'bg-white/55 text-[var(--text)]'
                   } ${selecionado ? 'bg-[var(--gold-dim)] ring-1 ring-inset ring-[var(--gold-border)]' : ''}`}
                 >
-                  <div className="mb-2 flex items-center justify-between gap-2">
+                  <div className="mb-1 flex items-center justify-between gap-2">
                     <span
-                      className={`flex h-7 w-7 items-center justify-center rounded-full text-[12px] ${
+                      className={`flex h-7 w-7 items-center justify-center rounded-[8px] text-[12px] ${
                         hojeSelecionado
-                          ? 'bg-[var(--gold)] text-[#1A1200]'
+                          ? 'bg-[var(--gold-dim)] text-[var(--gold)] shadow-[0_6px_14px_rgba(166,95,0,0.10)]'
                           : selecionado
                             ? 'text-[var(--gold)]'
                             : ''
@@ -359,10 +411,8 @@ export default function CalendarioEnsaios({
                       {date.getDate()}
                     </span>
 
-                    {conflito && (
-                      <span className="rounded-full border border-red-400/30 bg-red-400/10 px-2 py-0.5 text-[10px] text-red-300">
-                        {eventos.length}
-                      </span>
+                    {hojeSelecionado && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-[var(--gold)]" />
                     )}
                   </div>
 
@@ -375,20 +425,8 @@ export default function CalendarioEnsaios({
                           <EventoCompacto key={ensaio.id} ensaio={ensaio} />
                         ))}
 
-                        {false && eventos.slice(0, 3).map((ensaio) => (
-                        <div
-                          key={ensaio.id}
-                          className="rounded-md border border-white/[0.08] bg-black/25 px-2 py-1"
-                        >
-                          <span className="flex items-center gap-1.5 text-[11px] text-white/75">
-                            <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[ensaio.status] || 'bg-white/40'}`} />
-                            <span className="truncate">{formatTime(ensaio.dataEnsaio)} · {ensaio.clienteNome}</span>
-                          </span>
-                        </div>
-                        ))}
-
                         {eventos.length > 3 && (
-                          <p className="text-[10px] text-[var(--gold)]">
+                          <p className="pl-1 text-[10px] font-medium text-[var(--gold)]">
                             +{eventos.length - 3} ensaio{eventos.length - 3 === 1 ? '' : 's'}
                           </p>
                         )}
@@ -400,7 +438,7 @@ export default function CalendarioEnsaios({
             })}
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-3 text-[11px] text-white/40">
+          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[10px] text-[var(--text-muted)]">
             {Object.entries(STATUS_DOT).map(([status, color]) => (
               <span key={status} className="inline-flex items-center gap-1.5">
                 <span className={`h-2 w-2 rounded-full ${color}`} />
@@ -410,75 +448,105 @@ export default function CalendarioEnsaios({
           </div>
         </div>
 
-        <aside className="border-l border-white/[0.08] bg-black/10 p-5 max-lg:border-l-0 max-lg:border-t">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-white/35">
-            Dia selecionado
-          </p>
-          <h3 className="mt-1 font-serif text-2xl font-light capitalize text-white">
-            {DAY_LABEL.format(selectedDate)}
-          </h3>
+        <aside className="border-l border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(247,239,229,0.46))] p-5 max-xl:border-l-0 max-xl:border-t">
+          <div className="mb-5 flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--gold-dim)] text-[var(--gold)]">
+              <CalendarDays size={16} strokeWidth={1.8} />
+            </span>
+            <p className="text-[12px] font-semibold text-[var(--text)]">
+              Dia selecionado
+            </p>
+          </div>
+
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="font-serif text-[24px] font-light capitalize leading-tight text-[var(--text)]">
+              {DAY_LABEL.format(selectedDate)}
+            </h3>
+
+            {diaSelecionado === hojeKey && (
+              <span className="rounded-full bg-[var(--gold-dim)] px-3 py-1 text-[11px] font-semibold text-[var(--gold)]">
+                Hoje
+              </span>
+            )}
+          </div>
 
           <button
             type="button"
             onClick={() => onCreateForDate(diaSelecionado)}
-            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--gold)] px-4 py-3 text-[12px] font-medium tracking-[0.08em] text-[#1A1200] transition hover:bg-[var(--gold-light)]"
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-[8px] bg-[#a65f00] px-4 py-3 text-[12px] font-semibold text-white shadow-[0_12px_24px_rgba(166,95,0,0.15)] transition hover:bg-[#884e00]"
           >
             <Icon name="plus" size={14} />
-            Novo nessa data
+            Novo ensaio
           </button>
 
           {deveAlertarConflitoSelecionado && (
-            <div className="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 p-4 text-[13px] leading-6 text-red-200">
+            <div className="mt-5 rounded-[10px] border border-sky-100 bg-sky-50 p-4 text-[12px] leading-5 text-[var(--text)]">
+              <div className="mb-2 flex items-center gap-2 text-sky-700">
+                <Info size={15} strokeWidth={1.8} />
+                <span className="font-semibold">Dica importante</span>
+              </div>
               Há mais de um ensaio neste dia. Confira horários e deslocamento antes de confirmar novos agendamentos.
             </div>
           )}
 
-          <div className="mt-5 space-y-3">
-            {ensaiosSelecionados.length === 0 ? (
-              <div className="rounded-xl border border-white/[0.08] bg-black/20 p-5 text-center">
-                <p className="text-[13px] text-white/55">
-                  Nenhum ensaio marcado para este dia.
-                </p>
-              </div>
-            ) : (
-              ensaiosSelecionados.map((ensaio) => (
-                <article
-                  key={ensaio.id}
-                  className="rounded-xl border border-white/[0.08] bg-[#181818] p-4"
-                >
-                  <div className="mb-3 flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-[14px] text-white">
-                        {ensaio.clienteNome || 'Cliente sem nome'}
-                      </p>
-                      <p className="mt-1 text-[12px] text-white/40">
-                        {formatTime(ensaio.dataEnsaio)} · {getTipoExibicao(ensaio)}
-                      </p>
-                    </div>
-                    <StatusBadge status={ensaio.status} />
-                  </div>
+          <div className="mt-5 rounded-[12px] border border-[var(--border)] bg-white/70 p-4">
+            <div className="mb-4 flex items-center gap-2">
+              <p className="text-[13px] font-semibold text-[var(--text)]">
+                Ensaios do dia
+              </p>
+              <span className="rounded-full bg-[var(--gold-dim)] px-2 py-0.5 text-[11px] font-semibold text-[var(--gold)]">
+                {ensaiosSelecionados.length}
+              </span>
+            </div>
 
-                  <div className="space-y-2 text-[12px] text-white/45">
-                    <p className="flex items-center gap-2">
-                      <Icon name="location" size={12} />
-                      <span className="truncate">{ensaio.local || 'Local não informado'}</span>
-                    </p>
-                    <p className="text-[var(--gold)]">
-                      {formatCurrency(ensaio.valorPacote)}
-                    </p>
-                  </div>
+            <div className="space-y-3">
+              {ensaiosSelecionados.length === 0 ? (
+                <div className="rounded-[10px] border border-dashed border-[var(--border)] bg-white/55 p-4 text-center">
+                  <p className="text-[12px] text-[var(--text-muted)]">
+                    Nenhum ensaio marcado para este dia.
+                  </p>
+                </div>
+              ) : (
+                ensaiosSelecionados.map((ensaio) => {
+                  const tone = STATUS_TONE[ensaio.status] || STATUS_TONE.AGENDADO
+                  const statusIcon = STATUS_ICON[ensaio.status] || 'calendar'
 
-                  <button
-                    type="button"
-                    onClick={() => onView(ensaio)}
-                    className="mt-4 w-full rounded-lg border border-white/[0.10] px-3 py-2 text-[12px] text-white/55 transition hover:border-[var(--gold-border)] hover:text-[var(--gold)]"
-                  >
-                    Abrir detalhes
-                  </button>
-                </article>
-              ))
-            )}
+                  return (
+                    <article key={ensaio.id} className="group flex items-center gap-3 rounded-[10px] p-2 transition hover:bg-white">
+                      <span className={`h-2 w-2 shrink-0 rounded-full ${tone.accent}`} />
+
+                      <button
+                        type="button"
+                        onClick={() => onView(ensaio)}
+                        className="min-w-0 flex-1 text-left"
+                      >
+                        <p className="truncate text-[12px] font-medium text-[var(--text)]">
+                          {ensaio.clienteNome || 'Cliente sem nome'}
+                        </p>
+                        <p className="mt-1 truncate text-[10px] text-[var(--text-muted)]">
+                          {formatTime(ensaio.dataEnsaio)} · {getTipoExibicao(ensaio)}
+                        </p>
+                      </button>
+
+                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border ${tone.event}`}>
+                        <Icon name={statusIcon} size={14} className={tone.icon} />
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => onView(ensaio)}
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border border-[var(--border)] bg-white/70 text-[var(--text-muted)] transition hover:border-[var(--gold-border)] hover:text-[var(--gold)]"
+                        title="Abrir detalhes"
+                      >
+                        <MoreVertical size={15} strokeWidth={1.8} />
+                      </button>
+                    </article>
+                  )
+                })
+              )}
+            </div>
           </div>
+
         </aside>
       </div>
     </section>
@@ -488,10 +556,11 @@ export default function CalendarioEnsaios({
 function EventoComCapa({ ensaio }) {
   const statusInfo = getStatusInfo(ensaio.status)
   const capaUrl = getCapaUrl(ensaio)
+  const tone = STATUS_TONE[ensaio.status] || STATUS_TONE.AGENDADO
 
   return (
-    <div className="grid grid-cols-[44px_minmax(0,1fr)] gap-2 rounded-lg border border-white/[0.08] bg-black/25 p-1.5">
-      <div className="h-11 w-11 overflow-hidden rounded-md border border-white/[0.08] bg-black/25">
+    <div className={`grid grid-cols-[42px_minmax(0,1fr)] gap-2 rounded-[8px] border p-1.5 ${tone.event}`}>
+      <div className="h-11 w-11 overflow-hidden rounded-[6px] border border-white/70 bg-white/65">
         {capaUrl ? (
           <img
             src={capaUrl}
@@ -507,13 +576,13 @@ function EventoComCapa({ ensaio }) {
       </div>
 
       <div className="min-w-0">
-        <p className="truncate text-[11px] font-medium text-white/80">
+        <p className="truncate text-[10.5px] font-semibold text-[var(--text)]">
           {ensaio.clienteNome || 'Cliente sem nome'}
         </p>
-        <p className="mt-0.5 truncate text-[10px] text-white/45">
+        <p className="mt-0.5 truncate text-[9.5px] text-[var(--text-muted)]">
           {formatTime(ensaio.dataEnsaio)}
         </p>
-        <span className={`mt-1 inline-flex max-w-full items-center rounded-full border px-1.5 py-0.5 text-[9px] leading-none ${statusInfo.chipClass}`}>
+        <span className={`mt-1 inline-flex max-w-full items-center rounded-full border bg-white/65 px-1.5 py-0.5 text-[9px] leading-none ${statusInfo.chipClass}`}>
           <span className="truncate">{statusInfo.label}</span>
         </span>
       </div>
@@ -522,55 +591,71 @@ function EventoComCapa({ ensaio }) {
 }
 
 function EventoCompacto({ ensaio }) {
+  const tone = STATUS_TONE[ensaio.status] || STATUS_TONE.AGENDADO
+
   return (
-    <div className="rounded-md border border-white/[0.08] bg-black/25 px-2 py-1">
-      <span className="flex items-center gap-1.5 text-[11px] text-white/75">
-        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${STATUS_DOT[ensaio.status] || 'bg-white/40'}`} />
+    <div className={`rounded-[6px] border px-2 py-1 ${tone.event}`}>
+      <span className="flex items-center gap-1.5 text-[10px] text-[var(--text)]">
+        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${tone.accent}`} />
         <span className="truncate">{ensaio.clienteNome || 'Cliente sem nome'}</span>
       </span>
+      <p className="mt-0.5 truncate pl-3 text-[9px] text-[var(--text-muted)]">
+        {formatTime(ensaio.dataEnsaio)}
+      </p>
     </div>
   )
 }
 
-function ResumoCalendario({ label, value, danger, tooltipTitle, tooltipItems = [] }) {
+function ResumoCalendario({ icon: IconComponent = CalendarDays, label, value, tone = 'gold', danger, tooltipTitle, tooltipItems = [] }) {
   const hasTooltip = tooltipItems.length > 0
+  const toneClass = danger
+    ? 'border-red-100 bg-red-50 text-red-600'
+    : tone === 'violet'
+      ? 'border-violet-100 bg-violet-50 text-violet-600'
+      : tone === 'amber'
+        ? 'border-amber-100 bg-amber-50 text-amber-600'
+        : tone === 'emerald'
+          ? 'border-emerald-100 bg-emerald-50 text-emerald-600'
+          : 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]'
 
   return (
     <div
-      className={`group relative rounded-xl border px-4 py-3 outline-none ${
-        danger
-          ? 'border-red-400/30 bg-red-400/10'
-          : 'border-white/[0.08] bg-black/20'
-      }`}
+      className="group relative flex items-center gap-3 rounded-[10px] border border-[var(--border)] bg-white/70 px-4 py-3 outline-none"
       tabIndex={hasTooltip ? 0 : undefined}
     >
-      <p className={danger ? 'text-[18px] text-red-300' : 'text-[18px] text-white'}>
-        {value}
-      </p>
-      <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-white/35">
-        {label}
-      </p>
+      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] border ${toneClass}`}>
+        <IconComponent size={18} strokeWidth={1.8} />
+      </span>
+
+      <div className="min-w-0">
+        <p className="text-[16px] font-semibold text-[var(--text)]">
+          {value}
+        </p>
+        <p className="mt-0.5 truncate text-[10px] text-[var(--text-muted)]">
+          {label}
+        </p>
+      </div>
 
       {hasTooltip && (
-        <div className="theme-card pointer-events-none absolute left-0 top-[calc(100%+10px)] z-30 hidden w-[360px] rounded-xl border border-red-400/30 p-4 text-left shadow-[0_18px_40px_rgba(0,0,0,0.22)] group-hover:block group-focus:block max-sm:left-auto max-sm:right-0 max-sm:w-[min(82vw,360px)]">
-          <p className="text-[11px] uppercase tracking-[0.16em] text-red-400">
+        <div className="pointer-events-none absolute left-0 top-[calc(100%+10px)] z-30 hidden w-[360px] rounded-xl border border-red-100 bg-white p-4 text-left shadow-[0_18px_40px_rgba(78,56,35,0.14)] group-hover:block group-focus:block max-sm:left-auto max-sm:right-0 max-sm:w-[min(82vw,360px)]">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-red-500">
             {tooltipTitle}
           </p>
 
           <div className="mt-3 space-y-3">
             {tooltipItems.slice(0, 4).map((item) => (
-              <div key={item.key} className="theme-divider border-t pt-3 first:border-t-0 first:pt-0">
-                <p className="theme-title text-[13px] font-medium capitalize">
+              <div key={item.key} className="border-t border-[var(--border)] pt-3 first:border-t-0 first:pt-0">
+                <p className="text-[13px] font-medium capitalize text-[var(--text)]">
                   {item.label}
                 </p>
 
                 <div className="mt-2 space-y-1.5">
                   {item.ensaios.map((ensaio) => (
-                    <p key={ensaio.id} className="theme-text flex items-center justify-between gap-3 text-[12px]">
+                    <p key={ensaio.id} className="flex items-center justify-between gap-3 text-[12px] text-[var(--text-muted)]">
                       <span className="min-w-0 truncate">
                         {ensaio.clienteNome || 'Cliente sem nome'}
                       </span>
-                      <span className="shrink-0 text-red-400">
+                      <span className="shrink-0 text-red-500">
                         {formatTime(ensaio.dataEnsaio)}
                       </span>
                     </p>
@@ -581,7 +666,7 @@ function ResumoCalendario({ label, value, danger, tooltipTitle, tooltipItems = [
           </div>
 
           {tooltipItems.length > 4 && (
-            <p className="theme-divider theme-text mt-3 border-t pt-3 text-[12px]">
+            <p className="mt-3 border-t border-[var(--border)] pt-3 text-[12px] text-[var(--text-muted)]">
               +{tooltipItems.length - 4} dia{tooltipItems.length - 4 === 1 ? '' : 's'} com conflito neste mês.
             </p>
           )}

@@ -569,15 +569,16 @@ setAlertModal({
     <>
       <Header />
 
-      <main className="theme-page mx-auto max-w-[1200px] px-8 pb-16 pt-[96px] max-md:px-4">
+      <main className="configuracoes-page min-h-screen overflow-x-hidden bg-[#f8f5ef] px-4 pb-12 pt-[96px] text-[#211b17] md:px-6 lg:px-8 xl:px-10">
+        <div className="w-full max-w-[1400px]">
         <ConfiguracoesHeader />
 
-        <div className="grid gap-6 lg:grid-cols-[310px_1fr]">
+        <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)] xl:gap-7">
           <ConfiguracoesMenu activeTab={activeTab} onChange={setActiveTab} />
 
-          <section className="theme-card rounded-3xl border border-[var(--gold-border)] p-6">
+          <section className={activeTab === 'usuario' ? 'min-w-0' : 'theme-card min-w-0 rounded-3xl border border-[var(--gold-border)] p-6'}>
             {loading ? (
-              <div className="theme-panel rounded-2xl border p-6 text-sm">
+              <div className="rounded-[16px] border border-[#e7ded3] bg-white p-6 text-sm text-[#756a61]">
                 Carregando configurações...
               </div>
             ) : (
@@ -665,6 +666,7 @@ setAlertModal({
               </>
             )}
           </section>
+        </div>
         </div>
       </main>
       {toast && (

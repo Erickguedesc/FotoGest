@@ -1,10 +1,11 @@
 import FormInput from '../ui/FormInput'
 
 const inputClass = `
-  theme-input w-full border
+  w-full border border-[var(--border)] bg-white/64
   px-3.5 py-[11px] text-[13.5px] font-light
-  outline-none transition-all duration-200
-  focus:border-[var(--gold-border)] focus:bg-[var(--gold-dim)]
+  text-[var(--text)] outline-none transition-all duration-200
+  placeholder:text-[var(--text-muted)]
+  focus:border-[var(--gold-border)] focus:bg-white
 `
 
 const errorInputClass = 'border-[rgba(201,123,123,0.5)] bg-[rgba(201,123,123,0.07)]'
@@ -29,30 +30,30 @@ export default function FormPacoteSection({ form, errors, onChange, onSectionFoc
 
   return (
     <div
-      className="theme-card mb-4 overflow-hidden rounded-[14px] border"
+      className="mb-4 overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]"
       onPointerDownCapture={() => onSectionFocus?.('pacote')}
       onFocusCapture={() => onSectionFocus?.('pacote')}
     >
 
-      <div className="theme-divider flex items-center gap-2.5 border-b px-5 py-4">
-        <div className="w-7 h-7 rounded-lg bg-[var(--gold-dim)] border border-[var(--gold-border)] flex items-center justify-center flex-shrink-0">
+      <div className="flex items-center gap-3 border-b border-[var(--border)] px-5 py-4">
+        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A459" strokeWidth="1.8">
             <line x1="12" y1="1" x2="12" y2="23" />
             <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
           </svg>
         </div>
-        <span className="theme-text text-[11px] uppercase tracking-[0.16em]">
+        <span className="text-[15px] font-medium text-[var(--text)]">
           Pacote
         </span>
       </div>
 
       <div className="p-5 flex flex-col gap-4">
 
-        <div className="grid grid-cols-2 gap-3.5">
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_220px] items-end gap-4 max-xl:grid-cols-2 max-md:grid-cols-1">
 
           {/* Nº de fotos */}
           <FormInput label="Nº de fotos incluídas" required error={errors.fotos}>
-            <div className="theme-input flex h-[42px] items-center overflow-hidden rounded-[9px] border">
+            <div className="flex h-[42px] items-center overflow-hidden rounded-[9px] border border-[var(--border)] bg-white/64">
               <button
                 type="button"
                 onClick={() => stepFotos(-5)}
@@ -90,7 +91,7 @@ export default function FormPacoteSection({ form, errors, onChange, onSectionFoc
           {/* Valor do pacote */}
           <FormInput label="Valor do pacote (R$)" required error={errors.valor}>
             <div className="relative">
-              <span className="theme-muted pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px]">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-[var(--text-muted)]">
                 R$
               </span>
               <input
@@ -103,51 +104,54 @@ export default function FormPacoteSection({ form, errors, onChange, onSectionFoc
               />
             </div>
           </FormInput>
-        </div>
 
-        {/* Toggle foto extra */}
-        <div className="theme-divider flex items-center justify-between border-b py-3">
-          <span className="theme-text text-[13px]">Cobrar foto extra avulsa?</span>
-          <button
-            type="button"
-            onClick={() => set('extraAtivo', !form.extraAtivo)}
-            className={`
-              relative w-[38px] h-5 rounded-full cursor-pointer
-              border transition-all duration-300
-              ${form.extraAtivo
-                ? 'bg-[var(--gold-dim)] border-[var(--gold-border)]'
-                : 'bg-[var(--input-bg)] border-[var(--input-border)]'}
-            `}
-          >
-            <span
-              className={`
-                absolute top-[3px] w-3.5 h-3.5 rounded-full
-                transition-all duration-300
-                ${form.extraAtivo
-                  ? 'left-[21px] bg-[var(--gold)]'
-                  : 'left-[3px] bg-[var(--text-muted)]'}
-              `}
-            />
-          </button>
+          {/* Toggle foto extra */}
+          <div className="rounded-[10px] border border-[var(--border)] bg-white/50 px-3.5 py-3">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-[13px] text-[var(--text)]">Cobrar foto extra?</span>
+              <button
+                type="button"
+                aria-pressed={form.extraAtivo}
+                onClick={() => set('extraAtivo', !form.extraAtivo)}
+                className={`
+                  relative h-6 w-11 rounded-full cursor-pointer
+                  border transition-all duration-300
+                  ${form.extraAtivo
+                    ? 'bg-[var(--gold)] border-[var(--gold-border)]'
+                    : 'bg-[#ddd4c7] border-[var(--border)]'}
+                `}
+              >
+                <span
+                  className={`
+                    absolute top-[3px] h-4 w-4 rounded-full bg-white shadow-sm
+                    transition-all duration-300
+                    ${form.extraAtivo ? 'left-[23px]' : 'left-[3px]'}
+                  `}
+                />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Campo valor extra (condicional) */}
         {form.extraAtivo && (
-          <FormInput label="Valor por foto extra (R$)">
-            <div className="relative">
-              <span className="theme-muted pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px]">
-                R$
-              </span>
-              <input
-                type="text"
-                inputMode="decimal"
-                placeholder="0,00"
-                value={form.extra}
-                onChange={(e) => set('extra', formatCurrencyInput(e.target.value))}
-                className={`${inputClass} pl-10 rounded-[9px]`}
-              />
-            </div>
-          </FormInput>
+          <div className="max-w-[360px]">
+            <FormInput label="Valor por foto extra (R$)" error={errors.extra}>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-[var(--text-muted)]">
+                  R$
+                </span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0,00"
+                  value={form.extra}
+                  onChange={(e) => set('extra', formatCurrencyInput(e.target.value))}
+                  className={`${inputClass} pl-10 rounded-[9px] ${errors.extra ? errorInputClass : ''}`}
+                />
+              </div>
+            </FormInput>
+          </div>
         )}
 
       </div>

@@ -341,33 +341,31 @@ export default function NovoEnsaioPage() {
     <>
       <Header />
 
-      <main className="theme-page mx-auto max-w-[980px] px-8 pb-16 pt-[88px] animate-[fadeUp_0.55s_cubic-bezier(0.22,1,0.36,1)_both]">
+      <main className="ensaios-management-page relative z-[1] mx-auto max-w-[1320px] px-6 pb-16 pt-[84px] animate-[fadeUp_0.55s_cubic-bezier(0.22,1,0.36,1)_both] max-md:px-4 lg:pt-8">
 
         <div className="mb-6 flex items-center gap-2">
           <button
             onClick={() => navigate('/ensaios')}
-            className="theme-muted cursor-pointer text-[12px] transition-colors hover:text-[var(--gold)]"
+            className="cursor-pointer text-[12px] text-[var(--text-muted)] transition-colors hover:text-[var(--gold)]"
           >
             Ensaios
           </button>
-          <span className="text-[11px] text-white/20">›</span>
-          <span className="text-[12px] text-white/80">Novo ensaio</span>
+          <span className="text-[11px] text-[var(--text-muted)]">›</span>
+          <span className="text-[12px] text-[var(--text)]">Novo ensaio</span>
         </div>
 
-        <div className="mb-8">
-          <h1 className="theme-title font-serif text-[32px] font-light tracking-[0.04em]">
-            {clienteIdExistente && form.cliente ? `Novo ensaio para ${form.cliente}` : 'Novo Ensaio'}
+        <div className="mb-6">
+          <h1 className="font-serif text-[38px] font-light leading-none tracking-normal text-[var(--text)]">
+            Novo Ensaio
           </h1>
-          <p className="theme-muted mt-1 text-[13px]">
-            {clienteIdExistente
-              ? 'Registre um novo ensaio para este cliente. Ele terá seu próprio álbum, fotos, link, senha, seleção e entrega.'
-              : 'Preencha os dados do cliente e do ensaio para registrar.'}
+          <p className="mt-3 text-[14px] text-[var(--text-muted)]">
+            Preencha os dados do cliente e do ensaio para registrar.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className="grid grid-cols-[1fr_340px] items-start gap-5">
-            <div>
+          <div className="grid grid-cols-[minmax(0,1fr)_360px] items-start gap-5 xl:grid-cols-[minmax(0,1fr)_380px] max-lg:grid-cols-1">
+            <div className="min-w-0">
               <FormInfoSection
                 form={form}
                 errors={errors}

@@ -2,7 +2,7 @@ const TYPE_STYLES = {
   warning: {
     icon: 'text-orange-300 border-orange-400/30 bg-orange-400/10',
     confirm:
-      'bg-orange-400 text-[#1A1200] hover:bg-orange-300',
+      'bg-[#a65f00] text-white hover:bg-[#884e00]',
   },
   danger: {
     icon: 'text-red-300 border-red-400/30 bg-red-400/10',
@@ -12,13 +12,13 @@ const TYPE_STYLES = {
   gold: {
     icon: 'text-[var(--gold)] border-[var(--gold-border)] bg-[var(--gold-dim)]',
     confirm:
-      'bg-[var(--gold)] text-[#1A1200] hover:bg-[var(--gold-light)]',
+      'bg-[#a65f00] text-white hover:bg-[#884e00]',
   },
 
   success: {
   icon: 'text-emerald-300 border-emerald-400/30 bg-emerald-400/10',
   confirm:
-    'bg-emerald-400 text-[#1A1200] hover:bg-emerald-300',
+    'bg-emerald-600 text-white hover:bg-emerald-700',
 },
 }
 

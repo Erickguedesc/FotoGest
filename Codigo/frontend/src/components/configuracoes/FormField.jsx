@@ -8,21 +8,32 @@ export function FormField({
   onChange,
   type = 'text',
   placeholder = '',
+  icon = null,
 }) {
   return (
     <label className="block">
-      <span className="theme-muted mb-2 block text-xs uppercase tracking-[0.14em]">
+      <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#756a61]">
         {label}
       </span>
 
-      <input
-        type={type}
-        name={name}
-        value={value ?? ''}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="theme-input w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:border-[var(--gold-border)]"
-      />
+      <span className="flex min-h-12 items-center rounded-[13px] border border-[#ded4c8] bg-white text-[#211b17] transition focus-within:border-[#bf812b] focus-within:ring-4 focus-within:ring-[#c8872b]/10">
+        {icon ? (
+          <span className="ml-4 flex shrink-0 text-[#7d7066]">
+            {icon}
+          </span>
+        ) : null}
+
+        <input
+          type={type}
+          name={name}
+          value={value ?? ''}
+          onChange={onChange}
+          placeholder={placeholder}
+          className={`min-w-0 flex-1 bg-transparent py-3 text-sm outline-none placeholder:text-[#a1978f] ${
+            icon ? 'px-3.5' : 'px-4'
+          }`}
+        />
+      </span>
     </label>
   )
 }
@@ -30,7 +41,7 @@ export function FormField({
 export function TextareaField({ label, name, value, onChange, rows = 4 }) {
   return (
     <label className="block">
-      <span className="theme-muted mb-2 block text-xs uppercase tracking-[0.14em]">
+      <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#756a61]">
         {label}
       </span>
 
@@ -39,7 +50,7 @@ export function TextareaField({ label, name, value, onChange, rows = 4 }) {
         value={value ?? ''}
         onChange={onChange}
         rows={rows}
-        className="theme-input w-full resize-none rounded-xl border px-4 py-3 text-sm outline-none transition focus:border-[var(--gold-border)]"
+        className="w-full resize-none rounded-[13px] border border-[#ded4c8] bg-white px-4 py-3 text-sm text-[#211b17] outline-none transition placeholder:text-[#a1978f] focus:border-[#bf812b] focus:ring-4 focus:ring-[#c8872b]/10"
       />
     </label>
   )
@@ -50,23 +61,23 @@ export function PasswordField({ label, name, value, onChange }) {
 
   return (
     <label className="block">
-      <span className="theme-muted mb-2 block text-xs uppercase tracking-[0.14em]">
+      <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#756a61]">
         {label}
       </span>
 
-      <div className="theme-input flex rounded-xl border transition focus-within:border-[var(--gold-border)]">
+      <div className="flex rounded-[13px] border border-[#ded4c8] bg-white text-[#211b17] transition focus-within:border-[#bf812b] focus-within:ring-4 focus-within:ring-[#c8872b]/10">
         <input
           type={visible ? 'text' : 'password'}
           name={name}
           value={value ?? ''}
           onChange={onChange}
-          className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-[var(--text)] outline-none"
+          className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm outline-none"
         />
 
         <button
           type="button"
           onClick={() => setVisible((current) => !current)}
-          className="theme-muted flex w-12 items-center justify-center transition hover:text-[var(--gold)]"
+          className="flex w-12 items-center justify-center text-[#756a61] transition hover:text-[#bd7920]"
         >
           {visible ? <EyeOff size={17} /> : <Eye size={17} />}
         </button>

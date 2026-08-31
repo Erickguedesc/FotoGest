@@ -16,10 +16,10 @@ export default function EnsaioActions({
   const shouldShowView = showView ?? !vertical
   const baseButtonClass = `${
     vertical ? 'h-9 w-9 rounded-xl' : 'h-8 w-8 rounded-lg'
-  } theme-icon-button flex items-center justify-center border transition hover:bg-[var(--gold-dim)]`
+  } flex items-center justify-center border border-[var(--border)] bg-[rgba(255,255,255,0.58)] text-[var(--text)] shadow-[0_8px_18px_rgba(92,82,72,0.07)] transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]`
   const dangerButtonClass = `${
     vertical ? 'h-9 w-9 rounded-xl' : 'h-8 w-8 rounded-lg'
-  } theme-icon-button flex items-center justify-center border transition enabled:hover:border-red-400/40 enabled:hover:bg-red-400/10 enabled:hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-25`
+  } flex items-center justify-center border border-[var(--border)] bg-[rgba(255,255,255,0.58)] text-[var(--text)] shadow-[0_8px_18px_rgba(92,82,72,0.07)] transition enabled:hover:border-red-400/40 enabled:hover:bg-red-400/10 enabled:hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-25`
   const iconSize = vertical ? 14 : 14
 
   return (

@@ -21,7 +21,7 @@ export default function EnsaioDetailsModal({ ensaio, open, onClose, onEdit }) {
       footer={(
         <>
           <button type="button" onClick={onClose} className="rounded-lg border border-white/[0.10] px-4 py-2.5 text-[12px] tracking-[0.08em] text-white/60 transition hover:text-white">Fechar</button>
-          <button type="button" onClick={() => onEdit(ensaio)} className="rounded-lg bg-[var(--gold)] px-5 py-2.5 text-[12px] font-medium tracking-[0.1em] text-[#1A1200] transition hover:bg-[var(--gold-light)]">Editar informações</button>
+          <button type="button" onClick={() => onEdit(ensaio)} className="rounded-lg bg-[#a65f00] px-5 py-2.5 text-[12px] font-medium tracking-[0.1em] text-white transition hover:bg-[#884e00]">Editar informações</button>
         </>
       )}
     >

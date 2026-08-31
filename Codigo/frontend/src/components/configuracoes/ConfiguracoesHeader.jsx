@@ -1,19 +1,16 @@
-import { Settings } from 'lucide-react'
-
 export default function ConfiguracoesHeader() {
   return (
-    <div className="mb-8 flex flex-col justify-between gap-4 border-b border-white/10 pb-6 md:flex-row md:items-end">
+    <div className="mb-9 max-w-3xl">
       <div>
-        <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-[var(--gold)]">
-          <Settings size={15} />
+        <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a96516]">
           Configurações
-        </div>
+        </p>
 
-        <h1 className="theme-title font-serif text-4xl font-light">
+        <h1 className="font-serif text-5xl font-light leading-tight text-[#17120d] max-sm:text-4xl">
           Minha conta
         </h1>
 
-        <p className="theme-muted mt-3 max-w-2xl text-sm">
+        <p className="mt-4 max-w-2xl text-sm leading-6 text-[#6f6257]">
           Gerencie seus dados, informações da empresa/estúdio, segurança da
           conta e preferências usadas no sistema.
         </p>

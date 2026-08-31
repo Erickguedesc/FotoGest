@@ -98,18 +98,30 @@
   .header-code-logo {
     display: inline-flex;
     align-items: center;
-    gap: 9px;
-    color: #f6efe7;
+    gap: 3px;
+    color: #111111;
     font-family: 'DM Sans', sans-serif;
-    font-size: 21px;
-    font-weight: 300;
-    letter-spacing: 0.2em;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
     line-height: 1;
     text-transform: uppercase;
   }
 
   :root[data-theme='light'] .header-code-logo {
     color: #20303a;
+  }
+
+  .app-sidebar-shell .header-code-logo svg {
+    height: 18px;
+    width: 18px;
+  }
+
+  @media (min-width: 1024px) {
+    body.fotolhar-has-sidebar {
+      --fotolhar-sidebar-width: 216px;
+      padding-left: var(--fotolhar-sidebar-width);
+    }
   }
 
   .theme-card.header-popover {
@@ -224,9 +236,45 @@
     opacity: 0.78;
   }
 
+  .relatorios-page input[type='date']::-webkit-calendar-picker-indicator {
+    filter: brightness(0) saturate(100%) invert(40%) sepia(11%) saturate(533%) hue-rotate(349deg) brightness(94%) contrast(83%);
+    opacity: 0.78;
+  }
+
   select option {
     background-color: #161616;
     color: #ffffff;
+  }
+
+  .ensaios-management-page {
+    --card: rgba(250, 248, 244, 0.84);
+    --card-hover: rgba(255, 255, 255, 0.84);
+    --gold: #a65f00;
+    --gold-light: #c57a08;
+    --gold-dim: rgba(166, 95, 0, 0.10);
+    --gold-border: rgba(166, 95, 0, 0.28);
+    --text: #17120d;
+    --text-muted: #72665b;
+    --border: rgba(120, 98, 78, 0.18);
+    --input-bg: rgba(255, 255, 255, 0.58);
+    --input-border: rgba(120, 98, 78, 0.18);
+  }
+
+  body.fotolhar-ensaios-page {
+    background:
+      linear-gradient(135deg, rgba(255, 252, 248, 0.92), rgba(245, 239, 230, 0.86)),
+      url('../assets/light-premium-bg.png') center top / cover fixed no-repeat,
+      #f7f1e8;
+  }
+
+  .ensaios-management-page input[type='date']::-webkit-calendar-picker-indicator {
+    filter: brightness(0) saturate(100%) invert(33%) sepia(9%) saturate(727%) hue-rotate(349deg) brightness(89%) contrast(84%);
+    opacity: 0.78;
+  }
+
+  .ensaios-management-page select option {
+    background-color: #faf8f4;
+    color: #17120d;
   }
 
   :root[data-theme='light'] select option {

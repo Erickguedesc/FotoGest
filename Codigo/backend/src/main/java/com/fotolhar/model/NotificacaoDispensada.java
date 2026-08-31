@@ -32,6 +32,9 @@ public class NotificacaoDispensada {
     @Column(name = "dispensada_em", nullable = false)
     private OffsetDateTime dispensadaEm;
 
+    @Column(name = "expira_em")
+    private OffsetDateTime expiraEm;
+
     @PrePersist
     protected void onCreate() {
         if (dispensadaEm == null) {

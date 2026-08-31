@@ -34,7 +34,9 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import com.fotolhar.enums.TipoEnsaio;
@@ -122,10 +124,13 @@ public List<EnsaioResponse> listar(
         String clienteNome
 ) {
     Usuario usuario = usuarioContextService.getUsuarioLogado();
-    return ensaioRepository.findAll(
-            EnsaioSpecification.filtrar(usuario.getId(), status, tipo, dataInicio, dataFim, clienteNome))
+    List<Ensaio> ensaios = ensaioRepository.findAll(
+            EnsaioSpecification.filtrar(usuario.getId(), status, tipo, dataInicio, dataFim, clienteNome));
+    EnsaioResponseContext responseContext = criarResponseContext(ensaios);
+
+    return ensaios
             .stream()
-            .map(this::toResponse)
+            .map(ensaio -> toResponse(ensaio, responseContext))
             .collect(Collectors.toList());
 }
 
@@ -447,7 +452,78 @@ private String resolverTipoExibicao(Ensaio ensaio) {
     return ensaio.getTipo().getDescricao();
 }
 
-    private EnsaioResponse toResponse(Ensaio ensaio) {
+private record EnsaioResponseContext(
+        Map<UUID, Integer> totalFotosPorEnsaio,
+        Map<UUID, String> capaUrlPorEnsaio,
+        String capaAlbumPadraoUrl
+) {
+}
+
+private EnsaioResponseContext criarResponseContext(List<Ensaio> ensaios) {
+    if (ensaios == null || ensaios.isEmpty()) {
+        return new EnsaioResponseContext(Map.of(), Map.of(), null);
+    }
+
+    List<UUID> ensaioIds = ensaios.stream()
+            .map(Ensaio::getId)
+            .toList();
+    List<Foto> fotos = fotoRepository.findByEnsaioIdInOrderByOrdemAscEnviadaEmAsc(ensaioIds);
+    Map<UUID, Integer> totalFotosPorEnsaio = new HashMap<>();
+    Map<UUID, Foto> capaPorEnsaio = new HashMap<>();
+    String capaAlbumPadraoUrl = buscarCapaAlbumPadrao();
+
+    for (Foto foto : fotos) {
+        UUID ensaioId = foto.getEnsaio().getId();
+        Foto capaAtual = capaPorEnsaio.get(ensaioId);
+
+        totalFotosPorEnsaio.merge(ensaioId, 1, Integer::sum);
+
+        if (capaAtual == null || (!Boolean.TRUE.equals(capaAtual.getEhCapa()) && Boolean.TRUE.equals(foto.getEhCapa()))) {
+            capaPorEnsaio.put(ensaioId, foto);
+        }
+    }
+
+    Map<UUID, String> capaUrlPorEnsaio = capaPorEnsaio.entrySet()
+            .stream()
+            .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    entry -> resolverCapaUrl(entry.getValue(), capaAlbumPadraoUrl)
+            ));
+
+    return new EnsaioResponseContext(totalFotosPorEnsaio, capaUrlPorEnsaio, capaAlbumPadraoUrl);
+}
+
+private String resolverCapaUrl(Foto capa, String capaAlbumPadraoUrl) {
+    return capa == null
+            ? capaAlbumPadraoUrl
+            : resolverCapaUrl(capa.getUrlWatermark(), capa.getUrlOriginal(), capaAlbumPadraoUrl);
+}
+
+private String resolverCapaUrl(String urlWatermark, String urlOriginal, String capaAlbumPadraoUrl) {
+    if (urlWatermark != null && !urlWatermark.isBlank()) {
+        return urlWatermark;
+    }
+
+    if (urlOriginal != null && !urlOriginal.isBlank()) {
+        return urlOriginal;
+    }
+
+    return capaAlbumPadraoUrl;
+}
+
+private String resolverCapaUrl(UUID ensaioId, EnsaioResponseContext responseContext) {
+    return responseContext.capaUrlPorEnsaio().getOrDefault(ensaioId, responseContext.capaAlbumPadraoUrl());
+}
+
+private int resolverTotalFotos(UUID ensaioId, EnsaioResponseContext responseContext) {
+    return responseContext.totalFotosPorEnsaio().getOrDefault(ensaioId, 0);
+}
+
+private EnsaioResponse toResponse(Ensaio ensaio) {
+    return toResponse(ensaio, criarResponseContext(List.of(ensaio)));
+}
+
+private EnsaioResponse toResponse(Ensaio ensaio, EnsaioResponseContext responseContext) {
     return EnsaioResponse.builder()
             .id(ensaio.getId())
 
@@ -477,8 +553,8 @@ private String resolverTipoExibicao(Ensaio ensaio) {
             .observacoes(ensaio.getObservacoes())
             .notasInternas(ensaio.getNotasInternas())
             .progresso(ensaio.getProgresso())
-            .totalFotos(fotoRepository.countByEnsaioId(ensaio.getId()))
-            .capaUrl(buscarCapaUrl(ensaio.getId()))
+            .totalFotos(resolverTotalFotos(ensaio.getId(), responseContext))
+            .capaUrl(resolverCapaUrl(ensaio.getId(), responseContext))
 
             .criadoEm(ensaio.getCriadoEm())
             .atualizadoEm(ensaio.getAtualizadoEm())

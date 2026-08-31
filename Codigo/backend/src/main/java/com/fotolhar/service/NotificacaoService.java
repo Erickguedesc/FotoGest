@@ -37,6 +37,10 @@ public class NotificacaoService {
     private static final int DIAS_SEM_SELECAO = 5;
     private static final int DIAS_STATUS_PARADO = 10;
     private static final int DIAS_EDICAO_ATRASADA = 14;
+    private static final Duration SILENCIO_ALERTA_CRITICO = Duration.ofHours(2);
+    private static final Duration SILENCIO_ALERTA_ACAO = Duration.ofHours(6);
+    private static final Duration SILENCIO_ALERTA_PRAZO = Duration.ofHours(12);
+    private static final Duration SILENCIO_ALERTA_ACOMPANHAMENTO = Duration.ofHours(24);
 
     private final EnsaioRepository ensaioRepository;
     private final AlbumRepository albumRepository;
@@ -48,8 +52,11 @@ public class NotificacaoService {
     @Transactional(readOnly = true)
     public List<NotificacaoResponse> listar() {
         Usuario usuario = buscarUsuarioLogado();
+        OffsetDateTime agora = OffsetDateTime.now();
         Set<String> dispensadas = notificacaoDispensadaRepository.findByUsuarioId(usuario.getId())
                 .stream()
+                .filter(notificacao -> notificacao.getExpiraEm() != null)
+                .filter(notificacao -> notificacao.getExpiraEm().isAfter(agora))
                 .map(NotificacaoDispensada::getChave)
                 .collect(Collectors.toCollection(HashSet::new));
 
@@ -73,13 +80,29 @@ public class NotificacaoService {
         }
 
         Usuario usuario = buscarUsuarioLogado();
+        OffsetDateTime agora = OffsetDateTime.now();
+        String chaveLimpa = chave.trim();
+        OffsetDateTime expiraEm = agora.plus(duracaoSilencio(chaveLimpa));
 
-        notificacaoDispensadaRepository.findByUsuarioIdAndChave(usuario.getId(), chave.trim())
+        notificacaoDispensadaRepository.findByUsuarioIdAndChave(usuario.getId(), chaveLimpa)
+                .map(notificacao -> {
+                    notificacao.setDispensadaEm(agora);
+                    notificacao.setExpiraEm(expiraEm);
+                    return notificacaoDispensadaRepository.save(notificacao);
+                })
                 .orElseGet(() -> notificacaoDispensadaRepository.save(
                         NotificacaoDispensada.builder()
                                 .usuario(usuario)
-                                .chave(chave.trim())
+                                .chave(chaveLimpa)
+                                .dispensadaEm(agora)
+                                .expiraEm(expiraEm)
                                 .build()));
+    }
+
+    @Transactional
+    public void limparSilenciosExpirados() {
+        Usuario usuario = buscarUsuarioLogado();
+        notificacaoDispensadaRepository.deleteByUsuarioIdAndExpiraEmBefore(usuario.getId(), OffsetDateTime.now());
     }
 
     private List<NotificacaoResponse> gerarNotificacoes(Usuario usuario) {
@@ -342,6 +365,18 @@ public class NotificacaoService {
 
     private long epoch(OffsetDateTime data) {
         return data == null ? 0 : data.toEpochSecond();
+    }
+
+    private Duration duracaoSilencio(String chave) {
+        String tipo = chave == null ? "" : chave.split(":", 2)[0];
+
+        return switch (tipo) {
+            case "ENSAIO_ATRASADO", "ENTREGA_ATRASADA" -> SILENCIO_ALERTA_CRITICO;
+            case "SELECAO_ENVIADA", "PAGAMENTO_PENDENTE" -> SILENCIO_ALERTA_ACAO;
+            case "ALBUM_EXPIRANDO" -> SILENCIO_ALERTA_PRAZO;
+            case "SELECAO_SEM_RESPOSTA", "STATUS_PARADO" -> SILENCIO_ALERTA_ACOMPANHAMENTO;
+            default -> SILENCIO_ALERTA_ACAO;
+        };
     }
 
     private int pesoPrioridade(NotificacaoResponse notificacao) {

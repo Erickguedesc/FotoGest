@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Download } from 'lucide-react'
 import RelatorioHeader from '../components/relatorios/RelatorioHeader'
 import RelatorioFiltros from '../components/relatorios/RelatorioFiltros'
 import RelatorioDestaques from '../components/relatorios/RelatorioDestaques'
@@ -87,6 +86,8 @@ export default function RelatoriosPage() {
 
   function handleTipoChange(nextTipo) {
     setTipo(nextTipo)
+    setDataInicio('')
+    setDataFim('')
     aplicarFiltros({
       ...filtrosAplicados,
       tipo: nextTipo,
@@ -97,9 +98,28 @@ export default function RelatoriosPage() {
 
   function handleAnoChange(nextAno) {
     setAno(nextAno)
+    setDataInicio('')
+    setDataFim('')
     aplicarFiltros({
       ...filtrosAplicados,
       ano: nextAno,
+      dataInicio: '',
+      dataFim: '',
+    })
+  }
+
+  function handlePeriodoResumoChange(value) {
+    const [nextTipo, nextAno] = value.split('|')
+    const anoNumerico = Number(nextAno)
+
+    setTipo(nextTipo)
+    setAno(anoNumerico)
+    setDataInicio('')
+    setDataFim('')
+    aplicarFiltros({
+      ...filtrosAplicados,
+      tipo: nextTipo,
+      ano: anoNumerico,
       dataInicio: '',
       dataFim: '',
     })
@@ -165,28 +185,20 @@ return (
   <>
     <Header />
 
-    <main className="theme-page min-h-screen px-4 pt-24 pb-8 md:px-8">
-      <div className="mx-auto max-w-7xl">
-  <RelatorioHeader
-  tipo={filtrosAplicados.tipo}
-  ano={filtrosAplicados.ano}
-  periodoDescricao={relatorio?.periodoDescricao}
-/>
+    <main className="relatorios-page min-h-screen overflow-x-hidden bg-[#f8f5ef] px-4 pb-10 pt-20 text-[#211b17] md:px-6 lg:px-8 xl:px-10">
+      <div className="w-full max-w-[1480px]">
+        <RelatorioHeader
+          tipo={filtrosAplicados.tipo}
+          ano={filtrosAplicados.ano}
+          periodoDescricao={relatorio?.periodoDescricao}
+          anosDisponiveis={anosDisponiveis}
+          disabled={!relatorio || loading || exportLoading}
+          exportLoading={exportLoading}
+          onExportPdf={handleExportPdf}
+          onPeriodoResumoChange={handlePeriodoResumoChange}
+        />
 
-        <div className="mb-6 flex justify-end">
-          <button
-            type="button"
-            onClick={handleExportPdf}
-            disabled={!relatorio || loading || exportLoading}
-            className="inline-flex items-center gap-2 rounded-xl border border-[var(--gold-border)] bg-[var(--gold-dim)] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--gold)] transition hover:bg-[rgba(201,164,89,0.16)] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Download size={15} />
-            {exportLoading ? 'Gerando PDF' : 'Exportar PDF'}
-          </button>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-          <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+        <section className="mb-5 grid gap-5 rounded-[18px] border border-[#e7ded3] bg-white/92 p-4 shadow-[0_16px_46px_rgba(82,58,35,0.07)] backdrop-blur sm:p-5 md:grid-cols-2 xl:grid-cols-[1fr_0.85fr_1.35fr_1.45fr]">
             <RelatorioFiltros
               tipo={tipo}
               ano={ano}
@@ -206,11 +218,11 @@ return (
               destaques={relatorio?.destaques}
               periodos={periodos}
             />
-          </aside>
+        </section>
 
-          <section className="space-y-6">
+        <section className="space-y-5">
             {erro && (
-              <div className="rounded-2xl border border-red-400/30 bg-red-400/10 px-5 py-4 text-sm text-red-200">
+              <div className="rounded-[16px] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
                 {erro}
               </div>
             )}
@@ -227,8 +239,7 @@ return (
             <RelatorioTiposEnsaio tipos={relatorio?.tiposEnsaio} />
 
             <RelatorioTabela periodos={periodos} />
-          </section>
-        </div>
+        </section>
       </div>
     </main>
   </>

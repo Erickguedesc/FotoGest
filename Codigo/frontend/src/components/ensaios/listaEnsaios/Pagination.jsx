@@ -16,25 +16,35 @@ function getVisiblePages(page, totalPages) {
   return [1, 'start-ellipsis', page - 1, page, page + 1, 'end-ellipsis', totalPages]
 }
 
-export default function Pagination({ page, totalPages, pageSize, total, onPageChange, onPageSizeChange }) {
+export default function Pagination({
+  page,
+  totalPages,
+  pageSize,
+  total,
+  itemLabel = 'ensaio',
+  ariaLabel = 'Paginacao dos ensaios',
+  onPageChange,
+  onPageSizeChange,
+}) {
   if (!total) return null
 
   const firstItem = (page - 1) * pageSize + 1
   const lastItem = Math.min(page * pageSize, total)
   const visiblePages = getVisiblePages(page, totalPages)
+  const pluralLabel = total === 1 ? itemLabel : `${itemLabel}s`
 
   return (
-    <div className="theme-card mt-5 flex flex-wrap items-center justify-between gap-4 rounded-xl border px-4 py-3 text-[12px] text-[var(--text-muted)]">
+    <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-[8px] border border-[var(--border)] bg-[rgba(255,255,255,0.68)] px-4 py-3 text-[12px] text-[var(--text-muted)] shadow-[0_14px_34px_rgba(92,82,72,0.08)]">
       <span>
-        Pagina {page} de {totalPages} - {firstItem}-{lastItem} de {total}
+        Exibindo {firstItem}-{lastItem} de {total} {pluralLabel}
       </span>
 
-      <nav className="flex flex-wrap items-center justify-center gap-2" aria-label="Paginacao dos ensaios">
+      <nav className="flex flex-wrap items-center justify-center gap-2" aria-label={ariaLabel}>
         <button
           type="button"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          className="theme-icon-button flex h-9 w-9 items-center justify-center rounded-lg border transition enabled:hover:border-[var(--gold-border)] enabled:hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-30"
+          className="flex h-9 w-9 items-center justify-center rounded-[8px] border border-[var(--border)] bg-white/45 text-[var(--text)] transition enabled:hover:border-[var(--gold-border)] enabled:hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-30"
           aria-label="Pagina anterior"
         >
           <ChevronLeft size={15} strokeWidth={1.9} />
@@ -59,8 +69,8 @@ export default function Pagination({ page, totalPages, pageSize, total, onPageCh
               aria-current={active ? 'page' : undefined}
               className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-3 text-[12px] font-medium transition ${
                 active
-                  ? 'border-[var(--gold-border)] bg-[var(--gold)] text-[#1A1200] shadow-[0_10px_24px_rgba(0,0,0,0.16)]'
-                  : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]'
+                  ? 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)] shadow-[0_10px_24px_rgba(92,82,72,0.10)]'
+                  : 'border-[var(--border)] bg-white/45 text-[var(--text)] hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]'
               }`}
             >
               {item}
@@ -72,7 +82,7 @@ export default function Pagination({ page, totalPages, pageSize, total, onPageCh
           type="button"
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
-          className="theme-icon-button flex h-9 w-9 items-center justify-center rounded-lg border transition enabled:hover:border-[var(--gold-border)] enabled:hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-30"
+          className="flex h-9 w-9 items-center justify-center rounded-[8px] border border-[var(--border)] bg-white/45 text-[var(--text)] transition enabled:hover:border-[var(--gold-border)] enabled:hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-30"
           aria-label="Proxima pagina"
         >
           <ChevronRight size={15} strokeWidth={1.9} />
@@ -84,7 +94,7 @@ export default function Pagination({ page, totalPages, pageSize, total, onPageCh
         <select
           value={pageSize}
           onChange={(event) => onPageSizeChange(Number(event.target.value))}
-          className="theme-panel rounded-lg border px-2.5 py-2 text-[12px] text-[var(--text)] outline-none transition focus:border-[var(--gold-border)]"
+          className="rounded-[8px] border border-[var(--border)] bg-white/55 px-2.5 py-2 text-[12px] text-[var(--text)] outline-none transition focus:border-[var(--gold-border)]"
         >
           {[6, 10, 15, 20].map((size) => <option key={size} value={size}>{size}</option>)}
         </select>
