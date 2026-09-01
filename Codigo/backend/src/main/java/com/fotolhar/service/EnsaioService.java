@@ -99,6 +99,8 @@ Ensaio ensaio = Ensaio.builder()
         .status(StatusEnsaio.AGENDADO)
         .dataEnsaio(request.getDataEnsaio())
         .local(request.getLocal())
+        .cidadeEnsaio(normalizarTexto(request.getCidadeEnsaio()))
+        .estadoEnsaio(normalizarUf(request.getEstadoEnsaio()))
         .qtdFotosPacote(request.getQtdFotosPacote())
         .valorPacote(request.getValorPacote())
         .cobrarFotoExtra(cobrar)
@@ -223,6 +225,8 @@ public List<EnsaioResponse> listar(
         ensaio.setTipoPersonalizado(resolverTipoPersonalizado(request, ensaio));
         ensaio.setDataEnsaio(request.getDataEnsaio());
         ensaio.setLocal(request.getLocal());
+        ensaio.setCidadeEnsaio(normalizarTexto(request.getCidadeEnsaio()));
+        ensaio.setEstadoEnsaio(normalizarUf(request.getEstadoEnsaio()));
         // ✅ Direto — @NotNull no DTO já protege
          ensaio.setQtdFotosPacote(request.getQtdFotosPacote());
         ensaio.setValorPacote(request.getValorPacote());
@@ -406,6 +410,11 @@ private String normalizarTexto(String valor) {
     return texto.isEmpty() ? null : texto;
 }
 
+private String normalizarUf(String valor) {
+    String texto = normalizarTexto(valor);
+    return texto == null ? null : texto.toUpperCase();
+}
+
 private String normalizarStatusValores(String valor) {
     String status = normalizarTexto(valor);
 
@@ -541,6 +550,8 @@ private EnsaioResponse toResponse(Ensaio ensaio, EnsaioResponseContext responseC
             .status(ensaio.getStatus())
             .dataEnsaio(ensaio.getDataEnsaio())
             .local(ensaio.getLocal())
+            .cidadeEnsaio(ensaio.getCidadeEnsaio())
+            .estadoEnsaio(ensaio.getEstadoEnsaio())
 
             .qtdFotosPacote(ensaio.getQtdFotosPacote())
             .valorPacote(ensaio.getValorPacote())

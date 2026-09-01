@@ -185,7 +185,7 @@ return (
   <>
     <Header />
 
-    <main className="relatorios-page min-h-screen overflow-x-hidden bg-[#f8f5ef] px-4 pb-10 pt-20 text-[#211b17] md:px-6 lg:px-8 xl:px-10">
+    <main className="relatorios-page min-h-screen overflow-x-hidden bg-[#F7F7F8] px-4 pb-10 pt-20 text-[#1F1F21] md:px-6 lg:px-8 xl:px-10">
       <div className="w-full max-w-[1480px]">
         <RelatorioHeader
           tipo={filtrosAplicados.tipo}
@@ -198,7 +198,7 @@ return (
           onPeriodoResumoChange={handlePeriodoResumoChange}
         />
 
-        <section className="mb-5 grid gap-5 rounded-[18px] border border-[#e7ded3] bg-white/92 p-4 shadow-[0_16px_46px_rgba(82,58,35,0.07)] backdrop-blur sm:p-5 md:grid-cols-2 xl:grid-cols-[1fr_0.85fr_1.35fr_1.45fr]">
+        <section className="mb-5 grid gap-5 rounded-[18px] border border-[#E8E3DF] bg-white/92 p-4 shadow-[0_16px_46px_rgba(31,31,33,0.055)] backdrop-blur sm:p-5 md:grid-cols-2 xl:grid-cols-[1fr_0.85fr_1.35fr_1.45fr]">
             <RelatorioFiltros
               tipo={tipo}
               ano={ano}

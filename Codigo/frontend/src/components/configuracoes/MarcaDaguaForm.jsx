@@ -71,6 +71,14 @@ const previewFotos = [
   },
 ]
 
+const panelClass = 'rounded-2xl border border-[var(--border)] bg-[var(--card-hover)] p-5'
+const panelTitleClass = 'text-sm font-medium text-[var(--text)]'
+const panelTextClass = 'text-sm leading-6 text-[var(--text-muted)]'
+const fieldLabelClass = 'mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]'
+const fieldControlClass = 'w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--text)] outline-none transition placeholder:text-[#96928E] focus:border-[var(--gold-border)] focus:ring-4 focus:ring-[#C84F32]/10'
+const inactiveChoiceClass = 'border-[var(--border)] bg-white text-[var(--text-muted)] hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]'
+const outlineActionClass = 'inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm font-medium text-[var(--text)] transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-60'
+
 export default function MarcaDaguaForm({
   data,
   loading,
@@ -182,21 +190,22 @@ function handleGerarTexto() {
   const textoRepetidoPreview = marcaPorTexto && (data?.marcaDaguaTextoModo || 'REPETIDA') === 'REPETIDA'
   const previewFoto = previewFotos.find((foto) => foto.id === previewFotoId) || previewFotos[0]
   const previewVertical = previewFoto.orientation === 'portrait'
+  const gerarTextoDisabled = gerarTextoLoading || !textoForm.texto.trim()
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-        <h3 className="text-sm font-semibold text-white">
+      <div className={panelClass}>
+        <h3 className="text-sm font-semibold text-[var(--text)]">
           Sobre a marca d’água
         </h3>
 
-       <p className="mt-2 text-sm leading-6 text-white/45">
+       <p className={`mt-2 ${panelTextClass}`}>
   Configure a marca aplicada nas fotos exibidas na galeria da cliente.
   Você pode enviar uma imagem/logo (preferencialmente PNG) ou criar uma marca d’água por texto.
   A imagem original continua preservada, e a cliente visualiza apenas a versão protegida.
 </p>
 
-<ul className="mt-4 grid gap-2 text-sm text-white/45">
+<ul className="mt-4 grid gap-2 text-sm text-[var(--text-muted)]">
   <li>• Protege as fotos antes da entrega final.</li>
   <li>• Permite usar uma imagem/logo como marca d’água.</li>
   <li>• Permite criar uma marca d’água digitando um texto personalizado.</li>
@@ -205,7 +214,7 @@ function handleGerarTexto() {
 </ul>
       </div>
 
-      <div className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-black/20 p-5 md:flex-row md:items-center">
+      <div className={`${panelClass} flex flex-col gap-5 md:flex-row md:items-center`}>
         <div className="flex h-20 w-32 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--gold-border)] bg-[var(--gold-dim)] font-serif text-xs tracking-[0.16em] text-[var(--gold)]">
           {form.marcaDaguaUrl ? (
             <img
@@ -219,11 +228,11 @@ function handleGerarTexto() {
         </div>
 
         <div className="flex-1">
-          <h3 className="text-sm font-medium text-white">
+          <h3 className={panelTitleClass}>
             Logo/marca d’água das fotos
           </h3>
 
-          <p className="mt-1 text-sm text-white/40">
+          <p className="mt-1 text-sm text-[var(--text-muted)]">
             Imagem aplicada sobre as fotos exibidas na galeria da cliente. Preferencialmente PNG
           </p>
         </div>
@@ -241,7 +250,7 @@ function handleGerarTexto() {
             type="button"
             disabled={uploadLoading}
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-white/70 transition hover:border-[var(--gold-border)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-60"
+            className={outlineActionClass}
           >
             <Upload size={15} />
             {uploadLoading ? 'Enviando...' : 'Alterar marca'}
@@ -252,7 +261,7 @@ function handleGerarTexto() {
               type="button"
               disabled={uploadLoading}
               onClick={() => setConfirmModal('remover')}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-400/25 px-4 py-2 text-sm text-red-200 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Trash2 size={15} />
               Remover
@@ -261,13 +270,13 @@ function handleGerarTexto() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+      <div className={panelClass}>
   <div className="mb-5">
-    <h3 className="text-sm font-medium text-white">
+    <h3 className={panelTitleClass}>
       Criar marca d’água por texto
     </h3>
 
-    <p className="mt-1 text-sm text-white/40">
+    <p className="mt-1 text-sm text-[var(--text-muted)]">
       Digite um texto para o sistema gerar uma proteção repetida sobre toda a foto.
     </p>
 
@@ -280,7 +289,7 @@ function handleGerarTexto() {
 
   <div className="grid gap-4 md:grid-cols-2">
     <div className="md:col-span-2">
-      <label className="mb-2 block text-xs uppercase tracking-[0.14em] text-white/35">
+      <label className={fieldLabelClass}>
         Texto da marca d’água
       </label>
 
@@ -291,12 +300,12 @@ function handleGerarTexto() {
         onChange={handleTextoChange}
         placeholder="Ex: © Fotolhar Fotografia"
         maxLength={200}
-        className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-[var(--gold-border)]"
+        className={fieldControlClass}
       />
     </div>
 
     <div>
-      <label className="mb-2 block text-xs uppercase tracking-[0.14em] text-white/35">
+      <label className={fieldLabelClass}>
         Fonte
       </label>
 
@@ -304,7 +313,7 @@ function handleGerarTexto() {
         name="fonte"
         value={textoForm.fonte}
         onChange={handleTextoChange}
-        className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-[var(--gold-border)]"
+        className={fieldControlClass}
       >
         {fontesTexto.map((fonte) => (
           <option key={fonte.value} value={fonte.value}>
@@ -315,7 +324,7 @@ function handleGerarTexto() {
     </div>
 
     <div>
-      <label className="mb-2 block text-xs uppercase tracking-[0.14em] text-white/35">
+      <label className={fieldLabelClass}>
         Cor
       </label>
 
@@ -323,7 +332,7 @@ function handleGerarTexto() {
         name="cor"
         value={textoForm.cor}
         onChange={handleTextoChange}
-        className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-[var(--gold-border)]"
+        className={fieldControlClass}
       >
         {coresTexto.map((cor) => (
           <option key={cor.value} value={cor.value}>
@@ -334,7 +343,7 @@ function handleGerarTexto() {
     </div>
 
     <div>
-      <label className="mb-2 block text-xs uppercase tracking-[0.14em] text-white/35">
+      <label className={fieldLabelClass}>
         Estilo
       </label>
 
@@ -342,7 +351,7 @@ function handleGerarTexto() {
         name="estilo"
         value={textoForm.estilo}
         onChange={handleTextoChange}
-        className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-[var(--gold-border)]"
+        className={fieldControlClass}
       >
         {estilosTexto.map((estilo) => (
           <option key={estilo.value} value={estilo.value}>
@@ -353,7 +362,7 @@ function handleGerarTexto() {
     </div>
 
     <div className="md:col-span-2">
-      <label className="mb-2 block text-xs uppercase tracking-[0.14em] text-white/35">
+      <label className={fieldLabelClass}>
         Como aplicar o texto
       </label>
 
@@ -378,7 +387,7 @@ function handleGerarTexto() {
               className={`cursor-pointer rounded-xl border p-4 transition ${
                 active
                   ? 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]'
-                  : 'border-white/10 bg-black/10 text-white/55 hover:border-white/20'
+                  : inactiveChoiceClass
               }`}
             >
               <input
@@ -392,7 +401,11 @@ function handleGerarTexto() {
               <span className="block text-sm font-medium">
                 {modo.title}
               </span>
-              <span className="mt-1 block text-xs leading-5 opacity-70">
+              <span
+                className={`mt-1 block text-xs leading-5 ${
+                  active ? 'text-[#B45A42]' : 'text-[#6F6D6B]'
+                }`}
+              >
                 {modo.description}
               </span>
             </label>
@@ -404,9 +417,13 @@ function handleGerarTexto() {
     <div className="flex items-end">
       <button
         type="button"
-        disabled={gerarTextoLoading || !textoForm.texto.trim()}
+        disabled={gerarTextoDisabled}
         onClick={handleGerarTexto}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--gold-border)] bg-[var(--gold-dim)] px-5 py-3 text-sm font-medium text-[var(--gold)] transition hover:bg-[var(--gold)] hover:text-black disabled:cursor-not-allowed disabled:border-[var(--border)] disabled:bg-[var(--card-hover)] disabled:text-[var(--text-muted)] disabled:opacity-70"
+        className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-100 ${
+          gerarTextoDisabled
+            ? 'border-[#D8D2CD] bg-[#F5F3F1] text-[#4F4D4A]'
+            : 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)] hover:bg-[var(--gold)] hover:text-[#FFFFFF]'
+        }`}
       >
         {gerarTextoLoading ? 'Gerando...' : 'Gerar marca por texto'}
       </button>
@@ -414,14 +431,14 @@ function handleGerarTexto() {
   </div>
 </div>
 
-      <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-        <div className="mb-5 flex items-center justify-between gap-4 border-b border-white/10 pb-5">
+      <div className={panelClass}>
+        <div className="mb-5 flex items-center justify-between gap-4 border-b border-[var(--border)] pb-5">
           <div>
-            <h3 className="text-sm font-medium text-white">
+            <h3 className={panelTitleClass}>
               Aplicação da marca d’água
             </h3>
 
-            <p className="mt-1 text-sm text-white/40">
+            <p className="mt-1 text-sm text-[var(--text-muted)]">
               Ative ou desative a proteção nas fotos da galeria.
             </p>
           </div>
@@ -432,7 +449,7 @@ function handleGerarTexto() {
   }`}
 >  <span
     className={`text-sm ${
-      form.marcaDaguaAtiva ? 'text-emerald-300' : 'text-white/50'
+      form.marcaDaguaAtiva ? 'text-emerald-600' : 'text-[var(--text-muted)]'
     }`}
   >
     {form.marcaDaguaAtiva ? 'Ativada' : 'Desativada'}
@@ -451,14 +468,14 @@ function handleGerarTexto() {
     className={`relative h-7 w-12 rounded-full border transition ${
       form.marcaDaguaAtiva
         ? 'border-emerald-400/40 bg-emerald-400/15'
-        : 'border-white/10 bg-white/10'
+        : 'border-[var(--border)] bg-white'
     }`}
   >
     <span
       className={`absolute top-1 h-5 w-5 rounded-full transition ${
         form.marcaDaguaAtiva
           ? 'left-6 bg-emerald-300'
-          : 'left-1 bg-white/50'
+          : 'left-1 bg-[var(--text-muted)]'
       }`}
     />
   </span>
@@ -467,7 +484,7 @@ function handleGerarTexto() {
 
         <div className="grid gap-5 md:grid-cols-2">
           <div>
-            <p className="mb-3 text-xs uppercase tracking-[0.14em] text-white/35">
+            <p className={fieldLabelClass}>
               Posição
             </p>
 
@@ -478,7 +495,7 @@ function handleGerarTexto() {
                   className={`cursor-pointer rounded-xl border px-4 py-3 text-sm transition ${
                     form.marcaDaguaPosicao === posicao.value
                       ? 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]'
-                      : 'border-white/10 bg-black/10 text-white/55 hover:border-white/20'
+                      : inactiveChoiceClass
                   }`}
                 >
                   <input
@@ -499,7 +516,7 @@ function handleGerarTexto() {
           <div className="space-y-5">
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <p className="text-xs uppercase tracking-[0.14em] text-white/35">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
                   Opacidade
                 </p>
 
@@ -520,7 +537,7 @@ function handleGerarTexto() {
             </div>
 
             <div>
-              <p className="mb-3 text-xs uppercase tracking-[0.14em] text-white/35">
+              <p className={fieldLabelClass}>
                 Tamanho
               </p>
 
@@ -533,7 +550,7 @@ function handleGerarTexto() {
                     className={`cursor-pointer rounded-xl border px-3 py-3 text-center text-sm transition ${
                       form.marcaDaguaTamanho === tamanho.value
                         ? 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]'
-                        : 'border-white/10 bg-black/10 text-white/55 hover:border-white/20'
+                        : inactiveChoiceClass
                     }`}
                   >
                     <input
@@ -553,7 +570,7 @@ function handleGerarTexto() {
 
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <p className="text-xs uppercase tracking-[0.14em] text-white/35">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
                   Margem da borda
                 </p>
 
@@ -577,12 +594,12 @@ function handleGerarTexto() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+      <div className={panelClass}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <ImageIcon size={17} className="text-[var(--gold)]" />
 
-            <h3 className="text-sm font-medium text-white">
+            <h3 className={panelTitleClass}>
               Pré-visualização na galeria
             </h3>
           </div>
@@ -599,7 +616,7 @@ function handleGerarTexto() {
                   className={`rounded-lg border px-3 py-1.5 text-xs transition ${
                     active
                       ? 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]'
-                      : 'border-white/10 bg-black/10 text-white/50 hover:border-[var(--gold-border)] hover:text-[var(--gold)]'
+                      : inactiveChoiceClass
                   }`}
                 >
                   {foto.label}
@@ -610,7 +627,7 @@ function handleGerarTexto() {
         </div>
 
         <div
-          className={`overflow-hidden rounded-2xl border border-white/10 ${
+          className={`overflow-hidden rounded-2xl border border-[var(--border)] ${
             previewVertical
               ? 'flex justify-center bg-[#0f0f0f] p-4'
               : 'bg-[#181818]'
@@ -645,7 +662,7 @@ function handleGerarTexto() {
           </div>
         </div>
 
-      <p className="mt-3 text-xs leading-5 text-white/35">
+      <p className="mt-3 text-xs leading-5 text-[var(--text-muted)]">
   {form.marcaDaguaUrl
     ? 'Esta prévia mostra como a marca d’água aparecerá para a cliente. A imagem original permanece preservada.'
     : 'Envie uma imagem de marca d’água para visualizar e aplicar a proteção nas fotos da galeria.'}
@@ -656,7 +673,7 @@ function handleGerarTexto() {
        <button
         type="submit"
         disabled={loading || !temMarcaDagua}          
-        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-5 py-3 text-sm font-semibold text-black transition hover:bg-[var(--gold-light)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--gold-light)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Save size={16} />
           {loading ? 'Salvando...' : 'Salvar'}
@@ -666,7 +683,7 @@ function handleGerarTexto() {
           type="button"
 disabled={reprocessLoading || !temMarcaDagua}
           onClick={() => setConfirmModal('reprocessar')}
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-5 py-3 text-sm font-medium text-white/65 transition hover:border-[var(--gold-border)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-white px-5 py-3 text-sm font-medium text-[var(--text-muted)] transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <RotateCcw size={16} />
           {reprocessLoading ? 'Reprocessando...' : 'Reprocessar fotos já enviadas'}

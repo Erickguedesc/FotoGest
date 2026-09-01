@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import Header from '../components/layout/Header'
+import AppTopControls from '../components/layout/AppTopControls'
 import Toast from '../components/ui/Toast'
 import FormInfoSection from '../components/novoEnsaio/FormInfoSection'
 import FormObsSection from '../components/novoEnsaio/FormObsSection'
@@ -10,6 +11,11 @@ import ResumeSidebar from '../components/novoEnsaio/ResumeSidebar'
 import { ensaiosService } from '../services/ensaiosService'
 import { clientesService } from '../services/clientesService'
 import { configuracoesService } from '../services/configuracoesService'
+import { removerEstadoDoTexto } from '../utils/brasil'
+import {
+  getUltimoEstadoEnsaio,
+  salvarUltimoEstadoEnsaio,
+} from '../utils/ultimoEstadoEnsaio'
 
 const TIPO_ENUM_MAP = {
   Newborn:  'NEWBORN',
@@ -21,6 +27,9 @@ const TIPO_ENUM_MAP = {
   Book:     'BOOK',
   Batizado: 'BATIZADO',
   Externo:  'EXTERNO',
+  Formatura:'FORMATURA',
+  Evento:   'EVENTO',
+  Debutante:'DEBUTANTE',
   Outro:    'OUTRO',
 }
 
@@ -38,6 +47,8 @@ const INITIAL_FORM = {
   data:      '',
   hora:      '',
   local:     '',
+  cidadeEnsaio: '',
+  estadoEnsaio: '',
   obs:       '',
   fotos:     '',
   valor:     '',
@@ -67,10 +78,22 @@ function formatCurrencyInput(value) {
   })
 }
 
+function getCidadePadrao(configuracoes) {
+  return removerEstadoDoTexto(
+    configuracoes?.preferencias?.cidadePadrao ||
+    configuracoes?.estudio?.cidade ||
+    configuracoes?.usuario?.cidade ||
+    '',
+  )
+}
+
 export default function NovoEnsaioPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const [form, setForm]       = useState(INITIAL_FORM)
+  const [form, setForm]       = useState(() => ({
+    ...INITIAL_FORM,
+    estadoEnsaio: getUltimoEstadoEnsaio(),
+  }))
   const [errors, setErrors]   = useState({})
   const [loading, setLoading] = useState(false)
   const [toast, setToast]     = useState(null)
@@ -97,6 +120,8 @@ export default function NovoEnsaioPage() {
       const preferencias = configuracoes?.preferencias
 
       if (!preferencias) return
+      const cidadePadrao = getCidadePadrao(configuracoes)
+      const ultimoEstado = getUltimoEstadoEnsaio()
 
       setForm((prev) => ({
         ...prev,
@@ -108,6 +133,8 @@ export default function NovoEnsaioPage() {
             ? formatCurrencyInput(preferencias.valorFotoExtraPadrao)
             : prev.extra,
         local: prev.local || preferencias.cidadePadrao || '',
+        cidadeEnsaio: prev.cidadeEnsaio || cidadePadrao || '',
+        estadoEnsaio: prev.estadoEnsaio || ultimoEstado || '',
       }))
     } catch (error) {
       console.error('[NovoEnsaio] Erro ao carregar preferências:', error)
@@ -248,6 +275,10 @@ export default function NovoEnsaioPage() {
       e.hora = 'Informe o horário'
     if (!form.local.trim())
       e.local = 'Informe o local'
+    if (!form.cidadeEnsaio.trim())
+      e.cidadeEnsaio = 'Informe a cidade do ensaio'
+    if (!form.estadoEnsaio)
+      e.estadoEnsaio = 'Selecione o estado do ensaio'
     if (!form.valor || parseCurrencyBR(form.valor) <= 0)
       e.valor = 'Informe o valor do pacote'
     if (!form.fotos || parseInt(form.fotos) <= 0)
@@ -300,6 +331,8 @@ export default function NovoEnsaioPage() {
           tipoEnum === 'OUTRO' ? form.tipoCustom.trim() : null,
         dataEnsaio: new Date(`${form.data}T${form.hora}:00`).toISOString(),
         local:           form.local.trim(),
+        cidadeEnsaio:    form.cidadeEnsaio.trim(),
+        estadoEnsaio:    form.estadoEnsaio,
         qtdFotosPacote:  parseInt(form.fotos),
         valorPacote:     parseCurrencyBR(form.valor),
         cobrarFotoExtra: form.extraAtivo,
@@ -309,6 +342,7 @@ export default function NovoEnsaioPage() {
       }
 
       await ensaiosService.criar(ensaioPayload)
+      salvarUltimoEstadoEnsaio(form.estadoEnsaio)
 
       setToast({ message: 'Ensaio cadastrado com sucesso!', type: 'success' })
       setTimeout(() => {
@@ -342,6 +376,9 @@ export default function NovoEnsaioPage() {
       <Header />
 
       <main className="ensaios-management-page relative z-[1] mx-auto max-w-[1320px] px-6 pb-16 pt-[84px] animate-[fadeUp_0.55s_cubic-bezier(0.22,1,0.36,1)_both] max-md:px-4 lg:pt-8">
+        <div className="absolute right-6 top-6 hidden lg:block">
+          <AppTopControls />
+        </div>
 
         <div className="mb-6 flex items-center gap-2">
           <button

@@ -24,13 +24,13 @@ export default function FavoritesView({
   return (
     <section className="mx-auto max-w-[1300px] px-5 py-12 pb-28">
       <div className="mb-8">
-        <p className="mb-3 text-xs uppercase tracking-[0.24em] text-[#a8783a]">
+        <p className="mb-3 text-xs uppercase tracking-[0.24em] text-[#C84F32]">
           Suas escolhas
         </p>
         <h2 className="font-serif text-5xl font-light">
-          Fotos <em className="text-[#a8783a]">favoritas</em>
+          Fotos <em className="text-[#C84F32]">favoritas</em>
         </h2>
-        <p className="mt-3 max-w-xl text-sm leading-7 text-[#5c5248]">
+        <p className="mt-3 max-w-xl text-sm leading-7 text-[#6F6D6B]">
           Estas são as memórias que você escolheu guardar para sempre.
         </p>
       </div>
@@ -38,32 +38,32 @@ export default function FavoritesView({
       <div className="grid gap-10 lg:grid-cols-[1fr_360px] lg:items-start">
         <div>
           {fotosFavoritas.length === 0 ? (
-            <div className="flex min-h-[320px] flex-col items-center justify-center rounded-3xl border border-[#ddd5c5] bg-[#faf8f4] p-10 text-center">
+            <div className="flex min-h-[320px] flex-col items-center justify-center rounded-3xl border border-[#E8E3DF] bg-[#FFFFFF] p-10 text-center">
               <div className="mb-3 text-5xl opacity-30">♡</div>
-              <h3 className="font-serif text-3xl italic text-[#998f83]">
+              <h3 className="font-serif text-3xl italic text-[#96928E]">
                 Nenhuma favorita ainda
               </h3>
-              <p className="mt-3 max-w-sm text-sm leading-7 text-[#998f83]">
+              <p className="mt-3 max-w-sm text-sm leading-7 text-[#96928E]">
                 Volte à galeria e toque no coração das fotos que mais tocaram
                 você.
               </p>
               <button
                 type="button"
                 onClick={onExploreGallery}
-                className="mt-6 rounded-full border border-[#ddd5c5] px-7 py-3 text-xs uppercase tracking-[0.16em] text-[#998f83] transition hover:border-[#a8783a] hover:text-[#a8783a]"
+                className="mt-6 rounded-full border border-[#E8E3DF] px-7 py-3 text-xs uppercase tracking-[0.16em] text-[#96928E] transition hover:border-[#C84F32] hover:text-[#C84F32]"
               >
                 Explorar galeria
               </button>
             </div>
           ) : (
             <>
-              <div className="mb-6 flex items-center justify-between border-b border-[#ddd5c5] pb-4">
+              <div className="mb-6 flex items-center justify-between border-b border-[#E8E3DF] pb-4">
                 <h3 className="text-lg font-medium">
                   {fotosFavoritas.length} foto
                   {fotosFavoritas.length > 1 ? 's' : ''} selecionada
                   {fotosFavoritas.length > 1 ? 's' : ''}
                 </h3>
-                <span className="rounded-full border border-[#a8783a]/20 bg-[#a8783a]/10 px-4 py-1.5 text-[11px] uppercase tracking-[0.12em] text-[#a8783a]">
+                <span className="rounded-full border border-[#C84F32]/20 bg-[#C84F32]/10 px-4 py-1.5 text-[11px] uppercase tracking-[0.12em] text-[#C84F32]">
                   clique no x para remover
                 </span>
               </div>
@@ -72,7 +72,7 @@ export default function FavoritesView({
                 {fotosFavoritas.map((foto, index) => (
                   <article
                     key={foto.id}
-                    className="group relative mb-2 break-inside-avoid overflow-hidden rounded-md border-2 border-[#bf5c68]/45 bg-[#ede6d8]"
+                    className="group relative mb-2 break-inside-avoid overflow-hidden rounded-md border-2 border-[#bf5c68]/45 bg-[#F5F3F1]"
                   >
                     <button
                       type="button"
@@ -100,10 +100,10 @@ export default function FavoritesView({
                       <HeartIcon filled />
                     </div>
 
-                    <div className="border-t border-[#d7cbb9] bg-[#faf8f4] p-3">
+                    <div className="border-t border-[#E8E3DF] bg-[#FFFFFF] p-3">
                       <label
                         htmlFor={`observacao-${foto.id}`}
-                        className="mb-2 block text-[10px] uppercase tracking-[0.16em] text-[#a8783a]"
+                        className="mb-2 block text-[10px] uppercase tracking-[0.16em] text-[#C84F32]"
                       >
                         Observação
                       </label>
@@ -118,10 +118,10 @@ export default function FavoritesView({
                         maxLength={500}
                         rows={3}
                         placeholder="Ex.: gostei da expressão, ajustar cabelo, preferir em PB..."
-                        className="min-h-[84px] w-full resize-none rounded-xl border border-[#ddd5c5] bg-white/70 px-3 py-2 text-sm leading-5 text-[#1a1610] outline-none transition placeholder:text-[#998f83] focus:border-[#a8783a] disabled:cursor-not-allowed disabled:opacity-55"
+                        className="min-h-[84px] w-full resize-none rounded-xl border border-[#E8E3DF] bg-white/70 px-3 py-2 text-sm leading-5 text-[#1F1F21] outline-none transition placeholder:text-[#96928E] focus:border-[#C84F32] disabled:cursor-not-allowed disabled:opacity-55"
                       />
 
-                      <p className="mt-1 text-right text-[10px] text-[#998f83]">
+                      <p className="mt-1 text-right text-[10px] text-[#96928E]">
                         {(observacoesPorFoto[foto.id] || '').length} / 500
                       </p>
                     </div>

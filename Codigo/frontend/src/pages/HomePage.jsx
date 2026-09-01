@@ -190,7 +190,7 @@ export default function HomePage() {
 
           <nav className="hidden items-center gap-[46px] text-[13px] font-medium text-[#4d5a62] lg:flex">
             {navItems.map((item) => (
-              <a key={item.href} href={item.href} className="transition hover:text-[#bf4b25]">
+              <a key={item.href} href={item.href} className="transition hover:text-[#C84F32]">
                 {item.label}
               </a>
             ))}
@@ -205,7 +205,7 @@ export default function HomePage() {
             </a>
             <a
               href="/login"
-              className="inline-flex h-[38px] min-w-[137px] items-center justify-center rounded-[6px] bg-[#bf4b25] px-5 text-[13px] font-semibold text-white shadow-[0_10px_22px_rgba(191,75,37,0.18)] transition hover:bg-[#a83f1f]"
+              className="inline-flex h-[38px] min-w-[137px] items-center justify-center rounded-[6px] bg-[#C84F32] px-5 text-[13px] font-semibold text-white shadow-[0_10px_22px_rgba(200,79,50,0.18)] transition hover:bg-[#AE3F28]"
             >
               Começar agora
             </a>
@@ -225,7 +225,7 @@ export default function HomePage() {
 
         <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 items-center px-5 py-12 sm:px-8 md:min-h-[668px] lg:grid-cols-[455px_minmax(0,1fr)] lg:py-0 xl:px-0">
           <div className="relative z-20 max-w-[540px] pt-3 lg:max-w-none">
-            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#bf4b25]">
+            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#C84F32]">
               Para profissionais que querem mais tempo para criar
             </p>
             <h1 className="mt-7 font-serif text-[44px] font-normal leading-[0.98] tracking-normal text-[#27323a] sm:text-[54px] lg:text-[58px]">
@@ -243,7 +243,7 @@ export default function HomePage() {
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <a
                 href="/login"
-                className="inline-flex h-[57px] min-w-[190px] items-center justify-center rounded-[6px] bg-[#bf4b25] px-7 text-[13px] font-bold text-white shadow-[0_15px_30px_rgba(191,75,37,0.2)] transition hover:-translate-y-px hover:bg-[#a83f1f]"
+                className="inline-flex h-[57px] min-w-[190px] items-center justify-center rounded-[6px] bg-[#C84F32] px-7 text-[13px] font-bold text-white shadow-[0_15px_30px_rgba(200,79,50,0.2)] transition hover:-translate-y-px hover:bg-[#AE3F28]"
               >
                 Começar agora
               </a>
@@ -276,7 +276,7 @@ export default function HomePage() {
       <section id="desafios" className="bg-[#fffdfb]">
         <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 gap-10 px-5 py-[78px] sm:px-8 lg:grid-cols-[330px_minmax(0,1fr)] lg:gap-[92px] xl:px-0">
           <div className="pt-7">
-            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#bf4b25]">
+            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#C84F32]">
               Os desafios do profissional criativo
             </p>
             <h2 className="mt-7 font-serif text-[43px] font-normal leading-[1.07] tracking-normal text-[#27323a]">
@@ -312,7 +312,7 @@ export default function HomePage() {
       <section id="recursos" className="bg-[#fffaf6]">
         <div className="mx-auto w-full max-w-[1320px] px-5 py-[76px] sm:px-8 xl:px-0">
           <div className="text-center">
-            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#bf4b25]">
+            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#C84F32]">
               Recursos completos
             </p>
             <h2 className="mt-3 font-serif text-[42px] font-normal leading-tight tracking-normal text-[#27323a]">
@@ -335,7 +335,7 @@ export default function HomePage() {
                 </p>
                 <a
                   href="#recursos"
-                  className="mt-[21px] inline-flex items-center gap-2 text-[13px] font-bold text-[#d06b49] transition hover:text-[#a83f1f]"
+                  className="mt-[21px] inline-flex items-center gap-2 text-[13px] font-bold text-[#C84F32] transition hover:text-[#AE3F28]"
                 >
                   Saiba mais
                   <span aria-hidden="true">→</span>
@@ -349,7 +349,7 @@ export default function HomePage() {
       <section id="como-funciona" className="bg-[#fffdfb]">
         <div className="mx-auto w-full max-w-[1320px] px-5 py-[72px] sm:px-8 xl:px-0">
           <div className="text-center">
-            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#bf4b25]">
+            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#C84F32]">
               Como funciona
             </p>
             <h2 className="mt-3 font-serif text-[42px] font-normal leading-tight tracking-normal text-[#27323a]">
@@ -378,7 +378,7 @@ export default function HomePage() {
       <section id="gestao-ensaios" className="bg-[#fbf7f2]">
         <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 items-center gap-12 px-5 py-[82px] sm:px-8 lg:grid-cols-[360px_minmax(0,1fr)] lg:gap-[72px] xl:px-0">
           <div>
-            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#bf4b25]">
+            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#C84F32]">
               Gestão de ensaios
             </p>
             <h2 className="mt-5 font-serif text-[42px] font-normal leading-[1.08] tracking-normal text-[#27323a] sm:text-[52px]">
@@ -431,7 +431,7 @@ export default function HomePage() {
       <section id="visual" className="bg-[#fffaf6]">
         <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 items-center gap-10 px-5 py-[78px] sm:px-8 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-[74px] xl:px-0">
           <div>
-            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#bf4b25]">
+            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#C84F32]">
               Galerias que encantam
             </p>
             <h2 className="mt-5 font-serif text-[40px] font-normal leading-[1.08] tracking-normal text-[#27323a]">
@@ -476,7 +476,7 @@ export default function HomePage() {
       <section id="financeiro" className="bg-[#fffdfb]">
         <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 items-center gap-10 px-5 py-[78px] sm:px-8 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-[74px] xl:px-0">
           <div>
-            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#bf4b25]">
+            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#C84F32]">
               Financeiro sob controle
             </p>
             <h2 className="mt-5 font-serif text-[40px] font-normal leading-[1.08] tracking-normal text-[#27323a]">
@@ -509,7 +509,7 @@ export default function HomePage() {
       <section id="beneficios" className="bg-[#fbf7f2]">
         <div className="mx-auto w-full max-w-[1320px] px-5 py-[82px] sm:px-8 xl:px-0">
           <div>
-            <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-[#bf4b25]">
+            <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-[#C84F32]">
               Benefícios
             </p>
             <h2 className="mt-5 max-w-[900px] font-serif text-[48px] font-normal leading-[1.04] tracking-normal text-[#27323a] sm:text-[62px]">
@@ -559,7 +559,7 @@ className="absolute inset-y-0 left-[24%] -z-10 hidden w-[50%] bg-[linear-gradien
           <div className="hidden lg:block" aria-hidden="true" />
 
           <div className="relative z-10 lg:pl-6">
-            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#bf4b25]">
+            <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-[#C84F32]">
               Pronto para organizar seu negócio?
             </p>
             <h2 className="mt-5 font-serif text-[42px] font-normal leading-[1.08] tracking-normal text-[#27323a] sm:text-[50px]">
@@ -575,7 +575,7 @@ className="absolute inset-y-0 left-[24%] -z-10 hidden w-[50%] bg-[linear-gradien
             <div className="mt-9 flex flex-col gap-4 sm:flex-row">
               <a
                 href="/login"
-                className="inline-flex h-[52px] min-w-[245px] items-center justify-center rounded-[6px] bg-[#bf4b25] px-7 text-[13px] font-bold text-white shadow-[0_15px_30px_rgba(191,75,37,0.18)] transition hover:-translate-y-px hover:bg-[#a83f1f]"
+                className="inline-flex h-[52px] min-w-[245px] items-center justify-center rounded-[6px] bg-[#C84F32] px-7 text-[13px] font-bold text-white shadow-[0_15px_30px_rgba(200,79,50,0.18)] transition hover:-translate-y-px hover:bg-[#AE3F28]"
               >
                 Começar agora gratuitamente
               </a>
@@ -583,7 +583,7 @@ className="absolute inset-y-0 left-[24%] -z-10 hidden w-[50%] bg-[linear-gradien
                 href="#como-funciona"
                 className="inline-flex h-[52px] min-w-[180px] items-center justify-center gap-3 rounded-[6px] px-5 text-[13px] font-bold text-[#73341f] transition hover:bg-white/55"
               >
-                <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-[#d8a38f] bg-white/70 text-[#bf4b25]">
+                <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-[#E9A08B] bg-white/70 text-[#C84F32]">
                   <Play size={14} strokeWidth={1.9} />
                 </span>
                 Ver como funciona

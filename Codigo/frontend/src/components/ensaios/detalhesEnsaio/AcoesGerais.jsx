@@ -18,7 +18,7 @@ export default function AcoesGerais({
   const HeaderIcon = variant === 'entrega' ? Send : Workflow
 
   return (
-    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 px-4 py-4 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 px-4 py-4 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
       <div className="mb-4 flex items-center gap-3">
         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--gold-dim)] text-[var(--gold)]">
           <HeaderIcon size={15} strokeWidth={1.8} />

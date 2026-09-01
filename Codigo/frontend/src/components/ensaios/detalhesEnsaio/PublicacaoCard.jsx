@@ -54,7 +54,7 @@ export default function PublicacaoCard({
         : 'Publicar álbum'
 
   return (
-    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 p-4 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 p-4 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
       <div className="mb-4 flex items-center gap-3">
         <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-[var(--gold-dim)] text-[var(--gold)]">
           <Send size={16} strokeWidth={1.8} />
@@ -70,7 +70,7 @@ export default function PublicacaoCard({
           type="button"
           disabled={loading}
           onClick={onPublicar}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-[8px] bg-[#b97804] px-5 py-3 text-[13px] font-semibold text-white shadow-[0_12px_24px_rgba(166,95,0,0.18)] transition hover:bg-[#a65f00] disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-[8px] bg-[#C84F32] px-5 py-3 text-[13px] font-semibold text-white shadow-[0_12px_24px_rgba(200,79,50,0.18)] transition hover:bg-[#AE3F28] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Send size={15} strokeWidth={1.9} />
           {buttonLabel}

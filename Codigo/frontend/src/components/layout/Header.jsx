@@ -245,9 +245,9 @@ function getSidebarQuickTip(dashboard, ensaiosHojeOverride, rotationSlot = 0) {
   if (pendenciasTotal > 0) {
     tips.push({
       title: 'Bloco de revisão',
-      text: `${pendenciasTotal} ${pendenciasTotal === 1 ? 'item pede' : 'itens pedem'} atenção necessária. Use o card do Dashboard para tratar sem perder o contexto.`,
-      to: '/dashboard',
-      cta: 'Abrir painel',
+      text: `${pendenciasTotal} ${pendenciasTotal === 1 ? 'item pede' : 'itens pedem'} atenção necessária. Abra a lista para tratar cada ensaio sem perder o contexto.`,
+      to: '/dashboard?pendencias=1',
+      cta: 'Ver pendências',
     })
   }
 
@@ -415,6 +415,12 @@ export default function Header() {
   }, [])
 
   useEffect(() => {
+    if (!dashboardResumo) return
+
+    ensaiosService.prefetchListar()
+  }, [dashboardResumo])
+
+  useEffect(() => {
     if (!usuario?.fotoPerfilUrl) return
 
     const image = new Image()
@@ -451,7 +457,6 @@ export default function Header() {
       : location.pathname === to
 
   const handleLogout = () => {
-    const currentTheme = localStorage.getItem('fotolhar-theme')
     const usuarioEmail = usuario?.email || localStorage.getItem('usuarioEmail') || ''
     const loginDisplayName = usuario?.nome || localStorage.getItem('usuarioNome')
     const onboardingEntries = getPreservedOnboardingEntries()
@@ -460,7 +465,6 @@ export default function Header() {
     invalidateOnboardingRouteCache()
     localStorage.clear()
 
-    if (currentTheme) localStorage.setItem('fotolhar-theme', currentTheme)
     onboardingEntries.forEach(([key, value]) => localStorage.setItem(key, value))
     if (usuarioEmail && loginDisplayName && !isGenericLoginDisplayName(loginDisplayName)) {
       localStorage.setItem(`${LOGIN_DISPLAY_NAME_KEY}:${usuarioEmail.trim().toLowerCase()}`, loginDisplayName)
@@ -470,6 +474,12 @@ export default function Header() {
     navigate('/login')
   }
 
+  const handleNavIntent = (to) => {
+    if (to === '/ensaios') {
+      ensaiosService.prefetchListar()
+    }
+  }
+
   return (
     <header className="app-sidebar-shell">
       <aside className="theme-static fixed inset-y-0 left-0 z-[100] hidden w-[216px] flex-col border-r border-[#2A2D2F] bg-[#111315] px-4 py-7 text-[#FFFFFF] shadow-[12px_0_36px_rgba(0,0,0,0.28)] lg:flex">
@@ -477,7 +487,7 @@ export default function Header() {
           <FotolharLogo />
         </Link>
 
-        <nav className="mt-7 space-y-2">
+        <nav className="mt-4 space-y-1.5">
           {navLinks.map((link) => {
             const active = isActive(link.to)
             const LinkIcon = link.icon || BarChart3
@@ -487,6 +497,8 @@ export default function Header() {
                 key={link.to}
                 to={link.to}
                 aria-current={active ? 'page' : undefined}
+                onMouseEnter={() => handleNavIntent(link.to)}
+                onFocus={() => handleNavIntent(link.to)}
                 className={`flex h-11 items-center gap-3.5 rounded-[10px] px-3.5 text-[12px] font-medium no-underline transition ${
                   active
                     ? 'bg-[#C84F32] text-[#FFFFFF] shadow-[0_12px_24px_rgba(200,79,50,0.18)] hover:bg-[#AE3F28]'
@@ -560,19 +572,10 @@ export default function Header() {
 
             {menuOpen && (
               <div className="header-popover absolute bottom-[64px] left-0 w-full overflow-hidden rounded-[8px] border border-[#2A2D2F] bg-[#17191B] shadow-[0_18px_44px_rgba(0,0,0,0.36)]">
-                <Link
-                  to="/configuracoes"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3 text-[13px] text-[#D9D9DA] no-underline transition hover:bg-[#221815] hover:text-[#F8EDE8]"
-                >
-                  <Settings size={16} />
-                  Configurações
-                </Link>
-
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="flex w-full items-center gap-3 border-t border-[#2A2D2F] px-3 py-3 text-left text-[13px] text-red-300 transition hover:bg-red-500/10 hover:text-red-200"
+                  className="flex w-full items-center gap-3 px-3 py-3 text-left text-[13px] text-red-300 transition hover:bg-red-500/10 hover:text-red-200"
                 >
                   <LogOut size={16} />
                   Sair
@@ -599,6 +602,8 @@ export default function Header() {
                 to={link.to}
                 title={link.label}
                 aria-current={active ? 'page' : undefined}
+                onMouseEnter={() => handleNavIntent(link.to)}
+                onFocus={() => handleNavIntent(link.to)}
                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] transition ${
                   active
                     ? 'bg-[#C84F32] text-[#FFFFFF]'

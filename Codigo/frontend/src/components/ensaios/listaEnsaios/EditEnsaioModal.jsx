@@ -1,6 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Map, MapPin } from 'lucide-react'
+
 import BaseModal from './BaseModal'
 import { formatDateTimeLocal, TIPO_OPTIONS, toApiDateTime } from './ensaioHelpers'
+import LocationMapModal from '../../ui/LocationMapModal'
+import { ESTADOS_BRASILEIROS } from '../../../utils/brasil'
+import {
+  interpretarTextoLocalizacao,
+  montarConsultaMapa,
+} from '../../../utils/localizacaoEnsaio'
 
 const inputClass = 'theme-input w-full rounded-lg border px-3.5 py-2.5 text-[13px] outline-none transition focus:border-[var(--gold-border)] focus:bg-[var(--gold-dim)]'
 const labelClass = 'theme-muted mb-1.5 block text-[10.5px] uppercase tracking-[0.13em]'
@@ -12,8 +20,16 @@ const STATUS_VALORES_OPTIONS = [
   { value: 'PAGO', label: 'Pago' },
 ]
 
-export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave }) {
+export default function EditEnsaioModal({
+  ensaio,
+  open,
+  loading,
+  onClose,
+  onSave,
+  showClienteFields = true,
+}) {
   const [form, setForm] = useState(null)
+  const [mapOpen, setMapOpen] = useState(false)
 
   useEffect(() => {
     if (!ensaio) return
@@ -29,6 +45,8 @@ export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave
       tipo: ensaio.tipo || 'NEWBORN',
       dataEnsaio: formatDateTimeLocal(ensaio.dataEnsaio),
       local: ensaio.local || '',
+      cidadeEnsaio: ensaio.cidadeEnsaio || '',
+      estadoEnsaio: ensaio.estadoEnsaio || '',
       qtdFotosPacote: ensaio.qtdFotosPacote || 1,
       valorPacote: ensaio.valorPacote || '',
       cobrarFotoExtra: Boolean(ensaio.cobrarFotoExtra),
@@ -40,8 +58,31 @@ export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave
     })
   }, [ensaio])
 
+  useEffect(() => {
+    if (!open) setMapOpen(false)
+  }, [open])
+
   const change = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const mapInitialQuery = useMemo(
+    () => montarConsultaMapa({
+      local: form?.local,
+      cidade: form?.cidadeEnsaio,
+      estado: form?.estadoEnsaio,
+    }),
+    [form?.cidadeEnsaio, form?.estadoEnsaio, form?.local],
+  )
+
+  const handleUseLocationFromMap = (value) => {
+    const parsed = interpretarTextoLocalizacao(value)
+
+    if (parsed.local) change('local', parsed.local)
+    if (parsed.cidade) change('cidadeEnsaio', parsed.cidade)
+    if (parsed.estado) change('estadoEnsaio', parsed.estado)
+
+    setMapOpen(false)
   }
 
   const submit = (event) => {
@@ -62,6 +103,8 @@ export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave
       tipo: form.tipo,
       dataEnsaio: toApiDateTime(form.dataEnsaio),
       local: form.local.trim(),
+      cidadeEnsaio: form.cidadeEnsaio.trim() || null,
+      estadoEnsaio: form.estadoEnsaio || null,
       qtdFotosPacote: Number(form.qtdFotosPacote),
       valorPacote: Number(form.valorPacote),
       cobrarFotoExtra: Boolean(form.cobrarFotoExtra),
@@ -93,7 +136,7 @@ export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave
             type="submit"
             form="edit-ensaio-form"
             disabled={loading}
-            className="rounded-lg bg-[#a65f00] px-5 py-2.5 text-[12px] font-medium tracking-[0.1em] text-white transition hover:bg-[#884e00] disabled:opacity-60"
+            className="rounded-lg bg-[#C84F32] px-5 py-2.5 text-[12px] font-medium tracking-[0.1em] text-white transition hover:bg-[#AE3F28] disabled:opacity-60"
           >
             {loading ? 'Salvando...' : 'Salvar alterações'}
           </button>
@@ -102,75 +145,77 @@ export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave
     >
       {form && (
         <form id="edit-ensaio-form" onSubmit={submit} className="space-y-5">
-          <div className="space-y-4">
-            <p className={sectionTitleClass}>Dados do cliente</p>
+          {showClienteFields && (
+            <div className="space-y-4">
+              <p className={sectionTitleClass}>Dados do cliente</p>
 
-            <label className="block">
-              <span className={labelClass}>Nome do cliente</span>
-              <input
-                required
-                value={form.clienteNome}
-                onChange={(event) => change('clienteNome', event.target.value)}
-                className={inputClass}
-                placeholder="Nome completo"
-              />
-            </label>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <label>
-                <span className={labelClass}>E-mail</span>
+              <label className="block">
+                <span className={labelClass}>Nome do cliente</span>
                 <input
-                  type="email"
-                  value={form.clienteEmail}
-                  onChange={(event) => change('clienteEmail', event.target.value)}
+                  required
+                  value={form.clienteNome}
+                  onChange={(event) => change('clienteNome', event.target.value)}
                   className={inputClass}
-                  placeholder="cliente@email.com"
+                  placeholder="Nome completo"
                 />
               </label>
 
-              <label>
-                <span className={labelClass}>Telefone / WhatsApp</span>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <label>
+                  <span className={labelClass}>E-mail</span>
+                  <input
+                    type="email"
+                    value={form.clienteEmail}
+                    onChange={(event) => change('clienteEmail', event.target.value)}
+                    className={inputClass}
+                    placeholder="cliente@email.com"
+                  />
+                </label>
+
+                <label>
+                  <span className={labelClass}>Telefone / WhatsApp</span>
+                  <input
+                    value={form.clienteTelefone}
+                    onChange={(event) => change('clienteTelefone', event.target.value)}
+                    className={inputClass}
+                    placeholder="(31) 99999-9999"
+                  />
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <label>
+                  <span className={labelClass}>CPF</span>
+                  <input
+                    value={form.clienteCpf}
+                    onChange={(event) => change('clienteCpf', event.target.value)}
+                    className={inputClass}
+                    placeholder="000.000.000-00"
+                  />
+                </label>
+
+                <label>
+                  <span className={labelClass}>Cidade</span>
+                  <input
+                    value={form.clienteCidade}
+                    onChange={(event) => change('clienteCidade', event.target.value)}
+                    className={inputClass}
+                    placeholder="Belo Horizonte, MG"
+                  />
+                </label>
+              </div>
+
+              <label className="block">
+                <span className={labelClass}>Indicação</span>
                 <input
-                  value={form.clienteTelefone}
-                  onChange={(event) => change('clienteTelefone', event.target.value)}
+                  value={form.clienteIndicacao}
+                  onChange={(event) => change('clienteIndicacao', event.target.value)}
                   className={inputClass}
-                  placeholder="(31) 99999-9999"
+                  placeholder="Instagram, indicação, Google..."
                 />
               </label>
             </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <label>
-                <span className={labelClass}>CPF</span>
-                <input
-                  value={form.clienteCpf}
-                  onChange={(event) => change('clienteCpf', event.target.value)}
-                  className={inputClass}
-                  placeholder="000.000.000-00"
-                />
-              </label>
-
-              <label>
-                <span className={labelClass}>Cidade</span>
-                <input
-                  value={form.clienteCidade}
-                  onChange={(event) => change('clienteCidade', event.target.value)}
-                  className={inputClass}
-                  placeholder="Belo Horizonte, MG"
-                />
-              </label>
-            </div>
-
-            <label className="block">
-              <span className={labelClass}>Indicação</span>
-              <input
-                value={form.clienteIndicacao}
-                onChange={(event) => change('clienteIndicacao', event.target.value)}
-                className={inputClass}
-                placeholder="Instagram, indicação, Google..."
-              />
-            </label>
-          </div>
+          )}
 
           <div className="space-y-4">
             <p className={sectionTitleClass}>Dados do ensaio</p>
@@ -205,14 +250,53 @@ export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave
 
             <label className="block">
               <span className={labelClass}>Local</span>
-              <input
-                required
-                value={form.local}
-                onChange={(event) => change('local', event.target.value)}
-                className={inputClass}
-                placeholder="Ex: Studio Fotolhar, BH"
-              />
+              <div className="flex min-h-[42px] overflow-hidden rounded-lg border border-[var(--border)] bg-white transition focus-within:border-[var(--gold-border)] focus-within:bg-[var(--gold-dim)]">
+                <MapPin className="ml-3.5 mt-3 h-4 w-4 flex-shrink-0 text-[var(--text-muted)]" strokeWidth={1.8} />
+                <input
+                  required
+                  value={form.local}
+                  onChange={(event) => change('local', event.target.value)}
+                  className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-[13px] outline-none"
+                  placeholder="Ex: Studio Fotolhar, BH"
+                />
+                <button
+                  type="button"
+                  onClick={() => setMapOpen(true)}
+                  className="flex flex-shrink-0 items-center gap-2 border-l border-[var(--border)] px-3 text-[12px] font-medium text-[#C84F32] transition hover:bg-white hover:text-[#AE3F28] max-sm:px-2.5"
+                >
+                  <Map className="h-4 w-4" strokeWidth={1.8} />
+                  <span className="max-[420px]:hidden">Mapa</span>
+                </button>
+              </div>
             </label>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label>
+                <span className={labelClass}>Cidade do ensaio</span>
+                <input
+                  value={form.cidadeEnsaio}
+                  onChange={(event) => change('cidadeEnsaio', event.target.value)}
+                  className={inputClass}
+                  placeholder="Digite a cidade"
+                />
+              </label>
+
+              <label>
+                <span className={labelClass}>Estado do ensaio</span>
+                <select
+                  value={form.estadoEnsaio}
+                  onChange={(event) => change('estadoEnsaio', event.target.value)}
+                  className={inputClass}
+                >
+                  <option value="">Selecione o estado</option>
+                  {ESTADOS_BRASILEIROS.map((estado) => (
+                    <option key={estado.uf} value={estado.uf}>
+                      {estado.nome}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <label>
@@ -324,6 +408,12 @@ export default function EditEnsaioModal({ ensaio, open, loading, onClose, onSave
           </div>
         </form>
       )}
+      <LocationMapModal
+        initialQuery={mapInitialQuery}
+        onClose={() => setMapOpen(false)}
+        onUseLocation={handleUseLocationFromMap}
+        open={mapOpen}
+      />
     </BaseModal>
   )
 }

@@ -1,19 +1,37 @@
+import { useMemo, useState } from 'react'
+import { Map, MapPin } from 'lucide-react'
+
 import FormInput from '../ui/FormInput'
+import LocationMapModal from '../ui/LocationMapModal'
+import { ESTADOS_BRASILEIROS } from '../../utils/brasil'
+import {
+  interpretarTextoLocalizacao,
+  montarConsultaMapa,
+} from '../../utils/localizacaoEnsaio'
 
 const TIPOS = [
-  'Newborn', 'Gestante', 'Família', 'Infantil',
-  'Feminino', 'Casal', 'Book', 'Batizado', 'Externo', 'Outro',
+  'Feminino', 'Casal', 'Infantil', 'Gestante', 'Batizado', 'Família',
+  'Newborn', 'Book', 'Externo', 'Formatura', 'Evento', 'Debutante',
+  'Outro',
 ]
 
 const inputClass = `
   w-full rounded-[9px] border border-[var(--border)] bg-white/64
   px-3.5 py-[11px] text-[13.5px] font-light
-  text-[var(--text)] outline-none shadow-[0_8px_20px_rgba(92,82,72,0.04)]
+  text-[var(--text)] outline-none shadow-[0_8px_20px_rgba(31,31,33,0.035)]
   transition-all duration-200 placeholder:text-[var(--text-muted)]
   focus:border-[var(--gold-border)] focus:bg-white
 `
 
 const errorInputClass = 'border-[rgba(201,123,123,0.5)] bg-[rgba(201,123,123,0.07)]'
+
+const compoundInputClass = `
+  flex min-h-[45px] w-full items-center overflow-hidden rounded-[9px]
+  border border-[var(--border)] bg-white/64
+  text-[13.5px] font-light text-[var(--text)]
+  shadow-[0_8px_20px_rgba(31,31,33,0.035)] transition-all duration-200
+  focus-within:border-[var(--gold-border)] focus-within:bg-white
+`
 
 function onlyDigits(value) {
   return String(value || '').replace(/\D/g, '')
@@ -71,12 +89,31 @@ export default function FormInfoSection({
   onSectionFocus,
 }) {
   const set = (field, value) => onChange(field, value)
+  const [mapOpen, setMapOpen] = useState(false)
+  const mapInitialQuery = useMemo(
+    () => montarConsultaMapa({
+      local: form.local,
+      cidade: form.cidadeEnsaio,
+      estado: form.estadoEnsaio,
+    }),
+    [form.cidadeEnsaio, form.estadoEnsaio, form.local],
+  )
+
+  const handleUseLocationFromMap = (value) => {
+    const parsed = interpretarTextoLocalizacao(value)
+
+    if (parsed.local) set('local', parsed.local)
+    if (parsed.cidade) set('cidadeEnsaio', parsed.cidade)
+    if (parsed.estado) set('estadoEnsaio', parsed.estado)
+
+    setMapOpen(false)
+  }
 
   return (
     <>
       {/* ── CARD 1: Dados do cliente ───────────────────────────────────────── */}
       <div
-        className="mb-4 overflow-visible rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]"
+        className="mb-4 overflow-visible rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(31,31,33,0.055)]"
         onPointerDownCapture={() => onSectionFocus?.('cliente')}
         onFocusCapture={() => onSectionFocus?.('cliente')}
       >
@@ -84,7 +121,7 @@ export default function FormInfoSection({
         <SectionHeader
           label="Dados do cliente"
           icon={
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A459" strokeWidth="1.8">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C84F32" strokeWidth="1.8">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
@@ -106,7 +143,7 @@ export default function FormInfoSection({
               />
 
               {clientesSugeridos.length > 0 && (
-                <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-white shadow-[0_18px_36px_rgba(78,56,35,0.18)]">
+                <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-white shadow-[0_18px_36px_rgba(31,31,33,0.10)]">
                   {clientesSugeridos.map((cliente) => (
                     <button
                       key={cliente.id}
@@ -210,7 +247,7 @@ export default function FormInfoSection({
 
       {/* ── CARD 2: Informações do ensaio ─────────────────────────────────── */}
       <div
-        className="mb-4 overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]"
+        className="mb-4 overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(31,31,33,0.055)]"
         onPointerDownCapture={() => onSectionFocus?.('ensaio')}
         onFocusCapture={() => onSectionFocus?.('ensaio')}
       >
@@ -218,7 +255,7 @@ export default function FormInfoSection({
         <SectionHeader
           label="Informações do ensaio"
           icon={
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A459" strokeWidth="1.8">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C84F32" strokeWidth="1.8">
               <rect x="3" y="3" width="18" height="18" rx="2" />
               <circle cx="8.5" cy="8.5" r="1.5" />
               <polyline points="21 15 16 10 5 21" />
@@ -235,26 +272,28 @@ export default function FormInfoSection({
               <span className="text-[var(--gold)] ml-0.5">*</span>
             </label>
 
-            <div className="grid grid-cols-5 gap-2 max-xl:grid-cols-4 max-md:grid-cols-2">
-              {TIPOS.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => {
-                    set('tipo', t)
-                    if (t !== 'Outro') set('tipoCustom', '')
-                  }}
-                  className={`
-                    min-h-9 rounded-full px-3.5 py-1.5 text-[12px] tracking-normal
-                    border transition-all duration-200 cursor-pointer font-light
-                    ${form.tipo === t
-                      ? 'bg-[var(--gold-dim)] border-[var(--gold-border)] text-[var(--gold)] shadow-[0_8px_18px_rgba(92,82,72,0.08)]'
-                      : 'border-[var(--border)] bg-white/50 text-[var(--text-muted)] hover:border-[var(--gold-border)] hover:text-[var(--text)]'}
-                  `}
-                >
-                  {t}
-                </button>
-              ))}
+            <div className="max-h-[76px] overflow-y-auto pr-1 [scrollbar-color:rgba(200,79,50,0.35)_transparent] [scrollbar-width:thin] max-sm:max-h-[116px]">
+              <div className="grid grid-cols-6 gap-1.5 max-xl:grid-cols-4 max-md:grid-cols-3 max-sm:grid-cols-2">
+                {TIPOS.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => {
+                      set('tipo', t)
+                      if (t !== 'Outro') set('tipoCustom', '')
+                    }}
+                    className={`
+                      min-h-8 rounded-[9px] border px-2.5 py-1 text-[11.5px]
+                      font-medium tracking-normal transition-all duration-200 cursor-pointer
+                      ${form.tipo === t
+                        ? 'bg-[var(--gold-dim)] border-[var(--gold-border)] text-[#AE3F28] shadow-[0_8px_18px_rgba(31,31,33,0.055)]'
+                        : 'border-[var(--border)] bg-white/50 text-[#4A4642] hover:border-[var(--gold-border)] hover:text-[#2F2C29]'}
+                    `}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {form.tipo === 'Outro' && (
@@ -301,28 +340,73 @@ export default function FormInfoSection({
           )}
 
           {/* Local */}
-          <FormInput label="Local" required error={errors.local}>
-            <div className="relative">
-              <svg
-                width="14" height="14" viewBox="0 0 24 24"
-                fill="none" stroke="currentColor" strokeWidth="1.8"
-                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] opacity-70"
-              >
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
+          <FormInput label="Local do ensaio" required error={errors.local}>
+            <div className={`${compoundInputClass} ${errors.local ? errorInputClass : ''}`}>
+              <MapPin className="ml-3.5 h-4 w-4 flex-shrink-0 text-[var(--text-muted)] opacity-75" strokeWidth={1.8} />
               <input
                 type="text"
-                placeholder="Local do ensaio aqui"
+                placeholder="Digite o local do ensaio"
                 value={form.local}
                 onChange={(e) => set('local', e.target.value)}
-                className={`${inputClass} pl-10 ${errors.local ? errorInputClass : ''}`}
+                className="min-w-0 flex-1 bg-transparent px-3 py-[11px] text-[13.5px] text-[var(--text)] outline-none placeholder:text-[var(--text-muted)]"
               />
+              <button
+                type="button"
+                onClick={() => setMapOpen(true)}
+                className="flex h-full min-h-[45px] flex-shrink-0 items-center gap-2 border-l border-[var(--border)] px-3 text-[12px] font-medium text-[#C84F32] transition hover:bg-[rgba(200,79,50,0.08)] hover:text-[#AE3F28] max-sm:px-2.5"
+              >
+                <Map className="h-4 w-4" strokeWidth={1.8} />
+                <span className="max-[420px]:hidden">Abrir mapa</span>
+              </button>
             </div>
           </FormInput>
 
+          {/* Cidade + Estado */}
+          <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
+            <FormInput label="Cidade" required error={errors.cidadeEnsaio}>
+              <input
+                type="text"
+                placeholder="Digite a cidade"
+                value={form.cidadeEnsaio}
+                onChange={(e) => set('cidadeEnsaio', e.target.value)}
+                className={`${inputClass} ${errors.cidadeEnsaio ? errorInputClass : ''}`}
+              />
+            </FormInput>
+
+            <FormInput label="Estado" required error={errors.estadoEnsaio}>
+              <div className="relative">
+                <select
+                  value={form.estadoEnsaio}
+                  onChange={(e) => set('estadoEnsaio', e.target.value)}
+                  className={`${inputClass} appearance-none pr-9 cursor-pointer ${errors.estadoEnsaio ? errorInputClass : ''}`}
+                >
+                  <option value="">Selecione o estado</option>
+                  {ESTADOS_BRASILEIROS.map((estado) => (
+                    <option key={estado.uf} value={estado.uf}>
+                      {estado.nome}
+                    </option>
+                  ))}
+                </select>
+                <svg
+                  width="11" height="11" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" strokeWidth="2"
+                  className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] opacity-70"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+            </FormInput>
+          </div>
+
         </div>
       </div>
+
+      <LocationMapModal
+        initialQuery={mapInitialQuery}
+        onClose={() => setMapOpen(false)}
+        onUseLocation={handleUseLocationFromMap}
+        open={mapOpen}
+      />
     </>
   )
 }

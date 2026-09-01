@@ -161,9 +161,9 @@ export default function EnsaioHero({
     null
 
   return (
-    <section className="overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_18px_42px_rgba(78,56,35,0.08)]">
+    <section className="overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_18px_42px_rgba(31,31,33,0.06)]">
       <div className="grid min-h-[300px] grid-cols-[280px_minmax(0,1fr)_320px] max-xl:grid-cols-[280px_minmax(0,1fr)] max-lg:grid-cols-1">
-        <div className="relative h-full min-h-[300px] bg-[#f1e8dd] max-lg:min-h-[240px]">
+        <div className="relative h-full min-h-[300px] bg-[#F5F3F1] max-lg:min-h-[240px]">
           {fotoCapa ? (
             <img
               src={fotoCapa}
@@ -227,7 +227,7 @@ export default function EnsaioHero({
   <button
     type="button"
     onClick={onPreContrato}
-    className="inline-flex items-center gap-2 rounded-[9px] border border-[#a65f00] bg-[#a65f00] px-5 py-3 text-[13px] font-semibold text-white shadow-[0_12px_24px_rgba(166,95,0,0.18)] transition hover:bg-[#884e00]"
+    className="inline-flex items-center gap-2 rounded-[9px] border border-[#C84F32] bg-[#C84F32] px-5 py-3 text-[13px] font-semibold text-white shadow-[0_12px_24px_rgba(200,79,50,0.18)] transition hover:bg-[#AE3F28]"
   >
     <FileIcon />
     Pré-contrato
@@ -294,7 +294,7 @@ export default function EnsaioHero({
 
       {notesOpen ? (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/45 p-6 backdrop-blur-sm max-sm:p-4">
-          <div className="w-full max-w-2xl rounded-[14px] border border-[var(--border)] bg-[#faf8f4] shadow-2xl">
+          <div className="w-full max-w-2xl rounded-[14px] border border-[var(--border)] bg-[#FFFFFF] shadow-2xl">
             <div className="flex items-center justify-between gap-4 border-b border-[var(--border)] px-6 py-5">
               <div className="inline-flex items-center gap-2">
                 <NotesIcon />

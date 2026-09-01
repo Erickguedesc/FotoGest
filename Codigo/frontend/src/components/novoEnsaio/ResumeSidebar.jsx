@@ -103,7 +103,7 @@ export default function ResumeSidebar({ form, loading, activeSection = 'cliente'
 
   return (
     <aside className="sticky top-20 flex min-w-0 flex-col gap-4 max-lg:static">
-      <section className="overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+      <section className="overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
         <SidebarHeader
           title="Progresso do formulário"
           icon={
@@ -131,7 +131,7 @@ export default function ResumeSidebar({ form, loading, activeSection = 'cliente'
                         completed
                           ? 'border-emerald-500 bg-emerald-500'
                           : active
-                            ? 'border-[var(--gold)] bg-[var(--gold)] shadow-[0_0_0_4px_rgba(166,95,0,0.14)]'
+                            ? 'border-[var(--gold)] bg-[var(--gold)] shadow-[0_0_0_4px_rgba(200,79,50,0.14)]'
                             : 'border-[var(--border)] bg-white'
                       }`}
                     >
@@ -168,7 +168,7 @@ export default function ResumeSidebar({ form, loading, activeSection = 'cliente'
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+      <section className="overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
         <SidebarHeader
           title="Resumo do ensaio"
           icon={
@@ -217,7 +217,7 @@ export default function ResumeSidebar({ form, loading, activeSection = 'cliente'
         <button
           type="submit"
           disabled={loading}
-          className="flex h-12 items-center justify-center gap-2 rounded-[9px] border border-transparent bg-[linear-gradient(180deg,#c57a08,#a96200)] px-4 text-[13px] font-medium text-white shadow-[0_12px_28px_rgba(137,76,0,0.22)] transition hover:-translate-y-0.5 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-75 disabled:translate-y-0"
+          className="flex h-12 items-center justify-center gap-2 rounded-[9px] border border-transparent bg-[#C84F32] hover:bg-[#AE3F28] px-4 text-[13px] font-medium text-white shadow-[0_12px_28px_rgba(200,79,50,0.18)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-75 disabled:translate-y-0"
         >
           {loading ? (
             <>

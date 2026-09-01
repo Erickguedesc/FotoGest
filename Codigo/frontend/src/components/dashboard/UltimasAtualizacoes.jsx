@@ -95,7 +95,7 @@ function getActivityConfig(ensaio) {
 }
 
 const toneClasses = {
-    gold: 'border-[#c9a96e]/20 bg-[#c9a96e]/12 text-[#b7833a]',
+    gold: 'border-[#C84F32]/20 bg-[#C84F32]/12 text-[#C84F32]',
     rose: 'border-[#bf5c68]/20 bg-[#bf5c68]/10 text-[#bf5c68]',
     emerald: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
     blue: 'border-sky-500/20 bg-sky-500/10 text-sky-500',

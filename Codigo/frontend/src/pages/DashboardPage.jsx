@@ -19,7 +19,6 @@ import {
     PencilLine,
     Plus,
     Sparkles,
-    Sun,
     Users,
     Workflow,
     X,
@@ -27,7 +26,6 @@ import {
 } from 'lucide-react'
 
 import DashboardError from '../components/dashboard/DashboardError'
-import lightPremiumBg from '../assets/light-premium-bg.png'
 import {
     formatarHora,
     formatarMoeda,
@@ -40,12 +38,12 @@ import { dashboardService } from '../services/dashboardService'
 import { ensaiosService } from '../services/ensaiosService'
 
 const PIPELINE_ORDER = [
-    { status: 'AGENDADO', icon: CalendarDays, color: '#818cf8', bg: 'bg-indigo-100', text: 'text-indigo-600' },
-    { status: 'REALIZADO', icon: Camera, color: '#86c36b', bg: 'bg-lime-100', text: 'text-lime-700' },
-    { status: 'EM_SELECAO', icon: ImageIcon, color: '#f5c56c', bg: 'bg-amber-100', text: 'text-amber-700' },
-    { status: 'EM_EDICAO', icon: PencilLine, color: '#7dd3fc', bg: 'bg-sky-100', text: 'text-sky-700' },
-    { status: 'FINALIZADO', icon: CheckCircle2, color: '#38b89f', bg: 'bg-emerald-100', text: 'text-emerald-700' },
-    { status: 'CANCELADO', icon: X, color: '#f5a3a3', bg: 'bg-red-100', text: 'text-red-600' },
+    { status: 'AGENDADO', icon: CalendarDays, color: '#7167E8', bg: 'bg-[rgba(113,103,232,0.12)]', text: 'text-[var(--status-scheduled)]' },
+    { status: 'REALIZADO', icon: Camera, color: '#62A83E', bg: 'bg-[rgba(98,168,62,0.12)]', text: 'text-[var(--status-completed)]' },
+    { status: 'EM_SELECAO', icon: ImageIcon, color: '#F29A2E', bg: 'bg-[rgba(242,154,46,0.13)]', text: 'text-[var(--status-selection)]' },
+    { status: 'EM_EDICAO', icon: PencilLine, color: '#3B82F6', bg: 'bg-[rgba(59,130,246,0.12)]', text: 'text-[var(--status-editing)]' },
+    { status: 'FINALIZADO', icon: CheckCircle2, color: '#20B8A6', bg: 'bg-[rgba(32,184,166,0.12)]', text: 'text-[var(--status-delivered)]' },
+    { status: 'CANCELADO', icon: X, color: '#EF5350', bg: 'bg-[rgba(239,83,80,0.12)]', text: 'text-[var(--status-cancelled)]' },
 ]
 
 const NOTICE_ROTATION_INTERVAL_MS = 10 * 60 * 1000
@@ -244,7 +242,7 @@ function getActivityConfig(ensaio) {
             icon: CheckCircle2,
             title: `Ensaio de ${cliente} atualizado`,
             detail: `${status} · ${tipo}`,
-            tone: 'text-emerald-700 bg-emerald-50 border-emerald-100',
+            tone: 'text-[var(--status-delivered)] bg-[rgba(32,184,166,0.10)] border-[rgba(32,184,166,0.22)]',
         }
     }
 
@@ -253,7 +251,7 @@ function getActivityConfig(ensaio) {
             icon: PencilLine,
             title: `Ensaio de ${cliente} atualizado`,
             detail: `${status} · ${tipo}`,
-            tone: 'text-sky-700 bg-sky-50 border-sky-100',
+            tone: 'text-[var(--status-editing)] bg-[rgba(59,130,246,0.10)] border-[rgba(59,130,246,0.22)]',
         }
     }
 
@@ -262,7 +260,7 @@ function getActivityConfig(ensaio) {
             icon: ImageIcon,
             title: `Ensaio de ${cliente} atualizado`,
             detail: `${status} · ${tipo}`,
-            tone: 'text-amber-700 bg-amber-50 border-amber-100',
+            tone: 'text-[var(--status-selection)] bg-[rgba(242,154,46,0.12)] border-[rgba(242,154,46,0.24)]',
         }
     }
 
@@ -271,7 +269,7 @@ function getActivityConfig(ensaio) {
             icon: Camera,
             title: `Ensaio de ${cliente} atualizado`,
             detail: `${status} · ${tipo}`,
-            tone: 'text-lime-700 bg-lime-50 border-lime-100',
+            tone: 'text-[var(--status-completed)] bg-[rgba(98,168,62,0.10)] border-[rgba(98,168,62,0.22)]',
         }
     }
 
@@ -279,7 +277,7 @@ function getActivityConfig(ensaio) {
         icon: CalendarDays,
         title: `Ensaio de ${cliente} atualizado`,
         detail: `${status} · ${tipo}`,
-        tone: 'text-indigo-700 bg-indigo-50 border-indigo-100',
+        tone: 'text-[var(--status-scheduled)] bg-[rgba(113,103,232,0.10)] border-[rgba(113,103,232,0.22)]',
     }
 }
 
@@ -288,10 +286,12 @@ function getActivityDismissKey(ensaio) {
 }
 
 export default function DashboardPage() {
+    const location = useLocation()
     const [dashboard, setDashboard] = useState(null)
     const [ensaiosHojeOverride, setEnsaiosHojeOverride] = useState(null)
     const [loading, setLoading] = useState(true)
     const [erro, setErro] = useState('')
+    const abrirTodasPendencias = new URLSearchParams(location.search).get('pendencias') === '1'
 
     useEffect(() => {
         let active = true
@@ -344,21 +344,18 @@ export default function DashboardPage() {
     if (erro) return <DashboardError mensagem={erro} />
 
     return (
-        <main
-            className="min-h-screen bg-[#f5f0e8] text-[#1a1610] antialiased"
-            style={{
-                backgroundImage: `linear-gradient(180deg, rgba(255, 252, 247, 0.76), rgba(245, 240, 232, 0.88)), url(${lightPremiumBg})`,
-                backgroundPosition: 'center top',
-                backgroundSize: 'cover',
-            }}
-        >
+        <main className="min-h-screen bg-[#F7F7F8] text-[#1F1F21] antialiased">
             <Header />
 
             <section className="min-w-0 px-4 pb-6 pt-[84px] sm:px-7 lg:px-9 lg:py-6">
                 {loading ? (
                     <DashboardSkeleton />
                 ) : (
-                    <DashboardContent dashboard={dashboard || {}} ensaiosHojeOverride={ensaiosHojeOverride} />
+                    <DashboardContent
+                        dashboard={dashboard || {}}
+                        ensaiosHojeOverride={ensaiosHojeOverride}
+                        abrirTodasPendencias={abrirTodasPendencias}
+                    />
                 )}
             </section>
         </main>
@@ -374,7 +371,7 @@ function DashboardActions() {
 
                 <Link
                     to="/novo-ensaio"
-                    className="flex h-11 items-center gap-3 rounded-[12px] bg-[#b77a2f] px-6 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(183,122,47,0.28)] transition hover:bg-[#9f6828]"
+                    className="flex h-11 items-center gap-3 rounded-[12px] bg-[#C84F32] px-6 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(200,79,50,0.20)] transition hover:bg-[#AE3F28]"
                 >
                     <Plus size={19} />
                     Novo ensaio
@@ -383,7 +380,7 @@ function DashboardActions() {
     )
 }
 
-function DashboardContent({ dashboard, ensaiosHojeOverride }) {
+function DashboardContent({ dashboard, ensaiosHojeOverride, abrirTodasPendencias = false }) {
     const hoje = useMemo(() => new Date(), [])
     const usuarioNome = localStorage.getItem('usuarioNome') || ''
     const primeiroNome = getFirstName(usuarioNome)
@@ -408,7 +405,7 @@ function DashboardContent({ dashboard, ensaiosHojeOverride }) {
         <div className="mx-auto max-w-[1500px]">
             <div className="mb-5 flex items-start justify-between gap-6">
                 <div className="min-w-0">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a66f29]">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#C84F32]">
                         {dataFormatada}
                     </p>
 
@@ -416,7 +413,7 @@ function DashboardContent({ dashboard, ensaiosHojeOverride }) {
                         {primeiroNome ? `Bem-vindo, ${primeiroNome}!` : 'Bem-vindo!'}
                     </h1>
 
-                    <p className="mt-2 text-sm text-[#756a61]">
+                    <p className="mt-2 text-sm text-[#6F6D6B]">
                         Aqui está o resumo do que acontece no seu estúdio hoje.
                     </p>
                 </div>
@@ -439,7 +436,7 @@ function DashboardContent({ dashboard, ensaiosHojeOverride }) {
                     proximosEnsaios={proximosEnsaios}
                     ensaiosHoje={ensaiosHoje}
                 />
-                <AttentionSummaryCard dashboard={dashboard} />
+                <AttentionSummaryCard dashboard={dashboard} abrirTodasPendencias={abrirTodasPendencias} />
             </div>
 
             <DashboardOverviewStrip dashboard={dashboard} />
@@ -460,7 +457,7 @@ function DashboardContent({ dashboard, ensaiosHojeOverride }) {
 
 function Card({ children, className = '' }) {
     return (
-        <section className={`rounded-[14px] border border-[#e6d8c8] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)] ${className}`}>
+        <section className={`rounded-[14px] border border-[#e6d8c8] bg-white/78 shadow-[0_14px_34px_rgba(31,31,33,0.055)] ${className}`}>
             {children}
         </section>
     )
@@ -727,22 +724,22 @@ function DashboardTodayNotice({ dashboard, agenda, hoje, ensaiosHoje }) {
         <Link
             to={notice.to}
             title={notice.text}
-            className="flex min-h-[82px] items-center gap-4 rounded-[14px] border border-[#e0d0bd] bg-white/72 px-5 py-4 shadow-[0_12px_30px_rgba(78,56,35,0.05)] transition hover:border-[#c99a5d] hover:bg-white/82"
+            className="flex min-h-[82px] items-center gap-4 rounded-[14px] border border-[#E8E3DF] bg-white/72 px-5 py-4 shadow-[0_12px_30px_rgba(31,31,33,0.04)] transition hover:border-[#c99a5d] hover:bg-white/82"
         >
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f1e8dd] text-[#b77a2f]">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#F5F3F1] text-[#C84F32]">
                 <NoticeIcon size={21} strokeWidth={1.6} />
             </span>
 
             <span className="min-w-0 flex-1">
-                <strong className="block text-sm font-semibold text-[#9f6828]">
+                <strong className="block text-sm font-semibold text-[#C84F32]">
                     {notice.title}
                 </strong>
-                <span className="mt-1 block text-sm leading-5 text-[#4f453d]">
+                <span className="mt-1 block text-sm leading-5 text-[#6F6D6B]">
                     {notice.text}
                 </span>
             </span>
 
-            <ArrowRight size={20} className="shrink-0 text-[#a8783a]" />
+            <ArrowRight size={20} className="shrink-0 text-[#C84F32]" />
         </Link>
     )
 }
@@ -766,7 +763,7 @@ function ForecastValueCard({ dashboard }) {
     return (
         <Card className="flex min-h-[236px] flex-col justify-between p-4 xl:h-[348px]">
             <div className="flex items-start justify-between gap-4">
-                <h2 className="text-[13px] font-semibold uppercase tracking-[0.015em] text-[#2a231f]">
+                <h2 className="text-[13px] font-semibold uppercase tracking-[0.015em] text-[#1F1F21]">
                     Valor previsto
                 </h2>
 
@@ -776,29 +773,29 @@ function ForecastValueCard({ dashboard }) {
                     title={mostrarValor ? 'Ocultar valor previsto' : 'Mostrar valor previsto'}
                     aria-label={mostrarValor ? 'Ocultar valor previsto' : 'Mostrar valor previsto'}
                     aria-pressed={!mostrarValor}
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#e0d0bd] bg-white/72 text-[#a8783a] transition hover:border-[#b77a2f] hover:bg-[#f7efe5]"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#E8E3DF] bg-white/72 text-[#C84F32] transition hover:border-[#C84F32] hover:bg-[#F8EDE8]"
                 >
                     <ToggleIcon size={18} />
                 </button>
             </div>
 
             <div className="py-1">
-                <span className="mb-4 flex h-[50px] w-[50px] items-center justify-center rounded-[12px] bg-[#f3eadf] text-[#a8783a]">
+                <span className="mb-4 flex h-[50px] w-[50px] items-center justify-center rounded-[12px] bg-[#F8EDE8] text-[#C84F32]">
                     <DollarSign size={24} strokeWidth={1.6} />
                 </span>
 
-                <strong className="block font-serif text-[38px] font-light leading-none text-[#a8783a] sm:text-[42px] xl:text-[38px] 2xl:text-[44px]">
+                <strong className="block font-serif text-[38px] font-light leading-none text-[#C84F32] sm:text-[42px] xl:text-[38px] 2xl:text-[44px]">
                     {mostrarValor ? valorFormatado : 'R$ •••••'}
                 </strong>
 
-                <p className="mt-3 text-sm text-[#4f453d]">
+                <p className="mt-3 text-sm text-[#6F6D6B]">
                     pacotes e fotos extras do mês
                 </p>
             </div>
 
             <Link
                 to="/relatorios"
-                className="flex h-10 w-full items-center justify-center gap-3 rounded-full border border-[#decab5] bg-white/58 px-5 text-sm font-semibold text-[#9f6828] transition hover:border-[#b77a2f] hover:bg-[#f7efe5]"
+                className="flex h-10 w-full items-center justify-center gap-3 rounded-full border border-[#E8E3DF] bg-white/58 px-5 text-sm font-semibold text-[#C84F32] transition hover:border-[#C84F32] hover:bg-[#F8EDE8]"
             >
                 Ver detalhes
                 <ArrowRight size={18} />
@@ -836,18 +833,18 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
         <Card className="flex min-h-[236px] flex-col p-5 xl:h-[348px]">
             <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3.5">
-                    <CalendarDays size={21} className="shrink-0 text-[#a8783a]" />
-                    <h2 className="truncate text-[13px] font-semibold uppercase tracking-[0.015em] text-[#2a231f]">
+                    <CalendarDays size={21} className="shrink-0 text-[#C84F32]" />
+                    <h2 className="truncate text-[13px] font-semibold uppercase tracking-[0.015em] text-[#1F1F21]">
                         Agenda da semana
                     </h2>
                 </div>
 
                 <Link
                     to="/ensaios?view=calendar"
-                    className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-[#2a231f] transition hover:text-[#a8783a]"
+                    className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-[#1F1F21] transition hover:text-[#C84F32]"
                 >
                     Ver agenda
-                    <CalendarDays size={15} className="text-[#a8783a]" />
+                    <CalendarDays size={15} className="text-[#C84F32]" />
                 </Link>
             </div>
 
@@ -863,11 +860,11 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
                             type="button"
                             title={summary}
                             aria-label={summary}
-                            className={`group relative flex min-h-[62px] flex-col items-center justify-center rounded-[11px] border text-center outline-none transition hover:border-[#c8a26d] hover:bg-[#f1e8dd] focus-visible:border-[#c8a26d] focus-visible:bg-[#f1e8dd] focus-visible:ring-2 focus-visible:ring-[#c8a26d]/20 ${
+                            className={`group relative flex min-h-[62px] flex-col items-center justify-center rounded-[11px] border text-center outline-none transition hover:border-[#C84F32] hover:bg-[#F5F3F1] focus-visible:border-[#C84F32] focus-visible:bg-[#F5F3F1] focus-visible:ring-2 focus-visible:ring-[#C84F32]/20 ${
                                 active ? 'border-[#e1d3c3] bg-[#f5eee6] shadow-sm' : 'border-transparent'
                             }`}
                         >
-                            <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-max max-w-[220px] -translate-x-1/2 rounded-lg border border-[#c8a26d] bg-white px-3 py-2 text-center text-[11px] font-medium leading-4 text-[#1a1610] opacity-0 shadow-xl shadow-black/10 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                            <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-max max-w-[220px] -translate-x-1/2 rounded-lg border border-[#C84F32] bg-white px-3 py-2 text-center text-[11px] font-medium leading-4 text-[#1F1F21] opacity-0 shadow-xl shadow-black/10 transition group-hover:opacity-100 group-focus-visible:opacity-100">
                                 {summary}
                             </span>
 
@@ -877,7 +874,7 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
                             <span className="mt-0.5 text-[23px] font-normal leading-none text-[#080706]">
                                 {String(day.getDate()).padStart(2, '0')}
                             </span>
-                            <span className={`mt-2 h-1.5 w-1.5 rounded-full ${ensaiosDia.length ? 'bg-[#a8783a]' : 'bg-transparent'}`} />
+                            <span className={`mt-2 h-1.5 w-1.5 rounded-full ${ensaiosDia.length ? 'bg-[#C84F32]' : 'bg-transparent'}`} />
                         </button>
                     )
                 })}
@@ -885,12 +882,12 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
 
             <div className="mt-3 border-t border-[#d8cbbf] pt-4">
                 <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#2a231f]">
+                    <h3 className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#1F1F21]">
                         Próximo ensaio
                     </h3>
 
                     <div className="flex shrink-0 items-center gap-2">
-                        <span className="text-[12px] font-semibold uppercase text-[#4f453d]">
+                        <span className="text-[12px] font-semibold uppercase text-[#6F6D6B]">
                             {items.length ? currentIndex + 1 : 0} DE {items.length}
                         </span>
                         <button
@@ -899,7 +896,7 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
                             disabled={!canNavigate}
                             title="Ensaio anterior"
                             aria-label="Ensaio anterior"
-                            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e0d0bd] bg-white/65 text-[#a8783a] transition enabled:hover:border-[#b77a2f] enabled:hover:bg-[#f7efe5] disabled:opacity-40"
+                            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E8E3DF] bg-white/65 text-[#C84F32] transition enabled:hover:border-[#C84F32] enabled:hover:bg-[#F8EDE8] disabled:opacity-40"
                         >
                             ‹
                         </button>
@@ -909,7 +906,7 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
                             disabled={!canNavigate}
                             title="Próximo ensaio"
                             aria-label="Próximo ensaio"
-                            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e0d0bd] bg-white/65 text-[#a8783a] transition enabled:hover:border-[#b77a2f] enabled:hover:bg-[#f7efe5] disabled:opacity-40"
+                            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E8E3DF] bg-white/65 text-[#C84F32] transition enabled:hover:border-[#C84F32] enabled:hover:bg-[#F8EDE8] disabled:opacity-40"
                         >
                             ›
                         </button>
@@ -917,37 +914,37 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
                 </div>
 
                 {ensaio ? (
-                    <article className="mt-3 grid min-h-[100px] grid-cols-[90px_minmax(0,1fr)_34px] overflow-hidden rounded-[12px] border border-[#eadfd4] bg-white/54">
-                        <div className="flex flex-col items-center justify-center border-r border-[#eadfd4] bg-[#f4eee7] px-3 text-center">
-                            <span className="text-[11px] font-bold uppercase text-[#a8783a]">
+                    <article className="mt-3 grid min-h-[100px] grid-cols-[90px_minmax(0,1fr)_34px] overflow-hidden rounded-[12px] border border-[#EEEAE7] bg-white/54">
+                        <div className="flex flex-col items-center justify-center border-r border-[#EEEAE7] bg-[#F8EDE8] px-3 text-center">
+                            <span className="text-[11px] font-bold uppercase text-[#C84F32]">
                                 {data ? data.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '') : '--'}
                             </span>
-                            <span className="mt-1 text-[24px] font-semibold leading-none text-[#a8783a]">
+                            <span className="mt-1 text-[24px] font-semibold leading-none text-[#C84F32]">
                                 {data ? String(data.getDate()).padStart(2, '0') : '--'}
                             </span>
-                            <span className="mt-1 text-[10px] font-semibold uppercase text-[#a8783a]">
+                            <span className="mt-1 text-[10px] font-semibold uppercase text-[#C84F32]">
                                 {data ? data.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '') : ''}
                             </span>
                         </div>
 
                         <div className="min-w-0 px-4 py-4">
-                            <h4 className="truncate text-[17px] font-medium text-[#1f1a15]">
+                            <h4 className="truncate text-[17px] font-medium text-[#1F1F21]">
                                 {getTipoLabel(ensaio)}
                             </h4>
 
-                            <div className="mt-3 flex min-w-0 items-center gap-2.5 overflow-hidden text-sm text-[#4f453d]">
-                                <span className="font-semibold text-[#9f6828]">{getDaysUntilLabel(ensaio.dataEnsaio)}</span>
+                            <div className="mt-3 flex min-w-0 items-center gap-2.5 overflow-hidden text-sm text-[#6F6D6B]">
+                                <span className="font-semibold text-[#C84F32]">{getDaysUntilLabel(ensaio.dataEnsaio)}</span>
                                 <span className="shrink-0 text-[#c7b6a4]">|</span>
                                 <span className="inline-flex shrink-0 items-center gap-1.5">
-                                    <Clock3 size={15} className="text-[#a8783a]" />
+                                    <Clock3 size={15} className="text-[#C84F32]" />
                                     {data ? formatarHora(data) : '--:--'}
                                 </span>
                                 <span className="inline-flex min-w-0 shrink items-center gap-1.5">
-                                    <Users size={15} className="shrink-0 text-[#a8783a]" />
+                                    <Users size={15} className="shrink-0 text-[#C84F32]" />
                                     <span className="truncate">{getFirstName(ensaio.clienteNome) || 'Cliente'}</span>
                                 </span>
                                 <span className="inline-flex min-w-0 shrink items-center gap-1.5">
-                                    <MapPin size={15} className="shrink-0 text-[#a8783a]" />
+                                    <MapPin size={15} className="shrink-0 text-[#C84F32]" />
                                     <span className="truncate">{ensaio.local || 'Local não informado'}</span>
                                 </span>
                             </div>
@@ -957,27 +954,29 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
                             to={`/ensaios/${ensaio.id}`}
                             title="Abrir ensaio"
                             aria-label="Abrir ensaio"
-                            className="flex items-center justify-center text-[#a8783a] transition hover:bg-[#f7efe5]"
+                            className="flex items-center justify-center text-[#C84F32] transition hover:bg-[#F8EDE8]"
                         >
                             <ArrowRight size={22} />
                         </Link>
                     </article>
                 ) : (
-                    <div className="mt-3 flex min-h-[100px] items-center justify-center rounded-[12px] border border-dashed border-[#e1d3c3] bg-white/45 px-4 text-center text-sm text-[#756a61]">
+                    <div className="mt-3 flex min-h-[100px] items-center justify-center rounded-[12px] border border-dashed border-[#e1d3c3] bg-white/45 px-4 text-center text-sm text-[#6F6D6B]">
                         Nenhum ensaio próximo agendado.
                     </div>
                 )}
             </div>
 
-            <div className="mt-auto flex items-center gap-2 pt-3 text-sm text-[#4f453d]">
-                <CalendarDays size={17} className="shrink-0 text-[#a8783a]" />
+            <div className="mt-auto flex items-center gap-2 pt-3 text-sm text-[#6F6D6B]">
+                <CalendarDays size={17} className="shrink-0 text-[#C84F32]" />
                 <span className="truncate">{getResumoHoje(ensaiosHoje, hoje)}</span>
             </div>
         </Card>
     )
 }
 
-function AttentionSummaryCard({ dashboard }) {
+function AttentionSummaryCard({ dashboard, abrirTodasPendencias = false }) {
+    const location = useLocation()
+    const navigate = useNavigate()
     const itens = dashboard?.atencaoNecessaria || []
     const [modalTypes, setModalTypes] = useState(null)
     const countByType = (types) => itens.filter((item) => types.includes(item?.tipo)).length
@@ -1031,22 +1030,45 @@ function AttentionSummaryCard({ dashboard }) {
         ? itens.filter((item) => modalTypes.includes(item?.tipo))
         : itens
 
+    useEffect(() => {
+        if (abrirTodasPendencias) {
+            setModalTypes([])
+        }
+    }, [abrirTodasPendencias])
+
+    function handleCloseModal() {
+        setModalTypes(null)
+
+        const searchParams = new URLSearchParams(location.search)
+        if (searchParams.get('pendencias') !== '1') return
+
+        searchParams.delete('pendencias')
+        const nextSearch = searchParams.toString()
+        navigate(
+            {
+                pathname: location.pathname,
+                search: nextSearch ? `?${nextSearch}` : '',
+            },
+            { replace: true }
+        )
+    }
+
     return (
         <>
             <Card className="flex min-h-[236px] flex-col p-4 xl:h-[348px]">
                 <div className="flex items-center gap-3.5">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#e0d0bd] bg-[#f6efe7] text-[#a8783a]">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#E8E3DF] bg-[#F8EDE8] text-[#C84F32]">
                         <Bell size={18} />
                     </span>
 
-                    <h2 className="text-[13px] font-semibold uppercase tracking-[0.015em] text-[#2a231f]">
+                    <h2 className="text-[13px] font-semibold uppercase tracking-[0.015em] text-[#1F1F21]">
                         Atenção necessária
                     </h2>
                 </div>
 
                 {activeRows.length ? (
                     <div className="mt-3 flex min-h-0 flex-1 flex-col">
-                        <div className="min-h-0 flex-1 divide-y divide-[#eadfd4] overflow-y-auto overscroll-contain border-y border-[#eadfd4] pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                        <div className="min-h-0 flex-1 divide-y divide-[#EEEAE7] overflow-y-auto overscroll-contain border-y border-[#EEEAE7] pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                             {activeRows.map((row) => (
                                 <AttentionSummaryRow
                                     key={row.label}
@@ -1059,7 +1081,7 @@ function AttentionSummaryCard({ dashboard }) {
                         <button
                             type="button"
                             onClick={() => setModalTypes([])}
-                            className="mt-3 flex h-10 shrink-0 items-center justify-center gap-3 rounded-full border border-[#decab5] bg-white/58 px-5 text-sm font-semibold text-[#9f6828] transition hover:border-[#b77a2f] hover:bg-[#f7efe5]"
+                            className="mt-3 flex h-10 shrink-0 items-center justify-center gap-3 rounded-full border border-[#E8E3DF] bg-white/58 px-5 text-sm font-semibold text-[#C84F32] transition hover:border-[#C84F32] hover:bg-[#F8EDE8]"
                         >
                             Ver todas as pendências
                             <ArrowRight size={18} />
@@ -1071,11 +1093,11 @@ function AttentionSummaryCard({ dashboard }) {
                             <CheckCircle2 size={20} />
                         </span>
 
-                        <strong className="mt-4 text-sm font-medium text-[#1f1a15]">
+                        <strong className="mt-4 text-sm font-medium text-[#1F1F21]">
                             Nenhuma pendência encontrada
                         </strong>
 
-                        <span className="mt-1 text-sm text-[#756a61]">
+                        <span className="mt-1 text-sm text-[#6F6D6B]">
                             Todos os ensaios estão em dia.
                         </span>
                     </div>
@@ -1085,7 +1107,7 @@ function AttentionSummaryCard({ dashboard }) {
             {modalTypes !== null && (
                 <AttentionDetailsModal
                     itens={modalItems}
-                    onClose={() => setModalTypes(null)}
+                    onClose={handleCloseModal}
                 />
             )}
         </>
@@ -1103,15 +1125,15 @@ function AttentionSummaryRow({ icon: Icon, label, value, tone, onOpen }) {
                 <Icon size={16} strokeWidth={1.8} />
             </span>
 
-            <span className="min-w-0 flex-1 truncate text-sm text-[#1a1610]">
+            <span className="min-w-0 flex-1 truncate text-sm text-[#1F1F21]">
                 {label}
             </span>
 
-            <strong className="text-base font-medium text-[#1f1a15]">
+            <strong className="text-base font-medium text-[#1F1F21]">
                 {value}
             </strong>
 
-            <ArrowRight size={18} className="shrink-0 text-[#a8783a]" />
+            <ArrowRight size={18} className="shrink-0 text-[#C84F32]" />
         </button>
     )
 }
@@ -1127,14 +1149,14 @@ function AttentionDetailsModal({ itens, onClose }) {
     }, [])
 
     return (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center overflow-hidden bg-[#1a1610]/35 px-4 py-6 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center overflow-hidden bg-[#1F1F21]/35 px-4 py-6 backdrop-blur-sm">
             <section className="flex max-h-[min(760px,calc(100vh-48px))] w-full max-w-[560px] flex-col overflow-hidden rounded-[16px] border border-[#e6d8c8] bg-[#fffaf4] shadow-[0_24px_70px_rgba(45,32,20,0.24)]">
-                <div className="flex shrink-0 items-start justify-between gap-4 border-b border-[#eadfd4] px-5 py-4">
+                <div className="flex shrink-0 items-start justify-between gap-4 border-b border-[#EEEAE7] px-5 py-4">
                     <div>
-                        <h2 className="text-[13px] font-semibold uppercase tracking-[0.05em] text-[#2a231f]">
+                        <h2 className="text-[13px] font-semibold uppercase tracking-[0.05em] text-[#1F1F21]">
                             Pendências
                         </h2>
-                        <p className="mt-1 text-sm text-[#756a61]">
+                        <p className="mt-1 text-sm text-[#6F6D6B]">
                             {itens.length} {itens.length === 1 ? 'item precisa' : 'itens precisam'} de atenção.
                         </p>
                     </div>
@@ -1144,14 +1166,14 @@ function AttentionDetailsModal({ itens, onClose }) {
                         onClick={onClose}
                         title="Fechar pendências"
                         aria-label="Fechar pendências"
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#e0d0bd] bg-white/70 text-[#4f453d] transition hover:border-[#b77a2f] hover:text-[#a8783a]"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#E8E3DF] bg-white/70 text-[#6F6D6B] transition hover:border-[#C84F32] hover:text-[#C84F32]"
                     >
                         <X size={17} />
                     </button>
                 </div>
 
                 <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
-                    <div className="divide-y divide-[#eadfd4]">
+                    <div className="divide-y divide-[#EEEAE7]">
                         {itens.map((item, index) => (
                             <AttentionDetailItem key={`${item.tipo}-${item.ensaioId || index}-${index}`} item={item} />
                         ))}
@@ -1178,16 +1200,16 @@ function AttentionDetailItem({ item }) {
             </span>
 
             <span className="min-w-0 flex-1">
-                <strong className="block truncate text-sm font-medium text-[#1f1a15]">
+                <strong className="block truncate text-sm font-medium text-[#1F1F21]">
                     {config.label}
                 </strong>
-                <span className="mt-1 block truncate text-sm text-[#756a61]">
+                <span className="mt-1 block truncate text-sm text-[#6F6D6B]">
                     {item?.clienteNome || 'Cliente'} · {item?.descricao || item?.titulo || 'Abrir ensaio'}
                     {data ? ` · ${data.toLocaleDateString('pt-BR')}` : ''}
                 </span>
             </span>
 
-            <ArrowRight size={18} className="shrink-0 text-[#a8783a]" />
+            <ArrowRight size={18} className="shrink-0 text-[#C84F32]" />
         </Link>
     )
 }
@@ -1316,18 +1338,18 @@ function OverviewMetric({
     const content = (
         <div className="min-w-0">
             <div className="flex items-start gap-5">
-                <span className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-[#f1e8dd] text-[#a8783a]">
+                <span className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-[#F5F3F1] text-[#C84F32]">
                     <Icon size={26} strokeWidth={1.7} />
                 </span>
 
                 <div className="min-w-0">
-                <h2 className="text-[13px] font-semibold uppercase leading-4 tracking-[0.015em] text-[#2a231f]">
+                <h2 className="text-[13px] font-semibold uppercase leading-4 tracking-[0.015em] text-[#1F1F21]">
                         {title}
                     </h2>
                     <strong className="mt-2 block text-[36px] font-normal leading-none text-[#080706]">
                         {value}
                     </strong>
-                    <p className="mt-2 text-sm leading-5 text-[#1f1a15]">
+                    <p className="mt-2 text-sm leading-5 text-[#1F1F21]">
                         {description}
                     </p>
                 </div>
@@ -1340,20 +1362,20 @@ function OverviewMetric({
                 />
             </div>
 
-            <div className="mt-5 flex items-center justify-between gap-4 text-sm text-[#1f1a15]">
+            <div className="mt-5 flex items-center justify-between gap-4 text-sm text-[#1F1F21]">
                 <span className="inline-flex min-w-0 items-center gap-2">
                     {progress > 0 ? (
                         <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
                             <CheckCircle2 size={12} />
                         </span>
                     ) : (
-                        <span className="h-4 w-4 shrink-0 rounded-full border border-[#e0d0bd]" />
+                        <span className="h-4 w-4 shrink-0 rounded-full border border-[#E8E3DF]" />
                     )}
                     <span className="truncate">{footer}</span>
                 </span>
 
                 {meta ? (
-                    <span className="shrink-0 text-right text-[#1f1a15] group-hover:text-[#a66f29]">
+                    <span className="shrink-0 text-right text-[#1F1F21] group-hover:text-[#C84F32]">
                         {meta}
                     </span>
                 ) : null}
@@ -1391,7 +1413,7 @@ function InProgressCard({ ensaios, total }) {
     return (
         <Card className="p-5">
             <div className="flex items-center justify-between gap-4">
-                <h2 className="text-[17px] font-semibold uppercase tracking-[0.015em] text-[#2a231f]">
+                <h2 className="text-[17px] font-semibold uppercase tracking-[0.015em] text-[#1F1F21]">
                     Ensaios em andamento
                 </h2>
 
@@ -1403,8 +1425,8 @@ function InProgressCard({ ensaios, total }) {
                         aria-label="Ver ensaios em cards"
                         className={`flex h-9 w-9 items-center justify-center rounded-[7px] border transition ${
                             viewMode === 'grid'
-                                ? 'border-[#e0d0bd] bg-white text-[#b77a2f] shadow-sm'
-                                : 'border-[#e0d0bd] bg-white/50 text-[#a8783a] hover:bg-white/80'
+                                ? 'border-[#E8E3DF] bg-white text-[#C84F32] shadow-sm'
+                                : 'border-[#E8E3DF] bg-white/50 text-[#C84F32] hover:bg-white/80'
                         }`}
                     >
                         <Grid2X2 size={17} />
@@ -1416,8 +1438,8 @@ function InProgressCard({ ensaios, total }) {
                         aria-label="Ver ensaios em lista"
                         className={`flex h-9 w-9 items-center justify-center rounded-[7px] border transition ${
                             viewMode === 'list'
-                                ? 'border-[#e0d0bd] bg-white text-[#b77a2f] shadow-sm'
-                                : 'border-[#e0d0bd] bg-white/50 text-[#a8783a] hover:bg-white/80'
+                                ? 'border-[#E8E3DF] bg-white text-[#C84F32] shadow-sm'
+                                : 'border-[#E8E3DF] bg-white/50 text-[#C84F32] hover:bg-white/80'
                         }`}
                     >
                         <List size={17} />
@@ -1434,7 +1456,7 @@ function InProgressCard({ ensaios, total }) {
                             ))}
                         </div>
                     ) : (
-                        <div className="divide-y divide-[#eadfd4] overflow-hidden rounded-[12px] border border-[#eadfd4] bg-white/45">
+                        <div className="divide-y divide-[#EEEAE7] overflow-hidden rounded-[12px] border border-[#EEEAE7] bg-white/45">
                             {visibleItems.map((ensaio) => (
                                 <ActiveEssayListItem key={ensaio.id} ensaio={ensaio} />
                             ))}
@@ -1444,10 +1466,10 @@ function InProgressCard({ ensaios, total }) {
                     {hiddenItems > 0 && (
                         <Link
                             to="/ensaios?grupo=ativos"
-                            className="mt-5 flex h-12 items-center justify-center gap-3 rounded-[10px] border border-[#eadfd4] bg-white/48 text-sm font-medium text-[#a66f29] transition hover:border-[#b77a2f] hover:bg-[#f7efe5]"
+                            className="mt-5 flex h-12 items-center justify-center gap-3 rounded-[10px] border border-[#EEEAE7] bg-white/48 text-sm font-medium text-[#C84F32] transition hover:border-[#C84F32] hover:bg-[#F8EDE8]"
                         >
                             Ver mais
-                            <span className="text-xs text-[#756a61]">
+                            <span className="text-xs text-[#6F6D6B]">
                                 +{hiddenItems}
                             </span>
                             <ArrowRight size={18} />
@@ -1456,13 +1478,13 @@ function InProgressCard({ ensaios, total }) {
                 </div>
             ) : (
                 <div className="mt-4 flex min-h-[220px] flex-col items-center justify-center rounded-[12px] border border-dashed border-[#e5d8ca] bg-white/42 text-center">
-                    <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#f1e8dd] text-[#b77a2f]">
+                    <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F5F3F1] text-[#C84F32]">
                         <Camera size={27} strokeWidth={1.6} />
                     </span>
-                    <h3 className="mt-5 text-lg font-medium text-[#1f1a15]">
+                    <h3 className="mt-5 text-lg font-medium text-[#1F1F21]">
                         Nenhum ensaio em andamento.
                     </h3>
-                    <p className="mt-1 text-sm text-[#756a61]">
+                    <p className="mt-1 text-sm text-[#6F6D6B]">
                         Os ensaios ativos aparecerão aqui.
                     </p>
                 </div>
@@ -1481,7 +1503,7 @@ function ActiveEssayCard({ ensaio }) {
     return (
         <Link
             to={`/ensaios/${ensaio.id}`}
-            className="group overflow-hidden rounded-[8px] border border-[#eadfd4] bg-white/62 transition hover:border-[#c99a5d] hover:shadow-[0_12px_28px_rgba(78,56,35,0.08)]"
+            className="group overflow-hidden rounded-[8px] border border-[#EEEAE7] bg-white/62 transition hover:border-[#c99a5d] hover:shadow-[0_12px_28px_rgba(31,31,33,0.06)]"
         >
             <div className="relative h-[108px] overflow-hidden bg-[#efe4d8]">
                 {hasImage ? (
@@ -1491,7 +1513,7 @@ function ActiveEssayCard({ ensaio }) {
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                     />
                 ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[#b77a2f]">
+                    <div className="flex h-full w-full items-center justify-center text-[#C84F32]">
                         <Camera size={28} strokeWidth={1.5} />
                     </div>
                 )}
@@ -1503,32 +1525,32 @@ function ActiveEssayCard({ ensaio }) {
             </div>
 
             <div className="p-2.5">
-                <h3 className="truncate text-sm font-medium text-[#1f1a15]">
+                <h3 className="truncate text-sm font-medium text-[#1F1F21]">
                     {ensaio.clienteNome || 'Cliente sem nome'}
                 </h3>
 
-                <p className="mt-1 truncate text-xs text-[#756a61]">
+                <p className="mt-1 truncate text-xs text-[#6F6D6B]">
                     {getTipoLabel(ensaio)}
                 </p>
 
                 <div className="mt-2 grid gap-1.5 text-[11px] text-[#62564c]">
                     <span className="flex items-center gap-2">
-                        <CalendarDays size={13} className="text-[#a8783a]" />
+                        <CalendarDays size={13} className="text-[#C84F32]" />
                         {getDate(ensaio.dataEnsaio)?.toLocaleDateString('pt-BR') || 'Sem data'}
                     </span>
 
                     <span className="flex min-w-0 items-center gap-2">
-                        <MapPin size={13} className="shrink-0 text-[#a8783a]" />
+                        <MapPin size={13} className="shrink-0 text-[#C84F32]" />
                         <span className="truncate">{ensaio.local || 'Local não informado'}</span>
                     </span>
                 </div>
 
                 <div className="mt-2">
                     <div className="mb-1.5 flex items-end justify-between gap-3 text-[11px]">
-                        <span className="font-medium text-[#756a61]">
+                        <span className="font-medium text-[#6F6D6B]">
                             Progresso
                         </span>
-                        <span className="font-serif text-[17px] font-light leading-none text-[#a8783a]">
+                        <span className="font-serif text-[17px] font-light leading-none text-[#C84F32]">
                             {progress}%
                         </span>
                     </div>
@@ -1537,7 +1559,7 @@ function ActiveEssayCard({ ensaio }) {
                         <span className="block h-full rounded-full" style={{ width: `${progress}%`, backgroundColor: statusConfig.color }} />
                     </div>
 
-                    <p className="mt-1.5 min-h-[16px] truncate text-[11px] leading-4 text-[#756a61]">
+                    <p className="mt-1.5 min-h-[16px] truncate text-[11px] leading-4 text-[#6F6D6B]">
                         {progressText}
                     </p>
                 </div>
@@ -1558,7 +1580,7 @@ function ActiveEssayListItem({ ensaio }) {
             className="grid min-h-[86px] grid-cols-[minmax(0,1.45fr)_minmax(150px,0.8fr)_minmax(150px,0.8fr)_112px_28px] items-center gap-4 px-4 py-3 transition hover:bg-[#fbf5ed] max-lg:grid-cols-[minmax(0,1fr)_28px]"
         >
             <span className="flex min-w-0 items-center gap-3">
-                <span className="flex h-14 w-14 shrink-0 overflow-hidden rounded-[8px] bg-[#efe4d8] text-[#b77a2f]">
+                <span className="flex h-14 w-14 shrink-0 overflow-hidden rounded-[8px] bg-[#efe4d8] text-[#C84F32]">
                     {hasImage ? (
                         <img
                             src={ensaio.capaUrl}
@@ -1573,22 +1595,22 @@ function ActiveEssayListItem({ ensaio }) {
                 </span>
 
                 <span className="min-w-0">
-                    <strong className="block truncate text-sm font-medium text-[#1f1a15]">
+                    <strong className="block truncate text-sm font-medium text-[#1F1F21]">
                         {ensaio.clienteNome || 'Cliente sem nome'}
                     </strong>
-                    <span className="mt-1 block truncate text-xs text-[#756a61]">
+                    <span className="mt-1 block truncate text-xs text-[#6F6D6B]">
                         {getTipoLabel(ensaio)}
                     </span>
                 </span>
             </span>
 
             <span className="flex min-w-0 items-center gap-2 text-xs text-[#62564c] max-lg:hidden">
-                <CalendarDays size={14} className="shrink-0 text-[#a8783a]" />
+                <CalendarDays size={14} className="shrink-0 text-[#C84F32]" />
                 <span className="truncate">{getDate(ensaio.dataEnsaio)?.toLocaleDateString('pt-BR') || 'Sem data'}</span>
             </span>
 
             <span className="flex min-w-0 items-center gap-2 text-xs text-[#62564c] max-lg:hidden">
-                <MapPin size={14} className="shrink-0 text-[#a8783a]" />
+                <MapPin size={14} className="shrink-0 text-[#C84F32]" />
                 <span className="truncate">{ensaio.local || 'Local não informado'}</span>
             </span>
 
@@ -1597,16 +1619,16 @@ function ActiveEssayListItem({ ensaio }) {
                     <StatusIcon size={12} />
                     {formatarStatusEnsaio(ensaio.status)}
                 </span>
-                <span className="mb-1.5 flex items-center justify-between gap-3 text-[11px] text-[#756a61]">
+                <span className="mb-1.5 flex items-center justify-between gap-3 text-[11px] text-[#6F6D6B]">
                     <span>Progresso</span>
-                    <span className="font-serif text-base font-light text-[#a8783a]">{progress}%</span>
+                    <span className="font-serif text-base font-light text-[#C84F32]">{progress}%</span>
                 </span>
                 <span className="block h-1.5 overflow-hidden rounded-full bg-[#e8ded2]">
                     <span className="block h-full rounded-full" style={{ width: `${progress}%`, backgroundColor: statusConfig.color }} />
                 </span>
             </span>
 
-            <ArrowRight size={18} className="justify-self-end text-[#a8783a]" />
+            <ArrowRight size={18} className="justify-self-end text-[#C84F32]" />
         </Link>
     )
 }
@@ -1652,12 +1674,12 @@ function PipelineCard({ pipeline }) {
     return (
         <Card className="p-6">
             <div className="flex items-center justify-between gap-4">
-                <h2 className="text-[17px] font-semibold uppercase tracking-[0.015em] text-[#2a231f]">
+                <h2 className="text-[17px] font-semibold uppercase tracking-[0.015em] text-[#1F1F21]">
                     Pipeline dos ensaios
                 </h2>
 
                 <div className="flex items-center gap-2">
-                    <Link to="/ensaios?grupo=todos" className="text-sm font-medium text-[#a66f29] transition hover:text-[#7d5527]">
+                    <Link to="/ensaios?grupo=todos" className="text-sm font-medium text-[#C84F32] transition hover:text-[#AE3F28]">
                         Ver todos
                     </Link>
                     <div className="flex items-center gap-1">
@@ -1668,8 +1690,8 @@ function PipelineCard({ pipeline }) {
                             aria-label="Ver pipeline"
                             className={`flex h-9 w-9 items-center justify-center rounded-[9px] transition ${
                                 viewMode === 'pipeline'
-                                    ? 'text-[#b77a2f]'
-                                    : 'text-[#a8783a] hover:text-[#7d5527]'
+                                    ? 'text-[#C84F32]'
+                                    : 'text-[#C84F32] hover:text-[#AE3F28]'
                             }`}
                         >
                             <Workflow size={17} />
@@ -1681,8 +1703,8 @@ function PipelineCard({ pipeline }) {
                             aria-label="Ver lista"
                             className={`flex h-9 w-9 items-center justify-center rounded-[9px] transition ${
                                 viewMode === 'list'
-                                    ? 'text-[#b77a2f]'
-                                    : 'text-[#a8783a] hover:text-[#7d5527]'
+                                    ? 'text-[#C84F32]'
+                                    : 'text-[#C84F32] hover:text-[#AE3F28]'
                             }`}
                         >
                             <List size={17} />
@@ -1712,7 +1734,7 @@ function PipelineCard({ pipeline }) {
                                             />
                                         )}
 
-                                        <span className="mt-4 max-w-[78px] text-[12px] font-medium leading-4 text-[#1f1a15]">
+                                        <span className="mt-4 max-w-[78px] text-[12px] font-medium leading-4 text-[#1F1F21]">
                                             {formatarStatusEnsaio(entry.status)}
                                         </span>
                                         <strong className="mt-3 text-[24px] font-semibold leading-none text-[#080706]">{entry.value}</strong>
@@ -1738,7 +1760,7 @@ function PipelineCard({ pipeline }) {
                     </div>
                 </div>
             ) : (
-                <div className="mt-5 divide-y divide-[#eadfd4] overflow-hidden rounded-[12px] border border-[#eadfd4] bg-white/45">
+                <div className="mt-5 divide-y divide-[#EEEAE7] overflow-hidden rounded-[12px] border border-[#EEEAE7] bg-white/45">
                     {entries.map((entry) => {
                         const Icon = entry.icon
                         const percent = total > 0 ? Math.round((entry.value / total) * 100) : 0
@@ -1754,10 +1776,10 @@ function PipelineCard({ pipeline }) {
                                 </span>
                                 <span className="min-w-0">
                                     <span className="flex items-center justify-between gap-3">
-                                        <span className="truncate text-sm text-[#1f1a15]">
+                                        <span className="truncate text-sm text-[#1F1F21]">
                                             {formatarStatusEnsaio(entry.status)}
                                         </span>
-                                        <span className="shrink-0 text-[11px] text-[#756a61]">
+                                        <span className="shrink-0 text-[11px] text-[#6F6D6B]">
                                             {percent}%
                                         </span>
                                     </span>
@@ -1768,7 +1790,7 @@ function PipelineCard({ pipeline }) {
                                         />
                                     </span>
                                 </span>
-                                <strong className="justify-self-end text-sm font-medium text-[#1f1a15]">
+                                <strong className="justify-self-end text-sm font-medium text-[#1F1F21]">
                                     {entry.value}
                                 </strong>
                             </Link>
@@ -1824,7 +1846,7 @@ function ActivityCard({ ensaios }) {
     return (
         <Card className="p-6">
             <div className="flex items-center justify-between gap-4">
-                <h2 className="text-[17px] font-semibold uppercase tracking-[0.015em] text-[#2a231f]">
+                <h2 className="text-[17px] font-semibold uppercase tracking-[0.015em] text-[#1F1F21]">
                     Atividades Recentes 
                 </h2>
 
@@ -1832,7 +1854,7 @@ function ActivityCard({ ensaios }) {
                     <button
                         type="button"
                         onClick={clearVisibleActivities}
-                        className="rounded-md px-1.5 py-1 text-xs font-medium text-[#a66f29] transition hover:bg-[#f7efe5] hover:text-[#7d5527]"
+                        className="rounded-md px-1.5 py-1 text-xs font-medium text-[#C84F32] transition hover:bg-[#F8EDE8] hover:text-[#AE3F28]"
                     >
                         Limpar
                     </button>
@@ -1840,7 +1862,7 @@ function ActivityCard({ ensaios }) {
             </div>
 
             <div className="mt-5 max-h-[392px] overflow-y-auto pr-2">
-                <div className="divide-y divide-[#eadfd4]">
+                <div className="divide-y divide-[#EEEAE7]">
                 {visibleItems.length ? visibleItems.map((ensaio) => {
                     const activity = getActivityConfig(ensaio)
                     const Icon = activity.icon
@@ -1855,10 +1877,10 @@ function ActivityCard({ ensaios }) {
                                     <Icon size={20} />
                                 </span>
                                 <span className="min-w-0 flex-1">
-                                    <strong className="block truncate text-sm font-medium text-[#1f1a15]">{activity.title}</strong>
-                                    <span className="mt-1 block truncate text-xs text-[#756a61]">{activity.detail}</span>
+                                    <strong className="block truncate text-sm font-medium text-[#1F1F21]">{activity.title}</strong>
+                                    <span className="mt-1 block truncate text-xs text-[#6F6D6B]">{activity.detail}</span>
                                 </span>
-                                <span className="shrink-0 text-xs text-[#756a61]">
+                                <span className="shrink-0 text-xs text-[#6F6D6B]">
                                     {formatarTempoRelativo(ensaio.atualizadoEm || ensaio.dataEnsaio)}
                                 </span>
                             </Link>
@@ -1868,14 +1890,14 @@ function ActivityCard({ ensaios }) {
                                 onClick={() => dismissActivity(ensaio)}
                                 title="Ocultar atividade"
                                 aria-label="Ocultar atividade"
-                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#a89a8d] transition hover:bg-[#f7efe5] hover:text-[#a66f29]"
+                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#96928E] transition hover:bg-[#F8EDE8] hover:text-[#C84F32]"
                             >
                                 <X size={14} />
                             </button>
                         </div>
                     )
                 }) : (
-                    <div className="py-10 text-center text-sm text-[#756a61]">
+                    <div className="py-10 text-center text-sm text-[#6F6D6B]">
                         Nenhuma atividade recente.
                     </div>
                 )}
@@ -1888,9 +1910,9 @@ function ActivityCard({ ensaios }) {
 function DashboardSkeleton() {
     return (
         <div className="mx-auto max-w-[1480px] animate-pulse">
-            <div className="h-3 w-64 rounded-full bg-[#eadfd4]" />
-            <div className="mt-5 h-14 w-96 max-w-full rounded-full bg-[#eadfd4]" />
-            <div className="mt-4 h-5 w-80 max-w-full rounded-full bg-[#eadfd4]" />
+            <div className="h-3 w-64 rounded-full bg-[#EEEAE7]" />
+            <div className="mt-5 h-14 w-96 max-w-full rounded-full bg-[#EEEAE7]" />
+            <div className="mt-4 h-5 w-80 max-w-full rounded-full bg-[#EEEAE7]" />
             <div className="mt-8 grid gap-6 xl:grid-cols-2">
                 <div className="h-64 rounded-[14px] bg-white/78" />
                 <div className="h-64 rounded-[14px] bg-white/78" />

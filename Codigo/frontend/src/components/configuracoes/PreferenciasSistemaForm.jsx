@@ -1,4 +1,4 @@
-import { Save, Upload } from 'lucide-react'
+import { Save, Trash2, Upload } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { FormField, TextareaField } from './FormField'
 import InfoBox from './InfoBox'
@@ -13,7 +13,14 @@ const emptyForm = {
   capaAlbumPadraoUrl: '',
 }
 
-export default function PreferenciasSistemaForm({ data, loading, uploadCapaLoading, onSubmit,onUploadCapaAlbum, }) {
+export default function PreferenciasSistemaForm({
+  data,
+  loading,
+  uploadCapaLoading,
+  onSubmit,
+  onUploadCapaAlbum,
+  onRemoverCapaAlbum,
+}) {
   const [form, setForm] = useState(emptyForm)
   const fileInputRef = useRef(null)
 
@@ -66,55 +73,73 @@ export default function PreferenciasSistemaForm({ data, loading, uploadCapaLoadi
         <FormField label="Valor padrão por foto extra" name="valorFotoExtraPadrao" value={form.valorFotoExtraPadrao} onChange={handleChange} />
         <FormField label="Expiração padrão do álbum em dias" name="prazoExpiracaoAlbumDias" value={form.prazoExpiracaoAlbumDias} onChange={handleChange} />
         <FormField label="Cidade padrão" name="cidadePadrao" value={form.cidadePadrao} onChange={handleChange} />
-<div className="md:col-span-2 rounded-2xl border border-white/10 bg-black/20 p-5">
-  <div className="flex flex-col gap-5 md:flex-row md:items-center">
-    <div className="h-28 w-44 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]">
-      {form.capaAlbumPadraoUrl ? (
-        <img
-          src={form.capaAlbumPadraoUrl}
-          alt="Capa padrão do álbum"
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center text-xs uppercase tracking-[0.14em] text-white/30">
-          Sem capa
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card-hover)] p-5 md:col-span-2">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center">
+            <div className="h-28 w-44 overflow-hidden rounded-xl border border-[var(--border)] bg-white/70">
+              {form.capaAlbumPadraoUrl ? (
+                <img
+                  src={form.capaAlbumPadraoUrl}
+                  alt="Capa padrão do álbum"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-xs uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                  Sem capa
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-[var(--text)]">
+                Capa padrão do álbum
+              </h3>
+
+              <p className="mt-1 text-sm leading-relaxed text-[var(--text-muted)]">
+                Essa imagem será usada na capa dos albuns enquanto não tiver fotos oficiais do ensaio. Será vista na tela Dashboard.
+              </p>
+
+              <p className="mt-2 break-all text-xs text-[var(--text-muted)]">
+                {form.capaAlbumPadraoUrl || 'Nenhuma imagem enviada'}
+              </p>
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleSelectCapa}
+              className="hidden"
+            />
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={uploadCapaLoading}
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--text)] transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Upload size={15} />
+                {uploadCapaLoading
+                  ? 'Enviando...'
+                  : form.capaAlbumPadraoUrl
+                    ? 'Editar capa'
+                    : 'Enviar capa'}
+              </button>
+
+              {form.capaAlbumPadraoUrl && (
+                <button
+                  type="button"
+                  disabled={uploadCapaLoading}
+                  onClick={onRemoverCapaAlbum}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Trash2 size={15} />
+                  Remover
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-      )}
-    </div>
-
-    <div className="flex-1">
-      <h3 className="text-sm font-medium text-white">
-        Capa padrão do álbum
-      </h3>
-
-      <p className="mt-1 text-sm leading-relaxed text-white/40">
-        Essa imagem será usada na capa dos albuns enquanto não tiver fotos oficiais do ensaio. Será vista na tela Dashboard.
-      </p>
-
-      <p className="mt-2 break-all text-xs text-white/30">
-        {form.capaAlbumPadraoUrl || 'Nenhuma imagem enviada'}
-      </p>
-    </div>
-
-    <input
-      ref={fileInputRef}
-      type="file"
-      accept="image/jpeg,image/png,image/webp"
-      onChange={handleSelectCapa}
-      className="hidden"
-    />
-
-    <button
-      type="button"
-      disabled={uploadCapaLoading}
-      onClick={() => fileInputRef.current?.click()}
-      className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-white/70 transition hover:border-[var(--gold-border)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      <Upload size={15} />
-      {uploadCapaLoading ? 'Enviando...' : 'Enviar capa'}
-    </button>
-  </div>
-</div>
       </div>
 
       <TextareaField
@@ -131,10 +156,10 @@ export default function PreferenciasSistemaForm({ data, loading, uploadCapaLoadi
         onChange={handleChange}
       />
 
-      <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-        <h3 className="text-sm font-medium text-white">Importante</h3>
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card-hover)] p-5">
+        <h3 className="text-sm font-medium text-[var(--text)]">Importante</h3>
 
-        <p className="mt-2 text-sm leading-relaxed text-white/40">
+        <p className="mt-2 text-sm leading-relaxed text-[var(--text-muted)]">
           Esses valores são apenas padrões automáticos. Na criação de cada
           ensaio, você ainda pode alterar valor do pacote, quantidade de
           fotos e cobrança por excedentes.
@@ -144,7 +169,7 @@ export default function PreferenciasSistemaForm({ data, loading, uploadCapaLoadi
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-5 py-3 text-sm font-semibold text-black transition hover:bg-[var(--gold-light)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--gold-light)] disabled:cursor-not-allowed disabled:opacity-60"
       >
         <Save size={16} />
         {loading ? 'Salvando...' : 'Salvar preferências'}

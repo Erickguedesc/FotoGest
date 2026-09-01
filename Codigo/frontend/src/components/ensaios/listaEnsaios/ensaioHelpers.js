@@ -1,10 +1,10 @@
 export const STATUS_OPTIONS = [
-  { value: 'AGENDADO', label: 'Agendado', chipClass: 'bg-indigo-50 text-indigo-700 border-indigo-200', progress: 0, progressColor: '#635bff' },
-  { value: 'REALIZADO', label: 'Realizado', chipClass: 'bg-lime-50 text-lime-700 border-lime-200', progress: 25, progressColor: '#4d7c0f' },
-  { value: 'EM_SELECAO', label: 'Em seleção', chipClass: 'bg-amber-50 text-amber-700 border-amber-200', progress: 50, progressColor: '#f59e0b' },
-  { value: 'EM_EDICAO', label: 'Em edição', chipClass: 'bg-sky-50 text-sky-700 border-sky-200', progress: 75, progressColor: '#3b82f6' },
-  { value: 'FINALIZADO', label: 'Entregue', chipClass: 'bg-emerald-50 text-emerald-700 border-emerald-200', progress: 100, progressColor: '#14b8a6' },
-  { value: 'CANCELADO', label: 'Cancelado', chipClass: 'bg-red-50 text-red-700 border-red-200', progress: 0, progressColor: '#ef4444' },
+  { value: 'AGENDADO', label: 'Agendado', chipClass: 'bg-[rgba(113,103,232,0.10)] text-[var(--status-scheduled)] border-[rgba(113,103,232,0.26)]', progress: 0, progressColor: '#7167E8' },
+  { value: 'REALIZADO', label: 'Realizado', chipClass: 'bg-[rgba(98,168,62,0.10)] text-[var(--status-completed)] border-[rgba(98,168,62,0.26)]', progress: 25, progressColor: '#62A83E' },
+  { value: 'EM_SELECAO', label: 'Em seleção', chipClass: 'bg-[rgba(242,154,46,0.12)] text-[var(--status-selection)] border-[rgba(242,154,46,0.28)]', progress: 50, progressColor: '#F29A2E' },
+  { value: 'EM_EDICAO', label: 'Em edição', chipClass: 'bg-[rgba(59,130,246,0.10)] text-[var(--status-editing)] border-[rgba(59,130,246,0.26)]', progress: 75, progressColor: '#3B82F6' },
+  { value: 'FINALIZADO', label: 'Entregue', chipClass: 'bg-[rgba(32,184,166,0.10)] text-[var(--status-delivered)] border-[rgba(32,184,166,0.26)]', progress: 100, progressColor: '#20B8A6' },
+  { value: 'CANCELADO', label: 'Cancelado', chipClass: 'bg-[rgba(239,83,80,0.10)] text-[var(--status-cancelled)] border-[rgba(239,83,80,0.28)]', progress: 0, progressColor: '#EF5350' },
 ]
 
 export const STATUS_ATIVOS = ['AGENDADO', 'REALIZADO', 'EM_SELECAO', 'EM_EDICAO']

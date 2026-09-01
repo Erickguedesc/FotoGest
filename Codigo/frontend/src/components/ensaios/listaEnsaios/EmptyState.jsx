@@ -35,7 +35,7 @@ export default function EmptyState({ onCreate, filters }) {
   const copy = getEmptyCopy(filters)
 
   return (
-    <div className="rounded-[8px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] px-6 py-14 text-center shadow-[0_14px_34px_rgba(92,82,72,0.08)]">
+    <div className="rounded-[8px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] px-6 py-14 text-center shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
       <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)]">
         <Icon name="search" size={22} />
       </div>
@@ -51,7 +51,7 @@ export default function EmptyState({ onCreate, filters }) {
       <button
         type="button"
         onClick={onCreate}
-        className="mt-5 inline-flex items-center gap-2 rounded-[8px] bg-[linear-gradient(180deg,#c57a08,#a96200)] px-5 py-2.5 text-[13px] font-medium text-white transition hover:brightness-110"
+        className="mt-5 inline-flex items-center gap-2 rounded-[8px] bg-[#C84F32] hover:bg-[#AE3F28] px-5 py-2.5 text-[13px] font-medium text-white transition"
       >
         <Icon name="plus" size={14} />
         Novo Ensaio

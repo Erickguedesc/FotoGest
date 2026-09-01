@@ -149,4 +149,14 @@ public ResponseEntity<PreferenciasConfigDTO> uploadCapaAlbumPadrao(
     return ResponseEntity.ok(configuracoesService.uploadCapaAlbumPadrao(arquivo));
 }
 
+@DeleteMapping("/preferencias/capa-album")
+public ResponseEntity<PreferenciasConfigDTO> removerCapaAlbumPadrao() {
+    return ResponseEntity.ok(configuracoesService.removerCapaAlbumPadrao());
+}
+
+@PatchMapping("/preferencias/capa-album/remover")
+public ResponseEntity<PreferenciasConfigDTO> removerCapaAlbumPadraoPorPatch() {
+    return ResponseEntity.ok(configuracoesService.removerCapaAlbumPadrao());
+}
+
 }

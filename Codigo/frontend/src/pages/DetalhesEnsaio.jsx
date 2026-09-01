@@ -6,10 +6,12 @@
   import Toast from '../components/ui/Toast'
 
   import { ensaiosService } from '../services/ensaiosService'
+  import { clientesService } from '../services/clientesService'
   import { fotosService } from '../services/fotosService'
   import { albumService } from '../services/albumService'
 
   import EditEnsaioModal from '../components/ensaios/listaEnsaios/EditEnsaioModal'
+  import BaseModal from '../components/ensaios/listaEnsaios/BaseModal'
   import ConfirmDeleteModal from '../components/ensaios/listaEnsaios/ConfirmDeleteModal'
   import ConfirmActionModal from '../components/ui/ConfirmActionModal'
   import EnsaioHero from '../components/ensaios/detalhesEnsaio/EnsaioHero'
@@ -100,6 +102,42 @@
     return '—'
   }
 
+  const getClienteId = (ensaio) =>
+    ensaio?.clienteId ?? ensaio?.cliente?.id ?? ensaio?.cliente?.clienteId ?? null
+
+  const getClienteFormData = (ensaio) => ({
+    nome: getValorCliente(ensaio, ['clienteNome', 'nome']) === '—'
+      ? ''
+      : getValorCliente(ensaio, ['clienteNome', 'nome']),
+    telefone: getValorCliente(ensaio, [
+      'clienteTelefone',
+      'telefoneCliente',
+      'telefone',
+      'clienteWhatsapp',
+      'whatsapp',
+    ]) === '—'
+      ? ''
+      : getValorCliente(ensaio, [
+        'clienteTelefone',
+        'telefoneCliente',
+        'telefone',
+        'clienteWhatsapp',
+        'whatsapp',
+      ]),
+    email: getValorCliente(ensaio, ['clienteEmail', 'emailCliente', 'email']) === '—'
+      ? ''
+      : getValorCliente(ensaio, ['clienteEmail', 'emailCliente', 'email']),
+    cpf: getValorCliente(ensaio, ['clienteCpf', 'cpf']) === '—'
+      ? ''
+      : getValorCliente(ensaio, ['clienteCpf', 'cpf']),
+    cidade: getValorCliente(ensaio, ['clienteCidade', 'cidade']) === '—'
+      ? ''
+      : getValorCliente(ensaio, ['clienteCidade', 'cidade']),
+    indicacao: getValorCliente(ensaio, ['clienteIndicacao', 'indicacao']) === '—'
+      ? ''
+      : getValorCliente(ensaio, ['clienteIndicacao', 'indicacao']),
+  })
+
   const getApiErrorMessage = (error, fallback) => {
     const data = error?.response?.data
 
@@ -133,6 +171,8 @@
 
     const [editModalOpen, setEditModalOpen] = useState(false)
     const [editLoading, setEditLoading] = useState(false)
+    const [clienteModalOpen, setClienteModalOpen] = useState(false)
+    const [clienteEditLoading, setClienteEditLoading] = useState(false)
 
     const [deleteModalOpen, setDeleteModalOpen] = useState(false)
     const [deleteLoading, setDeleteLoading] = useState(false)
@@ -346,6 +386,53 @@
         showToast(msg, 'error')
       } finally {
         setEditLoading(false)
+      }
+    }
+
+    const handleOpenClienteEdit = () => {
+      if (!getClienteId(ensaio)) {
+        showToast('Não foi possível identificar o cliente deste ensaio.', 'error')
+        return
+      }
+
+      setClienteModalOpen(true)
+    }
+
+    const handleClienteEdit = async (payload) => {
+      const clienteId = getClienteId(ensaio)
+
+      if (!clienteId) {
+        showToast('Não foi possível identificar o cliente deste ensaio.', 'error')
+        return
+      }
+
+      setClienteEditLoading(true)
+
+      try {
+        const response = await clientesService.atualizar(clienteId, payload)
+        const clienteAtualizado = response.data || payload
+
+        setEnsaio((current) => current ? ({
+          ...current,
+          cliente: {
+            ...(current.cliente || {}),
+            ...clienteAtualizado,
+          },
+          clienteNome: clienteAtualizado.nome ?? payload.nome,
+          clienteTelefone: clienteAtualizado.telefone ?? payload.telefone,
+          clienteEmail: clienteAtualizado.email ?? payload.email,
+          clienteCpf: clienteAtualizado.cpf ?? payload.cpf,
+          clienteCidade: clienteAtualizado.cidade ?? payload.cidade,
+          clienteIndicacao: clienteAtualizado.indicacao ?? payload.indicacao,
+        }) : current)
+
+        showToast('Cliente atualizado com sucesso.')
+        setClienteModalOpen(false)
+        await loadEnsaio()
+      } catch (error) {
+        showToast(getApiErrorMessage(error, 'Não foi possível salvar os dados do cliente.'), 'error')
+      } finally {
+        setClienteEditLoading(false)
       }
     }
 
@@ -975,7 +1062,7 @@ const texto =
           <Header />
 
           <main className="ensaios-management-page mx-auto max-w-[1280px] px-8 pt-[110px] max-md:px-4">
-            <div className="rounded-[14px] border border-[var(--border)] bg-white/78 p-8 text-[var(--text-muted)] shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+            <div className="rounded-[14px] border border-[var(--border)] bg-white/78 p-8 text-[var(--text-muted)] shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
               Carregando detalhes do ensaio...
             </div>
           </main>
@@ -989,7 +1076,7 @@ const texto =
           <Header />
 
           <main className="ensaios-management-page mx-auto max-w-[1280px] px-8 pt-[110px] max-md:px-4">
-            <div className="rounded-[14px] border border-[var(--border)] bg-white/78 p-8 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+            <div className="rounded-[14px] border border-[var(--border)] bg-white/78 p-8 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
               <h1 className="font-serif text-2xl text-[var(--text)]">
                 Ensaio não encontrado
               </h1>
@@ -1040,53 +1127,51 @@ const texto =
             onBack={() => navigate('/ensaios')}
           />
 
-          <section className="mt-7 rounded-[14px] border border-[var(--border)] bg-white/78 p-5 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
-            <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-1">
-              {tabs.map((tab) => {
-                const active = activeTab === tab.id
-                const Icon = tab.icon
-                const tone = tab.id === 'informacoes'
-                  ? 'border-[#ead6bd] bg-[#f7eee4] text-[#a65f00]'
-                  : tab.id === 'album'
-                    ? 'border-violet-100 bg-violet-50 text-violet-600'
-                    : 'border-rose-100 bg-rose-50 text-rose-600'
+          <section className="mt-6 grid grid-cols-3 gap-3 max-lg:grid-cols-1">
+            {tabs.map((tab) => {
+              const active = activeTab === tab.id
+              const Icon = tab.icon
+              const tone = tab.id === 'informacoes'
+                ? 'border-[#E8E3DF] bg-[#F8EDE8] text-[#C84F32]'
+                : tab.id === 'album'
+                  ? 'border-violet-100 bg-violet-50 text-violet-600'
+                  : 'border-rose-100 bg-rose-50 text-rose-600'
 
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`group relative min-h-[86px] overflow-hidden rounded-[10px] border bg-white/55 px-5 py-4 text-left transition hover:-translate-y-0.5 hover:border-[var(--gold-border)] hover:bg-white ${
-                      active
-                        ? 'border-[var(--gold-border)] shadow-[0_12px_24px_rgba(78,56,35,0.08)]'
-                        : 'border-transparent'
-                    }`}
-                  >
-                    <span className="flex items-center gap-4">
-                      <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border ${tone}`}>
-                        <Icon size={21} strokeWidth={1.8} />
-                      </span>
-
-                      <span className="min-w-0">
-                        <span className="block text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--text)]">
-                          {tab.label}
-                        </span>
-
-                        {tab.description || tab.badge ? (
-                          <span className="mt-2 block text-[13px] text-[var(--text-muted)]">
-                            {tab.description || tab.badge}
-                          </span>
-                        ) : null}
-                      </span>
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`group relative min-h-[72px] overflow-hidden rounded-[10px] border bg-white px-4 py-3 text-left shadow-[0_10px_24px_rgba(31,31,33,0.04)] transition hover:-translate-y-0.5 hover:border-[var(--gold-border)] ${
+                    active
+                      ? 'border-[var(--gold-border)]'
+                      : 'border-[var(--border)]'
+                  }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[11px] border ${tone}`}>
+                      <Icon size={18} strokeWidth={1.8} />
                     </span>
 
-                    {active ? (
-                      <span className={`absolute inset-x-0 bottom-0 h-[2px] ${tab.id === 'album' ? 'bg-violet-500' : tab.id === 'selecao' ? 'bg-rose-500' : 'bg-[var(--gold)]'}`} />
-                    ) : null}
-                  </button>
-                )
-              })}
-            </div>
+                    <span className="min-w-0">
+                      <span className="block truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text)]">
+                        {tab.label}
+                      </span>
+
+                      {tab.description || tab.badge ? (
+                        <span className="mt-1 block truncate text-[12px] text-[var(--text-muted)]">
+                          {tab.description || tab.badge}
+                        </span>
+                      ) : null}
+                    </span>
+                  </span>
+
+                  {active ? (
+                    <span className={`absolute inset-x-3 bottom-0 h-[2px] rounded-t-full ${tab.id === 'album' ? 'bg-violet-500' : tab.id === 'selecao' ? 'bg-rose-500' : 'bg-[var(--gold)]'}`} />
+                  ) : null}
+                </button>
+              )
+            })}
           </section>
 
           {activeTab === 'informacoes' && (
@@ -1117,7 +1202,10 @@ const texto =
                   onStatusChange={handleStatusChange}
                 />
 
-                <DadosClienteCard ensaio={ensaio} />
+                <DadosClienteCard
+                  ensaio={ensaio}
+                  onEdit={handleOpenClienteEdit}
+                />
               </aside>
             </div>
           )}
@@ -1200,10 +1288,21 @@ const texto =
     open={editModalOpen}
     ensaio={ensaio}
     loading={editLoading}
+    showClienteFields={false}
     onClose={() => {
       if (!editLoading) setEditModalOpen(false)
     }}
     onSave={handleEdit}
+  />
+
+  <EditClienteModal
+    open={clienteModalOpen}
+    ensaio={ensaio}
+    loading={clienteEditLoading}
+    onClose={() => {
+      if (!clienteEditLoading) setClienteModalOpen(false)
+    }}
+    onSave={handleClienteEdit}
   />
 
   <ConfirmDeleteModal
@@ -1238,7 +1337,7 @@ const texto =
     )
   }
 
-  function DadosClienteCard({ ensaio }) {
+  function DadosClienteCard({ ensaio, onEdit }) {
     const dados = [
       {
         label: 'Nome',
@@ -1269,8 +1368,13 @@ const texto =
     ]
 
     return (
-      <section className="rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
-        <SectionTitle title="Dados do cliente" icon={UserRound} />
+      <section className="rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
+        <SectionTitle
+          title="Dados do cliente"
+          icon={UserRound}
+          actionLabel="Editar"
+          onAction={onEdit}
+        />
 
         <div className="divide-y divide-[var(--border)] p-5">
           {dados.map((item) => (
@@ -1286,6 +1390,140 @@ const texto =
           ))}
         </div>
       </section>
+    )
+  }
+
+  function EditClienteModal({ open, ensaio, loading, onClose, onSave }) {
+    const [form, setForm] = useState(() => getClienteFormData(ensaio))
+
+    useEffect(() => {
+      if (open) setForm(getClienteFormData(ensaio))
+    }, [open, ensaio])
+
+    const change = (field, value) => {
+      setForm((current) => ({ ...current, [field]: value }))
+    }
+
+    const submit = (event) => {
+      event.preventDefault()
+
+      onSave({
+        nome: form.nome.trim(),
+        telefone: form.telefone.trim() || null,
+        email: form.email.trim() || null,
+        cpf: form.cpf.trim() || null,
+        cidade: form.cidade.trim() || null,
+        indicacao: form.indicacao.trim() || null,
+      })
+    }
+
+    return (
+      <BaseModal
+        open={open}
+        title="Editar cliente"
+        onClose={onClose}
+        footer={(
+          <>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="rounded-lg border border-[var(--border)] px-4 py-2.5 text-[12px] tracking-[0.08em] text-[var(--text-muted)] transition hover:text-[var(--text)] disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              form="edit-cliente-form"
+              disabled={loading}
+              className="rounded-lg bg-[#C84F32] px-5 py-2.5 text-[12px] font-medium tracking-[0.1em] text-white transition hover:bg-[#AE3F28] disabled:opacity-60"
+            >
+              {loading ? 'Salvando...' : 'Salvar alterações'}
+            </button>
+          </>
+        )}
+      >
+        <form id="edit-cliente-form" onSubmit={submit} className="space-y-4">
+          <label className="block">
+            <span className="theme-muted mb-1.5 block text-[10.5px] uppercase tracking-[0.13em]">
+              Nome do cliente
+            </span>
+            <input
+              required
+              value={form.nome}
+              onChange={(event) => change('nome', event.target.value)}
+              className="theme-input w-full rounded-lg border px-3.5 py-2.5 text-[13px] outline-none transition focus:border-[var(--gold-border)] focus:bg-[var(--gold-dim)]"
+              placeholder="Nome completo"
+            />
+          </label>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label>
+              <span className="theme-muted mb-1.5 block text-[10.5px] uppercase tracking-[0.13em]">
+                Telefone / WhatsApp
+              </span>
+              <input
+                value={form.telefone}
+                onChange={(event) => change('telefone', event.target.value)}
+                className="theme-input w-full rounded-lg border px-3.5 py-2.5 text-[13px] outline-none transition focus:border-[var(--gold-border)] focus:bg-[var(--gold-dim)]"
+                placeholder="(31) 99999-9999"
+              />
+            </label>
+
+            <label>
+              <span className="theme-muted mb-1.5 block text-[10.5px] uppercase tracking-[0.13em]">
+                E-mail
+              </span>
+              <input
+                type="email"
+                value={form.email}
+                onChange={(event) => change('email', event.target.value)}
+                className="theme-input w-full rounded-lg border px-3.5 py-2.5 text-[13px] outline-none transition focus:border-[var(--gold-border)] focus:bg-[var(--gold-dim)]"
+                placeholder="cliente@email.com"
+              />
+            </label>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label>
+              <span className="theme-muted mb-1.5 block text-[10.5px] uppercase tracking-[0.13em]">
+                Cidade
+              </span>
+              <input
+                value={form.cidade}
+                onChange={(event) => change('cidade', event.target.value)}
+                className="theme-input w-full rounded-lg border px-3.5 py-2.5 text-[13px] outline-none transition focus:border-[var(--gold-border)] focus:bg-[var(--gold-dim)]"
+                placeholder="Belo Horizonte, MG"
+              />
+            </label>
+
+            <label>
+              <span className="theme-muted mb-1.5 block text-[10.5px] uppercase tracking-[0.13em]">
+                CPF
+              </span>
+              <input
+                value={form.cpf}
+                onChange={(event) => change('cpf', event.target.value)}
+                className="theme-input w-full rounded-lg border px-3.5 py-2.5 text-[13px] outline-none transition focus:border-[var(--gold-border)] focus:bg-[var(--gold-dim)]"
+                placeholder="000.000.000-00"
+              />
+            </label>
+          </div>
+
+          <label className="block">
+            <span className="theme-muted mb-1.5 block text-[10.5px] uppercase tracking-[0.13em]">
+              Indicação
+            </span>
+            <input
+              value={form.indicacao}
+              onChange={(event) => change('indicacao', event.target.value)}
+              className="theme-input w-full rounded-lg border px-3.5 py-2.5 text-[13px] outline-none transition focus:border-[var(--gold-border)] focus:bg-[var(--gold-dim)]"
+              placeholder="Instagram, indicação, Google..."
+            />
+          </label>
+        </form>
+      </BaseModal>
     )
   }
 
@@ -1312,7 +1550,7 @@ const texto =
 
     return (
       <aside className="space-y-5">
-        <section className="rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+        <section className="rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
           <SectionTitle title="Resumo" icon={ListChecks} />
 
           <div className="p-5">

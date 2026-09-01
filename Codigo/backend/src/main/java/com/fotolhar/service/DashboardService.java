@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
 public class DashboardService {
 
     private static final int DIAS_EDICAO_ATRASADA = 14;
+    private static final ZoneId APP_ZONE = ZoneId.of("America/Sao_Paulo");
 
     private final EnsaioRepository ensaioRepository;
     private final FotoRepository fotoRepository;
@@ -54,7 +56,7 @@ public class DashboardService {
         List<Ensaio> ensaios = ensaioRepository.findByClienteUsuarioId(usuario.getId());
         Map<UUID, Album> albumPorEnsaio = buscarAlbunsPorEnsaio(usuario);
 
-        OffsetDateTime agora = OffsetDateTime.now();
+        OffsetDateTime agora = agoraNoFusoDoApp();
         YearMonth mesAtual = YearMonth.from(agora);
         OffsetDateTime daquiSeteDias = agora.plusDays(7);
 
@@ -175,7 +177,7 @@ public class DashboardService {
         return (int) ensaios.stream()
                 .filter(ensaio -> ensaio.getStatus() != StatusEnsaio.CANCELADO)
                 .filter(ensaio -> ensaio.getDataEnsaio() != null)
-                .filter(ensaio -> ensaio.getDataEnsaio().toLocalDate().equals(agora.toLocalDate()))
+                .filter(ensaio -> toAppLocalDate(ensaio.getDataEnsaio()).equals(agora.toLocalDate()))
                 .count();
     }
 
@@ -183,7 +185,7 @@ public class DashboardService {
         return ensaios.stream()
                 .filter(ensaio -> ensaio.getStatus() != StatusEnsaio.CANCELADO)
                 .filter(ensaio -> ensaio.getDataEnsaio() != null)
-                .filter(ensaio -> ensaio.getDataEnsaio().toLocalDate().equals(agora.toLocalDate()))
+                .filter(ensaio -> toAppLocalDate(ensaio.getDataEnsaio()).equals(agora.toLocalDate()))
                 .sorted(Comparator.comparing(Ensaio::getDataEnsaio))
                 .toList();
     }
@@ -228,7 +230,7 @@ public class DashboardService {
             Map<UUID, Album> albumPorEnsaio
     ) {
         List<DashboardAtencaoResponse> itens = new ArrayList<>();
-        OffsetDateTime agora = OffsetDateTime.now();
+        OffsetDateTime agora = agoraNoFusoDoApp();
 
         for (Ensaio ensaio : ensaios) {
             int totalFotos = fotoRepository.countByEnsaioId(ensaio.getId());
@@ -391,7 +393,15 @@ public class DashboardService {
             return false;
         }
 
-        return YearMonth.from(ensaio.getDataEnsaio()).equals(mes);
+        return YearMonth.from(ensaio.getDataEnsaio().atZoneSameInstant(APP_ZONE)).equals(mes);
+    }
+
+    private OffsetDateTime agoraNoFusoDoApp() {
+        return OffsetDateTime.now(APP_ZONE);
+    }
+
+    private java.time.LocalDate toAppLocalDate(OffsetDateTime data) {
+        return data.atZoneSameInstant(APP_ZONE).toLocalDate();
     }
 
     private boolean isEnsaioEmAndamento(Ensaio ensaio) {

@@ -61,7 +61,7 @@ export default function DadosEstudioForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-black/20 p-5 md:flex-row md:items-center">
+      <div className="flex flex-col gap-5 rounded-2xl border border-[var(--border)] bg-[var(--card-hover)] p-5 md:flex-row md:items-center">
         <div className="flex h-20 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--gold-border)] bg-[var(--gold-dim)] font-serif text-sm tracking-[0.18em] text-[var(--gold)]">
           {form.logoUrl ? (
             <img
@@ -75,11 +75,11 @@ export default function DadosEstudioForm({
         </div>
 
         <div className="flex-1">
-          <h3 className="text-sm font-medium text-white">
+          <h3 className="text-sm font-medium text-[var(--text)]">
             Logo do estúdio/empresa
           </h3>
 
-          <p className="mt-1 text-sm text-white/40">
+          <p className="mt-1 text-sm text-[var(--text-muted)]">
             Usada em PDFs, documentos e materiais gerados pelo sistema.
           </p>
         </div>
@@ -96,7 +96,7 @@ export default function DadosEstudioForm({
           type="button"
           disabled={uploadLoading}
           onClick={() => fileInputRef.current?.click()}
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-white/70 transition hover:border-[var(--gold-border)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm font-medium text-[var(--text)] transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Upload size={15} />
           {uploadLoading ? 'Enviando...' : 'Alterar logo'}
@@ -117,7 +117,7 @@ export default function DadosEstudioForm({
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-5 py-3 text-sm font-semibold text-black transition hover:bg-[var(--gold-light)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--gold-light)] disabled:cursor-not-allowed disabled:opacity-60"
       >
         <Save size={16} />
         {loading ? 'Salvando...' : 'Salvar dados'}

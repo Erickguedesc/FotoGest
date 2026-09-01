@@ -30,7 +30,7 @@ export default function AlbumUpload({
   }
 
   return (
-    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 p-4 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 p-4 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
       <div className="mb-5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-[var(--gold-dim)] text-[var(--gold)]">

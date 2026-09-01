@@ -22,7 +22,7 @@ export default function QuickActions() {
             <div className="flex flex-wrap gap-4">
                 <Link
                     to="/novo-ensaio"
-                    className="inline-flex items-center gap-3 rounded-2xl bg-[#b7833a] px-5 py-4 text-sm font-medium text-[#fff7e6] shadow-[0_14px_30px_rgba(183,131,58,0.18)] transition hover:bg-[#a87532]"
+                    className="inline-flex items-center gap-3 rounded-2xl bg-[#C84F32] px-5 py-4 text-sm font-medium text-[#FFFFFF] shadow-[0_14px_30px_rgba(200,79,50,0.18)] transition hover:bg-[#AE3F28]"
                 >
                     <Camera size={18} />
                     Novo ensaio

@@ -86,7 +86,7 @@ export default function AlbumFotoGrid({
               onClick={() => toggleFoto(foto.id)}
               className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full border text-[12px] transition ${
                 selecionada
-                  ? 'border-[var(--gold-border)] bg-[#a65f00] text-white'
+                  ? 'border-[var(--gold-border)] bg-[#C84F32] text-white'
                   : 'border-[var(--border)] bg-white/80 text-[var(--text-muted)] hover:border-[var(--gold-border)] hover:text-[var(--gold)]'
               }`}
               title={selecionada ? 'Desmarcar foto' : 'Selecionar foto'}
@@ -133,7 +133,7 @@ export default function AlbumFotoGrid({
 
   if (loading) {
     return (
-      <section className="rounded-[14px] border border-[var(--border)] bg-white/78 p-5 text-[13px] text-[var(--text-muted)] shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+      <section className="rounded-[14px] border border-[var(--border)] bg-white/78 p-5 text-[13px] text-[var(--text-muted)] shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
         Carregando fotos...
       </section>
     )
@@ -141,7 +141,7 @@ export default function AlbumFotoGrid({
 
   if (!fotos.length) {
     return (
-      <section className="rounded-[14px] border border-[var(--border)] bg-white/78 p-4 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+      <section className="rounded-[14px] border border-[var(--border)] bg-white/78 p-4 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
         <div className="mb-4 flex items-center gap-3">
           <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-[var(--gold-dim)] text-[var(--gold)]">
             <LayoutGrid size={16} strokeWidth={1.8} />
@@ -179,7 +179,7 @@ export default function AlbumFotoGrid({
   }
 
   return (
-    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 p-5 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 p-5 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-[12px] uppercase tracking-[0.08em] text-[var(--gold)]">

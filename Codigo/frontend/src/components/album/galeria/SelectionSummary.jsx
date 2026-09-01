@@ -41,7 +41,7 @@ export default function SelectionSummary({
           <span className="text-xs uppercase tracking-[0.14em] text-[#887e74]">
             Selecionadas
           </span>
-          <strong className="font-serif text-3xl font-light text-[#c9a96e]">
+          <strong className="font-serif text-3xl font-light text-[#C84F32]">
             {totalSelecionadas}
           </strong>
         </div>
@@ -77,7 +77,7 @@ export default function SelectionSummary({
         <div className="h-1.5 overflow-hidden rounded-full bg-[#2a2420]">
           <div
             className={`h-full rounded-full transition-all ${
-              excedente > 0 ? 'bg-[#df7070]' : 'bg-[#c9a96e]'
+              excedente > 0 ? 'bg-[#df7070]' : 'bg-[#C84F32]'
             }`}
             style={{ width: `${progresso}%` }}
           />
@@ -122,7 +122,7 @@ export default function SelectionSummary({
           type="button"
           disabled={totalSelecionadas === 0 || enviando || selecaoEnviada}
           onClick={onOpenConfirm}
-          className="w-full rounded-full bg-[#a8783a] px-6 py-4 text-xs font-medium uppercase tracking-[0.18em] text-white shadow-lg shadow-[#a8783a]/20 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
+          className="w-full rounded-full bg-[#C84F32] px-6 py-4 text-xs font-medium uppercase tracking-[0.18em] text-white shadow-lg shadow-[#C84F32]/20 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
         >
           {selecaoEnviada ? 'Seleção já enviada' : 'Confirmar seleção'}
         </button>

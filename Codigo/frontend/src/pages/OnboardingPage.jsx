@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -63,8 +63,6 @@ function normalizeAxiosData(response) {
 
 export default function OnboardingPage() {
   const navigate = useNavigate()
-  const savedThemeOnEntry = useMemo(() => localStorage.getItem('fotolhar-theme') || 'dark', [])
-  const themeSavedRef = useRef(false)
 
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -75,7 +73,6 @@ export default function OnboardingPage() {
   const [logoFile, setLogoFile] = useState(null)
   const [capaAlbumFile, setCapaAlbumFile] = useState(null)
   const [demoId, setDemoId] = useState(() => getDemoEnsaioId())
-  const [themeSaved, setThemeSaved] = useState(false)
 
   const [perfil, setPerfil] = useState({
     nome: localStorage.getItem('usuarioNome') || '',
@@ -94,7 +91,6 @@ export default function OnboardingPage() {
     cidade: '',
     endereco: '',
     cnpj: '',
-    theme: localStorage.getItem('fotolhar-theme') || 'dark',
   })
 
   const [album, setAlbum] = useState({
@@ -159,14 +155,6 @@ export default function OnboardingPage() {
     }
   }, [])
 
-  useEffect(() => {
-    return () => {
-      if (!themeSavedRef.current) {
-        document.documentElement.dataset.theme = savedThemeOnEntry === 'light' ? 'light' : 'dark'
-      }
-    }
-  }, [savedThemeOnEntry])
-
   const currentStep = steps[step]
   const progress = useMemo(() => Math.round(((step + 1) / steps.length) * 100), [step])
 
@@ -190,14 +178,6 @@ export default function OnboardingPage() {
       completeOnboarding(data?.onboardingConcluidoEm || new Date().toISOString())
       navigate(path)
     })
-  }
-
-  function previewTheme(nextTheme) {
-    const normalizedTheme = nextTheme === 'light' ? 'light' : 'dark'
-    document.documentElement.dataset.theme = normalizedTheme
-    setMarca((current) => ({ ...current, theme: normalizedTheme }))
-    themeSavedRef.current = false
-    setThemeSaved(false)
   }
 
   async function handleSavePerfil() {
@@ -248,11 +228,6 @@ export default function OnboardingPage() {
         enviarConfirmacaoSelecaoCliente: true,
         enviarMudancaStatus: true,
       })
-
-      document.documentElement.dataset.theme = marca.theme === 'light' ? 'light' : 'dark'
-      localStorage.setItem('fotolhar-theme', marca.theme === 'light' ? 'light' : 'dark')
-      themeSavedRef.current = true
-      setThemeSaved(true)
 
       remember('Marca e email')
       nextStep()
@@ -463,10 +438,8 @@ export default function OnboardingPage() {
                       <MarcaStep
                         marca={marca}
                         setMarca={setMarca}
-                        previewTheme={previewTheme}
                         logoFile={logoFile}
                         setLogoFile={setLogoFile}
-                        themeSaved={themeSaved}
                       />
                     )}
 
@@ -572,7 +545,7 @@ export default function OnboardingPage() {
                   type="button"
                   onClick={stepActions[step]}
                   disabled={saving || loading}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[9px] bg-[var(--gold)] px-5 text-sm font-semibold text-[#1A1200] transition hover:bg-[var(--gold-light)] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[9px] bg-[var(--gold)] px-5 text-sm font-semibold text-white transition hover:bg-[var(--gold-light)] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {saving ? <Loader2 className="animate-spin" size={16} /> : step === 4 ? <CalendarPlus size={16} /> : <ArrowRight size={16} />}
                   {step === 3 ? (demoId ? 'Continuar' : 'Criar demo') : step === 4 ? 'Criar primeiro ensaio real' : 'Salvar e continuar'}
@@ -704,7 +677,7 @@ function PerfilStep({ perfil, setPerfil, fotoPerfilFile, setFotoPerfilFile }) {
   )
 }
 
-function MarcaStep({ marca, setMarca, previewTheme, logoFile, setLogoFile, themeSaved }) {
+function MarcaStep({ marca, setMarca, logoFile, setLogoFile }) {
   return (
     <div className="space-y-5">
       <div className="grid gap-4 md:grid-cols-2">
@@ -750,16 +723,6 @@ function MarcaStep({ marca, setMarca, previewTheme, logoFile, setLogoFile, theme
             onChange={(event) => setLogoFile(event.target.files?.[0] || null)}
           />
         </label>
-
-        <Field label="Tema inicial">
-          <select className={inputClass} value={marca.theme} onChange={(event) => previewTheme(event.target.value)}>
-            <option value="dark">Escuro premium</option>
-            <option value="light">Claro editorial</option>
-          </select>
-          <p className="theme-muted mt-2 text-[11px] leading-4">
-            {themeSaved ? 'Tema salvo.' : 'Previa aplicada nesta tela.'}
-          </p>
-        </Field>
       </div>
 
       <div className="theme-panel rounded-[12px] border p-4">

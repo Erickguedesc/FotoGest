@@ -1,120 +1,145 @@
+import { useEffect, useId, useRef } from 'react'
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Info,
+  Loader2,
+  RotateCcw,
+  Trash2,
+  X,
+} from 'lucide-react'
+
 const TYPE_STYLES = {
   warning: {
-    icon: 'text-orange-300 border-orange-400/30 bg-orange-400/10',
-    confirm:
-      'bg-[#a65f00] text-white hover:bg-[#884e00]',
+    icon: 'border-orange-200 bg-orange-50 text-orange-600',
+    confirm: 'bg-[#C84F32] text-white hover:bg-[#AE3F28]',
+    Icon: AlertTriangle,
   },
   danger: {
-    icon: 'text-red-300 border-red-400/30 bg-red-400/10',
-    confirm:
-      'bg-red-400 text-white hover:bg-red-300',
+    icon: 'border-red-200 bg-red-50 text-red-600',
+    confirm: 'bg-red-600 text-white hover:bg-red-700',
+    Icon: Trash2,
   },
   gold: {
-    icon: 'text-[var(--gold)] border-[var(--gold-border)] bg-[var(--gold-dim)]',
-    confirm:
-      'bg-[#a65f00] text-white hover:bg-[#884e00]',
+    icon: 'border-[#E6D2C7] bg-[#F8EDE8] text-[#C84F32]',
+    confirm: 'bg-[#C84F32] text-white hover:bg-[#AE3F28]',
+    Icon: Info,
   },
-
   success: {
-  icon: 'text-emerald-300 border-emerald-400/30 bg-emerald-400/10',
-  confirm:
-    'bg-emerald-600 text-white hover:bg-emerald-700',
-},
-}
-
-function CheckCircleIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <path d="m9 11 3 3L22 4" />
-    </svg>
-  )
-}
-
-function AlertTriangleIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="m21.7 18-8.9-15.4a1 1 0 0 0-1.7 0L2.3 18a1 1 0 0 0 .9 1.5h17.6a1 1 0 0 0 .9-1.5z" />
-      <path d="M12 8v5" />
-      <path d="M12 16h.01" />
-    </svg>
-  )
-}
-
-function CloseIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
-  )
+    icon: 'border-emerald-200 bg-emerald-50 text-emerald-600',
+    confirm: 'bg-[#C84F32] text-white hover:bg-[#AE3F28]',
+    Icon: CheckCircle2,
+  },
+  restore: {
+    icon: 'border-emerald-200 bg-emerald-50 text-emerald-600',
+    confirm: 'bg-[#C84F32] text-white hover:bg-[#AE3F28]',
+    Icon: RotateCcw,
+  },
 }
 
 export default function ConfirmActionModal({
   open,
   title,
   description,
+  children,
   confirmText = 'Confirmar',
   cancelText = 'Cancelar',
+  loadingText = 'Processando...',
   type = 'warning',
   loading = false,
+  disabled = false,
   showCancel = true,
+  icon: CustomIcon,
   onConfirm,
   onClose,
 }) {
+  const titleId = useId()
+  const descriptionId = useId()
+  const panelRef = useRef(null)
+
+  useEffect(() => {
+    if (!open) return undefined
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    panelRef.current?.focus()
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        if (!loading) onClose?.()
+        return
+      }
+
+      if (event.key !== 'Tab') return
+
+      const focusable = panelRef.current?.querySelectorAll(
+        'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])'
+      )
+      const items = Array.from(focusable || [])
+      if (!items.length) return
+
+      const first = items[0]
+      const last = items[items.length - 1]
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [loading, onClose, open])
+
   if (!open) return null
 
   const style = TYPE_STYLES[type] || TYPE_STYLES.warning
-  const Icon = type === 'success' ? CheckCircleIcon : AlertTriangleIcon
+  const Icon = CustomIcon || style.Icon
+  const actionDisabled = loading || disabled
 
   return (
-    <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
-      <div className="w-full max-w-[440px] overflow-hidden rounded-2xl border border-[var(--gold-border)] bg-[#121212] shadow-2xl">
-        <div className="flex items-start justify-between border-b border-white/[0.08] p-5">
-          <div className="flex items-start gap-4">
+    <div className="fixed inset-0 z-[500] flex items-center justify-center bg-[#111315]/68 px-4 py-6 backdrop-blur-[2px]">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={description ? descriptionId : undefined}
+        tabIndex={-1}
+        className="w-full max-w-[420px] overflow-hidden rounded-[14px] border border-[#E5E0DC] bg-white text-[#2F3033] shadow-[0_24px_70px_rgba(17,19,21,0.28)] outline-none"
+      >
+        <div className="flex items-start justify-between gap-4 px-5 pt-5">
+          <div className="flex min-w-0 items-start gap-3">
             <div
-              className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border ${style.icon}`}
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border ${style.icon}`}
             >
-                <Icon />
+              <Icon size={21} strokeWidth={1.8} />
             </div>
 
-            <div>
-              <h2 className="font-serif text-[22px] font-light tracking-[0.03em] text-white">
+            <div className="min-w-0 pt-0.5">
+              <h2
+                id={titleId}
+                className="font-serif text-[24px] font-light leading-tight text-[#1F1F21]"
+              >
                 {title}
               </h2>
 
-              <p className="mt-2 text-[13px] leading-6 text-white/50">
-                {description}
-              </p>
+              {description ? (
+                <div
+                  id={descriptionId}
+                  className="mt-3 text-[13px] leading-6 text-[#65605C]"
+                >
+                  {description}
+                </div>
+              ) : null}
             </div>
           </div>
 
@@ -122,34 +147,39 @@ export default function ConfirmActionModal({
             type="button"
             disabled={loading}
             onClick={onClose}
-            className="rounded-lg p-1.5 text-white/35 transition hover:bg-white/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] text-[#8A8580] transition hover:bg-[#F4F1EE] hover:text-[#1F1F21] disabled:cursor-not-allowed disabled:opacity-45"
             aria-label="Fechar"
           >
-            <CloseIcon />
+            <X size={17} strokeWidth={1.8} />
           </button>
         </div>
 
-     <div className="flex justify-end gap-3 p-5">
-  {showCancel && (
-    <button
-      type="button"
-      disabled={loading}
-      onClick={onClose}
-      className="rounded-lg border border-white/[0.10] px-5 py-2.5 text-[12px] font-medium tracking-[0.08em] text-white/55 transition hover:border-white/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-    >
-      {cancelText}
-    </button>
-  )}
+        {children ? <div className="px-5 pt-4">{children}</div> : null}
 
-  <button
-    type="button"
-    disabled={loading}
-    onClick={onConfirm}
-    className={`rounded-lg px-5 py-2.5 text-[12px] font-semibold tracking-[0.08em] transition disabled:cursor-not-allowed disabled:opacity-60 ${style.confirm}`}
-  >
-    {loading ? 'Processando...' : confirmText}
-  </button>
-</div>
+        <div className="mt-5 h-px bg-[#EEEAE7]" />
+
+        <div className="flex justify-end gap-3 px-5 py-4 max-sm:grid max-sm:grid-cols-1">
+          {showCancel && (
+            <button
+              type="button"
+              disabled={loading}
+              onClick={onClose}
+              className="h-10 rounded-[8px] border border-[#DED8D2] bg-white px-5 text-[12px] font-semibold text-[#2F3033] transition hover:bg-[#F7F7F8] disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {cancelText}
+            </button>
+          )}
+
+          <button
+            type="button"
+            disabled={actionDisabled}
+            onClick={onConfirm}
+            className={`inline-flex h-10 items-center justify-center gap-2 rounded-[8px] px-5 text-[12px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${style.confirm}`}
+          >
+            {loading ? <Loader2 size={15} className="animate-spin" /> : null}
+            {loading ? loadingText : confirmText}
+          </button>
+        </div>
       </div>
     </div>
   )

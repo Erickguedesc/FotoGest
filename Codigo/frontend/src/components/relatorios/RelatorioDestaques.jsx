@@ -22,7 +22,7 @@ export default function RelatorioDestaques({ destaques, periodos = [] }) {
 
   return (
     <div className="space-y-3">
-      <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a96d1f]">
+      <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C84F32]">
         Destaques
       </h2>
 
@@ -61,25 +61,25 @@ export default function RelatorioDestaques({ destaques, periodos = [] }) {
 
 function DestaqueItem({ icon, label, value, variant }) {
   const variants = {
-    gold: 'border-[#f0d7ad] bg-[#fff6e8] text-[#bd7920]',
+    gold: 'border-[#F8EDE8] bg-[#F8EDE8] text-[#C84F32]',
     green: 'border-green-100 bg-green-50 text-green-700',
     red: 'border-red-100 bg-red-50 text-red-600',
     blue: 'border-sky-100 bg-sky-50 text-sky-700',
-    neutral: 'border-[#e5ddd3] bg-[#fbfaf8] text-[#9b9187]',
+    neutral: 'border-[#E8E3DF] bg-[#F5F3F1] text-[#96928E]',
   }
 
   return (
-    <div className="flex min-h-[42px] items-center gap-3 rounded-[9px] border border-[#e8dfd5] bg-white px-3 py-2">
+    <div className="flex min-h-[42px] items-center gap-3 rounded-[9px] border border-[#E8E3DF] bg-white px-3 py-2">
       <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border ${variants[variant]}`}>
         {icon}
       </span>
 
       <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-        <p className="truncate text-xs font-medium text-[#71665d]">
+        <p className="truncate text-xs font-medium text-[#6F6D6B]">
           {label}
         </p>
 
-        <p className="max-w-[180px] truncate text-right text-sm font-semibold text-[#2f2924]">
+        <p className="max-w-[180px] truncate text-right text-sm font-semibold text-[#1F1F21]">
           {value}
         </p>
       </div>

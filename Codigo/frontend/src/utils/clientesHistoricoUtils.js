@@ -94,6 +94,10 @@ export const calcularResumoCliente = (cliente, ensaios = []) => {
   )
 
   const ensaiosValidos = ensaiosCliente.filter((ensaio) => ensaio.status !== 'CANCELADO')
+  const ultimoEnsaio = ensaiosValidos[0]
+  const ensaioComFoto = ensaiosValidos.find(
+    (ensaio) => Number(ensaio.totalFotos || 0) > 0 && ensaio.capaUrl
+  )
 
   const ensaiosEntregues = ensaiosValidos
     .filter((ensaio) => {
@@ -118,6 +122,8 @@ export const calcularResumoCliente = (cliente, ensaios = []) => {
     totalEnsaios: ensaiosCliente.length,
     totalContratado,
     ticketMedio: ensaiosCliente.length ? totalContratado / ensaiosCliente.length : 0,
+    ultimoEnsaio,
+    fotoClienteUrl: ensaioComFoto?.capaUrl || '',
     ultimaSessao,
     ensaiosEntregues,
     proximoEnsaio,

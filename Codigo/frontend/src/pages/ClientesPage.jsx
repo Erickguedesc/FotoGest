@@ -5,6 +5,7 @@ import {
   ArrowDownUp,
   CalendarDays,
   Clock3,
+  Filter,
   LayoutGrid,
   List,
   MapPin,
@@ -15,6 +16,7 @@ import {
   TrendingUp,
   UserRound,
   UsersRound,
+  X,
 } from 'lucide-react'
 
 import Header from '../components/layout/Header'
@@ -24,6 +26,7 @@ import Toast from '../components/ui/Toast'
 import ConfirmActionModal from '../components/ui/ConfirmActionModal'
 import { clientesService } from '../services/clientesService'
 import { ensaiosService } from '../services/ensaiosService'
+import { TIPO_OPTIONS } from '../components/ensaios/listaEnsaios/ensaioHelpers'
 import {
   calcularResumoCliente,
   formatCurrency,
@@ -49,17 +52,58 @@ const SITUACAO_STYLES = {
   SEM_ENSAIOS: 'border-[var(--border)] bg-white/70 text-[var(--text-muted)]',
   SEM_FLUXO: 'border-[var(--border)] bg-white/70 text-[var(--text-muted)]',
 }
-const ORDENACOES_CLIENTES = [
-  ['nome', 'Nome'],
-  ['ultimaSessao', 'Último entregue'],
-  ['valor', 'Valor'],
-  ['quantidade', 'Qtd. ensaios'],
+const SORT_OPTIONS = [
+  { value: 'nome:asc', label: 'Nome A-Z' },
+  { value: 'nome:desc', label: 'Nome Z-A' },
+  { value: 'ultimoEnsaio:desc', label: 'Último ensaio: mais recente' },
+  { value: 'ultimoEnsaio:asc', label: 'Último ensaio: mais antigo' },
+  { value: 'valor:desc', label: 'Mais rentáveis' },
+  { value: 'valor:asc', label: 'Menos rentáveis' },
+  { value: 'quantidade:desc', label: 'Mais ensaios' },
+  { value: 'quantidade:asc', label: 'Menos ensaios' },
 ]
 const VIEW_MODES = [
   ['cards', LayoutGrid, 'Cards'],
   ['lista', List, 'Lista'],
 ]
 const CLIENTES_VIEW_MODE_STORAGE_KEY = 'fotolhar-clientes-view-mode'
+const INITIAL_ADVANCED_FILTERS = {
+  quantidadeEnsaios: 'todos',
+  tipoEnsaio: 'todos',
+  ultimoEnsaio: 'todos',
+  valorInvestido: 'todos',
+}
+const QUANTIDADE_OPTIONS = [
+  { value: 'todos', label: 'Todos' },
+  { value: '1', label: '1 ensaio' },
+  { value: '2', label: '2 ensaios' },
+  { value: '3', label: '3 ensaios' },
+  { value: '4', label: '4 ensaios' },
+  { value: '5', label: '5 ensaios' },
+  { value: '6_plus', label: '6 ou mais' },
+  { value: '10_plus', label: '10 ou mais' },
+]
+const ULTIMO_ENSAIO_OPTIONS = [
+  { value: 'todos', label: 'Todos' },
+  { value: '30_dias', label: 'Últimos 30 dias' },
+  { value: '3_meses', label: 'Últimos 3 meses' },
+  { value: '6_meses', label: 'Últimos 6 meses' },
+  { value: '1_ano', label: 'Último ano' },
+  { value: 'mais_1_ano', label: 'Há mais de 1 ano' },
+  { value: 'mais_2_anos', label: 'Há mais de 2 anos' },
+  { value: 'mais_3_anos', label: 'Há mais de 3 anos' },
+]
+const VALOR_INVESTIDO_OPTIONS = [
+  { value: 'todos', label: 'Todos' },
+  { value: 'ate_500', label: 'Até R$ 500' },
+  { value: '500_1000', label: 'R$ 500 a R$ 1.000' },
+  { value: '1000_2000', label: 'R$ 1.000 a R$ 2.000' },
+  { value: '2000_3000', label: 'R$ 2.000 a R$ 3.000' },
+  { value: '3000_5000', label: 'R$ 3.000 a R$ 5.000' },
+  { value: '5000_7500', label: 'R$ 5.000 a R$ 7.500' },
+  { value: '7500_10000', label: 'R$ 7.500 a R$ 10.000' },
+  { value: '10000_plus', label: 'Acima de R$ 10.000' },
+]
 
 function getInitialViewMode() {
   const savedViewMode = localStorage.getItem(CLIENTES_VIEW_MODE_STORAGE_KEY)
@@ -79,13 +123,14 @@ function resumoEstaEntregue(resumo) {
 }
 
 function resolverSituacaoClienteFallback(cliente, resumo) {
-  if (clienteTemFluxoAtivo(resumo)) return 'EM_ANDAMENTO'
   if (cliente.ativo === false) return 'ARQUIVADO'
+  if (clienteTemFluxoAtivo(resumo)) return 'EM_ANDAMENTO'
   if (resumoEstaEntregue(resumo)) return 'ENTREGUE'
   return resumo.ensaios.length ? 'SEM_FLUXO' : 'SEM_ENSAIOS'
 }
 
 function getSituacaoClienteKey(cliente, resumo) {
+  if (cliente.ativo === false) return 'ARQUIVADO'
   return cliente.situacao || resolverSituacaoClienteFallback(cliente, resumo)
 }
 
@@ -113,24 +158,104 @@ function getTimeValue(value) {
 }
 
 function compararClientes(a, b, ordenacao) {
+  const [criterio, direcao = 'asc'] = String(ordenacao || 'nome:asc').split(':')
+  const multiplicador = direcao === 'desc' ? -1 : 1
   const porNome = a.cliente.nome.localeCompare(b.cliente.nome)
 
-  if (ordenacao === 'ultimaSessao') {
-    return (
-      getTimeValue(b.resumo.ultimaSessao?.dataEnsaio) -
-        getTimeValue(a.resumo.ultimaSessao?.dataEnsaio) || porNome
-    )
+  if (criterio === 'ultimoEnsaio') {
+    const result =
+      getTimeValue(a.resumo.ultimoEnsaio?.dataEnsaio) -
+      getTimeValue(b.resumo.ultimoEnsaio?.dataEnsaio)
+
+    return result ? result * multiplicador : porNome
   }
 
-  if (ordenacao === 'valor') {
-    return b.resumo.totalContratado - a.resumo.totalContratado || porNome
+  if (criterio === 'valor') {
+    const result = a.resumo.totalContratado - b.resumo.totalContratado
+    return result ? result * multiplicador : porNome
   }
 
-  if (ordenacao === 'quantidade') {
-    return b.resumo.totalEnsaios - a.resumo.totalEnsaios || porNome
+  if (criterio === 'quantidade') {
+    const result = a.resumo.totalEnsaios - b.resumo.totalEnsaios
+    return result ? result * multiplicador : porNome
   }
 
-  return porNome
+  return porNome * multiplicador
+}
+
+function getRelativeDate(days) {
+  const date = new Date()
+  date.setHours(0, 0, 0, 0)
+  date.setDate(date.getDate() - days)
+  return date
+}
+
+function getRelativeMonth(months) {
+  const date = new Date()
+  date.setHours(0, 0, 0, 0)
+  date.setMonth(date.getMonth() - months)
+  return date
+}
+
+function clientePassaQuantidade(total, filtro) {
+  if (filtro === '1') return total === 1
+  if (filtro === '2') return total === 2
+  if (filtro === '3') return total === 3
+  if (filtro === '4') return total === 4
+  if (filtro === '5') return total === 5
+  if (filtro === '6_plus') return total >= 6
+  if (filtro === '10_plus') return total >= 10
+  return true
+}
+
+function clientePassaUltimoEnsaio(dataValue, filtro) {
+  if (filtro === 'todos') return true
+  if (!dataValue) return false
+
+  const data = new Date(dataValue)
+  if (Number.isNaN(data.getTime())) return false
+
+  if (filtro === '30_dias') return data >= getRelativeDate(30)
+  if (filtro === '3_meses') return data >= getRelativeMonth(3)
+  if (filtro === '6_meses') return data >= getRelativeMonth(6)
+  if (filtro === '1_ano') return data >= getRelativeMonth(12)
+  if (filtro === 'mais_1_ano') return data < getRelativeMonth(12)
+  if (filtro === 'mais_2_anos') return data < getRelativeMonth(24)
+  if (filtro === 'mais_3_anos') return data < getRelativeMonth(36)
+
+  return true
+}
+
+function clientePassaValor(total, filtro) {
+  if (filtro === 'ate_500') return total <= 500
+  if (filtro === '500_1000') return total > 500 && total <= 1000
+  if (filtro === '1000_2000') return total > 1000 && total <= 2000
+  if (filtro === '2000_3000') return total > 2000 && total <= 3000
+  if (filtro === '3000_5000') return total > 3000 && total <= 5000
+  if (filtro === '5000_7500') return total > 5000 && total <= 7500
+  if (filtro === '7500_10000') return total > 7500 && total <= 10000
+  if (filtro === '10000_plus') return total > 10000
+  return true
+}
+
+function clientePassaFiltrosAvancados(resumo, filtros) {
+  const totalEnsaios = Number(resumo.totalEnsaios || 0)
+  const totalContratado = Number(resumo.totalContratado || 0)
+  const ultimoEnsaioData = resumo.ultimoEnsaio?.dataEnsaio
+
+  if (!clientePassaQuantidade(totalEnsaios, filtros.quantidadeEnsaios)) return false
+  if (!clientePassaUltimoEnsaio(ultimoEnsaioData, filtros.ultimoEnsaio)) return false
+  if (!clientePassaValor(totalContratado, filtros.valorInvestido)) return false
+
+  if (filtros.tipoEnsaio !== 'todos') {
+    return resumo.ensaios.some((ensaio) => ensaio.tipo === filtros.tipoEnsaio)
+  }
+
+  return true
+}
+
+function contarFiltrosAtivos(filtros) {
+  return Object.values(filtros).filter((value) => value !== 'todos').length
 }
 
 function formatProximoEnsaio(value) {
@@ -143,17 +268,45 @@ function formatProximoEnsaio(value) {
   }
 }
 
-function ClienteAvatar({ nome, size = 'md' }) {
+function getFotoClienteUrl(value) {
+  const url = String(value || '').trim()
+  if (!url) return ''
+
+  try {
+    const parsedUrl = new URL(url, window.location.origin)
+    return ['http:', 'https:'].includes(parsedUrl.protocol) ? url : ''
+  } catch {
+    return ''
+  }
+}
+
+function ClienteAvatar({ nome, fotoUrl, size = 'md' }) {
+  const [imageErro, setImageErro] = useState(false)
+  const fotoClienteUrl = getFotoClienteUrl(fotoUrl)
+  const mostrarFoto = fotoClienteUrl && !imageErro
   const sizeClass =
     size === 'sm'
       ? 'h-10 w-10 text-[12px]'
-      : 'h-12 w-12 text-[13px]'
+      : 'h-10 w-10 text-[12px]'
+
+  useEffect(() => {
+    setImageErro(false)
+  }, [fotoClienteUrl])
 
   return (
     <span
       className={`flex ${sizeClass} shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]`}
     >
-      {getInitials(nome)}
+      {mostrarFoto ? (
+        <img
+          src={fotoClienteUrl}
+          alt={nome}
+          className="h-full w-full object-cover"
+          onError={() => setImageErro(true)}
+        />
+      ) : (
+        getInitials(nome)
+      )}
     </span>
   )
 }
@@ -165,7 +318,10 @@ export default function ClientesPage() {
   const [ensaios, setEnsaios] = useState([])
   const [busca, setBusca] = useState('')
   const [statusFiltro, setStatusFiltro] = useState('todos')
-  const [ordenacao, setOrdenacao] = useState('nome')
+  const [ordenacao, setOrdenacao] = useState('nome:asc')
+  const [filtrosAvancados, setFiltrosAvancados] = useState(INITIAL_ADVANCED_FILTERS)
+  const [rascunhoFiltros, setRascunhoFiltros] = useState(INITIAL_ADVANCED_FILTERS)
+  const [filtrosAbertos, setFiltrosAbertos] = useState(false)
   const [viewMode, setViewMode] = useState(getInitialViewMode)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
@@ -203,7 +359,7 @@ export default function ClientesPage() {
 
   useEffect(() => {
     setPage(1)
-  }, [busca, ordenacao, statusFiltro, viewMode])
+  }, [busca, ordenacao, statusFiltro, filtrosAvancados, viewMode])
 
   const clientesComResumo = useMemo(() => {
     const termo = busca.trim().toLowerCase()
@@ -221,6 +377,7 @@ export default function ClientesPage() {
         if (statusFiltro === 'andamento' && !emAndamento) return false
         if (statusFiltro === 'entregues' && (!entregue || arquivado)) return false
         if (statusFiltro === 'arquivados' && !arquivado) return false
+        if (!clientePassaFiltrosAvancados(resumo, filtrosAvancados)) return false
 
         if (!termo) return true
 
@@ -235,7 +392,7 @@ export default function ClientesPage() {
           .some((valor) => String(valor).toLowerCase().includes(termo))
       })
       .sort((a, b) => compararClientes(a, b, ordenacao))
-  }, [busca, clientes, ensaios, ordenacao, statusFiltro])
+  }, [busca, clientes, ensaios, filtrosAvancados, ordenacao, statusFiltro])
 
   const resumoClientes = useMemo(
     () =>
@@ -271,10 +428,46 @@ export default function ClientesPage() {
     ['entregues', `Entregues (${resumoClientes.entregues})`],
     ['arquivados', `Arquivados (${resumoClientes.arquivados})`],
   ]
+  const filtrosAtivos = contarFiltrosAtivos(filtrosAvancados)
 
   useEffect(() => {
     setPage((currentPage) => Math.min(currentPage, totalPages))
   }, [totalPages])
+
+  useEffect(() => {
+    if (!filtrosAbertos) return undefined
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [filtrosAbertos])
+
+  const abrirFiltros = () => {
+    setRascunhoFiltros(filtrosAvancados)
+    setFiltrosAbertos(true)
+  }
+
+  const aplicarFiltros = () => {
+    setFiltrosAvancados(rascunhoFiltros)
+    setFiltrosAbertos(false)
+    setPage(1)
+  }
+
+  const limparFiltros = () => {
+    setRascunhoFiltros(INITIAL_ADVANCED_FILTERS)
+    setFiltrosAvancados(INITIAL_ADVANCED_FILTERS)
+    setPage(1)
+  }
+
+  const atualizarRascunhoFiltro = (name, value) => {
+    setRascunhoFiltros((current) => ({
+      ...current,
+      [name]: value,
+    }))
+  }
 
   const abrirWhatsApp = (telefone) => {
     const numero = limparTelefone(telefone)
@@ -294,9 +487,16 @@ export default function ClientesPage() {
 
     try {
       const response = await clientesService.arquivar(clienteParaArquivar.id)
+      const clienteArquivado = {
+        ...clienteParaArquivar,
+        ...(response.data || {}),
+        ativo: false,
+        situacao: 'ARQUIVADO',
+      }
+
       setClientes((atuais) =>
         atuais.map((cliente) =>
-          cliente.id === clienteParaArquivar.id ? response.data : cliente
+          cliente.id === clienteParaArquivar.id ? clienteArquivado : cliente
         )
       )
       setToast({ message: 'Cliente arquivado com sucesso.', type: 'success' })
@@ -367,7 +567,7 @@ export default function ClientesPage() {
               <input
                 value={busca}
                 onChange={(event) => setBusca(event.target.value)}
-                className="h-11 w-full rounded-[8px] border border-[var(--border)] bg-white/64 py-2.5 pl-10 pr-3.5 text-[13px] font-light text-[var(--text)] outline-none shadow-[0_10px_24px_rgba(92,82,72,0.06)] transition placeholder:text-[var(--text-muted)] focus:border-[var(--gold-border)] focus:bg-white"
+                className="h-11 w-full rounded-[8px] border border-[var(--border)] bg-white/64 py-2.5 pl-10 pr-3.5 text-[13px] font-light text-[var(--text)] outline-none shadow-[0_10px_24px_rgba(31,31,33,0.045)] transition placeholder:text-[var(--text-muted)] focus:border-[var(--gold-border)] focus:bg-white"
                 placeholder="Buscar cliente..."
               />
             </div>
@@ -375,7 +575,7 @@ export default function ClientesPage() {
             <button
               type="button"
               onClick={() => navigate('/novo-ensaio')}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-[linear-gradient(180deg,#c57a08,#a96200)] px-5 text-[13px] font-medium text-white shadow-[0_12px_28px_rgba(137,76,0,0.22)] transition hover:-translate-y-0.5 hover:brightness-110"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-[#C84F32] hover:bg-[#AE3F28] px-5 text-[13px] font-medium text-white shadow-[0_12px_28px_rgba(200,79,50,0.18)] transition hover:-translate-y-0.5"
             >
               <Plus size={16} strokeWidth={1.8} />
               Novo Cliente
@@ -383,9 +583,9 @@ export default function ClientesPage() {
           </div>
         </div>
 
-        <section className="mb-5 overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+        <section className="mb-5 overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
           <div className="flex min-h-[118px] items-center gap-5 px-6 py-5 max-sm:flex-col max-sm:items-start">
-            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-[var(--gold-border)] bg-white/80 text-[var(--gold)] shadow-[0_10px_24px_rgba(78,56,35,0.08)]">
+            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-[var(--gold-border)] bg-white/80 text-[var(--gold)] shadow-[0_10px_24px_rgba(31,31,33,0.06)]">
               <UsersRound size={30} strokeWidth={1.55} />
             </span>
 
@@ -412,7 +612,7 @@ export default function ClientesPage() {
           />
         </div>
 
-        <div className="mb-5 flex flex-wrap gap-2 rounded-[12px] border border-[var(--border)] bg-white/64 p-2 shadow-[0_10px_24px_rgba(92,82,72,0.06)]">
+        <div className="mb-5 flex flex-wrap gap-2 rounded-[12px] border border-[var(--border)] bg-white/64 p-2 shadow-[0_10px_24px_rgba(31,31,33,0.045)]">
           {statusTabs.map(([value, label]) => (
             <button
               key={value}
@@ -429,34 +629,51 @@ export default function ClientesPage() {
           ))}
         </div>
 
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <button
-            type="button"
-            className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--border)] bg-white/64 px-4 text-[12px] text-[var(--text-muted)] shadow-[0_10px_24px_rgba(92,82,72,0.06)]"
-          >
-            <ArrowDownUp size={14} />
-            Ordenar por
-          </button>
-
-          <div className="flex flex-wrap gap-2">
-            {ORDENACOES_CLIENTES.map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                aria-pressed={ordenacao === value}
-                onClick={() => setOrdenacao(value)}
-                className={`rounded-[8px] border px-4 py-2.5 text-[12px] transition ${
-                  ordenacao === value
-                    ? 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]'
-                    : 'border-[var(--border)] bg-white/64 text-[var(--text)] hover:border-[var(--gold-border)] hover:text-[var(--gold)]'
-                }`}
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[var(--border)] bg-white/64 p-3 shadow-[0_10px_24px_rgba(31,31,33,0.045)]">
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--border)] bg-white px-3 text-[12px] text-[var(--text)]">
+              <ArrowDownUp size={14} className="text-[var(--gold)]" />
+              <span className="whitespace-nowrap text-[var(--text-muted)]">Ordenar por:</span>
+              <select
+                value={ordenacao}
+                onChange={(event) => setOrdenacao(event.target.value)}
+                className="min-w-[190px] bg-transparent text-[12px] font-medium text-[var(--text)] outline-none"
+                aria-label="Ordenar clientes por"
               >
-                {label}
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <button
+              type="button"
+              onClick={abrirFiltros}
+              className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--border)] bg-white px-3 text-[12px] font-medium text-[var(--text)] transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]"
+            >
+              <Filter size={14} />
+              Refinar lista
+              {filtrosAtivos > 0 && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--gold)] px-1.5 text-[10px] font-semibold text-white">
+                  {filtrosAtivos}
+                </span>
+              )}
+            </button>
+
+            {filtrosAtivos > 0 && (
+              <button
+                type="button"
+                onClick={limparFiltros}
+                className="inline-flex h-10 items-center rounded-[8px] px-3 text-[12px] font-medium text-[var(--text-muted)] transition hover:bg-white hover:text-[var(--gold)]"
+              >
+                Limpar filtros
               </button>
-            ))}
+            )}
           </div>
 
-          <div className="ml-auto inline-flex rounded-[8px] border border-[var(--border)] bg-white/64 p-1 shadow-[0_10px_24px_rgba(92,82,72,0.06)]">
+          <div className="inline-flex rounded-[8px] border border-[var(--border)] bg-white/64 p-1">
             {VIEW_MODES.map(([value, Icon, label]) => (
               <button
                 key={value}
@@ -477,11 +694,11 @@ export default function ClientesPage() {
         </div>
 
         {loading ? (
-          <div className="rounded-[14px] border border-[var(--border)] bg-white/78 p-8 text-[var(--text-muted)] shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+          <div className="rounded-[14px] border border-[var(--border)] bg-white/78 p-8 text-[var(--text-muted)] shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
             Carregando clientes...
           </div>
         ) : clientesComResumo.length === 0 ? (
-          <div className="rounded-[14px] border border-[var(--border)] bg-white/78 p-10 text-center shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+          <div className="rounded-[14px] border border-[var(--border)] bg-white/78 p-10 text-center shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
             <UserRound className="mx-auto text-[var(--text-muted)]" size={34} />
             <p className="mt-4 text-[14px] text-[var(--text)]">
               Nenhum cliente encontrado.
@@ -489,13 +706,13 @@ export default function ClientesPage() {
           </div>
         ) : viewMode === 'lista' ? (
           <section
-            className="overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]"
+            className="overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(31,31,33,0.055)]"
           >
             <div className="grid grid-cols-[minmax(210px,1.25fr)_118px_78px_118px_140px_112px_230px] gap-3 border-b border-[var(--border)] px-5 py-3 text-[10px] uppercase tracking-[0.12em] text-[var(--text-muted)] max-xl:hidden">
               <span>Cliente</span>
               <span>Situação</span>
               <span>Ensaios</span>
-              <span>Último entregue</span>
+              <span>Último ensaio</span>
               <span>Próximo ensaio</span>
               <span>Total</span>
               <span>Ações</span>
@@ -519,7 +736,7 @@ export default function ClientesPage() {
                     className="grid cursor-pointer grid-cols-[minmax(210px,1.25fr)_118px_78px_118px_140px_112px_230px] items-center gap-3 px-5 py-4 text-[13px] outline-none transition hover:bg-white/70 focus-visible:bg-white max-xl:grid-cols-1 max-xl:gap-3"
                   >
                     <div className="flex min-w-0 items-center gap-3">
-                      <ClienteAvatar nome={cliente.nome} size="sm" />
+                      <ClienteAvatar nome={cliente.nome} fotoUrl={resumo.fotoClienteUrl} size="sm" />
                       <div className="min-w-0">
                         <h2 className="truncate text-[14px] font-medium text-[var(--text)]">
                           {cliente.nome}
@@ -533,7 +750,7 @@ export default function ClientesPage() {
                     <SituacaoBadge cliente={cliente} resumo={resumo} />
 
                     <InfoInline label="Ensaios" value={resumo.totalEnsaios} />
-                    <InfoInline label="Último entregue" value={formatDate(resumo.ultimaSessao?.dataEnsaio)} />
+                    <InfoInline label="Último ensaio" value={formatDate(resumo.ultimoEnsaio?.dataEnsaio)} />
                     <InfoInline
                       label="Próximo ensaio"
                       value={proximoEnsaio ? `${proximoEnsaio.date} ${proximoEnsaio.time}` : '-'}
@@ -591,7 +808,7 @@ export default function ClientesPage() {
           </section>
         ) : (
           <section
-            className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,330px),1fr))] gap-4"
+            className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,224px),1fr))] gap-3"
           >
             {clientesPaginados.map(({ cliente, resumo }) => {
               const telefone = cliente.telefone || ''
@@ -601,9 +818,9 @@ export default function ClientesPage() {
               const proximoEnsaio = resumo.proximoEnsaio
                 ? formatProximoEnsaio(resumo.proximoEnsaio.dataEnsaio)
                 : null
-              const ultimoTipo = resumo.ultimaSessao
-                ? getTipoLabel(resumo.ultimaSessao.tipo)
-                : 'Sem entrega'
+              const ultimoTipo = resumo.ultimoEnsaio
+                ? getTipoLabel(resumo.ultimoEnsaio.tipo, resumo.ultimoEnsaio.tipoPersonalizado)
+                : 'Sem ensaio'
 
               return (
                 <article
@@ -612,21 +829,21 @@ export default function ClientesPage() {
                   tabIndex={0}
                   onClick={() => abrirHistoricoCliente(cliente.id)}
                   onKeyDown={(event) => handleCardKeyDown(event, cliente.id)}
-                  className={`cursor-pointer rounded-[14px] border p-4 outline-none shadow-[0_12px_28px_rgba(78,56,35,0.06)] transition hover:-translate-y-0.5 focus-visible:border-[var(--gold-border)] focus-visible:ring-2 focus-visible:ring-[var(--gold)]/25 ${
+                  className={`cursor-pointer rounded-[12px] border p-3 outline-none shadow-[0_10px_24px_rgba(31,31,33,0.04)] transition hover:-translate-y-0.5 focus-visible:border-[var(--gold-border)] focus-visible:ring-2 focus-visible:ring-[var(--gold)]/25 ${
                     arquivado
-                      ? 'border-[var(--border)] bg-white/54 opacity-75 hover:border-[var(--gold-border)]'
+                      ? 'border-[#D8D2CD] bg-white/72 hover:border-[var(--gold-border)]'
                       : 'border-[var(--border)] bg-white/78 hover:border-[var(--gold-border)]'
                   }`}
                 >
-                  <div className="mb-4 flex items-start justify-between gap-3">
-                    <div className="flex min-w-0 flex-1 items-center gap-3">
-                      <ClienteAvatar nome={cliente.nome} />
+                  <div className="mb-3 flex items-start justify-between gap-2.5">
+                    <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                      <ClienteAvatar nome={cliente.nome} fotoUrl={resumo.fotoClienteUrl} />
 
                       <div className="min-w-0 flex-1">
-                        <h2 className="truncate text-[16px] font-medium text-[var(--text)]">
+                        <h2 className="truncate text-[14px] font-medium text-[var(--text)]">
                           {cliente.nome}
                         </h2>
-                        <p className="mt-1 flex max-w-full items-center gap-1.5 text-[12px] text-[var(--text-muted)]">
+                        <p className="mt-0.5 flex max-w-full items-center gap-1 text-[11px] text-[var(--text-muted)]">
                           <MapPin size={12} strokeWidth={1.8} className="shrink-0" />
                           <span className="truncate">{cliente.cidade || 'Cidade não informada'}</span>
                         </p>
@@ -644,46 +861,46 @@ export default function ClientesPage() {
                         event.stopPropagation()
                         abrirWhatsApp(telefone)
                       }}
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-white/62 text-[var(--text-muted)] transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-white/62 text-[var(--text-muted)] transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
                       title="Chamar no WhatsApp"
                     >
-                      <MessageCircle size={16} />
+                      <MessageCircle size={15} />
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     <Info label="Ensaios" value={resumo.totalEnsaios} />
                     <Info label="Total" value={formatCurrency(resumo.totalContratado)} />
-                    <Info label="Último entregue" value={formatDate(resumo.ultimaSessao?.dataEnsaio)} />
-                    <Info label="Tipo entregue" value={ultimoTipo} />
+                    <Info label="Último ensaio" value={formatDate(resumo.ultimoEnsaio?.dataEnsaio)} />
+                    <Info label="Tipo do último" value={ultimoTipo} />
                   </div>
 
                   {proximoEnsaio ? (
-                    <div className="mt-4 rounded-[10px] border border-[var(--gold-border)] bg-[var(--gold-dim)] p-3.5">
-                      <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--gold)]">
+                    <div className="mt-3 rounded-[9px] border border-[var(--gold-border)] bg-[var(--gold-dim)] p-2.5">
+                      <p className="text-[9px] uppercase tracking-[0.12em] text-[var(--gold)]">
                         Próximo ensaio
                       </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <CalendarDays size={15} strokeWidth={1.8} className="text-[var(--gold)]" />
-                        <span className="text-[15px] font-medium leading-tight text-[var(--text)]">
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                        <CalendarDays size={14} strokeWidth={1.8} className="text-[var(--gold)]" />
+                        <span className="text-[13px] font-medium leading-tight text-[var(--text)]">
                           {proximoEnsaio.date}
                         </span>
                         {proximoEnsaio.time && (
-                          <span className="text-[13px] text-[var(--text-muted)]">
+                          <span className="text-[11px] text-[var(--text-muted)]">
                             às {proximoEnsaio.time}
                           </span>
                         )}
                       </div>
-                      <p className="mt-2 inline-flex rounded-full border border-[var(--border)] bg-white/64 px-2.5 py-1 text-[11px] text-[var(--text-muted)]">
-                        {getTipoLabel(resumo.proximoEnsaio.tipo)}
+                      <p className="mt-2 inline-flex max-w-full truncate rounded-full border border-[var(--border)] bg-white/64 px-2 py-0.5 text-[10px] text-[var(--text-muted)]">
+                        {getTipoLabel(resumo.proximoEnsaio.tipo, resumo.proximoEnsaio.tipoPersonalizado)}
                       </p>
                     </div>
                   ) : (
-                    <div className="mt-4 rounded-[10px] border border-[var(--border)] bg-white/52 p-3">
-                      <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                    <div className="mt-3 rounded-[9px] border border-[var(--border)] bg-white/52 p-2.5">
+                      <p className="text-[9px] uppercase tracking-[0.12em] text-[var(--text-muted)]">
                         Próximo ensaio
                       </p>
-                      <p className="mt-1 truncate text-[13px] text-[var(--text)]">
+                      <p className="mt-1 truncate text-[12px] text-[var(--text)]">
                         Nenhum agendamento futuro
                       </p>
                     </div>
@@ -697,7 +914,7 @@ export default function ClientesPage() {
                         event.stopPropagation()
                         handleReativar(cliente.id)
                       }}
-                      className="mt-4 inline-flex w-full items-center justify-center rounded-[8px] border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-[12px] text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50"
+                      className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-[8px] border border-emerald-200 bg-emerald-50 px-3 text-[11px] text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50"
                     >
                       Reativar cliente
                     </button>
@@ -708,9 +925,9 @@ export default function ClientesPage() {
                         event.stopPropagation()
                         setClienteParaArquivar(cliente)
                       }}
-                      className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-[8px] border border-[var(--border)] bg-white/55 px-4 py-2.5 text-[12px] text-[var(--text-muted)] transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                      className="mt-3 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-[8px] border border-[var(--border)] bg-white/55 px-3 text-[11px] text-[var(--text-muted)] transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
                     >
-                      <Archive size={14} strokeWidth={1.8} />
+                      <Archive size={13} strokeWidth={1.8} />
                       Arquivar cliente
                     </button>
                   )}
@@ -757,7 +974,123 @@ export default function ClientesPage() {
         }}
         onConfirm={handleArquivar}
       />
+
+      {filtrosAbertos && (
+        <ClientesFilterPanel
+          values={rascunhoFiltros}
+          onChange={atualizarRascunhoFiltro}
+          onApply={aplicarFiltros}
+          onClear={limparFiltros}
+          onClose={() => setFiltrosAbertos(false)}
+        />
+      )}
     </>
+  )
+}
+
+function ClientesFilterPanel({ values, onChange, onApply, onClear, onClose }) {
+  return (
+    <div className="fixed inset-0 z-[420] bg-[#1F1F21]/30 backdrop-blur-[2px]">
+      <button
+        type="button"
+        className="absolute inset-0 h-full w-full cursor-default"
+        aria-label="Fechar filtros"
+        onClick={onClose}
+      />
+
+      <aside className="absolute bottom-0 right-0 top-0 flex w-full max-w-[360px] flex-col border-l border-[var(--border)] bg-white shadow-[0_24px_70px_rgba(31,31,33,0.18)] max-sm:max-w-full">
+        <div className="flex items-center justify-between gap-4 border-b border-[var(--border)] px-5 py-4">
+          <div>
+            <h2 className="text-[18px] font-semibold text-[var(--text)]">
+              Filtros
+            </h2>
+            <p className="mt-1 text-[12px] text-[var(--text-muted)]">
+              Refine clientes usando dados reais dos ensaios.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            title="Fechar filtros"
+            aria-label="Fechar filtros"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[var(--text-muted)] transition hover:border-[var(--gold-border)] hover:text-[var(--gold)]"
+          >
+            <X size={17} />
+          </button>
+        </div>
+
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5">
+          <FilterSelect
+            label="Quantidade de ensaios"
+            value={values.quantidadeEnsaios}
+            options={QUANTIDADE_OPTIONS}
+            onChange={(value) => onChange('quantidadeEnsaios', value)}
+          />
+
+          <FilterSelect
+            label="Tipo de ensaio"
+            value={values.tipoEnsaio}
+            options={[{ value: 'todos', label: 'Todos' }, ...TIPO_OPTIONS]}
+            onChange={(value) => onChange('tipoEnsaio', value)}
+          />
+
+          <FilterSelect
+            label="Último ensaio"
+            value={values.ultimoEnsaio}
+            options={ULTIMO_ENSAIO_OPTIONS}
+            onChange={(value) => onChange('ultimoEnsaio', value)}
+          />
+
+          <FilterSelect
+            label="Valor total investido"
+            value={values.valorInvestido}
+            options={VALOR_INVESTIDO_OPTIONS}
+            onChange={(value) => onChange('valorInvestido', value)}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 border-t border-[var(--border)] px-5 py-4">
+          <button
+            type="button"
+            onClick={onClear}
+            className="h-10 rounded-[8px] border border-[#C9C3BD] bg-white px-4 text-[12px] font-semibold text-[#2F3033] transition hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]"
+          >
+            Limpar filtros
+          </button>
+
+          <button
+            type="button"
+            onClick={onApply}
+            className="h-10 rounded-[8px] bg-[#C84F32] px-4 text-[12px] font-semibold text-white shadow-[0_12px_28px_rgba(200,79,50,0.18)] transition hover:bg-[#AE3F28]"
+          >
+            Aplicar filtros
+          </button>
+        </div>
+      </aside>
+    </div>
+  )
+}
+
+function FilterSelect({ label, value, options, onChange }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+        {label}
+      </span>
+
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-11 w-full rounded-[8px] border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text)] outline-none transition focus:border-[var(--gold-border)] focus:ring-4 focus:ring-[#C84F32]/10"
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }
 
@@ -774,7 +1107,7 @@ function SituacaoBadge({ cliente, resumo }) {
 
 function Resumo({ icon: Icon, label, value }) {
   return (
-    <div className="flex items-center gap-4 rounded-[12px] border border-[var(--border)] bg-white/78 px-4 py-4 shadow-[0_12px_28px_rgba(78,56,35,0.06)]">
+    <div className="flex items-center gap-4 rounded-[12px] border border-[var(--border)] bg-white/78 px-4 py-4 shadow-[0_12px_28px_rgba(31,31,33,0.045)]">
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--gold-dim)] text-[var(--gold)]">
         {Icon ? <Icon size={22} strokeWidth={1.7} /> : null}
       </span>
@@ -791,9 +1124,9 @@ function Resumo({ icon: Icon, label, value }) {
 
 function Info({ label, value }) {
   return (
-    <div className="min-w-0 rounded-[8px] border border-[var(--border)] bg-white/55 px-3 py-3">
-      <p className="break-words text-[13px] leading-tight text-[var(--text)]">{value}</p>
-      <p className="mt-1 text-[10px] uppercase tracking-[0.10em] text-[var(--text-muted)]">
+    <div className="min-w-0 rounded-[8px] border border-[var(--border)] bg-white/55 px-2.5 py-2">
+      <p className="truncate text-[12px] leading-tight text-[var(--text)]">{value}</p>
+      <p className="mt-1 truncate text-[9px] uppercase tracking-[0.08em] text-[var(--text-muted)]">
         {label}
       </p>
     </div>

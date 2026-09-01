@@ -37,9 +37,7 @@ export function formatDateBR(date) {
 }
 
 export function getAnosDisponiveis() {
-  const anoAtual = new Date().getFullYear()
-
-  return [anoAtual - 2, anoAtual - 1, anoAtual, anoAtual + 1]
+  return [2026, 2027, 2028, 2029, 2030]
 }
 
 export function getTipoPeriodoLabel(tipo) {

@@ -10,11 +10,11 @@ export default function GalleryGrid({
   return (
     <section className="mx-auto max-w-[1280px] px-5 py-10 pb-28">
       {fotos.length === 0 ? (
-        <div className="rounded-3xl border border-[#ddd5c5] bg-[#faf8f4] p-10 text-center">
+        <div className="rounded-3xl border border-[#E8E3DF] bg-[#FFFFFF] p-10 text-center">
           <h2 className="font-serif text-3xl font-light">
             Nenhuma foto disponível
           </h2>
-          <p className="mt-2 text-sm text-[#5c5248]">
+          <p className="mt-2 text-sm text-[#6F6D6B]">
             Este álbum ainda não possui fotos publicadas.
           </p>
         </div>
@@ -27,7 +27,7 @@ export default function GalleryGrid({
             return (
               <article
                 key={foto.id}
-                className={`group relative mb-2 break-inside-avoid overflow-hidden rounded-md bg-[#ede6d8] shadow-sm transition hover:shadow-2xl ${
+                className={`group relative mb-2 break-inside-avoid overflow-hidden rounded-md bg-[#F5F3F1] shadow-sm transition hover:shadow-2xl ${
                   selecionada
                     ? 'outline outline-[3px] outline-[#bf5c68] outline-offset-[-3px]'
                     : ''
@@ -57,7 +57,7 @@ export default function GalleryGrid({
                       event.stopPropagation()
                       onToggleFavorita(foto.id)
                     }}
-                    className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#faf8f4]/95 text-[#bf5c68] transition hover:scale-110"
+                    className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#FFFFFF]/95 text-[#bf5c68] transition hover:scale-110"
                     title="Favoritar"
                   >
                     <HeartIcon filled={selecionada} />

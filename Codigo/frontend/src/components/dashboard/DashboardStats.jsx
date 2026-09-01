@@ -125,7 +125,7 @@ export default function DashboardStats({ dashboard }) {
 
                         <Link
                             to="/relatorios"
-                            className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-[#a87532] transition hover:bg-white"
+                            className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-[#AE3F28] transition hover:bg-white"
                         >
                             Ver detalhes
                         </Link>

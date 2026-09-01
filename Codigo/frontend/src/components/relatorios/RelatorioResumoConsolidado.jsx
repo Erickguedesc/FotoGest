@@ -20,19 +20,19 @@ export default function RelatorioResumoConsolidado({ relatorio, tituloFallback }
 
   return (
     <section className="grid gap-5 xl:grid-cols-[1.55fr_1fr] xl:items-stretch">
-      <article className="rounded-[18px] border border-[#e7ded3] bg-white p-5 shadow-[0_14px_36px_rgba(82,58,35,0.055)] sm:p-6">
+      <article className="rounded-[18px] border border-[#E8E3DF] bg-white p-5 shadow-[0_14px_36px_rgba(31,31,33,0.045)] sm:p-6">
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
           <div className="flex min-w-0 gap-3">
-            <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#f0d7ad] bg-[#fff8ec] text-[#bd7920]">
+            <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#F8EDE8] bg-[#fff8ec] text-[#C84F32]">
               <BarChart3 size={18} />
             </span>
 
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a96d1f]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C84F32]">
                 Resumo financeiro
               </p>
 
-              <p className="mt-2 truncate text-sm font-medium text-[#756a61]">
+              <p className="mt-2 truncate text-sm font-medium text-[#6F6D6B]">
                 {periodo?.replace(' - ', ' · ')}
               </p>
             </div>
@@ -73,25 +73,25 @@ export default function RelatorioResumoConsolidado({ relatorio, tituloFallback }
             />
           </div>
 
-          <div className="mt-4 flex flex-col gap-2 text-sm text-[#756a61] sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-4 flex flex-col gap-2 text-sm text-[#6F6D6B] sm:flex-row sm:items-center sm:justify-between">
             <span>{formatMoney(recebido)} recebidos</span>
             <span>{formatMoney(previsto)} previsto</span>
           </div>
         </div>
       </article>
 
-      <article className="rounded-[18px] border border-[#e7ded3] bg-white p-5 shadow-[0_14px_36px_rgba(82,58,35,0.055)] sm:p-6">
+      <article className="rounded-[18px] border border-[#E8E3DF] bg-white p-5 shadow-[0_14px_36px_rgba(31,31,33,0.045)] sm:p-6">
         <div className="mb-7 flex items-start gap-3">
-          <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#f0d7ad] bg-[#fff8ec] text-[#bd7920]">
+          <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#F8EDE8] bg-[#fff8ec] text-[#C84F32]">
             <Image size={18} />
           </span>
 
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a96d1f]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C84F32]">
               Composição do previsto
             </p>
 
-            <p className="mt-2 text-sm text-[#756a61]">
+            <p className="mt-2 text-sm text-[#6F6D6B]">
               De onde vem o valor total
             </p>
           </div>
@@ -130,7 +130,7 @@ function FinancialMetric({ icon, label, value, detail, valueClassName }) {
         {icon}
       </span>
 
-      <p className="text-sm font-medium text-[#756a61]">
+      <p className="text-sm font-medium text-[#6F6D6B]">
         {label}
       </p>
 
@@ -153,12 +153,12 @@ function CompositionRow({ icon, label, value }) {
           {icon}
         </span>
 
-        <span className="truncate text-sm font-medium text-[#756a61]">
+        <span className="truncate text-sm font-medium text-[#6F6D6B]">
           {label}
         </span>
       </div>
 
-      <span className="shrink-0 text-right text-base font-semibold text-[#211b17]">
+      <span className="shrink-0 text-right text-base font-semibold text-[#1F1F21]">
         {value}
       </span>
     </div>

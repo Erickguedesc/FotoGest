@@ -102,7 +102,7 @@ export default function GalleryLightbox({
 
         <label
           htmlFor={`lightbox-observacao-${foto.id}`}
-          className="mt-5 block text-[10px] uppercase tracking-[0.16em] text-[#c9a96e]"
+          className="mt-5 block text-[10px] uppercase tracking-[0.16em] text-[#C84F32]"
         >
           Observação
         </label>
@@ -119,7 +119,7 @@ export default function GalleryLightbox({
               ? 'Ex.: gostei da expressão, ajustar cabelo, preferir em PB...'
               : 'Favorite esta foto para adicionar uma observação.'
           }
-          className="mt-2 min-h-[150px] w-full resize-none rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm leading-6 text-[#e8dfd4] outline-none transition placeholder:text-[#887e74] focus:border-[#c9a96e] disabled:cursor-not-allowed disabled:opacity-55"
+          className="mt-2 min-h-[150px] w-full resize-none rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm leading-6 text-[#e8dfd4] outline-none transition placeholder:text-[#887e74] focus:border-[#C84F32] disabled:cursor-not-allowed disabled:opacity-55"
         />
 
         <p className="mt-2 text-right text-[10px] text-[#887e74]">

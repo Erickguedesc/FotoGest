@@ -226,6 +226,13 @@ export const configuracoesService = {
     )
   },
 
+  removerCapaAlbumPadrao: async () => {
+    return guardedRequest(
+      () => api.patch('/configuracoes/preferencias/capa-album/remover'),
+      { invalidate: true },
+    )
+  },
+
   alterarSenha: async (dados) => {
     return guardedRequest(
       () => api.patch('/configuracoes/senha', dados),

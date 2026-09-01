@@ -116,7 +116,7 @@ export default function SelecaoClienteCard({
   }
 
   return (
-    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
       <SectionTitle title="Fotos selecionadas pela cliente" icon={Heart} />
 
       {semSelecao ? (
@@ -234,7 +234,7 @@ export default function SelecaoClienteCard({
                 type="button"
                 disabled={aprovandoSelecao}
                 onClick={onAprovarSelecao}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#a65f00] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#884e00] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-lg bg-[#C84F32] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#AE3F28] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <CheckCircle2 size={15} strokeWidth={1.8} />
                 {aprovandoSelecao
@@ -285,7 +285,7 @@ export default function SelecaoClienteCard({
                         type="button"
                         disabled={aprovandoSelecao}
                         onClick={onAprovarSelecao}
-                        className="inline-flex items-center gap-2 rounded-lg bg-[#a65f00] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#884e00] disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex items-center gap-2 rounded-lg bg-[#C84F32] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#AE3F28] disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         <CheckCircle2 size={15} strokeWidth={1.8} />
                         {aprovandoSelecao

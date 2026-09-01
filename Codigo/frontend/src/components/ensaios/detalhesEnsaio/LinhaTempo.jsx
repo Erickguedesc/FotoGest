@@ -4,6 +4,39 @@ import { STATUS_OPTIONS } from '../listaEnsaios/ensaioHelpers'
 
 import SectionTitle from './SectionTitle'
 
+const STATUS_TIMELINE_TONES = {
+  AGENDADO: {
+    active: 'border-[var(--status-scheduled)] bg-white text-[var(--status-scheduled)]',
+    done: 'border-[var(--status-scheduled)] bg-white text-[var(--status-scheduled)]',
+    text: 'text-[var(--status-scheduled)]',
+    line: 'bg-[var(--status-scheduled)]/55',
+  },
+  REALIZADO: {
+    active: 'border-[var(--status-completed)] bg-white text-[var(--status-completed)]',
+    done: 'border-[var(--status-completed)] bg-white text-[var(--status-completed)]',
+    text: 'text-[var(--status-completed)]',
+    line: 'bg-[var(--status-completed)]/55',
+  },
+  EM_SELECAO: {
+    active: 'border-[var(--status-selection)] bg-white text-[var(--status-selection)]',
+    done: 'border-[var(--status-selection)] bg-white text-[var(--status-selection)]',
+    text: 'text-[var(--status-selection)]',
+    line: 'bg-[var(--status-selection)]/55',
+  },
+  EM_EDICAO: {
+    active: 'border-[var(--status-editing)] bg-white text-[var(--status-editing)]',
+    done: 'border-[var(--status-editing)] bg-white text-[var(--status-editing)]',
+    text: 'text-[var(--status-editing)]',
+    line: 'bg-[var(--status-editing)]/55',
+  },
+  FINALIZADO: {
+    active: 'border-[var(--status-delivered)] bg-white text-[var(--status-delivered)]',
+    done: 'border-[var(--status-delivered)] bg-white text-[var(--status-delivered)]',
+    text: 'text-[var(--status-delivered)]',
+    line: 'bg-[var(--status-delivered)]/55',
+  },
+}
+
 const formatDate = (value) => {
   if (!value) return null
 
@@ -33,13 +66,13 @@ export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
   const isCancelado = statusAtual === 'CANCELADO'
 
   return (
-    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
-      <SectionTitle title="Linha do tempo" icon={TimerReset} />
+    <section className="rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
+      <SectionTitle title="Linha do tempo" icon={TimerReset} compact />
 
       {isCancelado ? (
-        <div className="flex min-h-[130px] items-center justify-center px-6 py-8 text-center">
+        <div className="flex min-h-[112px] items-center justify-center px-5 py-6 text-center">
           <div>
-            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600">
+            <div className="mx-auto mb-2.5 flex h-9 w-9 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600">
               !
             </div>
 
@@ -53,8 +86,8 @@ export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
           </div>
         </div>
       ) : (
-        <div className="px-8 py-8 max-md:px-5">
-          <div className="grid grid-cols-5 gap-6 max-md:grid-cols-1">
+        <div className="px-6 py-5 max-md:px-5">
+          <div className="grid grid-cols-5 gap-4 max-md:grid-cols-1 max-md:gap-3">
             {timelineSteps.map((step, index) => {
               const isCurrent = step.value === statusAtual
               const isFinalCurrent = isCurrent && index === timelineSteps.length - 1
@@ -62,6 +95,7 @@ export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
               const isActive = isCurrent || isDone
               const isLast = index === timelineSteps.length - 1
               const isFuture = currentIndex >= 0 && index > currentIndex
+              const tone = STATUS_TIMELINE_TONES[step.value] || STATUS_TIMELINE_TONES.AGENDADO
 
               const dataStatus = isFuture ? null : formatDate(historicoPorStatus[step.value])
               const statusSubtexto = isFuture
@@ -81,42 +115,42 @@ export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
                 >
                   {!isLast && (
                     <div
-                      className={`absolute left-[calc(50%+24px)] top-[18px] h-[2px] w-[calc(100%-48px)] max-md:hidden ${
+                      className={`absolute left-[calc(50%+21px)] top-[16px] h-[2px] w-[calc(100%-42px)] max-md:hidden ${
                         isDone
-                          ? 'bg-emerald-500/70'
+                          ? tone.line
                           : isCurrent
-                            ? 'bg-[var(--gold)]'
+                            ? tone.line
                             : 'bg-[var(--border)]'
                       }`}
                     />
                   )}
 
                   <span
-                    className={`relative z-[1] flex h-9 w-9 items-center justify-center rounded-full border text-[12px] ${
+                    className={`relative z-[1] flex h-8 w-8 items-center justify-center rounded-full border text-[11px] font-semibold ${
                       isDone
-                        ? 'border-emerald-500 bg-white text-emerald-600'
+                        ? tone.done
                         : isCurrent
-                          ? 'border-[var(--gold)] bg-white text-[var(--gold)] shadow-[0_0_0_5px_var(--gold-dim),0_10px_24px_rgba(78,56,35,0.10)] ring-1 ring-[var(--gold)]'
+                          ? `${tone.active} shadow-[0_0_0_5px_var(--gold-dim),0_10px_24px_rgba(31,31,33,0.07)] ring-1 ring-current`
                           : 'border-[var(--border)] bg-[var(--card-hover)] text-[var(--text-muted)]'
                     }`}
                   >
                     {isDone ? '✓' : index + 1}
                   </span>
 
-                  <div className="mt-4 max-md:mt-0">
+                  <div className="mt-2.5 max-md:mt-0">
                     <p
-                      className={`text-[12px] ${
+                      className={`text-[11px] font-medium ${
                         isDone
-                          ? 'text-emerald-600'
+                          ? tone.text
                           : isCurrent
-                            ? 'text-[var(--gold)]'
+                            ? tone.text
                             : 'text-[var(--text-muted)]'
                       }`}
                     >
                       {step.label}
                     </p>
 
-                    <p className={`mt-1 text-[10px] ${isActive ? 'text-[var(--text-muted)]' : 'text-[var(--text-muted)]/70'}`}>
+                    <p className={`mt-0.5 text-[10px] ${isActive ? 'text-[var(--text-muted)]' : 'text-[var(--text-muted)]/70'}`}>
                       {statusSubtexto}
                     </p>
                   </div>

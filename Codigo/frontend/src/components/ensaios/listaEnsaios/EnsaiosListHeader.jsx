@@ -7,7 +7,7 @@ const sortOptions = [
 
 export default function EnsaiosListHeader({ sort, onSort }) {
   return (
-    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(250,248,244,0.72)] px-5 py-4 shadow-[0_14px_34px_rgba(92,82,72,0.08)]">
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(255,255,255,0.76)] px-5 py-4 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--gold)]">
         Lista de ensaios
       </p>

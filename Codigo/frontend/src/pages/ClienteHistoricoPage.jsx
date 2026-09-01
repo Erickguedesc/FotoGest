@@ -257,7 +257,7 @@ export default function ClienteHistoricoPage() {
                   className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-[12px] font-medium transition ${
                     clienteArquivado
                       ? 'pointer-events-none border border-[var(--border)] text-[var(--text-muted)] opacity-60'
-                      : 'bg-[var(--gold)] text-[#1A1200] hover:bg-[var(--gold-light)]'
+                      : 'bg-[var(--gold)] text-white hover:bg-[var(--gold-light)]'
                   }`}
                 >
                   <CalendarPlus size={15} />

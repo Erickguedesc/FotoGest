@@ -653,6 +653,27 @@ public PreferenciasConfigDTO uploadCapaAlbumPadrao(MultipartFile arquivo) {
     }
 }
 
+@Transactional
+public PreferenciasConfigDTO removerCapaAlbumPadrao() {
+    Usuario usuario = getUsuarioLogado();
+    PreferenciasSistema preferencias = getOuCriarPreferencias(usuario);
+    String publicIdAntigo = preferencias.getCapaAlbumPadraoPublicId();
+
+    preferencias.setCapaAlbumPadraoUrl(null);
+    preferencias.setCapaAlbumPadraoPublicId(null);
+    preferenciasSistemaRepository.save(preferencias);
+
+    if (publicIdAntigo != null && !publicIdAntigo.isBlank()) {
+        try {
+            cloudinaryService.deletar(publicIdAntigo);
+        } catch (IOException ignored) {
+            // A capa deixa de ser usada mesmo se a limpeza remota falhar.
+        }
+    }
+
+    return toPreferenciasDTO(preferencias);
+}
+
 private Map<String, Object> backupCliente(Cliente cliente) {
     return mapa(
             "id", cliente.getId(),
@@ -677,6 +698,8 @@ private Map<String, Object> backupEnsaio(Ensaio ensaio) {
             "status", ensaio.getStatus(),
             "dataEnsaio", ensaio.getDataEnsaio(),
             "local", ensaio.getLocal(),
+            "cidadeEnsaio", ensaio.getCidadeEnsaio(),
+            "estadoEnsaio", ensaio.getEstadoEnsaio(),
             "qtdFotosPacote", ensaio.getQtdFotosPacote(),
             "valorPacote", ensaio.getValorPacote(),
             "valorFotoExtra", ensaio.getValorFotoExtra(),

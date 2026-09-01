@@ -47,44 +47,44 @@ const CONFLICT_DATE_LABEL = new Intl.DateTimeFormat('pt-BR', {
 })
 
 const STATUS_DOT = {
-  AGENDADO: 'bg-indigo-300',
-  REALIZADO: 'bg-lime-300',
-  EM_SELECAO: 'bg-amber-300',
-  EM_EDICAO: 'bg-sky-300',
-  FINALIZADO: 'bg-emerald-300',
-  CANCELADO: 'bg-red-300',
+  AGENDADO: 'bg-[var(--status-scheduled)]',
+  REALIZADO: 'bg-[var(--status-completed)]',
+  EM_SELECAO: 'bg-[var(--status-selection)]',
+  EM_EDICAO: 'bg-[var(--status-editing)]',
+  FINALIZADO: 'bg-[var(--status-delivered)]',
+  CANCELADO: 'bg-[var(--status-cancelled)]',
 }
 
 const STATUS_TONE = {
   AGENDADO: {
-    event: 'border-indigo-100 bg-indigo-50 text-indigo-900',
-    accent: 'bg-indigo-300',
-    icon: 'text-indigo-500',
+    event: 'border-[rgba(113,103,232,0.22)] bg-[rgba(113,103,232,0.10)] text-[#1F1F21]',
+    accent: 'bg-[var(--status-scheduled)]',
+    icon: 'text-[var(--status-scheduled)]',
   },
   REALIZADO: {
-    event: 'border-lime-100 bg-lime-50 text-lime-900',
-    accent: 'bg-lime-500',
-    icon: 'text-lime-600',
+    event: 'border-[rgba(98,168,62,0.22)] bg-[rgba(98,168,62,0.10)] text-[#1F1F21]',
+    accent: 'bg-[var(--status-completed)]',
+    icon: 'text-[var(--status-completed)]',
   },
   EM_SELECAO: {
-    event: 'border-amber-100 bg-amber-50 text-amber-900',
-    accent: 'bg-amber-400',
-    icon: 'text-amber-600',
+    event: 'border-[rgba(242,154,46,0.24)] bg-[rgba(242,154,46,0.12)] text-[#1F1F21]',
+    accent: 'bg-[var(--status-selection)]',
+    icon: 'text-[var(--status-selection)]',
   },
   EM_EDICAO: {
-    event: 'border-sky-100 bg-sky-50 text-sky-900',
-    accent: 'bg-sky-400',
-    icon: 'text-sky-600',
+    event: 'border-[rgba(59,130,246,0.22)] bg-[rgba(59,130,246,0.10)] text-[#1F1F21]',
+    accent: 'bg-[var(--status-editing)]',
+    icon: 'text-[var(--status-editing)]',
   },
   FINALIZADO: {
-    event: 'border-emerald-100 bg-emerald-50 text-emerald-900',
-    accent: 'bg-emerald-400',
-    icon: 'text-emerald-600',
+    event: 'border-[rgba(32,184,166,0.22)] bg-[rgba(32,184,166,0.10)] text-[#1F1F21]',
+    accent: 'bg-[var(--status-delivered)]',
+    icon: 'text-[var(--status-delivered)]',
   },
   CANCELADO: {
-    event: 'border-red-100 bg-red-50 text-red-900',
-    accent: 'bg-red-400',
-    icon: 'text-red-600',
+    event: 'border-[rgba(239,83,80,0.24)] bg-[rgba(239,83,80,0.10)] text-[#1F1F21]',
+    accent: 'bg-[var(--status-cancelled)]',
+    icon: 'text-[var(--status-cancelled)]',
   },
 }
 
@@ -289,7 +289,7 @@ export default function CalendarioEnsaios({
   }
 
   return (
-    <section className="overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/84 shadow-[0_18px_42px_rgba(78,56,35,0.07)]">
+    <section className="overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/84 shadow-[0_18px_42px_rgba(31,31,33,0.055)]">
       <div className="grid grid-cols-[minmax(0,1fr)_330px] max-xl:grid-cols-1">
         <div className="min-w-0 p-5">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
@@ -402,7 +402,7 @@ export default function CalendarioEnsaios({
                     <span
                       className={`flex h-7 w-7 items-center justify-center rounded-[8px] text-[12px] ${
                         hojeSelecionado
-                          ? 'bg-[var(--gold-dim)] text-[var(--gold)] shadow-[0_6px_14px_rgba(166,95,0,0.10)]'
+                          ? 'bg-[var(--gold-dim)] text-[var(--gold)] shadow-[0_6px_14px_rgba(200,79,50,0.10)]'
                           : selecionado
                             ? 'text-[var(--gold)]'
                             : ''
@@ -473,7 +473,7 @@ export default function CalendarioEnsaios({
           <button
             type="button"
             onClick={() => onCreateForDate(diaSelecionado)}
-            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-[8px] bg-[#a65f00] px-4 py-3 text-[12px] font-semibold text-white shadow-[0_12px_24px_rgba(166,95,0,0.15)] transition hover:bg-[#884e00]"
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-[8px] bg-[#C84F32] px-4 py-3 text-[12px] font-semibold text-white shadow-[0_12px_24px_rgba(200,79,50,0.15)] transition hover:bg-[#AE3F28]"
           >
             <Icon name="plus" size={14} />
             Novo ensaio

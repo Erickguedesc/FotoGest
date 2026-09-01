@@ -14,6 +14,7 @@ import {
 import api from '../services/api'
 import { configuracoesService } from '../services/configuracoesService'
 import { invalidateOnboardingRouteCache } from '../utils/onboardingRouteCache'
+import ConfirmActionModal from '../components/ui/ConfirmActionModal'
 import loginBrand from '../assets/login-brand.png'
 import loginScene from '../assets/login-scene.png'
 
@@ -94,6 +95,7 @@ export default function LoginPage() {
       ? 'Sua sessão expirou ou ficou inválida. Faça login novamente.'
       : '',
   )
+  const [noticeModal, setNoticeModal] = useState(null)
 
   useEffect(() => {
     document.documentElement.classList.add('login-scrollbar-hidden')
@@ -107,6 +109,10 @@ export default function LoginPage() {
     setForm((prev) => ({ ...prev, [field]: value }))
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: '' }))
     if (apiError) setApiError('')
+  }
+
+  const openNoticeModal = (title, description) => {
+    setNoticeModal({ title, description })
   }
 
   useEffect(() => {
@@ -179,27 +185,28 @@ export default function LoginPage() {
     'rounded-[8px] border border-white/80 bg-white/[0.96] shadow-[0_18px_50px_rgba(48,38,29,0.14)]'
 
   const inputBase = `
-    w-full rounded-[8px] border border-[#d8d2cc] bg-white/[0.72] px-4 py-[14px]
-    text-[15px] text-[#1f2a32] outline-none transition-all duration-200
-    placeholder:text-[#8c969d] hover:border-[#c8b8aa]
-    focus:border-[#bf4b25] focus:bg-white focus:shadow-[0_0_0_3px_rgba(191,75,37,0.11)]
+    w-full rounded-[8px] border border-[#E8E3DF] bg-white/[0.72] px-4 py-[14px]
+    text-[15px] text-[#1F1F21] outline-none transition-all duration-200
+    placeholder:text-[#8c969d] hover:border-[#E8E3DF]
+    focus:border-[#C84F32] focus:bg-white focus:shadow-[0_0_0_3px_rgba(200,79,50,0.11)]
   `
   const inputError = 'border-[#d05757] bg-[#fff8f8] focus:border-[#d05757]'
   const validDisplayName = displayName && !isGenericDisplayName(displayName) ? displayName.trim() : ''
 
   return (
-    <main className="theme-static min-h-screen overflow-x-hidden bg-[#f4ece4] text-[#1f2a32]">
+    <>
+    <main className="theme-static min-h-screen overflow-x-hidden bg-[#F7F7F8] text-[#1F1F21]">
 <section className="relative min-h-[880px] overflow-hidden pb-10 sm:min-h-[900px] lg:min-h-[930px]">        <img
           src={loginScene}
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover object-left-top opacity-[0.18] md:inset-y-0 md:left-0 md:w-[60%] md:opacity-100"
         />
-        <div className="pointer-events-none absolute inset-y-0 left-[42%] hidden w-[28%] bg-[linear-gradient(90deg,rgba(244,236,228,0)_0%,#f4ece4_78%)] md:block" />
+        <div className="pointer-events-none absolute inset-y-0 left-[42%] hidden w-[28%] bg-[linear-gradient(90deg,rgba(247,247,248,0)_0%,#F7F7F8_78%)] md:block" />
 
         <Link
           to="/"
-          className="absolute left-5 top-5 z-20 inline-flex items-center gap-2 rounded-[8px] border border-[#d8d2cc] bg-white/[0.78] px-3 py-2 text-[13px] font-medium text-[#6e6259] shadow-[0_8px_22px_rgba(48,38,29,0.08)] backdrop-blur transition hover:border-[#c8b8aa] hover:bg-white hover:text-[#bf4b25] sm:left-8 sm:top-8"
+          className="absolute left-5 top-5 z-20 inline-flex items-center gap-2 rounded-[8px] border border-[#E8E3DF] bg-white/[0.78] px-3 py-2 text-[13px] font-medium text-[#6F6D6B] shadow-[0_8px_22px_rgba(48,38,29,0.08)] backdrop-blur transition hover:border-[#E8E3DF] hover:bg-white hover:text-[#C84F32] sm:left-8 sm:top-8"
         >
           <ArrowLeft size={16} />
           Voltar para homepage
@@ -218,13 +225,13 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleSubmit} noValidate className={`${loginCardSurface} w-full px-6 py-7 sm:px-10 sm:py-9`}>
-              <p className="mb-3 text-[13px] font-bold uppercase tracking-normal text-[#bf4b25]">
+              <p className="mb-3 text-[13px] font-bold uppercase tracking-normal text-[#C84F32]">
                 Login do usuário
               </p>
-              <h1 className="font-serif text-[2.15rem] font-normal leading-tight text-[#1f2a32] sm:text-[2.75rem]">
+              <h1 className="font-serif text-[2.15rem] font-normal leading-tight text-[#1F1F21] sm:text-[2.75rem]">
                 {validDisplayName ? `Olá, ${validDisplayName}` : 'Bem-vindo(a)!'}
               </h1>
-              <p className="mt-3 max-w-[390px] text-[16px] leading-7 text-[#68737b]">
+              <p className="mt-3 max-w-[390px] text-[16px] leading-7 text-[#6F6D6B]">
                 {validDisplayName
                   ? 'Acesse sua conta para continuar organizando seus clientes, ensaios e galerias.'
                   : 'Entre para gerenciar seus clientes, ensaios, galerias e muito mais!'}
@@ -239,7 +246,7 @@ export default function LoginPage() {
 
               <div className="mt-6 space-y-5">
                 <div>
-                  <label className="mb-2 block text-[14px] font-bold text-[#1f2a32]" htmlFor="email">
+                  <label className="mb-2 block text-[14px] font-bold text-[#1F1F21]" htmlFor="email">
                     E-mail
                   </label>
                   <div className="relative">
@@ -254,14 +261,14 @@ export default function LoginPage() {
                     />
                     <Mail
                       size={20}
-                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#7e8990]"
+                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#96928E]"
                     />
                   </div>
                   {errors.email && <p className="mt-1.5 text-[12.5px] text-[#c04435]">{errors.email}</p>}
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-[14px] font-bold text-[#1f2a32]" htmlFor="senha">
+                  <label className="mb-2 block text-[14px] font-bold text-[#1F1F21]" htmlFor="senha">
                     Senha
                   </label>
                   <div className="relative">
@@ -277,7 +284,7 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setShowPass((v) => !v)}
-                      className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-[8px] text-[#7e8990] transition hover:bg-[#f0e6db] hover:text-[#bf4b25]"
+                      className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-[8px] text-[#96928E] transition hover:bg-[#F8EDE8] hover:text-[#C84F32]"
                       aria-label={showPass ? 'Ocultar senha' : 'Mostrar senha'}
                       title={showPass ? 'Ocultar senha' : 'Mostrar senha'}
                     >
@@ -289,19 +296,19 @@ export default function LoginPage() {
               </div>
 
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-                <label className="flex cursor-pointer items-center gap-2 text-[13.5px] text-[#68737b]">
+                <label className="flex cursor-pointer items-center gap-2 text-[13.5px] text-[#6F6D6B]">
                   <input
                     type="checkbox"
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
-                    className="h-4 w-4 rounded border-[#c7bdb4] accent-[#bf4b25]"
+                    className="h-4 w-4 rounded border-[#E8E3DF] accent-[#C84F32]"
                   />
                   Manter conectado
                 </label>
                 <button
                   type="button"
-                  className="text-[13.5px] font-medium text-[#bf4b25] transition hover:text-[#923315]"
-                  onClick={() => alert('Entre em contato com o suporte.')}
+                  className="text-[13.5px] font-medium text-[#C84F32] transition hover:text-[#AE3F28]"
+                  onClick={() => openNoticeModal('Recuperar senha', 'Entre em contato com o suporte.')}
                 >
                   Esqueci minha senha
                 </button>
@@ -310,7 +317,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-6 flex w-full items-center justify-center gap-2 rounded-[8px] bg-[#bf4b25] px-5 py-4 text-[13px] font-bold uppercase tracking-normal text-white shadow-[0_10px_24px_rgba(191,75,37,0.24)] transition hover:-translate-y-px hover:bg-[#a83f1f] disabled:cursor-not-allowed disabled:opacity-75 disabled:hover:translate-y-0"
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-[8px] bg-[#C84F32] px-5 py-4 text-[13px] font-bold uppercase tracking-normal text-white shadow-[0_10px_24px_rgba(200,79,50,0.24)] transition hover:-translate-y-px hover:bg-[#AE3F28] disabled:cursor-not-allowed disabled:opacity-75 disabled:hover:translate-y-0"
               >
                 {loading ? (
                   <>
@@ -322,27 +329,27 @@ export default function LoginPage() {
                 )}
               </button>
 
-              <div className="my-6 flex items-center gap-4 text-[13px] text-[#68737b]">
-                <span className="h-px flex-1 bg-[#d8d2cc]" />
+              <div className="my-6 flex items-center gap-4 text-[13px] text-[#6F6D6B]">
+                <span className="h-px flex-1 bg-[#E8E3DF]" />
                 ou
-                <span className="h-px flex-1 bg-[#d8d2cc]" />
+                <span className="h-px flex-1 bg-[#E8E3DF]" />
               </div>
 
               <button
                 type="button"
-                className="flex w-full items-center justify-center gap-4 rounded-[8px] border border-[#d8d2cc] bg-white/[0.65] px-5 py-3.5 text-[15px] font-medium text-[#38454d] transition hover:border-[#c8b8aa] hover:bg-white"
-                onClick={() => alert('Login com Google ainda não está configurado.')}
+                className="flex w-full items-center justify-center gap-4 rounded-[8px] border border-[#E8E3DF] bg-white/[0.65] px-5 py-3.5 text-[15px] font-medium text-[#1F1F21] transition hover:border-[#E8E3DF] hover:bg-white"
+                onClick={() => openNoticeModal('Login com Google', 'Login com Google ainda não está configurado.')}
               >
                 <GoogleIcon />
                 Entrar com Google
               </button>
 
-              <p className="mt-5 text-center text-[13.5px] text-[#68737b]">
+              <p className="mt-5 text-center text-[13.5px] text-[#6F6D6B]">
                 Ainda não tem uma conta?{' '}
                 <button
                   type="button"
-                  className="font-medium text-[#bf4b25] transition hover:text-[#923315]"
-                  onClick={() => alert('Entre em contato com nossa equipe.')}
+                  className="font-medium text-[#C84F32] transition hover:text-[#AE3F28]"
+                  onClick={() => openNoticeModal('Fale com nossa equipe', 'Entre em contato com nossa equipe.')}
                 >
                   Fale com nossa equipe
                 </button>
@@ -359,17 +366,28 @@ export default function LoginPage() {
               key={title}
               className="flex min-h-[112px] items-center gap-5 border-[#ddd4ca] px-6 py-4 md:border-r md:last:border-r-0 lg:px-8"
             >
-              <div className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full bg-[#f5efe8] text-[#a8783a]">
+              <div className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full bg-[#F8EDE8] text-[#C84F32]">
                 <Icon size={31} strokeWidth={1.8} />
               </div>
               <div>
-                <h2 className="text-[17px] font-bold leading-tight text-[#1f2a32]">{title}</h2>
-                <p className="mt-2 text-[13.5px] leading-5 text-[#68737b]">{text}</p>
+                <h2 className="text-[17px] font-bold leading-tight text-[#1F1F21]">{title}</h2>
+                <p className="mt-2 text-[13.5px] leading-5 text-[#6F6D6B]">{text}</p>
               </div>
             </article>
           ))}
         </div>
       </section>
     </main>
+    <ConfirmActionModal
+      open={Boolean(noticeModal)}
+      type="gold"
+      title={noticeModal?.title}
+      description={noticeModal?.description}
+      confirmText="Entendi"
+      showCancel={false}
+      onClose={() => setNoticeModal(null)}
+      onConfirm={() => setNoticeModal(null)}
+    />
+    </>
   )
 }

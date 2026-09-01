@@ -1,14 +1,14 @@
 export default function FormObsSection({ form, onChange, onSectionFocus }) {
   return (
     <div
-      className="mb-4 overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]"
+      className="mb-4 overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(31,31,33,0.055)]"
       onPointerDownCapture={() => onSectionFocus?.('ensaio')}
       onFocusCapture={() => onSectionFocus?.('ensaio')}
     >
 
       <div className="flex items-center gap-3 border-b border-[var(--border)] px-5 py-4">
         <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A459" strokeWidth="1.8">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C84F32" strokeWidth="1.8">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             <polyline points="14 2 14 8 20 8" />
             <line x1="16" y1="13" x2="8" y2="13" />

@@ -21,7 +21,7 @@ export default function FloatingSelectionBar({
         <button
           type="button"
           onClick={onViewSelection}
-          className="rounded-full bg-[#a8783a] px-5 py-2 text-xs uppercase tracking-[0.12em] text-white"
+          className="rounded-full bg-[#C84F32] px-5 py-2 text-xs uppercase tracking-[0.12em] text-white"
         >
           Ver seleção →
         </button>

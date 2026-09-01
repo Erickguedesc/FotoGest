@@ -63,9 +63,9 @@ export default function DadosUsuarioForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <section className="rounded-[20px] border border-[#e7ded3] bg-white p-5 shadow-[0_16px_42px_rgba(82,58,35,0.06)] sm:p-6">
+      <section className="rounded-[20px] border border-[#E8E3DF] bg-white p-5 shadow-[0_16px_42px_rgba(31,31,33,0.05)] sm:p-6">
         <div className="flex flex-col gap-5 rounded-[18px] border border-[#eee5db] bg-[#fdfbf8] p-4 sm:p-5 md:flex-row md:items-center">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#e6d1b1] bg-[#fff4df] font-serif text-2xl text-[#bd7920]">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#E8E3DF] bg-[#F8EDE8] font-serif text-2xl text-[#C84F32]">
             {form.fotoPerfilUrl ? (
               <img
                 src={form.fotoPerfilUrl}
@@ -78,11 +78,11 @@ export default function DadosUsuarioForm({
           </div>
 
           <div className="min-w-0 flex-1">
-            <h3 className="text-xl font-medium text-[#211b17]">
+            <h3 className="text-xl font-medium text-[#1F1F21]">
               Perfil da conta
             </h3>
 
-            <p className="mt-1 text-sm leading-6 text-[#756a61]">
+            <p className="mt-1 text-sm leading-6 text-[#6F6D6B]">
               A foto é exibida no painel administrativo.
             </p>
           </div>
@@ -99,7 +99,7 @@ export default function DadosUsuarioForm({
             type="button"
             disabled={uploadLoading}
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-[12px] border border-[#d8b47a] bg-white px-4 text-sm font-medium text-[#a96516] transition hover:bg-[#fff6e8] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-[12px] border border-[#E6B3A6] bg-white px-4 text-sm font-medium text-[#C84F32] transition hover:bg-[#F8EDE8] disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Upload size={15} />
             {uploadLoading ? 'Enviando...' : 'Alterar foto'}
@@ -141,7 +141,7 @@ export default function DadosUsuarioForm({
         <button
           type="submit"
           disabled={loading}
-          className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-[12px] bg-[#bd7920] px-5 text-sm font-semibold text-white shadow-[0_10px_22px_rgba(189,121,32,0.18)] transition hover:bg-[#a96718] disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-[12px] bg-[#C84F32] px-5 text-sm font-semibold text-white shadow-[0_10px_22px_rgba(200,79,50,0.16)] transition hover:bg-[#AE3F28] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Save size={16} />
           {loading ? 'Salvando...' : 'Salvar dados'}

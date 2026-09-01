@@ -75,7 +75,7 @@ export default function ProximosEnsaios({ ensaios }) {
         return (
             <section className="theme-card rounded-[18px] border p-4">
                 <div className="theme-divider flex items-center gap-3 border-b pb-4">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--gold-border)] bg-[var(--gold)] text-[#1A1200] shadow-[0_12px_24px_rgba(183,131,58,0.18)]">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--gold-border)] bg-[var(--gold)] text-white shadow-[0_12px_24px_rgba(200,79,50,0.18)]">
                         <Camera size={18} />
                     </span>
 
@@ -96,7 +96,7 @@ export default function ProximosEnsaios({ ensaios }) {
 
                         <Link
                             to="/novo-ensaio"
-                            className="mt-6 inline-flex items-center gap-2 rounded-[14px] bg-[#b7833a] px-5 py-3 text-sm font-semibold text-[#fff7e6] shadow-[0_12px_24px_rgba(183,131,58,0.16)] transition hover:bg-[#a87532]"
+                            className="mt-6 inline-flex items-center gap-2 rounded-[14px] bg-[#C84F32] px-5 py-3 text-sm font-semibold text-[#FFFFFF] shadow-[0_12px_24px_rgba(200,79,50,0.16)] transition hover:bg-[#AE3F28]"
                         >
                             <Plus size={15} />
                             Novo ensaio
@@ -250,7 +250,7 @@ function EnsaioSlide({ ensaio, total, current, onPrevious, onNext }) {
 
             <Link
                 to={`/ensaios/${ensaio.id}`}
-                className="mt-4 flex h-11 w-full items-center justify-center rounded-[13px] border border-[var(--gold-border)] bg-[var(--card)] px-5 text-sm font-semibold text-[var(--gold)] transition hover:bg-[var(--gold)] hover:text-[#1A1200]"
+                className="mt-4 flex h-11 w-full items-center justify-center rounded-[13px] border border-[var(--gold-border)] bg-[var(--card)] px-5 text-sm font-semibold text-[var(--gold)] transition hover:bg-[var(--gold)] hover:text-white"
             >
                 Abrir ensaio
                 <ArrowRight size={18} className="ml-2" />

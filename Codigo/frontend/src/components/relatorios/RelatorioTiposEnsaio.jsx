@@ -15,7 +15,7 @@ const CORES_TIPOS = {
   FORMATURA: '#8B5CF6',
   EVENTO: '#EC4899',
   DEBUTANTE: '#84CC16',
-  OUTRO: '#C08457',
+  OUTRO: '#C84F32',
 }
 
 const getTipoColor = (tipo, index = 0) =>
@@ -29,20 +29,20 @@ export default function RelatorioTiposEnsaio({ tipos = [] }) {
   const percentualPrincipal = Number(principal?.percentualReceita || 0)
 
   return (
-    <section className="rounded-[18px] border border-[#e7ded3] bg-white p-5 shadow-[0_16px_46px_rgba(82,58,35,0.06)] md:p-6">
+    <section className="rounded-[18px] border border-[#E8E3DF] bg-white p-5 shadow-[0_16px_46px_rgba(31,31,33,0.05)] md:p-6">
       <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div>
-          <h2 className="font-serif text-3xl font-light leading-tight text-[#211b17]">
+          <h2 className="font-serif text-3xl font-light leading-tight text-[#1F1F21]">
             Receita por tipo de ensaio
           </h2>
 
-          <p className="mt-1 text-sm text-[#756a61]">
+          <p className="mt-1 text-sm text-[#6F6D6B]">
             Onde o faturamento está concentrado.
           </p>
         </div>
 
         {principal ? (
-          <div className="inline-flex w-fit rounded-full border border-[#e6ddd2] bg-[#fbfaf8] p-1">
+          <div className="inline-flex w-fit rounded-full border border-[#E8E3DF] bg-[#F5F3F1] p-1">
             <ToggleButton
               active={visualizacao === 'lista'}
               onClick={() => setVisualizacao('lista')}
@@ -94,7 +94,7 @@ export default function RelatorioTiposEnsaio({ tipos = [] }) {
                       {nome}
                     </h3>
 
-                    <p className="truncate text-xs text-[#756a61]">
+                    <p className="truncate text-xs text-[#6F6D6B]">
                       {item.quantidadeEnsaios || 0} ensaio{item.quantidadeEnsaios === 1 ? '' : 's'} · ticket médio {formatMoney(item.ticketMedio)}
                     </p>
                   </div>
@@ -117,7 +117,7 @@ export default function RelatorioTiposEnsaio({ tipos = [] }) {
                     })}%
                   </p>
 
-                  <p className="mt-1 text-xs font-medium text-[#756a61]">
+                  <p className="mt-1 text-xs font-medium text-[#6F6D6B]">
                     {formatMoney(item.faturamento)}
                   </p>
                 </div>
@@ -139,7 +139,7 @@ export default function RelatorioTiposEnsaio({ tipos = [] }) {
                 {principal.tipoExibicao || getTipoLabel(principal.tipo)}
               </p>
 
-              <p className="font-serif text-4xl text-[#a96718]">
+              <p className="font-serif text-4xl text-[#AE3F28]">
                 {percentualPrincipal.toLocaleString('pt-BR', {
                   maximumFractionDigits: 1,
                 })}%
@@ -158,7 +158,7 @@ export default function RelatorioTiposEnsaio({ tipos = [] }) {
               return (
                 <div
                   key={item.tipoExibicao || item.tipo}
-                  className="flex items-center justify-between gap-4 rounded-[12px] border border-[#e7ded3] bg-[#fbfaf8] px-4 py-3"
+                  className="flex items-center justify-between gap-4 rounded-[12px] border border-[#E8E3DF] bg-[#F5F3F1] px-4 py-3"
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <span
@@ -174,13 +174,13 @@ export default function RelatorioTiposEnsaio({ tipos = [] }) {
                         {item.tipoExibicao || getTipoLabel(item.tipo)}
                       </p>
 
-                      <p className="text-xs text-[#756a61]">
+                      <p className="text-xs text-[#6F6D6B]">
                         {item.quantidadeEnsaios || 0} ensaio{item.quantidadeEnsaios === 1 ? '' : 's'} · {formatMoney(item.faturamento)}
                       </p>
                     </div>
                   </div>
 
-                  <span className="font-serif text-xl text-[#a96718]">
+                  <span className="font-serif text-xl text-[#AE3F28]">
                     {percentual.toLocaleString('pt-BR', {
                       maximumFractionDigits: 1,
                     })}%
@@ -191,12 +191,12 @@ export default function RelatorioTiposEnsaio({ tipos = [] }) {
           </div>
         </div>
       ) : (
-        <div className="rounded-[14px] border border-dashed border-[#d9cec1] bg-[#fbfaf8] p-8 text-center">
+        <div className="rounded-[14px] border border-dashed border-[#E8E3DF] bg-[#F5F3F1] p-8 text-center">
           <p className="text-sm font-medium text-[#2b2520]">
             Ainda não há receita finalizada para comparar os tipos de ensaio.
           </p>
 
-          <p className="mt-2 text-xs text-[#756a61]">
+          <p className="mt-2 text-xs text-[#6F6D6B]">
             Quando houver ensaios entregues no período, a distribuição aparecerá aqui.
           </p>
         </div>
@@ -212,8 +212,8 @@ function ToggleButton({ active, children, onClick }) {
       onClick={onClick}
       className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
         active
-          ? 'bg-[#bd7920] text-white shadow-[0_8px_18px_rgba(189,121,32,0.16)]'
-          : 'text-[#7a6d62] hover:bg-white hover:text-[#9b5f13]'
+          ? 'bg-[#C84F32] text-white shadow-[0_8px_18px_rgba(200,79,50,0.14)]'
+          : 'text-[#6F6D6B] hover:bg-white hover:text-[#C84F32]'
       }`}
     >
       {children}

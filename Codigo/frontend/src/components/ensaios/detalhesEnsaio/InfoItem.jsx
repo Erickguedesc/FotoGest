@@ -1,15 +1,15 @@
-export default function InfoItem({ label, value, highlight }) {
+export default function InfoItem({ label, value, highlight, compact = false }) {
   return (
-    <div className="border-b border-[var(--border)] pb-4">
-      <p className="mb-2 text-[11px] text-[var(--text-muted)]">
+    <div className={`border-b border-[var(--border)] ${compact ? 'pb-2.5' : 'pb-4'}`}>
+      <p className={`${compact ? 'mb-1 text-[10.5px]' : 'mb-2 text-[11px]'} text-[var(--text-muted)]`}>
         {label}
       </p>
 
       <p
         className={
           highlight
-            ? 'text-[14px] text-[var(--gold)]'
-            : 'text-[14px] text-[var(--text)]'
+            ? `${compact ? 'text-[13px]' : 'text-[14px]'} text-[var(--gold)]`
+            : `${compact ? 'text-[13px]' : 'text-[14px]'} text-[var(--text)]`
         }
       >
         {value}

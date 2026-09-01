@@ -31,6 +31,7 @@ export default function ConfiguracoesPage() {
 
   const [toast, setToast] = useState(null)
   const [alertModal, setAlertModal] = useState(null)
+  const [confirmModal, setConfirmModal] = useState(null)
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
@@ -89,6 +90,44 @@ async function handleUploadCapaAlbumPadrao(arquivo) {
       error?.response?.data?.message ||
       error?.response?.data?.error ||
       'Não foi possível enviar a capa padrão do álbum.'
+
+    showToast(message, 'error')
+  } finally {
+    setUploadCapaAlbumLoading(false)
+  }
+}
+
+async function handleRemoverCapaAlbumPadrao() {
+  setConfirmModal({
+    type: 'danger',
+    title: 'Remover capa padrão?',
+    description:
+      'A capa padrão do álbum será removida das preferências. Os próximos álbuns sem foto oficial ficarão sem essa imagem padrão até que uma nova capa seja enviada.',
+    confirmText: 'Remover capa',
+    onConfirm: confirmarRemocaoCapaAlbumPadrao,
+  })
+}
+
+async function confirmarRemocaoCapaAlbumPadrao() {
+  try {
+    setUploadCapaAlbumLoading(true)
+
+    const data = await configuracoesService.removerCapaAlbumPadrao()
+
+    setConfiguracoes((current) => ({
+      ...(current || {}),
+      preferencias: data,
+    }))
+
+    showToast('Capa padrão do álbum removida com sucesso.')
+    setConfirmModal(null)
+  } catch (error) {
+    console.error('[ConfiguracoesPage] Erro ao remover capa padrão do álbum:', error)
+
+    const message =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      'Não foi possível remover a capa padrão do álbum.'
 
     showToast(message, 'error')
   } finally {
@@ -569,7 +608,7 @@ setAlertModal({
     <>
       <Header />
 
-      <main className="configuracoes-page min-h-screen overflow-x-hidden bg-[#f8f5ef] px-4 pb-12 pt-[96px] text-[#211b17] md:px-6 lg:px-8 xl:px-10">
+      <main className="configuracoes-page min-h-screen overflow-x-hidden bg-[#F7F7F8] px-4 pb-12 pt-[96px] text-[#1F1F21] md:px-6 lg:px-8 xl:px-10">
         <div className="w-full max-w-[1400px]">
         <ConfiguracoesHeader />
 
@@ -578,7 +617,7 @@ setAlertModal({
 
           <section className={activeTab === 'usuario' ? 'min-w-0' : 'theme-card min-w-0 rounded-3xl border border-[var(--gold-border)] p-6'}>
             {loading ? (
-              <div className="rounded-[16px] border border-[#e7ded3] bg-white p-6 text-sm text-[#756a61]">
+              <div className="rounded-[16px] border border-[#E8E3DF] bg-white p-6 text-sm text-[#6F6D6B]">
                 Carregando configurações...
               </div>
             ) : (
@@ -622,10 +661,10 @@ setAlertModal({
                   <PreferenciasSistemaForm
                     data={configuracoes?.preferencias}
                     loading={saving}
-                      uploadCapaLoading={uploadCapaAlbumLoading}
+                    uploadCapaLoading={uploadCapaAlbumLoading}
                     onSubmit={handleSalvarPreferencias}
-                      onUploadCapaAlbum={handleUploadCapaAlbumPadrao}
-
+                    onUploadCapaAlbum={handleUploadCapaAlbumPadrao}
+                    onRemoverCapaAlbum={handleRemoverCapaAlbumPadrao}
                   />
                 )}
 
@@ -687,6 +726,21 @@ setAlertModal({
           showCancel={false}
           onClose={() => setAlertModal(null)}
           onConfirm={() => setAlertModal(null)}
+        />
+      )}
+
+      {confirmModal && (
+        <ConfirmActionModal
+          open={Boolean(confirmModal)}
+          type={confirmModal.type}
+          title={confirmModal.title}
+          description={confirmModal.description}
+          confirmText={confirmModal.confirmText}
+          loading={uploadCapaAlbumLoading}
+          onClose={() => {
+            if (!uploadCapaAlbumLoading) setConfirmModal(null)
+          }}
+          onConfirm={confirmModal.onConfirm}
         />
       )}
     </>

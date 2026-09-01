@@ -10,14 +10,14 @@ import {
 } from 'lucide-react'
 
 const SUMMARY_ITEMS = [
-  { value: 'todos', label: 'Todos', Icon: ListFilter, colorClass: 'text-[#7a4a1b]' },
-  { value: 'ativos', label: 'Ativos', Icon: Activity, colorClass: 'text-emerald-600' },
-  { value: 'AGENDADO', label: 'Agendado', Icon: CalendarDays, colorClass: 'text-indigo-500' },
-  { value: 'REALIZADO', label: 'Realizado', Icon: Camera, colorClass: 'text-lime-600' },
-  { value: 'EM_SELECAO', label: 'Em seleção', Icon: ImageIcon, colorClass: 'text-amber-500' },
-  { value: 'EM_EDICAO', label: 'Em edição', Icon: PencilLine, colorClass: 'text-blue-500' },
-  { value: 'FINALIZADO', label: 'Entregue', Icon: PackageCheck, colorClass: 'text-teal-500' },
-  { value: 'CANCELADO', label: 'Cancelado', Icon: XCircle, colorClass: 'text-red-500' },
+  { value: 'todos', label: 'Todos', Icon: ListFilter, colorClass: 'text-[var(--color-primary)]' },
+  { value: 'ativos', label: 'Ativos', Icon: Activity, colorClass: 'text-[var(--status-delivered)]' },
+  { value: 'AGENDADO', label: 'Agendado', Icon: CalendarDays, colorClass: 'text-[var(--status-scheduled)]' },
+  { value: 'REALIZADO', label: 'Realizado', Icon: Camera, colorClass: 'text-[var(--status-completed)]' },
+  { value: 'EM_SELECAO', label: 'Em seleção', Icon: ImageIcon, colorClass: 'text-[var(--status-selection)]' },
+  { value: 'EM_EDICAO', label: 'Em edição', Icon: PencilLine, colorClass: 'text-[var(--status-editing)]' },
+  { value: 'FINALIZADO', label: 'Entregue', Icon: PackageCheck, colorClass: 'text-[var(--status-delivered)]' },
+  { value: 'CANCELADO', label: 'Cancelado', Icon: XCircle, colorClass: 'text-[var(--status-cancelled)]' },
 ]
 
 function getPercent(count, total) {
@@ -29,7 +29,7 @@ export default function EnsaiosStats({ activeGrupo, counts, loading = false, onC
   const total = Number(counts.todos || 0)
 
   return (
-    <section className="mb-6 overflow-hidden rounded-[8px] border border-[var(--border)] bg-[rgba(250,248,244,0.82)] shadow-[0_18px_42px_rgba(92,82,72,0.10)] backdrop-blur">
+    <section className="mb-6 overflow-hidden rounded-[8px] border border-[var(--border)] bg-[rgba(255,255,255,0.86)] shadow-[0_18px_42px_rgba(31,31,33,0.065)] backdrop-blur">
       <div className="grid divide-y divide-[var(--border)] sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4 xl:grid-cols-8">
         {SUMMARY_ITEMS.map(({ value, label, Icon, colorClass }) => {
           const count = Number(counts[value] || 0)
@@ -57,7 +57,7 @@ export default function EnsaiosStats({ activeGrupo, counts, loading = false, onC
                 {loading ? (
                   <>
                     <span className="h-6 w-10 animate-pulse rounded bg-[rgba(92,82,72,0.12)]" />
-                    <span className="h-3 w-8 animate-pulse rounded bg-[rgba(92,82,72,0.10)]" />
+                    <span className="h-3 w-8 animate-pulse rounded bg-[rgba(31,31,33,0.065)]" />
                   </>
                 ) : (
                   <>

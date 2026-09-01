@@ -262,7 +262,7 @@ export default function GaleriaPage() {
   }
 
   return (
-    <main className="theme-static min-h-screen bg-[#f5f0e8] text-[#1a1610]">
+    <main className="theme-static min-h-screen bg-[#F7F7F8] text-[#1F1F21]">
       <GalleryHero
         coverUrl={capaAlbumUrl}
         nomeCliente={nomeCliente}

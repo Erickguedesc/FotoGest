@@ -30,6 +30,8 @@ public class EnsaioResponse {
 
     private OffsetDateTime dataEnsaio;
     private String local;
+    private String cidadeEnsaio;
+    private String estadoEnsaio;
 
     private Integer qtdFotosPacote;
     private BigDecimal valorPacote;

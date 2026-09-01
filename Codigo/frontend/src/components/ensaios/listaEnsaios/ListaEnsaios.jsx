@@ -35,7 +35,9 @@ const GRUPO_STATUS = {
 }
 
 const VIEW_MODE_STORAGE_KEY = 'fotolhar:ensaios:viewMode'
+const PAGE_SIZE_STORAGE_KEY = 'fotolhar:ensaios:pageSize'
 const VIEW_MODES = ['table', 'grid', 'calendar']
+const PAGE_SIZE_OPTIONS = [6, 10, 15, 20]
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 
 const getInitialViewMode = (searchParams) => {
@@ -104,6 +106,15 @@ const buildParams = (filters) => {
   return params
 }
 
+const getInitialPageSize = () => {
+  try {
+    const saved = Number(window.localStorage.getItem(PAGE_SIZE_STORAGE_KEY))
+    return PAGE_SIZE_OPTIONS.includes(saved) ? saved : 10
+  } catch {
+    return 10
+  }
+}
+
 const sortValue = (ensaio, key) => {
   if (key === 'dataEnsaio') {
     return ensaio.dataEnsaio ? new Date(ensaio.dataEnsaio).getTime() : 0
@@ -151,7 +162,7 @@ export default function ListaEnsaios() {
   const [viewMode, setViewMode] = useState(() => getInitialViewMode(searchParams))
   const [sort, setSort] = useState({ key: 'dataEnsaio', direction: 'desc' })
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
+  const [pageSize, setPageSize] = useState(getInitialPageSize)
   const [loading, setLoading] = useState(true)
   const [hasLoaded, setHasLoaded] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
@@ -172,6 +183,17 @@ export default function ListaEnsaios() {
     setToast({ message, type })
   }
 
+  const applyEnsaiosData = (data) => {
+    const ensaiosFiltrados = filters.status
+      ? data.filter((ensaio) => ensaio.status === filters.status)
+      : filters.grupo === 'andamento'
+        ? data.filter((ensaio) => STATUS_EM_ANDAMENTO.includes(ensaio.status))
+        : filtrarPorGrupo(data, filters.grupo)
+
+    setEnsaios(ensaiosFiltrados)
+    setStatusCounts(buildStatusCounts(data))
+  }
+
   const loadEnsaios = async () => {
     const requestId = loadSequenceRef.current + 1
     loadSequenceRef.current = requestId
@@ -183,19 +205,19 @@ export default function ListaEnsaios() {
         status: '',
         grupo: '',
       })
+      const cachedData = ensaiosService.getCachedListar(baseParams)
+
+      if (cachedData && requestId === loadSequenceRef.current) {
+        applyEnsaiosData(cachedData)
+        setHasLoaded(true)
+      }
+
       const response = await ensaiosService.listar(baseParams)
 
       if (requestId !== loadSequenceRef.current) return
 
       const data = Array.isArray(response.data) ? response.data : []
-      const ensaiosFiltrados = filters.status
-        ? data.filter((ensaio) => ensaio.status === filters.status)
-        : filters.grupo === 'andamento'
-          ? data.filter((ensaio) => STATUS_EM_ANDAMENTO.includes(ensaio.status))
-          : filtrarPorGrupo(data, filters.grupo)
-
-      setEnsaios(ensaiosFiltrados)
-      setStatusCounts(buildStatusCounts(data))
+      applyEnsaiosData(data)
     } catch (error) {
       if (requestId !== loadSequenceRef.current) return
 
@@ -476,7 +498,7 @@ export default function ListaEnsaios() {
             <button
               type="button"
               onClick={loadEnsaios}
-              className="inline-flex items-center gap-2 rounded-[8px] border border-[var(--border)] bg-[rgba(250,248,244,0.68)] px-4 py-2.5 text-[13px] text-[var(--text)] shadow-[0_12px_28px_rgba(92,82,72,0.08)] transition hover:border-[var(--gold-border)] hover:text-[var(--gold)]"
+              className="inline-flex items-center gap-2 rounded-[8px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] px-4 py-2.5 text-[13px] text-[var(--text)] shadow-[0_12px_28px_rgba(31,31,33,0.055)] transition hover:border-[var(--gold-border)] hover:text-[var(--gold)]"
             >
               <Icon name="refresh" size={13} />
               Atualizar
@@ -485,7 +507,7 @@ export default function ListaEnsaios() {
             <button
               type="button"
               onClick={() => navigate('/novo-ensaio')}
-              className="inline-flex items-center gap-2 rounded-[8px] bg-[linear-gradient(180deg,#c57a08,#a96200)] px-5 py-2.5 text-[13px] font-medium text-white shadow-[0_12px_28px_rgba(137,76,0,0.22)] transition hover:-translate-y-0.5 hover:brightness-110"
+              className="inline-flex items-center gap-2 rounded-[8px] bg-[#C84F32] hover:bg-[#AE3F28] px-5 py-2.5 text-[13px] font-medium text-white shadow-[0_12px_28px_rgba(200,79,50,0.18)] transition hover:-translate-y-0.5"
             >
               <Icon name="plus" size={14} />
               Novo Ensaio
@@ -558,6 +580,12 @@ export default function ListaEnsaios() {
                 total={sortedEnsaios.length}
                 onPageChange={setPage}
                 onPageSizeChange={(size) => {
+                  try {
+                    window.localStorage.setItem(PAGE_SIZE_STORAGE_KEY, String(size))
+                  } catch {
+                    // Preferencia visual local; se o navegador bloquear, a paginacao segue funcionando.
+                  }
+
                   setPageSize(size)
                   setPage(1)
                 }}

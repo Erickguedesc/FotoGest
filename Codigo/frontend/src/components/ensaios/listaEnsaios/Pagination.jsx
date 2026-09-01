@@ -34,7 +34,7 @@ export default function Pagination({
   const pluralLabel = total === 1 ? itemLabel : `${itemLabel}s`
 
   return (
-    <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-[8px] border border-[var(--border)] bg-[rgba(255,255,255,0.68)] px-4 py-3 text-[12px] text-[var(--text-muted)] shadow-[0_14px_34px_rgba(92,82,72,0.08)]">
+    <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-[8px] border border-[var(--border)] bg-[rgba(255,255,255,0.68)] px-4 py-3 text-[12px] text-[var(--text-muted)] shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
       <span>
         Exibindo {firstItem}-{lastItem} de {total} {pluralLabel}
       </span>
@@ -69,7 +69,7 @@ export default function Pagination({
               aria-current={active ? 'page' : undefined}
               className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-3 text-[12px] font-medium transition ${
                 active
-                  ? 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)] shadow-[0_10px_24px_rgba(92,82,72,0.10)]'
+                  ? 'border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)] shadow-[0_10px_24px_rgba(31,31,33,0.065)]'
                   : 'border-[var(--border)] bg-white/45 text-[var(--text)] hover:border-[var(--gold-border)] hover:bg-[var(--gold-dim)] hover:text-[var(--gold)]'
               }`}
             >

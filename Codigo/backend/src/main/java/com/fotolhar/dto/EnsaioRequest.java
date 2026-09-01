@@ -5,6 +5,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -51,6 +52,16 @@ public class EnsaioRequest {
 
     @NotBlank(message = "Local e obrigatorio")
     private String local;
+
+    @Size(max = 120, message = "Cidade do ensaio deve ter no maximo 120 caracteres")
+    private String cidadeEnsaio;
+
+    @Size(max = 2, message = "Estado do ensaio deve ser uma UF valida")
+    @Pattern(
+            regexp = "^(|AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)$",
+            message = "Estado do ensaio deve ser uma UF valida"
+    )
+    private String estadoEnsaio;
 
     @NotNull(message = "Quantidade de fotos do pacote e obrigatoria")
     @Min(value = 1, message = "Deve ter pelo menos 1 foto no pacote")

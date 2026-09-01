@@ -79,7 +79,7 @@ export default function EnsaiosToolbar({
         <input
           value={filters.clienteNome}
           onChange={(event) => onFilterChange('clienteNome', event.target.value)}
-          className="h-11 w-full rounded-[8px] border border-[var(--border)] bg-white/55 py-2.5 pl-10 pr-3.5 text-[13px] font-light text-[var(--text)] outline-none shadow-[0_10px_24px_rgba(92,82,72,0.06)] transition placeholder:text-[var(--text-muted)] focus:border-[var(--gold-border)] focus:bg-white"
+          className="h-11 w-full rounded-[8px] border border-[var(--border)] bg-white/55 py-2.5 pl-10 pr-3.5 text-[13px] font-light text-[var(--text)] outline-none shadow-[0_10px_24px_rgba(31,31,33,0.045)] transition placeholder:text-[var(--text-muted)] focus:border-[var(--gold-border)] focus:bg-white"
           placeholder="Buscar cliente..."
         />
       </div>
@@ -87,13 +87,13 @@ export default function EnsaiosToolbar({
       <select
         value={filters.tipo}
         onChange={(event) => onFilterChange('tipo', event.target.value)}
-        className="h-11 rounded-[8px] border border-[var(--border)] bg-white/55 px-3.5 py-2.5 text-[13px] text-[var(--text)] outline-none shadow-[0_10px_24px_rgba(92,82,72,0.06)] transition focus:border-[var(--gold-border)] focus:bg-white"
+        className="h-11 rounded-[8px] border border-[var(--border)] bg-white/55 px-3.5 py-2.5 text-[13px] text-[var(--text)] outline-none shadow-[0_10px_24px_rgba(31,31,33,0.045)] transition focus:border-[var(--gold-border)] focus:bg-white"
       >
         <option value="">Todos os tipos</option>
         {TIPO_OPTIONS.map((tipo) => <option key={tipo.value} value={tipo.value}>{tipo.label}</option>)}
       </select>
 
-      <div className="flex h-11 items-center gap-2 rounded-[8px] border border-[var(--border)] bg-white/55 px-3 py-2 text-[var(--text-muted)] shadow-[0_10px_24px_rgba(92,82,72,0.06)]">
+      <div className="flex h-11 items-center gap-2 rounded-[8px] border border-[var(--border)] bg-white/55 px-3 py-2 text-[var(--text-muted)] shadow-[0_10px_24px_rgba(31,31,33,0.045)]">
         <Icon name="calendar" size={13} />
         <input
           type="date"
@@ -121,12 +121,12 @@ export default function EnsaiosToolbar({
       <button
         type="button"
         onClick={onClear}
-        className="h-11 rounded-[8px] border border-[var(--border)] bg-white/55 px-4 text-[13px] text-[var(--text)] shadow-[0_10px_24px_rgba(92,82,72,0.06)] transition hover:border-[var(--gold-border)] hover:text-[var(--gold)]"
+        className="h-11 rounded-[8px] border border-[var(--border)] bg-white/55 px-4 text-[13px] text-[var(--text)] shadow-[0_10px_24px_rgba(31,31,33,0.045)] transition hover:border-[var(--gold-border)] hover:text-[var(--gold)]"
       >
         Limpar
       </button>
 
-      <div className="ml-auto flex gap-1 rounded-[8px] border border-[var(--border)] bg-white/55 p-1.5 shadow-[0_12px_30px_rgba(92,82,72,0.08)] max-sm:w-full">
+      <div className="ml-auto flex gap-1 rounded-[8px] border border-[var(--border)] bg-white/55 p-1.5 shadow-[0_12px_30px_rgba(31,31,33,0.055)] max-sm:w-full">
         <button
           type="button"
           onClick={() => onViewModeChange('table')}
@@ -138,21 +138,21 @@ export default function EnsaiosToolbar({
         </button>
         <button
           type="button"
-          onClick={() => onViewModeChange('grid')}
-          className={`flex h-9 items-center justify-center gap-2 rounded-[8px] px-3 text-[12px] font-medium transition max-sm:flex-1 ${viewMode === 'grid' ? 'border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]' : 'border border-transparent text-[var(--text)] hover:bg-white hover:text-[var(--gold)]'}`}
-          title="Cards"
-        >
-          <Icon name="grid" size={14} />
-          <span>Cards</span>
-        </button>
-        <button
-          type="button"
           onClick={() => onViewModeChange('calendar')}
           className={`flex h-9 items-center justify-center gap-2 rounded-[8px] px-3 text-[12px] font-medium transition max-sm:flex-1 ${viewMode === 'calendar' ? 'border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]' : 'border border-transparent text-[var(--text)] hover:bg-white hover:text-[var(--gold)]'}`}
           title="Calendário"
         >
           <Icon name="calendar" size={14} />
           <span>Calendário</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onViewModeChange('grid')}
+          className={`flex h-9 items-center justify-center gap-2 rounded-[8px] px-3 text-[12px] font-medium transition max-sm:flex-1 ${viewMode === 'grid' ? 'border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]' : 'border border-transparent text-[var(--text)] hover:bg-white hover:text-[var(--gold)]'}`}
+          title="Cards"
+        >
+          <Icon name="grid" size={14} />
+          <span>Cards</span>
         </button>
       </div>
     </div>

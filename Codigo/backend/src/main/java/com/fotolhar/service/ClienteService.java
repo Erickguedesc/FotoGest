@@ -167,16 +167,16 @@ public class ClienteService {
     private SituacaoCliente resolverSituacao(Cliente cliente) {
         List<Ensaio> ensaios = cliente.getEnsaios();
 
+        if (Boolean.FALSE.equals(cliente.getAtivo())) {
+            return SituacaoCliente.ARQUIVADO;
+        }
+
         boolean temFluxoAtivo = ensaios.stream()
                 .map(Ensaio::getStatus)
                 .anyMatch(this::isStatusFluxoAtivo);
 
         if (temFluxoAtivo) {
             return SituacaoCliente.EM_ANDAMENTO;
-        }
-
-        if (Boolean.FALSE.equals(cliente.getAtivo())) {
-            return SituacaoCliente.ARQUIVADO;
         }
 
         boolean temEntregue = ensaios.stream()

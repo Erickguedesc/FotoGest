@@ -51,6 +51,12 @@ private StatusEnsaio status = StatusEnsaio.AGENDADO;
     @Column(nullable = false, length = 300)
     private String local;
 
+    @Column(name = "cidade_ensaio", length = 120)
+    private String cidadeEnsaio;
+
+    @Column(name = "estado_ensaio", length = 2)
+    private String estadoEnsaio;
+
     /** Quantidade de fotos incluídas no pacote */
    @Column(name = "qtd_fotos_pacote", nullable = false)
    private Integer qtdFotosPacote;

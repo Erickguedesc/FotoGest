@@ -193,7 +193,7 @@ export default function ModelosContratoForm({
         <button
           type="button"
           onClick={handleNew}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-[var(--gold-light)]"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--gold-light)]"
         >
           <Plus size={16} />
           Novo modelo
@@ -393,7 +393,7 @@ export default function ModelosContratoForm({
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-5 py-3 text-sm font-semibold text-black transition hover:bg-[var(--gold-light)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--gold)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--gold-light)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Save size={16} />
               {loading ? 'Salvando...' : 'Salvar modelo'}

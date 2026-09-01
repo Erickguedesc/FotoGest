@@ -1,27 +1,28 @@
-import BaseModal from './BaseModal'
+import ConfirmActionModal from '../../ui/ConfirmActionModal'
 
 export default function ConfirmDeleteModal({ ensaio, open, loading, onClose, onConfirm }) {
   return (
-    <BaseModal
+    <ConfirmActionModal
       open={open}
-      title="Excluir ensaio"
-      onClose={onClose}
-      maxWidth="max-w-[440px]"
-      footer={(
+      type="danger"
+      title="Excluir ensaio?"
+      description={
         <>
-          <button type="button" onClick={onClose} disabled={loading} className="rounded-lg border border-[var(--border)] px-4 py-2.5 text-[12px] tracking-[0.08em] text-[var(--text-muted)] transition hover:text-[var(--text)] disabled:opacity-50">Cancelar</button>
-          <button type="button" onClick={onConfirm} disabled={loading} className="rounded-lg bg-red-400/90 px-5 py-2.5 text-[12px] font-medium tracking-[0.1em] text-[#1A0505] transition hover:bg-red-300 disabled:opacity-60">
-            {loading ? 'Excluindo...' : 'Excluir definitivamente'}
-          </button>
+          Tem certeza que deseja excluir permanentemente o ensaio de{' '}
+          <strong className="font-semibold text-[#1F1F21]">
+            {ensaio?.clienteNome || 'cliente não informado'}
+          </strong>
+          ?
+          <span className="mt-3 block rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-[12px] font-medium leading-5 text-red-700">
+            Só é permitido excluir ensaios com status Agendado ou Cancelado. Esta ação não poderá ser desfeita.
+          </span>
         </>
-      )}
-    >
-      <p className="theme-text text-[14px] leading-6">
-        Tem certeza que deseja excluir permanentemente o ensaio de <strong className="theme-title">{ensaio?.clienteNome}</strong>?
-      </p>
-      <p className="mt-3 rounded-lg border border-red-400/30 bg-red-400/10 p-3 text-[12px] font-medium leading-5 text-red-300">
-         Só é permitido excluir ensaios com status Agendado ou Cancelado. Esta ação não poderá ser desfeita.
-      </p>
-    </BaseModal>
+      }
+      confirmText="Excluir definitivamente"
+      cancelText="Cancelar"
+      loading={loading}
+      onClose={onClose}
+      onConfirm={onConfirm}
+    />
   )
 }

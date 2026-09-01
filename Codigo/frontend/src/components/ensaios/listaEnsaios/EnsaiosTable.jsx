@@ -1,14 +1,14 @@
-import { CalendarDays, Clock3, Images, MapPin } from 'lucide-react'
-
 import EnsaioActions from './EnsaioActions'
 import ProgressBar from './ProgressBar'
-import StatusBadge from './StatusBadge'
 import {
   formatCurrency,
   formatDate,
   getInitials,
+  getStatusInfo,
   getTipoExibicao,
 } from './ensaioHelpers'
+
+const WEEKDAY_FORMATTER = new Intl.DateTimeFormat('pt-BR', { weekday: 'short' })
 
 const formatTime = (value) => {
   if (!value) return '--:--'
@@ -22,6 +22,30 @@ const formatTime = (value) => {
   })
 }
 
+const formatWeekday = (value) => {
+  if (!value) return ''
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+
+  return WEEKDAY_FORMATTER.format(date).replace('.', '').toLowerCase()
+}
+
+const formatPhotos = (value) => {
+  const total = Number(value ?? 0)
+
+  if (!total) return 'Sem fotos'
+
+  return `${total.toLocaleString('pt-BR')} foto${total === 1 ? '' : 's'}`
+}
+
+const getCapaUrl = (ensaio) =>
+  ensaio?.capaUrl ||
+  ensaio?.fotoCapaUrl ||
+  ensaio?.capa?.urlWatermark ||
+  ensaio?.capa?.urlOriginal ||
+  ''
+
 export default function EnsaiosTable({
   ensaios,
   onView,
@@ -31,25 +55,43 @@ export default function EnsaiosTable({
   onPreContrato,
 }) {
   return (
-    <section>
-      <div className="space-y-3">
-        {ensaios.map((ensaio) => (
-          <EnsaioListCard
-            key={ensaio.id}
-            ensaio={ensaio}
-            onView={onView}
-            onEdit={onEdit}
-            onStatus={onStatus}
-            onDelete={onDelete}
-            onPreContrato={onPreContrato}
-          />
-        ))}
+    <section className="overflow-hidden rounded-[8px] border border-[var(--border)] bg-white shadow-[0_14px_34px_rgba(31,31,33,0.045)]">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[920px] border-collapse">
+          <thead>
+            <tr className="border-b border-[var(--border)] bg-[#FBFAF9]">
+              <TableHead className="w-[230px]">Cliente</TableHead>
+              <TableHead className="w-[120px]">Tipo</TableHead>
+              <TableHead className="w-[116px]">Data</TableHead>
+              <TableHead className="w-[86px]">Horário</TableHead>
+              <TableHead className="w-[130px]">Status</TableHead>
+              <TableHead className="w-[104px]">Fotos</TableHead>
+              <TableHead className="w-[112px]">Valor</TableHead>
+              <TableHead className="w-[150px]">Progresso</TableHead>
+              <TableHead className="w-[160px] text-right">Ações</TableHead>
+            </tr>
+          </thead>
+
+          <tbody className="divide-y divide-[var(--border)]">
+            {ensaios.map((ensaio) => (
+              <EnsaioTableLine
+                key={ensaio.id}
+                ensaio={ensaio}
+                onView={onView}
+                onEdit={onEdit}
+                onStatus={onStatus}
+                onDelete={onDelete}
+                onPreContrato={onPreContrato}
+              />
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   )
 }
 
-function EnsaioListCard({
+function EnsaioTableLine({
   ensaio,
   onView,
   onEdit,
@@ -59,7 +101,9 @@ function EnsaioListCard({
 }) {
   const totalFotos = Number(ensaio.totalFotos ?? 0)
   const valorExibido = ensaio.valorFinalEnsaio ?? ensaio.valorPacote
-  const hasImage = Boolean(ensaio.capaUrl)
+  const capaUrl = totalFotos > 0 ? getCapaUrl(ensaio) : ''
+  const tipo = getTipoExibicao(ensaio)
+  const weekday = formatWeekday(ensaio.dataEnsaio)
 
   const handleOpen = () => {
     onView(ensaio)
@@ -73,102 +117,104 @@ function EnsaioListCard({
   }
 
   return (
-    <article
+    <tr
       role="button"
       tabIndex={0}
       onClick={handleOpen}
       onKeyDown={handleKeyDown}
-      className="group grid cursor-pointer overflow-hidden rounded-[8px] border border-[var(--border)] bg-[rgba(255,255,255,0.72)] outline-none shadow-[0_14px_34px_rgba(92,82,72,0.08)] transition hover:-translate-y-0.5 hover:border-[var(--gold-border)] hover:bg-white focus-visible:border-[var(--gold-border)] focus-visible:ring-2 focus-visible:ring-[var(--gold)]/20 max-lg:grid-cols-1 lg:h-[128px] lg:grid-cols-[172px_minmax(0,1fr)_240px]"
+      className="cursor-pointer outline-none transition hover:bg-[#F8F5F2] focus-visible:bg-[#F8F5F2]"
     >
-      <button
-        type="button"
-        onClick={(event) => {
-          event.stopPropagation()
-          handleOpen()
-        }}
-        className="relative h-full min-h-0 overflow-hidden bg-[#eee8df] text-left max-lg:h-[180px] max-sm:h-[148px]"
-      >
-        {hasImage ? (
-          <img
-            src={ensaio.capaUrl}
-            alt={ensaio.clienteNome || 'Capa do ensaio'}
-           className="block h-full max-h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.03]"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center bg-[linear-gradient(135deg,#f5f0e8,#e8ded1)]">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full border border-[var(--border)] bg-white/45 font-serif text-lg text-[var(--text-muted)]">
-              {getInitials(ensaio.clienteNome)}
+      <td className="px-4 py-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-[8px] border border-[var(--border)] bg-[#F5F1EE] text-[11px] font-semibold text-[var(--gold)]">
+            {capaUrl ? (
+              <img
+                src={capaUrl}
+                alt={ensaio.clienteNome || 'Capa do ensaio'}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              getInitials(ensaio.clienteNome)
+            )}
+          </span>
+
+          <span className="min-w-0">
+            <span
+              title={ensaio.clienteNome || 'Cliente sem nome'}
+              className="block max-w-[170px] truncate text-[13px] font-semibold text-[var(--text)]"
+            >
+              {ensaio.clienteNome || 'Cliente sem nome'}
             </span>
-          </div>
-        )}
-
-        <div className="absolute inset-0 bg-gradient-to-r from-white/4 via-transparent to-black/10" />
-      </button>
-
-      <button
-        type="button"
-        onClick={(event) => {
-          event.stopPropagation()
-          handleOpen()
-        }}
-        className="flex min-h-0 min-w-0 flex-col justify-center overflow-hidden px-6 py-3 text-left max-md:px-4"
-      >
-        <div className="mb-3 flex flex-wrap items-center gap-2.5">
-          <h3 className="max-w-full truncate text-[17px] font-medium text-[var(--text)]">
-            {ensaio.clienteNome || 'Cliente sem nome'}
-          </h3>
-
-          <StatusBadge status={ensaio.status} />
-
-          <span className="rounded-full border border-[var(--border)] bg-[#f3eee7] px-2.5 py-1 text-[10px] uppercase tracking-normal text-[var(--text-muted)]">
-            {getTipoExibicao(ensaio)}
           </span>
         </div>
+      </td>
 
-        <div className="mb-4 flex flex-wrap gap-x-4 gap-y-1.5 text-[12px] text-[var(--text)]">
-          <Meta icon={<CalendarDays size={15} />} value={formatDate(ensaio.dataEnsaio)} />
-          <Meta icon={<Clock3 size={15} />} value={formatTime(ensaio.dataEnsaio)} />
-          <Meta icon={<MapPin size={15} />} value={ensaio.local || 'Local não informado'} />
-          <Meta
-            icon={<Images size={15} />}
-            value={totalFotos > 0 ? `${totalFotos} foto${totalFotos === 1 ? '' : 's'}` : 'Sem fotos'}
+      <td className="px-4 py-3">
+        <span title={tipo} className="block max-w-[104px] truncate text-[12px] text-[var(--text)]">
+          {tipo}
+        </span>
+      </td>
+
+      <td className="px-4 py-3 text-[12px] text-[var(--text)]">
+        <span className="block whitespace-nowrap">{formatDate(ensaio.dataEnsaio)}</span>
+        {weekday && (
+          <span className="mt-0.5 block text-[10px] text-[var(--text-muted)]">
+            {weekday}.
+          </span>
+        )}
+      </td>
+
+      <td className="px-4 py-3 text-[12px] text-[var(--text)]">
+        {formatTime(ensaio.dataEnsaio)}
+      </td>
+
+      <td className="px-4 py-3">
+        <TableStatusBadge status={ensaio.status} />
+      </td>
+
+      <td className="px-4 py-3 text-[12px] text-[var(--text)]">
+        <span className="whitespace-nowrap">{formatPhotos(ensaio.totalFotos)}</span>
+      </td>
+
+      <td className="px-4 py-3 text-[12px] font-medium text-[var(--text)]">
+        <span className="whitespace-nowrap">{formatCurrency(valorExibido)}</span>
+      </td>
+
+      <td className="px-4 py-3">
+        <ProgressBar ensaio={ensaio} compact />
+      </td>
+
+      <td className="px-4 py-3" onClick={(event) => event.stopPropagation()}>
+        <div className="flex justify-end">
+          <EnsaioActions
+            ensaio={ensaio}
+            onView={onView}
+            onEdit={onEdit}
+            onStatus={onStatus}
+            onDelete={onDelete}
+            onPreContrato={onPreContrato}
+            showView={false}
           />
         </div>
-
-        <div className="grid items-end gap-4 md:grid-cols-[minmax(180px,1fr)_auto]">
-          <div>
-            <ProgressBar ensaio={ensaio} compact={false} />
-          </div>
-
-          <div className="font-serif text-[21px] text-[var(--gold)]">
-            {formatCurrency(valorExibido)}
-          </div>
-        </div>
-      </button>
-
-      <div
-        className="flex items-center justify-center border-l border-[var(--border)] bg-[rgba(250,248,244,0.58)] px-4 py-2.5 max-lg:border-l-0 max-lg:border-t"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <EnsaioActions
-          ensaio={ensaio}
-          onView={onView}
-          onEdit={onEdit}
-          onStatus={onStatus}
-          onDelete={onDelete}
-          onPreContrato={onPreContrato}
-          showView={false}
-        />
-      </div>
-    </article>
+      </td>
+    </tr>
   )
 }
 
-function Meta({ icon, value }) {
+function TableHead({ children, className = '' }) {
   return (
-    <span className="inline-flex min-w-0 items-center gap-1.5">
-      <span className="shrink-0 text-[var(--gold)]">{icon}</span>
-      <span className="truncate">{value}</span>
+    <th className={`px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-normal text-[var(--text-muted)] ${className}`}>
+      {children}
+    </th>
+  )
+}
+
+function TableStatusBadge({ status }) {
+  const info = getStatusInfo(status)
+
+  return (
+    <span className={`inline-flex whitespace-nowrap rounded-full border px-2.5 py-1 text-[10px] font-medium leading-none ${info.chipClass}`}>
+      {info.label}
     </span>
   )
 }

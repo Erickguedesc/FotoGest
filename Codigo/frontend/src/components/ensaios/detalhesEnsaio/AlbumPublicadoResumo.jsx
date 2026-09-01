@@ -62,9 +62,9 @@ export default function AlbumPublicadoResumo({
   }
 
   return (
-    <section className="rounded-[16px] border border-[var(--border)] bg-white/82 p-4 shadow-[0_14px_34px_rgba(78,56,35,0.07)]">
+    <section className="rounded-[16px] border border-[var(--border)] bg-white/82 p-4 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
       <div className="grid items-stretch gap-5 xl:grid-cols-[minmax(220px,320px)_minmax(0,1fr)]">
-        <div className="relative overflow-hidden rounded-[12px] bg-[#f1e8dd] shadow-[0_10px_22px_rgba(78,56,35,0.07)]">
+        <div className="relative overflow-hidden rounded-[12px] bg-[#F5F3F1] shadow-[0_10px_22px_rgba(31,31,33,0.055)]">
           {capa ? (
             <FotoPreviewImage
               foto={capa}
@@ -77,7 +77,7 @@ export default function AlbumPublicadoResumo({
             </div>
           )}
 
-          <span className="absolute bottom-4 left-4 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white/86 text-[var(--text-muted)] shadow-[0_8px_18px_rgba(78,56,35,0.10)]">
+          <span className="absolute bottom-4 left-4 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white/86 text-[var(--text-muted)] shadow-[0_8px_18px_rgba(31,31,33,0.07)]">
             <ImageIcon size={18} strokeWidth={1.7} />
           </span>
         </div>
@@ -123,7 +123,7 @@ export default function AlbumPublicadoResumo({
             <button
               type="button"
               onClick={() => setMostrarFotos((prev) => !prev)}
-              className="mt-5 inline-flex w-fit items-center gap-3 rounded-[9px] bg-[#b97804] px-5 py-3 text-[14px] font-semibold text-white shadow-[0_12px_24px_rgba(166,95,0,0.16)] transition hover:bg-[#a65f00] max-sm:w-full max-sm:justify-center"
+              className="mt-5 inline-flex w-fit items-center gap-3 rounded-[9px] bg-[#C84F32] px-5 py-3 text-[14px] font-semibold text-white shadow-[0_12px_24px_rgba(200,79,50,0.16)] transition hover:bg-[#AE3F28] max-sm:w-full max-sm:justify-center"
             >
               {mostrarFotos ? 'Ocultar fotos do álbum' : 'Ver fotos do álbum'}
               <ArrowRight size={20} strokeWidth={1.8} />
@@ -192,7 +192,7 @@ export default function AlbumPublicadoResumo({
 
 function ResumoItem({ icon: Icon, label, value, success }) {
   return (
-    <div className="rounded-[10px] border border-[var(--border)] bg-white/72 px-4 py-3.5 shadow-[0_8px_18px_rgba(78,56,35,0.05)]">
+    <div className="rounded-[10px] border border-[var(--border)] bg-white/72 px-4 py-3.5 shadow-[0_8px_18px_rgba(31,31,33,0.04)]">
       <div className="flex items-center gap-3">
         <Icon
           size={23}

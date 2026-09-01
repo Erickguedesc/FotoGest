@@ -12,11 +12,11 @@ export function FormField({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#756a61]">
+      <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6F6D6B]">
         {label}
       </span>
 
-      <span className="flex min-h-12 items-center rounded-[13px] border border-[#ded4c8] bg-white text-[#211b17] transition focus-within:border-[#bf812b] focus-within:ring-4 focus-within:ring-[#c8872b]/10">
+      <span className="flex min-h-12 items-center rounded-[13px] border border-[#E8E3DF] bg-white text-[#1F1F21] transition focus-within:border-[#C84F32] focus-within:ring-4 focus-within:ring-[#C84F32]/10">
         {icon ? (
           <span className="ml-4 flex shrink-0 text-[#7d7066]">
             {icon}
@@ -29,7 +29,7 @@ export function FormField({
           value={value ?? ''}
           onChange={onChange}
           placeholder={placeholder}
-          className={`min-w-0 flex-1 bg-transparent py-3 text-sm outline-none placeholder:text-[#a1978f] ${
+          className={`min-w-0 flex-1 bg-transparent py-3 text-sm outline-none placeholder:text-[#96928E] ${
             icon ? 'px-3.5' : 'px-4'
           }`}
         />
@@ -41,7 +41,7 @@ export function FormField({
 export function TextareaField({ label, name, value, onChange, rows = 4 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#756a61]">
+      <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6F6D6B]">
         {label}
       </span>
 
@@ -50,7 +50,7 @@ export function TextareaField({ label, name, value, onChange, rows = 4 }) {
         value={value ?? ''}
         onChange={onChange}
         rows={rows}
-        className="w-full resize-none rounded-[13px] border border-[#ded4c8] bg-white px-4 py-3 text-sm text-[#211b17] outline-none transition placeholder:text-[#a1978f] focus:border-[#bf812b] focus:ring-4 focus:ring-[#c8872b]/10"
+        className="w-full resize-none rounded-[13px] border border-[#E8E3DF] bg-white px-4 py-3 text-sm text-[#1F1F21] outline-none transition placeholder:text-[#96928E] focus:border-[#C84F32] focus:ring-4 focus:ring-[#C84F32]/10"
       />
     </label>
   )
@@ -61,11 +61,11 @@ export function PasswordField({ label, name, value, onChange }) {
 
   return (
     <label className="block">
-      <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#756a61]">
+      <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6F6D6B]">
         {label}
       </span>
 
-      <div className="flex rounded-[13px] border border-[#ded4c8] bg-white text-[#211b17] transition focus-within:border-[#bf812b] focus-within:ring-4 focus-within:ring-[#c8872b]/10">
+      <div className="flex rounded-[13px] border border-[#E8E3DF] bg-white text-[#1F1F21] transition focus-within:border-[#C84F32] focus-within:ring-4 focus-within:ring-[#C84F32]/10">
         <input
           type={visible ? 'text' : 'password'}
           name={name}
@@ -77,7 +77,7 @@ export function PasswordField({ label, name, value, onChange }) {
         <button
           type="button"
           onClick={() => setVisible((current) => !current)}
-          className="flex w-12 items-center justify-center text-[#756a61] transition hover:text-[#bd7920]"
+          className="flex w-12 items-center justify-center text-[#6F6D6B] transition hover:text-[#C84F32]"
         >
           {visible ? <EyeOff size={17} /> : <Eye size={17} />}
         </button>

@@ -4,12 +4,13 @@ export default function BaseModal({
   children,
   footer,
   onClose,
+  maxWidth = 'max-w-[720px]',
 }) {
   if (!open) return null
 
   return (
     <div className="fixed inset-0 z-[400] flex items-center justify-center bg-black/70 px-4 py-8 backdrop-blur-sm">
-      <div className="theme-card flex max-h-[90vh] w-full max-w-[720px] flex-col overflow-hidden rounded-2xl border shadow-2xl">
+      <div className={`theme-card flex max-h-[90vh] w-full ${maxWidth} flex-col overflow-hidden rounded-2xl border shadow-2xl`}>
         <div className="theme-divider flex items-center justify-between border-b px-7 py-5">
           <h2 className="theme-title font-serif text-[28px] font-light tracking-[0.04em]">
             {title}

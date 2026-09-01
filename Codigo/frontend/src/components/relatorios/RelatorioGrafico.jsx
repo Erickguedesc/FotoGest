@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react'
 import { formatMoney } from '../../utils/relatoriosUtils'
 
 const CORES_PERIODOS = [
-  '#bf812b',
+  '#C84F32',
   '#3b82f6',
   '#22c55e',
   '#ef4444',
@@ -25,19 +25,19 @@ export default function RelatorioGrafico({ periodos = [], loading }) {
   )
 
   return (
-    <section className="rounded-[18px] border border-[#e7ded3] bg-white p-5 shadow-[0_16px_46px_rgba(82,58,35,0.065)] md:p-6">
+    <section className="rounded-[18px] border border-[#E8E3DF] bg-white p-5 shadow-[0_16px_46px_rgba(31,31,33,0.055)] md:p-6">
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div>
-          <h2 className="font-serif text-3xl font-light leading-tight text-[#211b17]">
+          <h2 className="font-serif text-3xl font-light leading-tight text-[#1F1F21]">
             Valores por período
           </h2>
 
-          <p className="mt-1 text-sm text-[#756a61]">
+          <p className="mt-1 text-sm text-[#6F6D6B]">
             Compare receita, volume e concentração dos períodos filtrados.
           </p>
         </div>
 
-        <div className="inline-flex w-fit rounded-full border border-[#e6ddd2] bg-[#fbfaf8] p-1">
+        <div className="inline-flex w-fit rounded-full border border-[#E8E3DF] bg-[#F5F3F1] p-1">
           <ToggleButton active={modo === 'barras'} onClick={() => setModo('barras')}>
             Barras
           </ToggleButton>
@@ -53,7 +53,7 @@ export default function RelatorioGrafico({ periodos = [], loading }) {
       </div>
 
       {loading ? (
-        <div className="flex h-[300px] items-center justify-center text-sm text-[#756a61]">
+        <div className="flex h-[300px] items-center justify-center text-sm text-[#6F6D6B]">
           <Loader2 className="mr-2 animate-spin" size={20} />
           Carregando gráfico...
         </div>
@@ -81,8 +81,8 @@ function ToggleButton({ active, children, onClick }) {
       onClick={onClick}
       className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
         active
-          ? 'bg-[#bd7920] text-white shadow-[0_8px_18px_rgba(189,121,32,0.16)]'
-          : 'text-[#7a6d62] hover:bg-white hover:text-[#9b5f13]'
+          ? 'bg-[#C84F32] text-white shadow-[0_8px_18px_rgba(200,79,50,0.14)]'
+          : 'text-[#6F6D6B] hover:bg-white hover:text-[#C84F32]'
       }`}
     >
       {children}
@@ -150,7 +150,7 @@ function BarrasChart({ periodos }) {
                     <button
                       type="button"
                       aria-label={`${item.label}: ${formatMoney(item.totalLiquido)} previstos`}
-                      className="group relative w-6 rounded-t-[6px] bg-gradient-to-b from-[#efc77e] to-[#c9862c] shadow-[0_8px_16px_rgba(189,121,32,0.12)] transition hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bd7920]"
+                      className="group relative w-6 rounded-t-[6px] bg-gradient-to-b from-[#E9A08B] to-[#C84F32] shadow-[0_8px_16px_rgba(200,79,50,0.12)] transition hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C84F32]"
                       style={{ height: `${alturaReceita}%` }}
                     >
                       <Tooltip
@@ -184,7 +184,7 @@ function BarrasChart({ periodos }) {
             {periodos.map((item) => (
               <span
                 key={`${item.label}-${item.inicio}-label`}
-                className="min-w-[62px] flex-1 text-center text-xs font-medium text-[#756a61]"
+                className="min-w-[62px] flex-1 text-center text-xs font-medium text-[#6F6D6B]"
               >
                 {item.label}
               </span>
@@ -266,7 +266,7 @@ function DonutChart({ periodos }) {
             {principal?.label}
           </p>
 
-          <p className="font-serif text-4xl text-[#a96718]">
+          <p className="font-serif text-4xl text-[#AE3F28]">
             {percentualPrincipal.toLocaleString('pt-BR', {
               maximumFractionDigits: 1,
             })}%
@@ -283,7 +283,7 @@ function DonutChart({ periodos }) {
           return (
             <div
               key={`${item.label}-${item.inicio}`}
-              className="flex items-center justify-between gap-4 rounded-[12px] border border-[#e7ded3] bg-[#fbfaf8] px-4 py-3"
+              className="flex items-center justify-between gap-4 rounded-[12px] border border-[#E8E3DF] bg-[#F5F3F1] px-4 py-3"
             >
               <div className="flex min-w-0 items-center gap-3">
                 <span
@@ -296,13 +296,13 @@ function DonutChart({ periodos }) {
                     {item.label}
                   </p>
 
-                  <p className="text-xs text-[#756a61]">
+                  <p className="text-xs text-[#6F6D6B]">
                     {formatMoney(item.totalLiquido)} · {item.quantidadeEnsaios || 0} ensaio{item.quantidadeEnsaios === 1 ? '' : 's'}
                   </p>
                 </div>
               </div>
 
-              <span className="font-serif text-xl text-[#a96718]">
+              <span className="font-serif text-xl text-[#AE3F28]">
                 {percentual.toLocaleString('pt-BR', {
                   maximumFractionDigits: 1,
                 })}%
@@ -367,14 +367,14 @@ function LinhaChart({ periodos }) {
             y1={altura - paddingY}
             x2={largura - paddingX}
             y2={altura - paddingY}
-            stroke="#d9cec1"
+            stroke="#E8E3DF"
             strokeWidth="1"
           />
 
           <path
             d={path}
             fill="none"
-            stroke="#bd7920"
+            stroke="#C84F32"
             strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -417,7 +417,7 @@ function LinhaChart({ periodos }) {
                 cx={ponto.x}
                 cy={ponto.y}
                 r="5"
-                fill="#bd7920"
+                fill="#C84F32"
                 className="pointer-events-none transition group-hover:r-[7px]"
               />
 
@@ -425,7 +425,7 @@ function LinhaChart({ periodos }) {
                 x={ponto.x}
                 y={altura - 8}
                 textAnchor="middle"
-                className="fill-[#756a61] text-[11px]"
+                className="fill-[#6F6D6B] text-[11px]"
               >
                 {ponto.item.label}
               </text>
@@ -446,11 +446,11 @@ function LinhaChart({ periodos }) {
               {tooltip.label}
             </span>
 
-            <span className="mt-0.5 block font-semibold text-[#a96718]">
+            <span className="mt-0.5 block font-semibold text-[#AE3F28]">
               {tooltip.value}
             </span>
 
-            <span className="block text-[11px] text-[#7b7066]">
+            <span className="block text-[11px] text-[#6F6D6B]">
               {tooltip.description}
             </span>
           </div>
@@ -462,14 +462,14 @@ function LinhaChart({ periodos }) {
 
 function EmptyState({ children }) {
   return (
-    <div className="flex h-[300px] items-center justify-center rounded-[14px] border border-dashed border-[#d9cec1] bg-[#fbfaf8] text-sm text-[#756a61]">
+    <div className="flex h-[300px] items-center justify-center rounded-[14px] border border-dashed border-[#E8E3DF] bg-[#F5F3F1] text-sm text-[#6F6D6B]">
       {children}
     </div>
   )
 }
 
 function Tooltip({ label, value, description, variant = 'gold' }) {
-  const valueColor = variant === 'gold' ? 'text-[#a96718]' : 'text-[#4b5563]'
+  const valueColor = variant === 'gold' ? 'text-[#AE3F28]' : 'text-[#4b5563]'
 
   return (
     <span className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-[10px] border border-[#e2d7cb] bg-white px-3 py-2 text-left text-xs opacity-0 shadow-[0_12px_26px_rgba(82,58,35,0.12)] transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
@@ -481,7 +481,7 @@ function Tooltip({ label, value, description, variant = 'gold' }) {
         {value}
       </span>
 
-      <span className="block text-[11px] text-[#7b7066]">
+      <span className="block text-[11px] text-[#6F6D6B]">
         {description}
       </span>
     </span>

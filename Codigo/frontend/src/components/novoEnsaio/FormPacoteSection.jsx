@@ -30,14 +30,14 @@ export default function FormPacoteSection({ form, errors, onChange, onSectionFoc
 
   return (
     <div
-      className="mb-4 overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(78,56,35,0.07)]"
+      className="mb-4 overflow-hidden rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(31,31,33,0.055)]"
       onPointerDownCapture={() => onSectionFocus?.('pacote')}
       onFocusCapture={() => onSectionFocus?.('pacote')}
     >
 
       <div className="flex items-center gap-3 border-b border-[var(--border)] px-5 py-4">
         <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] border border-[var(--gold-border)] bg-[var(--gold-dim)] text-[var(--gold)]">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A459" strokeWidth="1.8">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C84F32" strokeWidth="1.8">
             <line x1="12" y1="1" x2="12" y2="23" />
             <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
           </svg>
@@ -118,7 +118,7 @@ export default function FormPacoteSection({ form, errors, onChange, onSectionFoc
                   border transition-all duration-300
                   ${form.extraAtivo
                     ? 'bg-[var(--gold)] border-[var(--gold-border)]'
-                    : 'bg-[#ddd4c7] border-[var(--border)]'}
+                    : 'bg-[#E8E3DF] border-[var(--border)]'}
                 `}
               >
                 <span

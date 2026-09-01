@@ -39,7 +39,7 @@ export default function RelatorioHeader({
             value={`${tipo}|${ano}`}
             onChange={(event) => onPeriodoResumoChange(event.target.value)}
             disabled={disabled}
-            className="h-11 w-full appearance-none rounded-[10px] border border-[#ded4c8] bg-white px-10 pr-11 text-sm font-medium text-[#342b24] outline-none transition focus:border-[#bf812b] focus:ring-4 focus:ring-[#c8872b]/10 disabled:cursor-not-allowed disabled:opacity-60 sm:w-[220px]"
+            className="h-11 w-full appearance-none rounded-[10px] border border-[#E8E3DF] bg-white px-10 pr-11 text-sm font-medium text-[#342b24] outline-none transition focus:border-[#C84F32] focus:ring-4 focus:ring-[#C84F32]/10 disabled:cursor-not-allowed disabled:opacity-60 sm:w-[220px]"
             title={periodoDescricao || `${getTipoPeriodoLabel(tipo)} · ${ano}`}
           >
             {anosDisponiveis.flatMap((anoItem) =>
@@ -59,7 +59,7 @@ export default function RelatorioHeader({
           type="button"
           onClick={onExportPdf}
           disabled={disabled}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-[#bd7920] px-5 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_10px_22px_rgba(189,121,32,0.22)] transition hover:bg-[#a96718] disabled:cursor-not-allowed disabled:opacity-55"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-[#C84F32] px-5 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_10px_22px_rgba(200,79,50,0.18)] transition hover:bg-[#AE3F28] disabled:cursor-not-allowed disabled:opacity-55"
         >
           <Download size={15} />
           {exportLoading ? 'Gerando PDF' : 'Exportar PDF'}

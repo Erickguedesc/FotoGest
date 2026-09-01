@@ -66,28 +66,28 @@ function KpiCard({
   variant = 'white',
 }) {
   const valueColor = {
-    gold: 'text-[#a96718]',
+    gold: 'text-[#AE3F28]',
     green: 'text-green-700',
     blue: 'text-sky-700',
     white: 'text-[#2b2520]',
   }
 
   const iconStyle = {
-    gold: 'border-[#f0d7ad] bg-[#fff4df] text-[#bd7920]',
+    gold: 'border-[#F8EDE8] bg-[#F8EDE8] text-[#C84F32]',
     green: 'border-green-100 bg-green-50 text-green-700',
     blue: 'border-sky-100 bg-sky-50 text-sky-700',
-    white: 'border-[#e5ddd3] bg-[#f7f3ed] text-[#6d6258]',
+    white: 'border-[#E8E3DF] bg-[#f7f3ed] text-[#6d6258]',
   }
 
   const tendenciaStyle = {
     ALTA: 'text-green-700',
     QUEDA: 'text-red-600',
-    NEUTRO: 'text-[#756a61]',
-    SEM_BASE: 'text-[#a96718]',
+    NEUTRO: 'text-[#6F6D6B]',
+    SEM_BASE: 'text-[#AE3F28]',
   }
 
   return (
-    <article className="flex min-h-[124px] flex-col rounded-[16px] border border-[#e7ded3] bg-white p-4 shadow-[0_10px_24px_rgba(82,58,35,0.045)]">
+    <article className="flex min-h-[124px] flex-col rounded-[16px] border border-[#E8E3DF] bg-white p-4 shadow-[0_10px_24px_rgba(31,31,33,0.04)]">
       <div className="mb-3 flex items-start justify-between gap-3">
         <p className="max-w-[142px] text-[10px] font-semibold uppercase leading-4 tracking-[0.12em] text-[#8a7e73]">
           {title}
@@ -107,7 +107,7 @@ function KpiCard({
           className={`mt-auto pt-3 text-[11px] leading-4 ${
             tendencia
               ? tendenciaStyle[tendencia] || tendenciaStyle.NEUTRO
-              : 'text-[#756a61]'
+              : 'text-[#6F6D6B]'
           }`}
         >
           {description}
