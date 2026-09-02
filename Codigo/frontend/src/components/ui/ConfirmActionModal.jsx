@@ -164,7 +164,7 @@ export default function ConfirmActionModal({
               type="button"
               disabled={loading}
               onClick={onClose}
-              className="h-10 rounded-[8px] border border-[#DED8D2] bg-white px-5 text-[12px] font-semibold text-[#2F3033] transition hover:bg-[#F7F7F8] disabled:cursor-not-allowed disabled:opacity-45"
+              className="h-10 rounded-[8px] border border-[#DED8D2] bg-white px-5 text-[12px] font-semibold text-[#2F3033] transition hover:bg-[#FCFCFD] disabled:cursor-not-allowed disabled:opacity-45"
             >
               {cancelText}
             </button>

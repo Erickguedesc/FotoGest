@@ -76,7 +76,7 @@ export default function ConfiguracoesMenu({ activeTab, onChange }) {
             className={`group flex min-w-[240px] items-center gap-4 rounded-[16px] border bg-white px-4 py-4 text-left shadow-[0_12px_28px_rgba(31,31,33,0.04)] transition lg:w-full lg:min-w-0 ${
               active
                 ? 'border-[#C84F32] bg-[#F8EDE8] shadow-[0_14px_30px_rgba(200,79,50,0.09)]'
-                : 'border-[#E8E3DF] hover:border-[#E9A08B] hover:bg-[#F7F7F8]'
+                : 'border-[#E8E3DF] hover:border-[#E9A08B] hover:bg-[#FCFCFD]'
             }`}
           >
             <span

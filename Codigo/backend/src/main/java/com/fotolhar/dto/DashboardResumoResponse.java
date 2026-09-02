@@ -35,4 +35,7 @@ public class DashboardResumoResponse {
     private List<DashboardEnsaioResumoResponse> ensaiosEmAndamento;
     private List<DashboardEnsaioResumoResponse> ultimasAtualizacoes;
     private List<DashboardAtencaoResponse> atencaoNecessaria;
+    private List<DashboardFluxoEtapaResponse> desempenhoFluxo;
+    private List<DashboardRegiaoDemandaResponse> regioesDemanda;
+    private List<RelatorioTipoEnsaioResponse> receitaPorTipoEnsaio;
 }

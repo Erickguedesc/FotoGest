@@ -262,7 +262,7 @@ function DonutChart({ periodos }) {
             Maior fatia
           </p>
 
-          <p className="mt-1 max-w-[150px] truncate text-lg font-semibold text-[#2b2520]">
+          <p className="mt-1 max-w-[150px] truncate text-lg font-semibold text-[#2b2520]" title={principal?.label}>
             {principal?.label}
           </p>
 
@@ -292,7 +292,7 @@ function DonutChart({ periodos }) {
                 />
 
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-[#2b2520]">
+                  <p className="truncate text-sm font-semibold text-[#2b2520]" title={item.label}>
                     {item.label}
                   </p>
 

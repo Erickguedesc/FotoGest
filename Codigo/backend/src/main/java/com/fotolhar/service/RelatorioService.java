@@ -1,6 +1,7 @@
 package com.fotolhar.service;
 
 import com.fotolhar.dto.RelatorioDestaqueResponse;
+import com.fotolhar.dto.RelatorioEnsaioMaisRealizadoResponse;
 import com.fotolhar.dto.RelatorioFaturamentoResponse;
 import com.fotolhar.dto.RelatorioPeriodoResponse;
 import com.fotolhar.dto.RelatorioTipoEnsaioResponse;
@@ -27,8 +28,10 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import com.fotolhar.dto.RelatorioComparativoResponse;
@@ -37,6 +40,13 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class RelatorioService {
+
+        private static final int LIMITE_ENSAIOS_MAIS_REALIZADOS = 5;
+        private static final Set<StatusEnsaio> STATUS_ENSAIOS_REALIZADOS = EnumSet.of(
+                        StatusEnsaio.REALIZADO,
+                        StatusEnsaio.EM_SELECAO,
+                        StatusEnsaio.EM_EDICAO,
+                        StatusEnsaio.FINALIZADO);
 
         private final EnsaioRepository ensaioRepository;
         private final AlbumRepository albumRepository;
@@ -115,6 +125,11 @@ List<RelatorioTipoEnsaioResponse> tiposEnsaio = montarTiposEnsaio(
         totalLiquido
 );
 
+List<RelatorioEnsaioMaisRealizadoResponse> ensaiosMaisRealizados = montarEnsaiosMaisRealizados(
+        ensaios,
+        periodosInternos
+);
+
 RelatorioDestaqueResponse destaques = montarDestaques(periodos, tiposEnsaio);
 
 int anoComparado = anoFinal - 1;
@@ -171,6 +186,7 @@ RelatorioComparativoResponse comparativo = montarComparativo(
         .comparativo(comparativo)
         .periodos(periodos)
         .tiposEnsaio(tiposEnsaio)
+        .ensaiosMaisRealizados(ensaiosMaisRealizados)
         .build();
         }
 
@@ -263,6 +279,40 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                                 .toList();
         }
 
+        private List<RelatorioEnsaioMaisRealizadoResponse> montarEnsaiosMaisRealizados(
+                        List<Ensaio> ensaios,
+                        List<PeriodoRelatorioInterno> periodos) {
+                List<Ensaio> ensaiosValidos = ensaios.stream()
+                                .filter(this::isEnsaioRealizadoParaRanking)
+                                .filter(ensaio -> pertenceAAlgumPeriodo(ensaio, periodos))
+                                .toList();
+
+                int totalEnsaios = ensaiosValidos.size();
+
+                if (totalEnsaios == 0) {
+                        return List.of();
+                }
+
+                return ensaiosValidos.stream()
+                                .collect(Collectors.groupingBy(this::resolverTipoExibicao))
+                                .entrySet()
+                                .stream()
+                                .map(entry -> RelatorioEnsaioMaisRealizadoResponse.builder()
+                                                .tipo(entry.getValue().get(0).getTipo())
+                                                .tipoExibicao(entry.getKey())
+                                                .quantidadeEnsaios(entry.getValue().size())
+                                                .percentual(calcularPercentualQuantidade(
+                                                                entry.getValue().size(),
+                                                                totalEnsaios))
+                                                .build())
+                                .sorted(Comparator
+                                                .comparing(RelatorioEnsaioMaisRealizadoResponse::getQuantidadeEnsaios)
+                                                .reversed()
+                                                .thenComparing(RelatorioEnsaioMaisRealizadoResponse::getTipoExibicao))
+                                .limit(LIMITE_ENSAIOS_MAIS_REALIZADOS)
+                                .toList();
+        }
+
         private RelatorioTipoEnsaioResponse montarTipoEnsaio(
                         TipoEnsaio tipo,
                         String tipoExibicao,
@@ -329,6 +379,10 @@ RelatorioComparativoResponse comparativo = montarComparativo(
 
         private boolean isEnsaioFinanceiro(Ensaio ensaio) {
                 return ensaio.getStatus() == StatusEnsaio.FINALIZADO;
+        }
+
+        private boolean isEnsaioRealizadoParaRanking(Ensaio ensaio) {
+                return ensaio.getStatus() != null && STATUS_ENSAIOS_REALIZADOS.contains(ensaio.getStatus());
         }
 
         private boolean isValorRecebido(Ensaio ensaio) {
@@ -663,6 +717,16 @@ private BigDecimal calcularPercentualParticipacao(BigDecimal valor, BigDecimal t
 
     return valor.multiply(BigDecimal.valueOf(100))
             .divide(total, 2, RoundingMode.HALF_UP);
+}
+
+private BigDecimal calcularPercentualQuantidade(int quantidade, int total) {
+    if (total <= 0) {
+        return BigDecimal.ZERO;
+    }
+
+    return BigDecimal.valueOf(quantidade)
+            .multiply(BigDecimal.valueOf(100))
+            .divide(BigDecimal.valueOf(total), 1, RoundingMode.HALF_UP);
 }
 
 private String montarDescricaoFaturamento(

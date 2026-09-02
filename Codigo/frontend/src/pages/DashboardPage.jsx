@@ -11,16 +11,13 @@ import {
     DollarSign,
     Eye,
     EyeOff,
-    Grid2X2,
     Image as ImageIcon,
-    List,
     MapPin,
     PackageCheck,
     PencilLine,
     Plus,
     Sparkles,
     Users,
-    Workflow,
     X,
     Zap,
 } from 'lucide-react'
@@ -29,28 +26,24 @@ import DashboardError from '../components/dashboard/DashboardError'
 import {
     formatarHora,
     formatarMoeda,
-    formatarStatusEnsaio,
-    formatarTempoRelativo,
 } from '../utils/dashboardFormatters'
 import Header from '../components/layout/Header'
 import AppTopControls from '../components/layout/AppTopControls'
 import { dashboardService } from '../services/dashboardService'
 import { ensaiosService } from '../services/ensaiosService'
 
-const PIPELINE_ORDER = [
-    { status: 'AGENDADO', icon: CalendarDays, color: '#7167E8', bg: 'bg-[rgba(113,103,232,0.12)]', text: 'text-[var(--status-scheduled)]' },
-    { status: 'REALIZADO', icon: Camera, color: '#62A83E', bg: 'bg-[rgba(98,168,62,0.12)]', text: 'text-[var(--status-completed)]' },
-    { status: 'EM_SELECAO', icon: ImageIcon, color: '#F29A2E', bg: 'bg-[rgba(242,154,46,0.13)]', text: 'text-[var(--status-selection)]' },
-    { status: 'EM_EDICAO', icon: PencilLine, color: '#3B82F6', bg: 'bg-[rgba(59,130,246,0.12)]', text: 'text-[var(--status-editing)]' },
-    { status: 'FINALIZADO', icon: CheckCircle2, color: '#20B8A6', bg: 'bg-[rgba(32,184,166,0.12)]', text: 'text-[var(--status-delivered)]' },
-    { status: 'CANCELADO', icon: X, color: '#EF5350', bg: 'bg-[rgba(239,83,80,0.12)]', text: 'text-[var(--status-cancelled)]' },
-]
-
 const NOTICE_ROTATION_INTERVAL_MS = 10 * 60 * 1000
-const DISMISSED_ACTIVITIES_STORAGE_KEY = 'fotolhar-dashboard-dismissed-activities'
 const FORECAST_VALUE_VISIBILITY_STORAGE_KEY = 'fotolhar-dashboard-forecast-value-visible'
-const IN_PROGRESS_VIEW_STORAGE_KEY = 'fotolhar-dashboard-in-progress-view'
-const PIPELINE_VIEW_STORAGE_KEY = 'fotolhar-dashboard-pipeline-view'
+const REGION_VISIBLE_LIMIT = 5
+const REVENUE_VISIBLE_LIMIT = 5
+const DEFAULT_REVENUE_PERIOD = 'ESTE_MES'
+const REVENUE_PERIOD_OPTIONS = [
+    { value: 'ESTE_MES', label: 'Este mês' },
+    { value: 'MES_PASSADO', label: 'Mês passado' },
+    { value: 'ULTIMOS_3_MESES', label: 'Últimos 3 meses' },
+    { value: 'ESTE_SEMESTRE', label: 'Este semestre' },
+    { value: 'ESTE_ANO', label: 'Este ano' },
+]
 
 function getStoredPreference(key, fallback, allowedValues) {
     try {
@@ -232,65 +225,17 @@ function getTipoLabel(ensaio) {
     return ensaio?.tipoExibicao || ensaio?.tipoPersonalizado || ensaio?.tipo || 'Ensaio'
 }
 
-function getActivityConfig(ensaio) {
-    const cliente = getFirstName(ensaio?.clienteNome) || 'Cliente'
-    const tipo = getTipoLabel(ensaio)
-    const status = formatarStatusEnsaio(ensaio?.status)
-
-    if (ensaio?.status === 'FINALIZADO') {
-        return {
-            icon: CheckCircle2,
-            title: `Ensaio de ${cliente} atualizado`,
-            detail: `${status} · ${tipo}`,
-            tone: 'text-[var(--status-delivered)] bg-[rgba(32,184,166,0.10)] border-[rgba(32,184,166,0.22)]',
-        }
-    }
-
-    if (ensaio?.status === 'EM_EDICAO') {
-        return {
-            icon: PencilLine,
-            title: `Ensaio de ${cliente} atualizado`,
-            detail: `${status} · ${tipo}`,
-            tone: 'text-[var(--status-editing)] bg-[rgba(59,130,246,0.10)] border-[rgba(59,130,246,0.22)]',
-        }
-    }
-
-    if (ensaio?.status === 'EM_SELECAO') {
-        return {
-            icon: ImageIcon,
-            title: `Ensaio de ${cliente} atualizado`,
-            detail: `${status} · ${tipo}`,
-            tone: 'text-[var(--status-selection)] bg-[rgba(242,154,46,0.12)] border-[rgba(242,154,46,0.24)]',
-        }
-    }
-
-    if (ensaio?.status === 'REALIZADO') {
-        return {
-            icon: Camera,
-            title: `Ensaio de ${cliente} atualizado`,
-            detail: `${status} · ${tipo}`,
-            tone: 'text-[var(--status-completed)] bg-[rgba(98,168,62,0.10)] border-[rgba(98,168,62,0.22)]',
-        }
-    }
-
-    return {
-        icon: CalendarDays,
-        title: `Ensaio de ${cliente} atualizado`,
-        detail: `${status} · ${tipo}`,
-        tone: 'text-[var(--status-scheduled)] bg-[rgba(113,103,232,0.10)] border-[rgba(113,103,232,0.22)]',
-    }
-}
-
-function getActivityDismissKey(ensaio) {
-    return `${ensaio?.id || 'atividade'}:${ensaio?.atualizadoEm || ensaio?.dataEnsaio || ''}`
-}
-
 export default function DashboardPage() {
     const location = useLocation()
     const [dashboard, setDashboard] = useState(null)
     const [ensaiosHojeOverride, setEnsaiosHojeOverride] = useState(null)
+    const [receitaPeriodo, setReceitaPeriodo] = useState(DEFAULT_REVENUE_PERIOD)
+    const [receitaPorTipo, setReceitaPorTipo] = useState([])
+    const [receitaLoading, setReceitaLoading] = useState(false)
+    const [receitaErro, setReceitaErro] = useState('')
     const [loading, setLoading] = useState(true)
     const [erro, setErro] = useState('')
+    const receitaRequestRef = useRef(0)
     const abrirTodasPendencias = new URLSearchParams(location.search).get('pendencias') === '1'
 
     useEffect(() => {
@@ -307,6 +252,10 @@ export default function DashboardPage() {
                 if (!active) return
 
                 setDashboard(nextDashboard)
+                setReceitaPorTipo(Array.isArray(nextDashboard?.receitaPorTipoEnsaio)
+                    ? nextDashboard.receitaPorTipoEnsaio
+                    : [])
+                setReceitaErro('')
                 setEnsaiosHojeOverride(null)
 
                 const totalHoje = Number(nextDashboard?.ensaiosHoje || 0)
@@ -341,10 +290,57 @@ export default function DashboardPage() {
         }
     }, [])
 
+    useEffect(() => {
+        if (!dashboard) return
+
+        if (receitaPeriodo === DEFAULT_REVENUE_PERIOD) {
+            receitaRequestRef.current += 1
+            setReceitaLoading(false)
+            setReceitaPorTipo(Array.isArray(dashboard?.receitaPorTipoEnsaio)
+                ? dashboard.receitaPorTipoEnsaio
+                : [])
+            setReceitaErro('')
+            return
+        }
+
+        let active = true
+        const requestId = receitaRequestRef.current + 1
+        receitaRequestRef.current = requestId
+
+        async function carregarReceitaPorTipo() {
+            try {
+                setReceitaLoading(true)
+                setReceitaErro('')
+
+                const resultado = await dashboardService.buscarReceitaPorTipo(receitaPeriodo)
+                const nextTipos = Array.isArray(resultado?.data) ? resultado.data : resultado
+
+                if (active && receitaRequestRef.current === requestId) {
+                    setReceitaPorTipo(Array.isArray(nextTipos) ? nextTipos : [])
+                }
+            } catch (error) {
+                console.error('[Dashboard] Erro ao carregar receita por tipo:', error?.response?.data || error)
+                if (active && receitaRequestRef.current === requestId) {
+                    setReceitaErro('Não foi possível atualizar este card.')
+                }
+            } finally {
+                if (active && receitaRequestRef.current === requestId) {
+                    setReceitaLoading(false)
+                }
+            }
+        }
+
+        carregarReceitaPorTipo()
+
+        return () => {
+            active = false
+        }
+    }, [dashboard, receitaPeriodo])
+
     if (erro) return <DashboardError mensagem={erro} />
 
     return (
-        <main className="min-h-screen bg-[#F7F7F8] text-[#1F1F21] antialiased">
+        <main className="min-h-screen bg-[#FCFCFD] text-[#1F1F21] antialiased">
             <Header />
 
             <section className="min-w-0 px-4 pb-6 pt-[84px] sm:px-7 lg:px-9 lg:py-6">
@@ -353,6 +349,11 @@ export default function DashboardPage() {
                 ) : (
                     <DashboardContent
                         dashboard={dashboard || {}}
+                        receitaPorTipo={receitaPorTipo}
+                        receitaPeriodo={receitaPeriodo}
+                        receitaLoading={receitaLoading}
+                        receitaErro={receitaErro}
+                        onReceitaPeriodoChange={setReceitaPeriodo}
                         ensaiosHojeOverride={ensaiosHojeOverride}
                         abrirTodasPendencias={abrirTodasPendencias}
                     />
@@ -380,7 +381,16 @@ function DashboardActions() {
     )
 }
 
-function DashboardContent({ dashboard, ensaiosHojeOverride, abrirTodasPendencias = false }) {
+function DashboardContent({
+    dashboard,
+    receitaPorTipo,
+    receitaPeriodo,
+    receitaLoading,
+    receitaErro,
+    onReceitaPeriodoChange,
+    ensaiosHojeOverride,
+    abrirTodasPendencias = false,
+}) {
     const hoje = useMemo(() => new Date(), [])
     const usuarioNome = localStorage.getItem('usuarioNome') || ''
     const primeiroNome = getFirstName(usuarioNome)
@@ -389,11 +399,6 @@ function DashboardContent({ dashboard, ensaiosHojeOverride, abrirTodasPendencias
     const proximosEnsaios = dashboard?.proximosEnsaios?.length
         ? dashboard.proximosEnsaios
         : agenda
-    const pipeline = dashboard?.pipelineStatus || {}
-    const totalEnsaiosEmAndamento = Math.max(
-        Number(dashboard?.ensaiosEmAndamentoTotal || 0),
-        Number(pipeline.REALIZADO || 0) + Number(pipeline.EM_SELECAO || 0) + Number(pipeline.EM_EDICAO || 0)
-    )
     const dataFormatada = hoje.toLocaleDateString('pt-BR', {
         weekday: 'long',
         day: '2-digit',
@@ -441,14 +446,18 @@ function DashboardContent({ dashboard, ensaiosHojeOverride, abrirTodasPendencias
 
             <DashboardOverviewStrip dashboard={dashboard} />
 
-            <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_540px]">
-                <InProgressCard
-                    ensaios={dashboard?.ensaiosEmAndamento || []}
-                    total={totalEnsaiosEmAndamento}
+            <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,1fr)]">
+                <RevenueByTypeDashboardCard
+                    tipos={receitaPorTipo}
+                    periodo={receitaPeriodo}
+                    loading={receitaLoading}
+                    erro={receitaErro}
+                    onPeriodoChange={onReceitaPeriodoChange}
                 />
-                <div className="space-y-5">
-                    <PipelineCard pipeline={dashboard?.pipelineStatus || {}} />
-                    <ActivityCard ensaios={dashboard?.ultimasAtualizacoes || []} />
+
+                <div className="min-w-0 space-y-5">
+                    <DemandRegionCard regioes={dashboard?.regioesDemanda || []} />
+                    <FlowPerformanceCard etapas={dashboard?.desempenhoFluxo || []} />
                 </div>
             </div>
         </div>
@@ -466,9 +475,18 @@ function Card({ children, className = '' }) {
 function getDashboardNotice(dashboard, agenda, hoje, ensaiosHoje, rotationSlot = 0) {
     const ensaiosAgendadosHoje = getEnsaiosAgendadosHoje(ensaiosHoje)
     const pendencias = dashboard?.atencaoNecessaria || []
+    const ensaiosEmAndamento = Array.isArray(dashboard?.ensaiosEmAndamento)
+        ? dashboard.ensaiosEmAndamento
+        : []
     const pendenciasAgrupadasNoCard = pendencias.length > 0
     const encontrarPendencia = (tipo) => pendencias.find((item) => item?.tipo === tipo && item?.ensaioId)
     const contarPendencias = (tipo) => pendencias.filter((item) => item?.tipo === tipo).length
+    const encontrarEnsaioPorStatus = (status) =>
+        ensaiosEmAndamento.find((ensaio) => ensaio?.status === status && ensaio?.id)
+    const destinoStatus = (status, total) => {
+        const ensaio = total === 1 ? encontrarEnsaioPorStatus(status) : null
+        return ensaio?.id ? `/ensaios/${ensaio.id}` : `/ensaios?status=${status}`
+    }
     const ensaioAtrasado = encontrarPendencia('ENSAIO_ATRASADO')
     const selecaoEnviada = encontrarPendencia('SELECAO_ENVIADA')
     const uploadPendente = encontrarPendencia('UPLOAD_PENDENTE')
@@ -580,7 +598,7 @@ function getDashboardNotice(dashboard, agenda, hoje, ensaiosHoje, rotationSlot =
             icon: Bell,
             title: 'Pendências centralizadas',
             text: `${pendencias.length} ${pendencias.length === 1 ? 'item está' : 'itens estão'} no card Atenção Necessária. Abra a lista para tratar cada ensaio clicável.`,
-            to: '/ensaios?grupo=ativos',
+            to: '/dashboard?pendencias=1',
         })
     }
 
@@ -591,7 +609,7 @@ function getDashboardNotice(dashboard, agenda, hoje, ensaiosHoje, rotationSlot =
             text: ensaiosEmEdicao > 1
                 ? `${ensaiosEmEdicao} ensaios estão em edição. Atualize o status quando a entrega estiver pronta.`
                 : 'Há um ensaio em edição. Atualize o status quando a entrega estiver pronta.',
-            to: '/ensaios?status=EM_EDICAO',
+            to: destinoStatus('EM_EDICAO', ensaiosEmEdicao),
         })
     }
 
@@ -602,7 +620,7 @@ function getDashboardNotice(dashboard, agenda, hoje, ensaiosHoje, rotationSlot =
             text: ensaiosRealizados > 1
                 ? `${ensaiosRealizados} ensaios já foram realizados. Confira se fotos, álbum e próxima etapa estão em dia.`
                 : 'Há um ensaio realizado. Confira se fotos, álbum e próxima etapa estão em dia.',
-            to: '/ensaios?status=REALIZADO',
+            to: destinoStatus('REALIZADO', ensaiosRealizados),
         })
     }
 
@@ -613,7 +631,7 @@ function getDashboardNotice(dashboard, agenda, hoje, ensaiosHoje, rotationSlot =
             text: ensaiosEmSelecao > 1
                 ? `${ensaiosEmSelecao} ensaios estão aguardando escolha de fotos pela cliente.`
                 : 'Há um ensaio aguardando escolha de fotos pela cliente.',
-            to: '/ensaios?status=EM_SELECAO',
+            to: destinoStatus('EM_SELECAO', ensaiosEmSelecao),
         })
     }
 
@@ -646,7 +664,9 @@ function getDashboardNotice(dashboard, agenda, hoje, ensaiosHoje, rotationSlot =
                 : ensaiosAgendados > 1
                 ? `${ensaiosAgendados} ensaios estão agendados. Revise datas e confirme os detalhes com antecedência.`
                 : 'Há um ensaio agendado. Revise data, horário, local e contrato.',
-            to: '/ensaios?status=AGENDADO',
+            to: ensaiosAgendados === 1 && proximoEnsaio?.id
+                ? `/ensaios/${proximoEnsaio.id}`
+                : '/ensaios?status=AGENDADO',
         })
     }
 
@@ -701,7 +721,7 @@ function getDashboardNotice(dashboard, agenda, hoje, ensaiosHoje, rotationSlot =
         icon: CheckCircle2,
         title: 'Tudo organizado',
         text: 'Sua agenda está tranquila e não há alertas importantes neste momento.',
-        to: '/configuracoes',
+        to: '/dashboard',
     })
 
     return routineNotices[rotationSlot % routineNotices.length]
@@ -761,7 +781,7 @@ function ForecastValueCard({ dashboard }) {
     }
 
     return (
-        <Card className="flex min-h-[236px] flex-col justify-between p-4 xl:h-[348px]">
+        <Card className="flex min-h-[220px] flex-col justify-between p-4 xl:h-[300px]">
             <div className="flex items-start justify-between gap-4">
                 <h2 className="text-[13px] font-semibold uppercase tracking-[0.015em] text-[#1F1F21]">
                     Valor previsto
@@ -773,32 +793,32 @@ function ForecastValueCard({ dashboard }) {
                     title={mostrarValor ? 'Ocultar valor previsto' : 'Mostrar valor previsto'}
                     aria-label={mostrarValor ? 'Ocultar valor previsto' : 'Mostrar valor previsto'}
                     aria-pressed={!mostrarValor}
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#E8E3DF] bg-white/72 text-[#C84F32] transition hover:border-[#C84F32] hover:bg-[#F8EDE8]"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#E8E3DF] bg-white/72 text-[#C84F32] transition hover:border-[#C84F32] hover:bg-[#F8EDE8]"
                 >
-                    <ToggleIcon size={18} />
+                    <ToggleIcon size={17} />
                 </button>
             </div>
 
             <div className="py-1">
-                <span className="mb-4 flex h-[50px] w-[50px] items-center justify-center rounded-[12px] bg-[#F8EDE8] text-[#C84F32]">
-                    <DollarSign size={24} strokeWidth={1.6} />
+                <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-[11px] bg-[#F8EDE8] text-[#C84F32]">
+                    <DollarSign size={22} strokeWidth={1.6} />
                 </span>
 
-                <strong className="block font-serif text-[38px] font-light leading-none text-[#C84F32] sm:text-[42px] xl:text-[38px] 2xl:text-[44px]">
+                <strong className="block font-serif text-[34px] font-light leading-none text-[#C84F32] sm:text-[38px] xl:text-[34px] 2xl:text-[40px]">
                     {mostrarValor ? valorFormatado : 'R$ •••••'}
                 </strong>
 
-                <p className="mt-3 text-sm text-[#6F6D6B]">
+                <p className="mt-2 text-sm text-[#6F6D6B]">
                     pacotes e fotos extras do mês
                 </p>
             </div>
 
             <Link
                 to="/relatorios"
-                className="flex h-10 w-full items-center justify-center gap-3 rounded-full border border-[#E8E3DF] bg-white/58 px-5 text-sm font-semibold text-[#C84F32] transition hover:border-[#C84F32] hover:bg-[#F8EDE8]"
+                className="flex h-9 w-full items-center justify-center gap-2 rounded-full border border-[#E8E3DF] bg-white/58 px-5 text-sm font-semibold text-[#C84F32] transition hover:border-[#C84F32] hover:bg-[#F8EDE8]"
             >
                 Ver detalhes
-                <ArrowRight size={18} />
+                <ArrowRight size={17} />
             </Link>
         </Card>
     )
@@ -830,7 +850,7 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
     }
 
     return (
-        <Card className="flex min-h-[236px] flex-col p-5 xl:h-[348px]">
+        <Card className="flex min-h-[220px] flex-col p-4 xl:h-[300px]">
             <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3.5">
                     <CalendarDays size={21} className="shrink-0 text-[#C84F32]" />
@@ -848,7 +868,7 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
                 </Link>
             </div>
 
-            <div className="mt-4 grid grid-cols-7 gap-1.5">
+            <div className="mt-3 grid grid-cols-7 gap-1.5">
                 {days.map((day, index) => {
                     const ensaiosDia = index === 0 ? ensaiosHoje : getEnsaiosDoDia(agenda, day)
                     const active = index === 0
@@ -860,7 +880,7 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
                             type="button"
                             title={summary}
                             aria-label={summary}
-                            className={`group relative flex min-h-[62px] flex-col items-center justify-center rounded-[11px] border text-center outline-none transition hover:border-[#C84F32] hover:bg-[#F5F3F1] focus-visible:border-[#C84F32] focus-visible:bg-[#F5F3F1] focus-visible:ring-2 focus-visible:ring-[#C84F32]/20 ${
+                            className={`group relative flex min-h-[54px] flex-col items-center justify-center rounded-[10px] border text-center outline-none transition hover:border-[#C84F32] hover:bg-[#F5F3F1] focus-visible:border-[#C84F32] focus-visible:bg-[#F5F3F1] focus-visible:ring-2 focus-visible:ring-[#C84F32]/20 ${
                                 active ? 'border-[#e1d3c3] bg-[#f5eee6] shadow-sm' : 'border-transparent'
                             }`}
                         >
@@ -871,16 +891,16 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
                             <span className="text-[10px] font-semibold uppercase tracking-[0.02em] text-[#62564c]">
                                 {day.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')}
                             </span>
-                            <span className="mt-0.5 text-[23px] font-normal leading-none text-[#080706]">
+                            <span className="mt-0.5 text-[21px] font-normal leading-none text-[#080706]">
                                 {String(day.getDate()).padStart(2, '0')}
                             </span>
-                            <span className={`mt-2 h-1.5 w-1.5 rounded-full ${ensaiosDia.length ? 'bg-[#C84F32]' : 'bg-transparent'}`} />
+                            <span className={`mt-1.5 h-1.5 w-1.5 rounded-full ${ensaiosDia.length ? 'bg-[#C84F32]' : 'bg-transparent'}`} />
                         </button>
                     )
                 })}
             </div>
 
-            <div className="mt-3 border-t border-[#d8cbbf] pt-4">
+            <div className="mt-3 border-t border-[#d8cbbf] pt-3">
                 <div className="flex items-center justify-between gap-3">
                     <h3 className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#1F1F21]">
                         Próximo ensaio
@@ -896,7 +916,7 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
                             disabled={!canNavigate}
                             title="Ensaio anterior"
                             aria-label="Ensaio anterior"
-                            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E8E3DF] bg-white/65 text-[#C84F32] transition enabled:hover:border-[#C84F32] enabled:hover:bg-[#F8EDE8] disabled:opacity-40"
+                            className="flex h-7 w-7 items-center justify-center rounded-full border border-[#E8E3DF] bg-white/65 text-[#C84F32] transition enabled:hover:border-[#C84F32] enabled:hover:bg-[#F8EDE8] disabled:opacity-40"
                         >
                             ‹
                         </button>
@@ -906,7 +926,7 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
                             disabled={!canNavigate}
                             title="Próximo ensaio"
                             aria-label="Próximo ensaio"
-                            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E8E3DF] bg-white/65 text-[#C84F32] transition enabled:hover:border-[#C84F32] enabled:hover:bg-[#F8EDE8] disabled:opacity-40"
+                            className="flex h-7 w-7 items-center justify-center rounded-full border border-[#E8E3DF] bg-white/65 text-[#C84F32] transition enabled:hover:border-[#C84F32] enabled:hover:bg-[#F8EDE8] disabled:opacity-40"
                         >
                             ›
                         </button>
@@ -914,12 +934,12 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
                 </div>
 
                 {ensaio ? (
-                    <article className="mt-3 grid min-h-[100px] grid-cols-[90px_minmax(0,1fr)_34px] overflow-hidden rounded-[12px] border border-[#EEEAE7] bg-white/54">
-                        <div className="flex flex-col items-center justify-center border-r border-[#EEEAE7] bg-[#F8EDE8] px-3 text-center">
+                    <article className="mt-3 grid min-h-[86px] grid-cols-[78px_minmax(0,1fr)_32px] overflow-hidden rounded-[12px] border border-[#EEEAE7] bg-white/54">
+                        <div className="flex flex-col items-center justify-center border-r border-[#EEEAE7] bg-[#F8EDE8] px-2 text-center">
                             <span className="text-[11px] font-bold uppercase text-[#C84F32]">
                                 {data ? data.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '') : '--'}
                             </span>
-                            <span className="mt-1 text-[24px] font-semibold leading-none text-[#C84F32]">
+                            <span className="mt-1 text-[22px] font-semibold leading-none text-[#C84F32]">
                                 {data ? String(data.getDate()).padStart(2, '0') : '--'}
                             </span>
                             <span className="mt-1 text-[10px] font-semibold uppercase text-[#C84F32]">
@@ -927,12 +947,12 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
                             </span>
                         </div>
 
-                        <div className="min-w-0 px-4 py-4">
-                            <h4 className="truncate text-[17px] font-medium text-[#1F1F21]">
+                        <div className="min-w-0 px-4 py-3">
+                            <h4 className="truncate text-[16px] font-medium text-[#1F1F21]">
                                 {getTipoLabel(ensaio)}
                             </h4>
 
-                            <div className="mt-3 flex min-w-0 items-center gap-2.5 overflow-hidden text-sm text-[#6F6D6B]">
+                            <div className="mt-2 flex min-w-0 items-center gap-2.5 overflow-hidden text-sm text-[#6F6D6B]">
                                 <span className="font-semibold text-[#C84F32]">{getDaysUntilLabel(ensaio.dataEnsaio)}</span>
                                 <span className="shrink-0 text-[#c7b6a4]">|</span>
                                 <span className="inline-flex shrink-0 items-center gap-1.5">
@@ -956,17 +976,17 @@ function WeekAgendaCard({ agenda, hoje, proximosEnsaios, ensaiosHoje }) {
                             aria-label="Abrir ensaio"
                             className="flex items-center justify-center text-[#C84F32] transition hover:bg-[#F8EDE8]"
                         >
-                            <ArrowRight size={22} />
+                            <ArrowRight size={21} />
                         </Link>
                     </article>
                 ) : (
-                    <div className="mt-3 flex min-h-[100px] items-center justify-center rounded-[12px] border border-dashed border-[#e1d3c3] bg-white/45 px-4 text-center text-sm text-[#6F6D6B]">
+                    <div className="mt-3 flex min-h-[86px] items-center justify-center rounded-[12px] border border-dashed border-[#e1d3c3] bg-white/45 px-4 text-center text-sm text-[#6F6D6B]">
                         Nenhum ensaio próximo agendado.
                     </div>
                 )}
             </div>
 
-            <div className="mt-auto flex items-center gap-2 pt-3 text-sm text-[#6F6D6B]">
+            <div className="mt-auto flex items-center gap-2 pt-2 text-sm text-[#6F6D6B]">
                 <CalendarDays size={17} className="shrink-0 text-[#C84F32]" />
                 <span className="truncate">{getResumoHoje(ensaiosHoje, hoje)}</span>
             </div>
@@ -1055,19 +1075,19 @@ function AttentionSummaryCard({ dashboard, abrirTodasPendencias = false }) {
 
     return (
         <>
-            <Card className="flex min-h-[236px] flex-col p-4 xl:h-[348px]">
-                <div className="flex items-center gap-3.5">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#E8E3DF] bg-[#F8EDE8] text-[#C84F32]">
-                        <Bell size={18} />
+            <Card className="flex min-h-[220px] flex-col p-4 xl:h-[300px]">
+                <div className="flex items-start gap-3">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#E8E3DF] bg-[#F8EDE8] text-[#C84F32]">
+                        <Bell size={16} />
                     </span>
 
-                    <h2 className="text-[13px] font-semibold uppercase tracking-[0.015em] text-[#1F1F21]">
+                    <h2 className="pt-[2px] text-[13px] font-semibold uppercase tracking-[0.015em] text-[#1F1F21]">
                         Atenção necessária
                     </h2>
                 </div>
 
                 {activeRows.length ? (
-                    <div className="mt-3 flex min-h-0 flex-1 flex-col">
+                    <div className="mt-2 flex min-h-0 flex-1 flex-col">
                         <div className="min-h-0 flex-1 divide-y divide-[#EEEAE7] overflow-y-auto overscroll-contain border-y border-[#EEEAE7] pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                             {activeRows.map((row) => (
                                 <AttentionSummaryRow
@@ -1081,10 +1101,10 @@ function AttentionSummaryCard({ dashboard, abrirTodasPendencias = false }) {
                         <button
                             type="button"
                             onClick={() => setModalTypes([])}
-                            className="mt-3 flex h-10 shrink-0 items-center justify-center gap-3 rounded-full border border-[#E8E3DF] bg-white/58 px-5 text-sm font-semibold text-[#C84F32] transition hover:border-[#C84F32] hover:bg-[#F8EDE8]"
+                            className="mt-3 flex h-9 shrink-0 items-center justify-center gap-2 rounded-full border border-[#E8E3DF] bg-white/58 px-5 text-sm font-semibold text-[#C84F32] transition hover:border-[#C84F32] hover:bg-[#F8EDE8]"
                         >
                             Ver todas as pendências
-                            <ArrowRight size={18} />
+                            <ArrowRight size={17} />
                         </button>
                     </div>
                 ) : (
@@ -1119,21 +1139,21 @@ function AttentionSummaryRow({ icon: Icon, label, value, tone, onOpen }) {
         <button
             type="button"
             onClick={onOpen}
-            className="flex h-[48px] w-full items-center gap-3 text-left transition hover:bg-[#fbf5ed]"
+            className="flex h-[42px] w-full items-center gap-3 text-left transition hover:bg-[#fbf5ed]"
         >
-            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] ${tone}`}>
-                <Icon size={16} strokeWidth={1.8} />
+            <span className={`flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[9px] ${tone}`}>
+                <Icon size={15} strokeWidth={1.8} />
             </span>
 
             <span className="min-w-0 flex-1 truncate text-sm text-[#1F1F21]">
                 {label}
             </span>
 
-            <strong className="text-base font-medium text-[#1F1F21]">
+            <strong className="text-[15px] font-medium text-[#1F1F21]">
                 {value}
             </strong>
 
-            <ArrowRight size={18} className="shrink-0 text-[#C84F32]" />
+            <ArrowRight size={17} className="shrink-0 text-[#C84F32]" />
         </button>
     )
 }
@@ -1397,514 +1417,633 @@ function OverviewMetric({
     )
 }
 
-function InProgressCard({ ensaios, total }) {
-    const items = ensaios || []
-    const [viewMode, setViewMode] = useState(() =>
-        getStoredPreference(IN_PROGRESS_VIEW_STORAGE_KEY, 'grid', ['grid', 'list'])
-    )
-    const visibleItems = items.slice(0, 8)
-    const totalItems = Math.max(Number(total || 0), items.length)
-    const hiddenItems = Math.max(totalItems - visibleItems.length, 0)
-    function changeViewMode(nextMode) {
-        setViewMode(nextMode)
-        setStoredPreference(IN_PROGRESS_VIEW_STORAGE_KEY, nextMode)
-    }
+function FlowPerformanceCard({ etapas }) {
+    const items = Array.isArray(etapas) ? etapas : []
+    const hasData = items.some((item) => Number(item?.quantidadeAmostras || 0) > 0 && item?.mediaDias !== null)
 
     return (
-        <Card className="p-5">
-            <div className="flex items-center justify-between gap-4">
-                <h2 className="text-[17px] font-semibold uppercase tracking-[0.015em] text-[#1F1F21]">
-                    Ensaios em andamento
-                </h2>
+        <Card className="p-5 sm:p-6">
+            <div className="flex items-start justify-between gap-4">
+                <div>
+                    <h2 className="text-[16px] font-semibold uppercase tracking-[0.015em] text-[#1F1F21]">
+                        Desempenho do fluxo
+                    </h2>
 
-                <div className="flex items-center gap-2">
-                    <button
-                        type="button"
-                        onClick={() => changeViewMode('grid')}
-                        title="Ver em cards"
-                        aria-label="Ver ensaios em cards"
-                        className={`flex h-9 w-9 items-center justify-center rounded-[7px] border transition ${
-                            viewMode === 'grid'
-                                ? 'border-[#E8E3DF] bg-white text-[#C84F32] shadow-sm'
-                                : 'border-[#E8E3DF] bg-white/50 text-[#C84F32] hover:bg-white/80'
-                        }`}
-                    >
-                        <Grid2X2 size={17} />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => changeViewMode('list')}
-                        title="Ver em lista"
-                        aria-label="Ver ensaios em lista"
-                        className={`flex h-9 w-9 items-center justify-center rounded-[7px] border transition ${
-                            viewMode === 'list'
-                                ? 'border-[#E8E3DF] bg-white text-[#C84F32] shadow-sm'
-                                : 'border-[#E8E3DF] bg-white/50 text-[#C84F32] hover:bg-white/80'
-                        }`}
-                    >
-                        <List size={17} />
-                    </button>
+                    <p className="mt-1 text-[13px] leading-5 text-[#6F6D6B]">
+                        Quanto tempo o estúdio leva em cada etapa
+                    </p>
                 </div>
+
+                <span
+                    title="Média calculada com os dados recentes disponíveis"
+                    aria-label="Média calculada com os dados recentes disponíveis"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#E8E3DF] text-xs text-[#96928E]"
+                >
+                    i
+                </span>
             </div>
 
-            {items.length ? (
+            {hasData ? (
                 <div className="mt-4">
-                    {viewMode === 'grid' ? (
-                        <div className="grid max-w-[920px] gap-3.5 md:grid-cols-2 xl:grid-cols-4">
-                            {visibleItems.map((ensaio) => (
-                                <ActiveEssayCard key={ensaio.id} ensaio={ensaio} />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="divide-y divide-[#EEEAE7] overflow-hidden rounded-[12px] border border-[#EEEAE7] bg-white/45">
-                            {visibleItems.map((ensaio) => (
-                                <ActiveEssayListItem key={ensaio.id} ensaio={ensaio} />
-                            ))}
-                        </div>
-                    )}
+                    <div className="grid items-center gap-3 lg:grid-cols-[1fr_auto_1fr_auto_1fr]">
+                        {items.map((item, index) => (
+                            <FlowMetricFragment
+                                key={item?.chave || item?.titulo || index}
+                                item={item}
+                                index={index}
+                                showArrow={index < items.length - 1}
+                            />
+                        ))}
+                    </div>
 
-                    {hiddenItems > 0 && (
-                        <Link
-                            to="/ensaios?grupo=ativos"
-                            className="mt-5 flex h-12 items-center justify-center gap-3 rounded-[10px] border border-[#EEEAE7] bg-white/48 text-sm font-medium text-[#C84F32] transition hover:border-[#C84F32] hover:bg-[#F8EDE8]"
-                        >
-                            Ver mais
-                            <span className="text-xs text-[#6F6D6B]">
-                                +{hiddenItems}
-                            </span>
-                            <ArrowRight size={18} />
-                        </Link>
-                    )}
+                    <div className="mt-4 border-t border-[#EEEAE7] pt-3 text-xs text-[#8a8580]">
+                        Baseado no histórico recente
+                    </div>
                 </div>
             ) : (
-                <div className="mt-4 flex min-h-[220px] flex-col items-center justify-center rounded-[12px] border border-dashed border-[#e5d8ca] bg-white/42 text-center">
-                    <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F5F3F1] text-[#C84F32]">
-                        <Camera size={27} strokeWidth={1.6} />
-                    </span>
-                    <h3 className="mt-5 text-lg font-medium text-[#1F1F21]">
-                        Nenhum ensaio em andamento.
-                    </h3>
-                    <p className="mt-1 text-sm text-[#6F6D6B]">
-                        Os ensaios ativos aparecerão aqui.
-                    </p>
+                <div className="mt-5 flex min-h-[128px] items-center justify-center rounded-[12px] border border-dashed border-[#e5d8ca] bg-white/42 px-5 text-center text-sm text-[#6F6D6B]">
+                    Ainda não há histórico suficiente para calcular este indicador.
                 </div>
             )}
         </Card>
     )
 }
 
-function ActiveEssayCard({ ensaio }) {
-    const progress = Math.min(Math.max(Number(ensaio?.progresso || 0), 0), 100)
-    const hasImage = Boolean(ensaio?.capaUrl)
-    const progressText = getEnsaioStageDescription(ensaio)
-    const statusConfig = getPipelineConfig(ensaio?.status)
-    const StatusIcon = statusConfig.icon
+function FlowMetricFragment({ item, index, showArrow }) {
+    const config = getFlowMetricConfig(item?.chave, index)
+    const Icon = config.icon
 
     return (
-        <Link
-            to={`/ensaios/${ensaio.id}`}
-            className="group overflow-hidden rounded-[8px] border border-[#EEEAE7] bg-white/62 transition hover:border-[#c99a5d] hover:shadow-[0_12px_28px_rgba(31,31,33,0.06)]"
-        >
-            <div className="relative h-[108px] overflow-hidden bg-[#efe4d8]">
-                {hasImage ? (
-                    <img
-                        src={ensaio.capaUrl}
-                        alt={ensaio.clienteNome}
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                    />
-                ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[#C84F32]">
-                        <Camera size={28} strokeWidth={1.5} />
-                    </div>
-                )}
-
-                <span className={`absolute left-2.5 top-2.5 inline-flex max-w-[calc(100%-20px)] items-center gap-1.5 truncate rounded-full border border-white/70 bg-white/92 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.02em] shadow-sm ${statusConfig.text}`}>
-                    <StatusIcon size={13} />
-                    {formatarStatusEnsaio(ensaio.status)}
+        <>
+            <div className="grid min-w-0 grid-cols-[36px_minmax(0,1fr)] items-center gap-2">
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${config.tone}`}>
+                    <Icon size={18} strokeWidth={1.9} />
                 </span>
-            </div>
 
-            <div className="p-2.5">
-                <h3 className="truncate text-sm font-medium text-[#1F1F21]">
-                    {ensaio.clienteNome || 'Cliente sem nome'}
-                </h3>
+                <div className="min-w-0">
+                    <p className="text-[11px] font-semibold leading-4 text-[#2b2520]">
+                        {item?.titulo || config.title}
+                    </p>
 
-                <p className="mt-1 truncate text-xs text-[#6F6D6B]">
-                    {getTipoLabel(ensaio)}
-                </p>
+                    <p className="mt-1 whitespace-nowrap text-[20px] font-semibold leading-5 text-[#1F1F21]">
+                        {formatarDiasFluxo(item?.mediaDias)}
+                    </p>
 
-                <div className="mt-2 grid gap-1.5 text-[11px] text-[#62564c]">
-                    <span className="flex items-center gap-2">
-                        <CalendarDays size={13} className="text-[#C84F32]" />
-                        {getDate(ensaio.dataEnsaio)?.toLocaleDateString('pt-BR') || 'Sem data'}
-                    </span>
-
-                    <span className="flex min-w-0 items-center gap-2">
-                        <MapPin size={13} className="shrink-0 text-[#C84F32]" />
-                        <span className="truncate">{ensaio.local || 'Local não informado'}</span>
-                    </span>
-                </div>
-
-                <div className="mt-2">
-                    <div className="mb-1.5 flex items-end justify-between gap-3 text-[11px]">
-                        <span className="font-medium text-[#6F6D6B]">
-                            Progresso
-                        </span>
-                        <span className="font-serif text-[17px] font-light leading-none text-[#C84F32]">
-                            {progress}%
-                        </span>
-                    </div>
-
-                    <div className="h-1.5 overflow-hidden rounded-full bg-[#e8ded2]">
-                        <span className="block h-full rounded-full" style={{ width: `${progress}%`, backgroundColor: statusConfig.color }} />
-                    </div>
-
-                    <p className="mt-1.5 min-h-[16px] truncate text-[11px] leading-4 text-[#6F6D6B]">
-                        {progressText}
+                    <p className="mt-1 text-[10px] leading-4 text-[#8a8580]">
+                        {Number(item?.quantidadeAmostras || 0)} amostra{Number(item?.quantidadeAmostras || 0) === 1 ? '' : 's'}
                     </p>
                 </div>
             </div>
-        </Link>
+
+            {showArrow ? (
+                <ArrowRight size={16} className="justify-self-center text-[#c9b9a7] max-lg:hidden" />
+            ) : null}
+        </>
     )
 }
 
-function ActiveEssayListItem({ ensaio }) {
-    const progress = Math.min(Math.max(Number(ensaio?.progresso || 0), 0), 100)
-    const statusConfig = getPipelineConfig(ensaio?.status)
-    const StatusIcon = statusConfig.icon
-    const hasImage = Boolean(ensaio?.capaUrl)
+function DemandRegionCard({ regioes }) {
+    const ranking = Array.isArray(regioes) ? regioes : []
+    const [modalOpen, setModalOpen] = useState(false)
+    const visibleRanking = ranking.slice(0, REGION_VISIBLE_LIMIT)
+    const hasMoreRegions = ranking.length > REGION_VISIBLE_LIMIT
 
     return (
-        <Link
-            to={`/ensaios/${ensaio.id}`}
-            className="grid min-h-[86px] grid-cols-[minmax(0,1.45fr)_minmax(150px,0.8fr)_minmax(150px,0.8fr)_112px_28px] items-center gap-4 px-4 py-3 transition hover:bg-[#fbf5ed] max-lg:grid-cols-[minmax(0,1fr)_28px]"
-        >
-            <span className="flex min-w-0 items-center gap-3">
-                <span className="flex h-14 w-14 shrink-0 overflow-hidden rounded-[8px] bg-[#efe4d8] text-[#C84F32]">
-                    {hasImage ? (
-                        <img
-                            src={ensaio.capaUrl}
-                            alt={ensaio.clienteNome || 'Capa do ensaio'}
-                            className="h-full w-full object-cover"
-                        />
-                    ) : (
-                        <span className="flex h-full w-full items-center justify-center">
-                            <Camera size={20} strokeWidth={1.5} />
-                        </span>
-                    )}
-                </span>
+        <>
+            <Card className="p-5 sm:p-6">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                    <MetricCardHeader
+                        icon={MapPin}
+                        title="Clientes por região"
+                        subtitle="De onde vêm seus clientes"
+                        compact
+                    />
 
-                <span className="min-w-0">
-                    <strong className="block truncate text-sm font-medium text-[#1F1F21]">
-                        {ensaio.clienteNome || 'Cliente sem nome'}
-                    </strong>
-                    <span className="mt-1 block truncate text-xs text-[#6F6D6B]">
-                        {getTipoLabel(ensaio)}
-                    </span>
-                </span>
-            </span>
-
-            <span className="flex min-w-0 items-center gap-2 text-xs text-[#62564c] max-lg:hidden">
-                <CalendarDays size={14} className="shrink-0 text-[#C84F32]" />
-                <span className="truncate">{getDate(ensaio.dataEnsaio)?.toLocaleDateString('pt-BR') || 'Sem data'}</span>
-            </span>
-
-            <span className="flex min-w-0 items-center gap-2 text-xs text-[#62564c] max-lg:hidden">
-                <MapPin size={14} className="shrink-0 text-[#C84F32]" />
-                <span className="truncate">{ensaio.local || 'Local não informado'}</span>
-            </span>
-
-            <span className="max-lg:hidden">
-                <span className={`mb-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase ${statusConfig.bg} ${statusConfig.text}`}>
-                    <StatusIcon size={12} />
-                    {formatarStatusEnsaio(ensaio.status)}
-                </span>
-                <span className="mb-1.5 flex items-center justify-between gap-3 text-[11px] text-[#6F6D6B]">
-                    <span>Progresso</span>
-                    <span className="font-serif text-base font-light text-[#C84F32]">{progress}%</span>
-                </span>
-                <span className="block h-1.5 overflow-hidden rounded-full bg-[#e8ded2]">
-                    <span className="block h-full rounded-full" style={{ width: `${progress}%`, backgroundColor: statusConfig.color }} />
-                </span>
-            </span>
-
-            <ArrowRight size={18} className="justify-self-end text-[#C84F32]" />
-        </Link>
-    )
-}
-
-function getPipelineConfig(status) {
-    return PIPELINE_ORDER.find((item) => item.status === status) || PIPELINE_ORDER[0]
-}
-
-function getEnsaioStageDescription(ensaio) {
-    if (!ensaio?.status) return 'Aguardando próximos passos'
-
-    if (ensaio.status === 'AGENDADO') return 'Aguardando realização'
-    if (ensaio.status === 'REALIZADO') {
-        return Number(ensaio?.totalFotos || 0) > 0
-            ? 'Fotos enviadas'
-            : 'Aguardando envio das fotos'
-    }
-    if (ensaio.status === 'EM_SELECAO') {
-        return ensaio?.selecaoEnviada
-            ? 'Seleção recebida'
-            : 'Aguardando seleção'
-    }
-    if (ensaio.status === 'EM_EDICAO') return 'Editando fotos'
-    if (ensaio.status === 'FINALIZADO') return 'Pronto para entrega'
-
-    return 'Aguardando próximos passos'
-}
-
-function PipelineCard({ pipeline }) {
-    const [viewMode, setViewMode] = useState(() =>
-        getStoredPreference(PIPELINE_VIEW_STORAGE_KEY, 'pipeline', ['pipeline', 'list'])
-    )
-    const entries = PIPELINE_ORDER.map((item) => ({
-        ...item,
-        value: Number(pipeline?.[item.status] || 0),
-    }))
-    const total = entries.reduce((sum, entry) => sum + entry.value, 0)
-    function changeViewMode(nextMode) {
-        setViewMode(nextMode)
-        setStoredPreference(PIPELINE_VIEW_STORAGE_KEY, nextMode)
-    }
-
-    return (
-        <Card className="p-6">
-            <div className="flex items-center justify-between gap-4">
-                <h2 className="text-[17px] font-semibold uppercase tracking-[0.015em] text-[#1F1F21]">
-                    Pipeline dos ensaios
-                </h2>
-
-                <div className="flex items-center gap-2">
-                    <Link to="/ensaios?grupo=todos" className="text-sm font-medium text-[#C84F32] transition hover:text-[#AE3F28]">
-                        Ver todos
-                    </Link>
-                    <div className="flex items-center gap-1">
+                    {hasMoreRegions ? (
                         <button
                             type="button"
-                            onClick={() => changeViewMode('pipeline')}
-                            title="Ver pipeline"
-                            aria-label="Ver pipeline"
-                            className={`flex h-9 w-9 items-center justify-center rounded-[9px] transition ${
-                                viewMode === 'pipeline'
-                                    ? 'text-[#C84F32]'
-                                    : 'text-[#C84F32] hover:text-[#AE3F28]'
-                            }`}
+                            onClick={() => setModalOpen(true)}
+                            className="shrink-0 rounded-full border border-[#E8E3DF] bg-white px-3 py-1.5 text-xs font-semibold text-[#C84F32] transition hover:border-[#C84F32] hover:bg-[#F8EDE8]"
                         >
-                            <Workflow size={17} />
+                            Ver todas
                         </button>
-                        <button
-                            type="button"
-                            onClick={() => changeViewMode('list')}
-                            title="Ver lista"
-                            aria-label="Ver lista"
-                            className={`flex h-9 w-9 items-center justify-center rounded-[9px] transition ${
-                                viewMode === 'list'
-                                    ? 'text-[#C84F32]'
-                                    : 'text-[#C84F32] hover:text-[#AE3F28]'
-                            }`}
-                        >
-                            <List size={17} />
-                        </button>
-                    </div>
+                    ) : null}
                 </div>
-            </div>
 
-            {viewMode === 'pipeline' ? (
-                <div className="mt-6 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <div className="min-w-[500px]">
-                        <div className="grid grid-cols-6 items-start gap-1">
-                            {entries.map((entry, index) => {
-                                const Icon = entry.icon
+                {ranking.length ? (
+                    <>
+                        <div className="mt-4 divide-y divide-[#EEEAE7]">
+                            {visibleRanking.map((item, index) => {
+                                const quantidade = Number(item?.quantidadeClientes || 0)
 
                                 return (
-                                    <Link key={entry.status} to={`/ensaios?status=${entry.status}`} className="group relative flex min-h-[126px] flex-col items-center text-center">
-                                        <span className={`flex h-12 w-12 items-center justify-center rounded-full ${entry.bg} ${entry.text}`}>
-                                            <Icon size={24} strokeWidth={1.8} />
-                                        </span>
-
-                                        {index < entries.length - 1 && (
-                                            <ArrowRight
-                                                size={16}
-                                                strokeWidth={2}
-                                                className="pointer-events-none absolute left-[calc(100%-10px)] top-[18px] text-[#c9b9a7]"
-                                            />
-                                        )}
-
-                                        <span className="mt-4 max-w-[78px] text-[12px] font-medium leading-4 text-[#1F1F21]">
-                                            {formatarStatusEnsaio(entry.status)}
-                                        </span>
-                                        <strong className="mt-3 text-[24px] font-semibold leading-none text-[#080706]">{entry.value}</strong>
-                                    </Link>
+                                    <RankingListItem
+                                        key={item?.regiao || index}
+                                        index={index}
+                                        title={item?.regiao || 'Região'}
+                                        middleText={`${quantidade} cliente${quantidade === 1 ? '' : 's'}`}
+                                        percent={Number(item?.percentual || 0)}
+                                        compact
+                                    />
                                 )
                             })}
                         </div>
 
-                        <div className="mt-2 grid grid-cols-6">
-                            {entries.map((entry) => (
-                                <span key={entry.status} className="relative h-6">
-                                    <span
-                                        className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2"
-                                        style={{ backgroundColor: entry.color }}
-                                    />
-                                    <span
-                                        className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white ring-2"
-                                        style={{ backgroundColor: entry.color, '--tw-ring-color': entry.color }}
-                                    />
-                                </span>
-                            ))}
+                        <div className="mt-4 flex items-center gap-2 border-t border-[#EEEAE7] pt-3 text-xs text-[#8a8580]">
+                            <span className="h-2 w-2 rounded-full bg-[#f2997a]" />
+                            Com base nos clientes cadastrados com cidade informada.
                         </div>
-                    </div>
-                </div>
-            ) : (
-                <div className="mt-5 divide-y divide-[#EEEAE7] overflow-hidden rounded-[12px] border border-[#EEEAE7] bg-white/45">
-                    {entries.map((entry) => {
-                        const Icon = entry.icon
-                        const percent = total > 0 ? Math.round((entry.value / total) * 100) : 0
+                    </>
+                ) : (
+                    <EmptyDashboardMetric compact>
+                        Ainda não há clientes com localização suficiente para gerar este ranking.
+                    </EmptyDashboardMetric>
+                )}
+            </Card>
 
-                        return (
-                            <Link
-                                key={entry.status}
-                                to={`/ensaios?status=${entry.status}`}
-                                className="grid min-h-[64px] grid-cols-[32px_minmax(0,1fr)_44px] items-center gap-3 px-4 py-3 transition hover:bg-[#fbf5ed]"
-                            >
-                                <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${entry.bg} ${entry.text}`}>
-                                    <Icon size={16} />
-                                </span>
-                                <span className="min-w-0">
-                                    <span className="flex items-center justify-between gap-3">
-                                        <span className="truncate text-sm text-[#1F1F21]">
-                                            {formatarStatusEnsaio(entry.status)}
-                                        </span>
-                                        <span className="shrink-0 text-[11px] text-[#6F6D6B]">
-                                            {percent}%
-                                        </span>
-                                    </span>
-                                    <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-[#e8ded2]">
-                                        <span
-                                            className="block h-full rounded-full"
-                                            style={{ width: `${percent}%`, backgroundColor: entry.color }}
-                                        />
-                                    </span>
-                                </span>
-                                <strong className="justify-self-end text-sm font-medium text-[#1F1F21]">
-                                    {entry.value}
-                                </strong>
-                            </Link>
-                        )
-                    })}
-                </div>
-            )}
-        </Card>
+            {modalOpen ? (
+                <RegionRankingModal
+                    regioes={ranking}
+                    onClose={() => setModalOpen(false)}
+                />
+            ) : null}
+        </>
     )
 }
 
-function ActivityCard({ ensaios }) {
-    const items = ensaios || []
-    const [dismissedKeys, setDismissedKeys] = useState(() => {
-        try {
-            const stored = window.localStorage.getItem(DISMISSED_ACTIVITIES_STORAGE_KEY)
-            const parsed = stored ? JSON.parse(stored) : []
-
-            return Array.isArray(parsed) ? parsed : []
-        } catch {
-            return []
-        }
-    })
-    const visibleItems = useMemo(
-        () => items.filter((ensaio) => !dismissedKeys.includes(getActivityDismissKey(ensaio))),
-        [items, dismissedKeys]
-    )
-
-    function updateDismissedKeys(nextKeys) {
-        setDismissedKeys(nextKeys)
-
-        try {
-            window.localStorage.setItem(DISMISSED_ACTIVITIES_STORAGE_KEY, JSON.stringify(nextKeys))
-        } catch {
-            // Ignora falhas de armazenamento local; a limpeza ainda funciona na sessão atual.
-        }
-    }
-
-    function dismissActivity(ensaio) {
-        const key = getActivityDismissKey(ensaio)
-        updateDismissedKeys([...new Set([...dismissedKeys, key])])
-    }
-
-    function clearVisibleActivities() {
-        const nextKeys = [
-            ...dismissedKeys,
-            ...visibleItems.map(getActivityDismissKey),
-        ]
-
-        updateDismissedKeys([...new Set(nextKeys)])
-    }
+function RegionRankingModal({ regioes, onClose }) {
+    const ranking = Array.isArray(regioes) ? regioes : []
 
     return (
-        <Card className="p-6">
-            <div className="flex items-center justify-between gap-4">
-                <h2 className="text-[17px] font-semibold uppercase tracking-[0.015em] text-[#1F1F21]">
-                    Atividades Recentes 
-                </h2>
+        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-[#1F1F21]/38 px-4 py-6 backdrop-blur-[2px]">
+            <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="region-ranking-title"
+                className="w-full max-w-[620px] overflow-hidden rounded-[16px] border border-[#E5D8CA] bg-white shadow-[0_24px_70px_rgba(17,19,21,0.22)]"
+            >
+                <div className="flex items-start justify-between gap-4 border-b border-[#EEEAE7] px-5 py-4">
+                    <MetricCardHeader
+                        icon={MapPin}
+                        title="Clientes por região"
+                        subtitle="Ranking completo"
+                        compact
+                    />
 
-                {visibleItems.length > 0 && (
                     <button
                         type="button"
-                        onClick={clearVisibleActivities}
-                        className="rounded-md px-1.5 py-1 text-xs font-medium text-[#C84F32] transition hover:bg-[#F8EDE8] hover:text-[#AE3F28]"
+                        onClick={onClose}
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] text-[#8A8580] transition hover:bg-[#F4F1EE] hover:text-[#1F1F21]"
+                        aria-label="Fechar"
                     >
-                        Limpar
+                        <X size={17} strokeWidth={1.8} />
                     </button>
-                )}
-            </div>
+                </div>
 
-            <div className="mt-5 max-h-[392px] overflow-y-auto pr-2">
-                <div className="divide-y divide-[#EEEAE7]">
-                {visibleItems.length ? visibleItems.map((ensaio) => {
-                    const activity = getActivityConfig(ensaio)
-                    const Icon = activity.icon
+                <div className="max-h-[65vh] overflow-y-auto px-5 py-3">
+                    <div className="divide-y divide-[#EEEAE7]">
+                        {ranking.map((item, index) => {
+                            const quantidade = Number(item?.quantidadeClientes || 0)
 
-                    return (
-                        <div key={getActivityDismissKey(ensaio)} className="flex min-h-[64px] items-center gap-2 rounded-[10px] py-1">
-                            <Link
-                                to={`/ensaios/${ensaio.id}`}
-                                className="flex min-w-0 flex-1 items-center gap-4 rounded-[10px] px-2 py-3 transition hover:bg-[#fbf5ed]"
-                            >
-                                <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border ${activity.tone}`}>
-                                    <Icon size={20} />
-                                </span>
-                                <span className="min-w-0 flex-1">
-                                    <strong className="block truncate text-sm font-medium text-[#1F1F21]">{activity.title}</strong>
-                                    <span className="mt-1 block truncate text-xs text-[#6F6D6B]">{activity.detail}</span>
-                                </span>
-                                <span className="shrink-0 text-xs text-[#6F6D6B]">
-                                    {formatarTempoRelativo(ensaio.atualizadoEm || ensaio.dataEnsaio)}
-                                </span>
-                            </Link>
-
-                            <button
-                                type="button"
-                                onClick={() => dismissActivity(ensaio)}
-                                title="Ocultar atividade"
-                                aria-label="Ocultar atividade"
-                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#96928E] transition hover:bg-[#F8EDE8] hover:text-[#C84F32]"
-                            >
-                                <X size={14} />
-                            </button>
-                        </div>
-                    )
-                }) : (
-                    <div className="py-10 text-center text-sm text-[#6F6D6B]">
-                        Nenhuma atividade recente.
+                            return (
+                                <RankingListItem
+                                    key={item?.regiao || index}
+                                    index={index}
+                                    title={item?.regiao || 'Região'}
+                                    middleText={`${quantidade} cliente${quantidade === 1 ? '' : 's'}`}
+                                    percent={Number(item?.percentual || 0)}
+                                    compact
+                                />
+                            )
+                        })}
                     </div>
-                )}
                 </div>
             </div>
-        </Card>
+        </div>
     )
+}
+
+function RevenueByTypeDashboardCard({
+    tipos,
+    periodo = DEFAULT_REVENUE_PERIOD,
+    loading = false,
+    erro = '',
+    onPeriodoChange,
+}) {
+    const [visualizacao, setVisualizacao] = useState('lista')
+    const [modalOpen, setModalOpen] = useState(false)
+    const ranking = Array.isArray(tipos) ? tipos : []
+    const visibleRanking = ranking.slice(0, REVENUE_VISIBLE_LIMIT)
+    const hasMoreTypes = ranking.length > REVENUE_VISIBLE_LIMIT
+    const leader = visibleRanking[0] || ranking[0]
+    const periodoLabel = getRevenuePeriodLabel(periodo)
+
+    return (
+        <>
+            <Card className={`p-5 sm:p-6 ${ranking.length && visualizacao === 'donut' ? 'xl:min-h-[462px]' : ''}`}>
+                <div className="flex items-start justify-between gap-4">
+                    <MetricCardHeader
+                        icon={DollarSign}
+                        title="Receita por tipo de ensaio"
+                        subtitle="Onde o faturamento está concentrado"
+                        compact
+                    />
+
+                    <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                        <RevenuePeriodSelect
+                            value={periodo}
+                            onChange={onPeriodoChange}
+                            disabled={loading}
+                        />
+
+                        {hasMoreTypes ? (
+                            <button
+                                type="button"
+                                onClick={() => setModalOpen(true)}
+                                className="rounded-full border border-[#E8E3DF] bg-white px-3 py-1.5 text-xs font-semibold text-[#C84F32] transition hover:border-[#C84F32] hover:bg-[#F8EDE8]"
+                            >
+                                Ver todos
+                            </button>
+                        ) : null}
+
+                        {ranking.length ? (
+                            <div className="inline-flex rounded-full border border-[#E8E3DF] bg-transparent p-0.5">
+                            <DashboardToggleButton
+                                active={visualizacao === 'lista'}
+                                onClick={() => setVisualizacao('lista')}
+                            >
+                                Lista
+                            </DashboardToggleButton>
+
+                            <DashboardToggleButton
+                                active={visualizacao === 'donut'}
+                                onClick={() => setVisualizacao('donut')}
+                            >
+                                Donut
+                            </DashboardToggleButton>
+                            </div>
+                        ) : null}
+                    </div>
+                </div>
+
+                {erro ? (
+                    <p className="mt-4 rounded-[10px] border border-[#F1D7D0] bg-[#FFF8F6] px-3 py-2 text-xs font-medium text-[#C84F32]">
+                        {erro}
+                    </p>
+                ) : null}
+
+                {ranking.length && visualizacao === 'lista' ? (
+                    <div className={`mt-6 divide-y divide-[#EEEAE7] ${loading ? 'opacity-60' : ''}`}>
+                        {visibleRanking.map((item, index) => {
+                            const quantidade = Number(item?.quantidadeEnsaios || 0)
+                            const percentual = Number(item?.percentualReceita || 0)
+
+                            return (
+                                <RankingListItem
+                                    key={item?.tipoExibicao || item?.tipo || index}
+                                    index={index}
+                                    title={item?.tipoExibicao || getTipoLabel(item)}
+                                    description={`${quantidade} ensaio${quantidade === 1 ? '' : 's'} · ticket médio ${formatarMoeda(item?.ticketMedio)}`}
+                                    percent={percentual}
+                                    value={formatarMoeda(item?.faturamento)}
+                                />
+                            )
+                        })}
+                    </div>
+                ) : ranking.length ? (
+                    <div className={`mt-6 flex min-h-[228px] items-center justify-center xl:min-h-[318px] ${loading ? 'opacity-60' : ''}`}>
+                        <div className="relative h-72 w-72">
+                            <DashboardDonutChart ranking={ranking} />
+
+                            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8a7e73]">
+                                    Líder
+                                </p>
+                                <p className="mt-2 max-w-[150px] truncate text-base font-semibold text-[#2b2520]">
+                                    {leader?.tipoExibicao || getTipoLabel(leader)}
+                                </p>
+                                <p className="text-4xl font-semibold text-[#C84F32]">
+                                    {formatarPercentual(leader?.percentualReceita)}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <EmptyDashboardMetric>
+                        Ainda não há faturamento suficiente no período.
+                    </EmptyDashboardMetric>
+                )}
+
+                <div className="mt-4 flex items-center gap-2 border-t border-[#EEEAE7] pt-3 text-xs text-[#8A8580]">
+                    <span className="h-2 w-2 rounded-full bg-[#F29B7D]" />
+                    <span>
+                        Período: {periodoLabel}. Considera ensaios finalizados.
+                    </span>
+                    {loading ? (
+                        <span className="ml-auto font-semibold text-[#C84F32]">
+                            Atualizando...
+                        </span>
+                    ) : null}
+                </div>
+            </Card>
+
+            {modalOpen ? (
+                <RevenueRankingModal
+                    tipos={ranking}
+                    onClose={() => setModalOpen(false)}
+                />
+            ) : null}
+        </>
+    )
+}
+
+function RevenueRankingModal({ tipos, onClose }) {
+    const ranking = Array.isArray(tipos) ? tipos : []
+
+    return (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-[#1F1F21]/38 px-4 py-6 backdrop-blur-[2px]">
+            <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="revenue-ranking-title"
+                className="w-full max-w-[720px] overflow-hidden rounded-[16px] border border-[#E5D8CA] bg-white shadow-[0_24px_70px_rgba(17,19,21,0.22)]"
+            >
+                <div className="flex items-start justify-between gap-4 border-b border-[#EEEAE7] px-5 py-4">
+                    <MetricCardHeader
+                        icon={DollarSign}
+                        title="Receita por tipo de ensaio"
+                        subtitle="Ranking completo"
+                        compact
+                    />
+
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] text-[#8A8580] transition hover:bg-[#F4F1EE] hover:text-[#1F1F21]"
+                        aria-label="Fechar"
+                    >
+                        <X size={17} strokeWidth={1.8} />
+                    </button>
+                </div>
+
+                <div className="max-h-[65vh] overflow-y-auto px-5 py-3">
+                    <div className="divide-y divide-[#EEEAE7]">
+                        {ranking.map((item, index) => {
+                            const quantidade = Number(item?.quantidadeEnsaios || 0)
+
+                            return (
+                                <RankingListItem
+                                    key={item?.tipoExibicao || item?.tipo || index}
+                                    index={index}
+                                    title={item?.tipoExibicao || getTipoLabel(item)}
+                                    description={`${quantidade} ensaio${quantidade === 1 ? '' : 's'} · ticket médio ${formatarMoeda(item?.ticketMedio)}`}
+                                    percent={Number(item?.percentualReceita || 0)}
+                                    value={formatarMoeda(item?.faturamento)}
+                                />
+                            )
+                        })}
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function RevenuePeriodSelect({ value, onChange, disabled = false }) {
+    return (
+        <label className="flex h-9 shrink-0 items-center gap-2 rounded-full border border-[#E8E3DF] bg-white px-3 text-xs font-semibold text-[#5F5B57] shadow-[0_6px_16px_rgba(31,31,33,0.04)]">
+            <CalendarDays size={14} strokeWidth={1.8} className="text-[#C84F32]" />
+            <select
+                value={value}
+                disabled={disabled}
+                onChange={(event) => onChange?.(event.target.value)}
+                className="max-w-[138px] cursor-pointer bg-transparent text-xs font-semibold text-[#5F5B57] outline-none disabled:cursor-wait disabled:opacity-70"
+                aria-label="Período da receita por tipo de ensaio"
+            >
+                {REVENUE_PERIOD_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                        {option.label}
+                    </option>
+                ))}
+            </select>
+        </label>
+    )
+}
+
+function MetricCardHeader({ icon: Icon, title, subtitle, compact = false }) {
+    return (
+        <div className={`flex min-w-0 items-start ${compact ? 'gap-3' : 'gap-4'}`}>
+            <span className={`flex shrink-0 items-center justify-center rounded-[10px] bg-[#fff0e8] text-[#C84F32] ${compact ? 'h-11 w-11' : 'h-14 w-14'}`}>
+                <Icon size={compact ? 21 : 25} strokeWidth={1.8} />
+            </span>
+
+            <div className="min-w-0">
+                <h2 className={`${compact ? 'text-[16px] leading-5' : 'text-[17px] leading-6'} font-semibold uppercase tracking-[0.015em] text-[#1F1F21]`}>
+                    {title}
+                </h2>
+
+                <p className={`${compact ? 'mt-0.5 text-[13px]' : 'mt-1 text-sm'} leading-5 text-[#6F6D6B]`}>
+                    {subtitle}
+                </p>
+            </div>
+        </div>
+    )
+}
+
+function getRevenuePeriodLabel(value) {
+    return REVENUE_PERIOD_OPTIONS.find((option) => option.value === value)?.label
+        || REVENUE_PERIOD_OPTIONS[0].label
+}
+
+function DashboardToggleButton({ active, children, onClick }) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                active
+                    ? 'bg-[#C84F32] text-white shadow-[0_6px_14px_rgba(200,79,50,0.14)]'
+                    : 'text-[#6F6D6B] hover:bg-[#fff8f4] hover:text-[#C84F32]'
+            }`}
+        >
+            {children}
+        </button>
+    )
+}
+
+function RankingListItem({
+    index,
+    title,
+    description,
+    middleText,
+    percent,
+    value,
+    compact = false,
+}) {
+    const tone = getRankingTone(index)
+    const normalizedPercent = Math.min(100, Math.max(0, percent || 0))
+    const articleClass = compact
+        ? 'grid min-h-[54px] items-center gap-3 py-2 sm:grid-cols-[minmax(0,1fr)_110px_58px]'
+        : 'grid min-h-[72px] items-center gap-4 py-3 sm:grid-cols-[minmax(0,1fr)_156px_88px]'
+    const badgeClass = compact
+        ? 'h-9 w-9 rounded-[8px] text-base'
+        : 'h-11 w-11 rounded-[9px] text-lg'
+    const percentClass = compact
+        ? 'text-[18px]'
+        : 'text-[18px]'
+
+    return (
+        <article className={articleClass}>
+            <div className="flex min-w-0 items-center gap-3">
+                <span className={`flex shrink-0 items-center justify-center font-semibold ${badgeClass} ${tone}`}>
+                    {index + 1}
+                </span>
+
+                <div className="min-w-0">
+                    <h3 className="truncate text-[15px] font-semibold text-[#1F1F21]">
+                        {title}
+                    </h3>
+
+                    {description ? (
+                        <p className="mt-0.5 truncate text-sm text-[#6F6D6B]">
+                            {description}
+                        </p>
+                    ) : null}
+                </div>
+            </div>
+
+            <div className={`${compact ? 'text-[13px]' : 'text-sm'} text-left text-[#6F6D6B] max-sm:hidden`}>
+                {middleText || ''}
+            </div>
+
+            <div className="text-left sm:text-right">
+                <p className={`font-semibold leading-none text-[#C84F32] ${percentClass}`}>
+                    {formatarPercentual(normalizedPercent)}
+                </p>
+
+                {value ? (
+                    <p className="mt-1 text-sm font-medium text-[#6F6D6B]">
+                        {value}
+                    </p>
+                ) : null}
+            </div>
+        </article>
+    )
+}
+
+function DashboardDonutChart({ ranking }) {
+    let offset = 0
+
+    return (
+        <svg viewBox="0 0 42 42" className="h-full w-full -rotate-90">
+            <circle
+                cx="21"
+                cy="21"
+                r="15.915"
+                fill="transparent"
+                stroke="#eee7df"
+                strokeWidth="5"
+            />
+
+            {ranking.map((item, index) => {
+                const percentual = Math.max(0, Number(item?.percentualReceita || 0))
+                const quantidade = Number(item?.quantidadeEnsaios || 0)
+                const nome = item?.tipoExibicao || getTipoLabel(item)
+                const dashOffset = -offset
+                offset += percentual
+
+                return (
+                    <circle
+                        key={item?.tipoExibicao || item?.tipo || index}
+                        className="cursor-pointer opacity-90 transition duration-200 hover:opacity-100 hover:[filter:saturate(1.28)_brightness(1.08)]"
+                        cx="21"
+                        cy="21"
+                        r="15.915"
+                        fill="transparent"
+                        stroke={getDashboardDonutColor(index)}
+                        strokeWidth="5"
+                        strokeDasharray={`${percentual} ${100 - percentual}`}
+                        strokeDashoffset={dashOffset}
+                    >
+                        <title>
+                            {`${nome} · ${formatarPercentual(percentual)} · ${formatarMoeda(item?.faturamento)} · ${quantidade} ensaio${quantidade === 1 ? '' : 's'}`}
+                        </title>
+                    </circle>
+                )
+            })}
+        </svg>
+    )
+}
+
+function getDashboardDonutColor(index) {
+    const colors = ['#C84F32', '#c9872b', '#20B8A6', '#7167E8', '#F29A2E']
+
+    return colors[index % colors.length]
+}
+
+function EmptyDashboardMetric({ children, compact = false }) {
+    return (
+        <div className={`mt-5 flex items-center justify-center rounded-[12px] border border-dashed border-[#e5d8ca] bg-white/42 px-5 text-center text-sm text-[#6F6D6B] ${compact ? 'min-h-[130px]' : 'min-h-[190px]'}`}>
+            {children}
+        </div>
+    )
+}
+
+function getFlowMetricConfig(chave, index = 0) {
+    const configs = {
+        ENSAIO_ALBUM: {
+            icon: Camera,
+            title: 'Ensaio → álbum',
+            tone: 'bg-[#eaf8e9] text-[#62A83E]',
+        },
+        ALBUM_SELECAO: {
+            icon: PencilLine,
+            title: 'Álbum → seleção',
+            tone: 'bg-[#f0edff] text-[#7167E8]',
+        },
+        SELECAO_FINALIZACAO: {
+            icon: CheckCircle2,
+            title: 'Seleção → finalização',
+            tone: 'bg-[#fff0e4] text-[#F27A2E]',
+        },
+    }
+
+    return configs[chave] || Object.values(configs)[index] || configs.ENSAIO_ALBUM
+}
+
+function getRankingTone(index) {
+    const tones = [
+        'bg-[#fff0f0] text-[#ef5350]',
+        'bg-[#e7f7fb] text-[#1597ad]',
+        'bg-[#f2ecff] text-[#8b5cf6]',
+        'bg-[#e8f8ef] text-[#20a66a]',
+    ]
+
+    return tones[index] || tones[0]
+}
+
+function formatarDiasFluxo(valor) {
+    if (valor === null || valor === undefined) {
+        return 'Sem dados'
+    }
+
+    const numero = Number(valor)
+
+    if (Number.isNaN(numero)) {
+        return 'Sem dados'
+    }
+
+    return `${numero.toLocaleString('pt-BR', {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+    })} dias`
+}
+
+function formatarPercentual(valor) {
+    return `${Number(valor || 0).toLocaleString('pt-BR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 1,
+    })}%`
 }
 
 function DashboardSkeleton() {
@@ -1918,9 +2057,12 @@ function DashboardSkeleton() {
                 <div className="h-64 rounded-[14px] bg-white/78" />
             </div>
             <div className="mt-6 h-36 rounded-[14px] bg-white/78" />
-            <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_470px]">
-                <div className="h-96 rounded-[14px] bg-white/78" />
-                <div className="h-96 rounded-[14px] bg-white/78" />
+            <div className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,1fr)]">
+                <div className="h-[430px] rounded-[14px] bg-white/78" />
+                <div className="space-y-6">
+                    <div className="h-44 rounded-[14px] bg-white/78" />
+                    <div className="h-64 rounded-[14px] bg-white/78" />
+                </div>
             </div>
         </div>
     )

@@ -75,11 +75,11 @@ function DestaqueItem({ icon, label, value, variant }) {
       </span>
 
       <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-        <p className="truncate text-xs font-medium text-[#6F6D6B]">
+        <p className="truncate text-xs font-medium text-[#6F6D6B]" title={label}>
           {label}
         </p>
 
-        <p className="max-w-[180px] truncate text-right text-sm font-semibold text-[#1F1F21]">
+        <p className="max-w-[180px] truncate text-right text-sm font-semibold text-[#1F1F21]" title={value}>
           {value}
         </p>
       </div>

@@ -156,16 +156,20 @@ CREATE TABLE IF NOT EXISTS historico_status_ensaio (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   ensaio_id UUID NOT NULL REFERENCES ensaio(id) ON DELETE CASCADE,
   status status_ensaio NOT NULL,
-  alterado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-  UNIQUE (ensaio_id, status)
+  alterado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE historico_status_ensaio
+DROP CONSTRAINT IF EXISTS historico_status_ensaio_ensaio_id_status_key;
 
 CREATE INDEX IF NOT EXISTS idx_historico_status_ensaio_ensaio_id
 ON historico_status_ensaio(ensaio_id);
 
 CREATE INDEX IF NOT EXISTS idx_historico_status_ensaio_status
 ON historico_status_ensaio(status);
+
+CREATE INDEX IF NOT EXISTS idx_historico_status_ensaio_ensaio_status_alterado
+ON historico_status_ensaio(ensaio_id, status, alterado_em DESC);
 
 CREATE TABLE IF NOT EXISTS notificacao_dispensada (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -259,9 +263,7 @@ BEGIN
       NEW.id,
       NEW.status,
       NOW()
-    )
-    ON CONFLICT (ensaio_id, status)
-    DO UPDATE SET alterado_em = EXCLUDED.alterado_em;
+    );
   END IF;
 
   IF TG_OP = 'UPDATE' AND NEW.status IS DISTINCT FROM OLD.status THEN
@@ -274,9 +276,7 @@ BEGIN
       NEW.id,
       NEW.status,
       NOW()
-    )
-    ON CONFLICT (ensaio_id, status)
-    DO UPDATE SET alterado_em = EXCLUDED.alterado_em;
+    );
   END IF;
 
   RETURN NEW;
@@ -480,8 +480,12 @@ SELECT
   status,
   COALESCE(atualizado_em, criado_em, NOW())
 FROM ensaio
-ON CONFLICT (ensaio_id, status)
-DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM historico_status_ensaio historico
+  WHERE historico.ensaio_id = ensaio.id
+    AND historico.status = ensaio.status
+);
 
 ------------------------------------
 --   CONFIGURAÇÕES DE MARCA D'ÁGUA

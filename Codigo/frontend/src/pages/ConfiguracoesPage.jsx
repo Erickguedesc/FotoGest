@@ -608,7 +608,7 @@ setAlertModal({
     <>
       <Header />
 
-      <main className="configuracoes-page min-h-screen overflow-x-hidden bg-[#F7F7F8] px-4 pb-12 pt-[96px] text-[#1F1F21] md:px-6 lg:px-8 xl:px-10">
+      <main className="configuracoes-page min-h-screen overflow-x-hidden bg-[#FCFCFD] px-4 pb-12 pt-[96px] text-[#1F1F21] md:px-6 lg:px-8 xl:px-10">
         <div className="w-full max-w-[1400px]">
         <ConfiguracoesHeader />
 

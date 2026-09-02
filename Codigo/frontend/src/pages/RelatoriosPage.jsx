@@ -5,7 +5,6 @@ import RelatorioDestaques from '../components/relatorios/RelatorioDestaques'
 import RelatorioKpiGrid from '../components/relatorios/RelatorioKpiGrid'
 import RelatorioGrafico from '../components/relatorios/RelatorioGrafico'
 import RelatorioResumoConsolidado from '../components/relatorios/RelatorioResumoConsolidado'
-import RelatorioTiposEnsaio from '../components/relatorios/RelatorioTiposEnsaio'
 import RelatorioTabela from '../components/relatorios/RelatorioTabela'
 import { relatoriosService } from '../services/relatoriosService'
 import Header from '../components/layout/Header'
@@ -185,7 +184,7 @@ return (
   <>
     <Header />
 
-    <main className="relatorios-page min-h-screen overflow-x-hidden bg-[#F7F7F8] px-4 pb-10 pt-20 text-[#1F1F21] md:px-6 lg:px-8 xl:px-10">
+    <main className="relatorios-page min-h-screen overflow-x-hidden bg-[#FCFCFD] px-4 pb-10 pt-20 text-[#1F1F21] md:px-6 lg:px-8 xl:px-10">
       <div className="w-full max-w-[1480px]">
         <RelatorioHeader
           tipo={filtrosAplicados.tipo}
@@ -235,8 +234,6 @@ return (
               relatorio={relatorio}
               tituloFallback={tituloFallback}
             />
-
-            <RelatorioTiposEnsaio tipos={relatorio?.tiposEnsaio} />
 
             <RelatorioTabela periodos={periodos} />
         </section>

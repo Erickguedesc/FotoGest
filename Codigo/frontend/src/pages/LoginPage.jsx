@@ -195,14 +195,14 @@ export default function LoginPage() {
 
   return (
     <>
-    <main className="theme-static min-h-screen overflow-x-hidden bg-[#F7F7F8] text-[#1F1F21]">
+    <main className="theme-static min-h-screen overflow-x-hidden bg-[#FCFCFD] text-[#1F1F21]">
 <section className="relative min-h-[880px] overflow-hidden pb-10 sm:min-h-[900px] lg:min-h-[930px]">        <img
           src={loginScene}
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover object-left-top opacity-[0.18] md:inset-y-0 md:left-0 md:w-[60%] md:opacity-100"
         />
-        <div className="pointer-events-none absolute inset-y-0 left-[42%] hidden w-[28%] bg-[linear-gradient(90deg,rgba(247,247,248,0)_0%,#F7F7F8_78%)] md:block" />
+        <div className="pointer-events-none absolute inset-y-0 left-[42%] hidden w-[28%] bg-[linear-gradient(90deg,rgba(252,252,253,0)_0%,#FCFCFD_78%)] md:block" />
 
         <Link
           to="/"

@@ -6,7 +6,7 @@ export default function GalleryTabs({
   excedente,
 }) {
   return (
-    <nav className="sticky top-0 z-40 flex items-center justify-between border-b border-[#E8E3DF] bg-[#F7F7F8]/90 px-4 backdrop-blur-xl md:px-8">
+    <nav className="sticky top-0 z-40 flex items-center justify-between border-b border-[#E8E3DF] bg-[#FCFCFD]/90 px-4 backdrop-blur-xl md:px-8">
       <div className="flex">
         <button
           type="button"

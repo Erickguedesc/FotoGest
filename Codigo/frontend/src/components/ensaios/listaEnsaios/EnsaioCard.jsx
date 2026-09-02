@@ -60,7 +60,7 @@ export default function EnsaioCard({ ensaio, onView, onEdit, onStatus, onDelete,
             className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.035]"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,#F7F7F8,#EEEAE7)]">
+          <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,#FCFCFD,#EEEAE7)]">
             <span className="flex h-[68px] w-[68px] items-center justify-center rounded-full border border-[var(--border)] bg-white/45 font-serif text-[21px] text-[var(--text-muted)]">
               {getInitials(ensaio.clienteNome)}
             </span>

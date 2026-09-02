@@ -47,6 +47,22 @@ const formatDate = (value) => {
   return date.toLocaleDateString('pt-BR')
 }
 
+const formatDateTime = (value) => {
+  if (!value) return null
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) return null
+
+  return date.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
   const statusAtual = ensaio?.status
 
@@ -54,8 +70,28 @@ export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
     (status) => status.value !== 'CANCELADO'
   )
 
-  const historicoPorStatus = historicoStatus.reduce((acc, item) => {
-    acc[item.status] = item.alteradoEm || item.alterado_em
+  const historicoOrdenado = historicoStatus
+    .map((item) => ({
+      ...item,
+      alteradoEmNormalizado: item.alteradoEm || item.alterado_em,
+    }))
+    .filter((item) => item.status && item.alteradoEmNormalizado)
+    .sort((a, b) => new Date(a.alteradoEmNormalizado) - new Date(b.alteradoEmNormalizado))
+
+  const historicoPorStatus = historicoOrdenado.reduce((acc, item) => {
+    acc[item.status] = item.alteradoEmNormalizado
+    return acc
+  }, {})
+
+  const totalPorStatus = historicoOrdenado.reduce((acc, item) => {
+    acc[item.status] = (acc[item.status] || 0) + 1
+    return acc
+  }, {})
+
+  const possuiRetornoDeStatus = Object.values(totalPorStatus).some((total) => total > 1)
+
+  const labelPorStatus = STATUS_OPTIONS.reduce((acc, item) => {
+    acc[item.value] = item.label
     return acc
   }, {})
 
@@ -158,6 +194,40 @@ export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
               )
             })}
           </div>
+
+          {possuiRetornoDeStatus && (
+            <div className="mt-5 rounded-[10px] border border-[var(--border)] bg-white/70 px-4 py-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">
+                Histórico completo
+              </p>
+
+              <div className="mt-3 space-y-2">
+                {historicoOrdenado.map((item, index) => {
+                  const dataEvento = formatDateTime(item.alteradoEmNormalizado)
+                  const statusLabel = labelPorStatus[item.status] || item.status
+                  const tone = STATUS_TIMELINE_TONES[item.status] || STATUS_TIMELINE_TONES.AGENDADO
+
+                  return (
+                    <div
+                      key={item.id || `${item.status}-${item.alteradoEmNormalizado}-${index}`}
+                      className="flex items-center justify-between gap-3 rounded-[8px] bg-[var(--card-hover)] px-3 py-2 max-sm:flex-col max-sm:items-start"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`h-2 w-2 rounded-full ${tone.line}`} />
+                        <span className="text-[12px] font-medium text-[var(--text)]">
+                          {statusLabel}
+                        </span>
+                      </div>
+
+                      <span className="text-[11px] text-[var(--text-muted)]">
+                        {dataEvento}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </section>

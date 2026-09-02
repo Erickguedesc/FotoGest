@@ -6,7 +6,7 @@
   --color-primary: #C84F32;
   --color-primary-hover: #AE3F28;
   --color-primary-soft: #F8EDE8;
-  --color-background: #F7F7F8;
+  --color-background: #FCFCFD;
   --color-surface: #FFFFFF;
   --color-surface-secondary: #F5F3F1;
   --color-text-primary: #1F1F21;
@@ -31,7 +31,7 @@
   --text-muted: var(--color-text-secondary);
   --border: var(--color-border);
   --border-focus: rgba(200, 79, 50, 0.42);
-  --header-bg: rgba(247, 247, 248, 0.94);
+  --header-bg: rgba(252, 252, 253, 0.94);
   --light-surface: var(--color-surface);
   --light-surface-soft: var(--color-surface-secondary);
   --light-text-soft: var(--color-text-secondary);
@@ -239,7 +239,7 @@
   }
 
   body.fotolhar-ensaios-page {
-    background: #F7F7F8;
+    background: #FCFCFD;
   }
 
   .ensaios-management-page input[type='date']::-webkit-calendar-picker-indicator {

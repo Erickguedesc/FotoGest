@@ -2,15 +2,21 @@ package com.fotolhar.service;
 
 import com.fotolhar.dto.DashboardAtencaoResponse;
 import com.fotolhar.dto.DashboardEnsaioResumoResponse;
+import com.fotolhar.dto.DashboardFluxoEtapaResponse;
+import com.fotolhar.dto.DashboardRegiaoDemandaResponse;
 import com.fotolhar.dto.DashboardResumoResponse;
+import com.fotolhar.dto.RelatorioTipoEnsaioResponse;
 import com.fotolhar.enums.StatusEnsaio;
 import com.fotolhar.enums.TipoEnsaio;
+import com.fotolhar.enums.TipoPeriodoRelatorio;
 import com.fotolhar.model.Album;
+import com.fotolhar.model.Cliente;
 import com.fotolhar.model.Ensaio;
 import com.fotolhar.model.Foto;
 import com.fotolhar.model.HistoricoStatusEnsaio;
 import com.fotolhar.model.Usuario;
 import com.fotolhar.repository.AlbumRepository;
+import com.fotolhar.repository.ClienteRepository;
 import com.fotolhar.repository.EnsaioRepository;
 import com.fotolhar.repository.FotoRepository;
 import com.fotolhar.repository.HistoricoStatusEnsaioRepository;
@@ -21,7 +27,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
@@ -30,6 +38,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -40,15 +49,19 @@ import java.util.stream.Collectors;
 public class DashboardService {
 
     private static final int DIAS_EDICAO_ATRASADA = 14;
+    private static final int HISTORICO_RECENTE_DIAS = 180;
+    private static final String RECEITA_PERIODO_PADRAO = "ESTE_MES";
     private static final ZoneId APP_ZONE = ZoneId.of("America/Sao_Paulo");
 
     private final EnsaioRepository ensaioRepository;
+    private final ClienteRepository clienteRepository;
     private final FotoRepository fotoRepository;
     private final AlbumRepository albumRepository;
     private final HistoricoStatusEnsaioRepository historicoStatusEnsaioRepository;
     private final SelecaoFotoRepository selecaoFotoRepository;
     private final PreferenciasSistemaRepository preferenciasSistemaRepository;
     private final UsuarioContextService usuarioContextService;
+    private final RelatorioService relatorioService;
 
     @Transactional(readOnly = true)
     public DashboardResumoResponse buscarResumo() {
@@ -149,6 +162,9 @@ public class DashboardService {
                 .ensaiosEmAndamento(ensaiosEmAndamento)
                 .ultimasAtualizacoes(ultimasAtualizacoes)
                 .atencaoNecessaria(atencaoNecessaria)
+                .desempenhoFluxo(montarDesempenhoFluxo(ensaios, albumPorEnsaio, agora))
+                .regioesDemanda(montarRegioesDemanda(usuario))
+                .receitaPorTipoEnsaio(buscarReceitaPorTipoEnsaio(RECEITA_PERIODO_PADRAO))
                 .build();
     }
 
@@ -211,6 +227,250 @@ public class DashboardService {
         return (int) ensaios.stream()
                 .filter(ensaio -> ensaio.getStatus() == StatusEnsaio.FINALIZADO)
                 .count();
+    }
+
+    private List<DashboardFluxoEtapaResponse> montarDesempenhoFluxo(
+            List<Ensaio> ensaios,
+            Map<UUID, Album> albumPorEnsaio,
+            OffsetDateTime agora
+    ) {
+        OffsetDateTime limiteRecente = agora.minusDays(HISTORICO_RECENTE_DIAS);
+        List<BigDecimal> ensaioParaAlbum = new ArrayList<>();
+        List<BigDecimal> albumParaSelecao = new ArrayList<>();
+        List<BigDecimal> selecaoParaFinalizacao = new ArrayList<>();
+
+        for (Ensaio ensaio : ensaios) {
+            Album album = albumPorEnsaio.get(ensaio.getId());
+
+            if (album == null) {
+                continue;
+            }
+
+            adicionarDuracaoEmDias(
+                    ensaioParaAlbum,
+                    ensaio.getDataEnsaio(),
+                    album.getPublicadoEm(),
+                    limiteRecente
+            );
+
+            OffsetDateTime dataSelecao = buscarDataSelecao(album);
+
+            adicionarDuracaoEmDias(
+                    albumParaSelecao,
+                    album.getPublicadoEm(),
+                    dataSelecao,
+                    limiteRecente
+            );
+
+            if (ensaio.getStatus() == StatusEnsaio.FINALIZADO) {
+                OffsetDateTime dataFinalizacao = buscarUltimaDataStatus(ensaio, StatusEnsaio.FINALIZADO)
+                        .orElse(ensaio.getAtualizadoEm());
+
+                adicionarDuracaoEmDias(
+                        selecaoParaFinalizacao,
+                        dataSelecao,
+                        dataFinalizacao,
+                        limiteRecente
+                );
+            }
+        }
+
+        return List.of(
+                montarEtapaFluxo("ENSAIO_ALBUM", "Ensaio → álbum", ensaioParaAlbum, false),
+                montarEtapaFluxo("ALBUM_SELECAO", "Álbum → seleção", albumParaSelecao, true),
+                montarEtapaFluxo("SELECAO_FINALIZACAO", "Seleção → finalização", selecaoParaFinalizacao, true)
+        );
+    }
+
+    private DashboardFluxoEtapaResponse montarEtapaFluxo(
+            String chave,
+            String titulo,
+            List<BigDecimal> duracoes,
+            boolean parcial
+    ) {
+        return DashboardFluxoEtapaResponse.builder()
+                .chave(chave)
+                .titulo(titulo)
+                .mediaDias(calcularMediaDias(duracoes))
+                .quantidadeAmostras(duracoes.size())
+                .parcial(parcial)
+                .build();
+    }
+
+    private void adicionarDuracaoEmDias(
+            List<BigDecimal> duracoes,
+            OffsetDateTime inicio,
+            OffsetDateTime fim,
+            OffsetDateTime limiteRecente
+    ) {
+        if (inicio == null || fim == null || fim.isBefore(inicio) || fim.isBefore(limiteRecente)) {
+            return;
+        }
+
+        long minutos = Duration.between(inicio, fim).toMinutes();
+
+        duracoes.add(BigDecimal.valueOf(minutos)
+                .divide(BigDecimal.valueOf(1440), 4, RoundingMode.HALF_UP));
+    }
+
+    private BigDecimal calcularMediaDias(List<BigDecimal> duracoes) {
+        if (duracoes.isEmpty()) {
+            return null;
+        }
+
+        BigDecimal total = duracoes.stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return total.divide(BigDecimal.valueOf(duracoes.size()), 1, RoundingMode.HALF_UP);
+    }
+
+    private OffsetDateTime buscarDataSelecao(Album album) {
+        return selecaoFotoRepository.findByAlbumId(album.getId())
+                .stream()
+                .map(selecao -> selecao.getSelecionadaEm())
+                .filter(data -> data != null)
+                .max(OffsetDateTime::compareTo)
+                .orElse(null);
+    }
+
+    private java.util.Optional<OffsetDateTime> buscarUltimaDataStatus(
+            Ensaio ensaio,
+            StatusEnsaio status
+    ) {
+        return historicoStatusEnsaioRepository
+                .findByEnsaioIdOrderByAlteradoEmAsc(ensaio.getId())
+                .stream()
+                .filter(item -> item.getStatus() == status)
+                .map(HistoricoStatusEnsaio::getAlteradoEm)
+                .filter(data -> data != null)
+                .max(OffsetDateTime::compareTo);
+    }
+
+    private List<DashboardRegiaoDemandaResponse> montarRegioesDemanda(Usuario usuario) {
+        Map<String, RegiaoClienteResumo> contagens = new LinkedHashMap<>();
+
+        clienteRepository.findByUsuarioIdOrderByNomeAsc(usuario.getId())
+                .stream()
+                .filter(cliente -> cliente.getId() != null)
+                .collect(Collectors.toMap(
+                        Cliente::getId,
+                        Function.identity(),
+                        (clienteExistente, clienteDuplicado) -> clienteExistente
+                ))
+                .values()
+                .forEach(cliente -> {
+                    String cidade = normalizarCidadeCliente(cliente.getCidade());
+
+                    if (cidade == null) {
+                        return;
+                    }
+
+                    String chave = cidade.toLowerCase(Locale.ROOT);
+                    RegiaoClienteResumo resumo = contagens.computeIfAbsent(
+                            chave,
+                            ignored -> new RegiaoClienteResumo(cidade)
+                    );
+
+                    resumo.incrementar();
+                });
+
+        int totalValido = contagens.values()
+                .stream()
+                .map(RegiaoClienteResumo::getQuantidadeClientes)
+                .reduce(0, Integer::sum);
+
+        if (totalValido == 0) {
+            return List.of();
+        }
+
+        return contagens.values()
+                .stream()
+                .sorted(Comparator
+                        .comparing(RegiaoClienteResumo::getQuantidadeClientes)
+                        .reversed()
+                        .thenComparing(RegiaoClienteResumo::getRegiao))
+                .map(resumo -> DashboardRegiaoDemandaResponse.builder()
+                        .regiao(resumo.getRegiao())
+                        .quantidadeClientes(resumo.getQuantidadeClientes())
+                        .percentual(calcularPercentual(resumo.getQuantidadeClientes(), totalValido))
+                        .build())
+                .toList();
+    }
+
+    private String normalizarCidadeCliente(String valor) {
+        if (valor == null) {
+            return null;
+        }
+
+        String texto = valor.trim().replaceAll("\\s+", " ");
+
+        if (texto.length() < 2 || !texto.matches(".*\\p{L}.*")) {
+            return null;
+        }
+
+        return texto;
+    }
+
+    private BigDecimal calcularPercentual(int quantidade, int total) {
+        if (total <= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return BigDecimal.valueOf(quantidade)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(total), 1, RoundingMode.HALF_UP);
+    }
+
+    public List<RelatorioTipoEnsaioResponse> buscarReceitaPorTipoEnsaio(String periodo) {
+        ReceitaPeriodoRange intervalo = resolverPeriodoReceita(periodo);
+        List<RelatorioTipoEnsaioResponse> tipos = relatorioService
+                .buscarFaturamento(
+                        TipoPeriodoRelatorio.MENSAL,
+                        intervalo.getInicio().getYear(),
+                        intervalo.getInicio(),
+                        intervalo.getFim()
+                )
+                .getTiposEnsaio();
+
+        if (tipos == null) {
+            return List.of();
+        }
+
+        return tipos
+                .stream()
+                .toList();
+    }
+
+    private ReceitaPeriodoRange resolverPeriodoReceita(String periodo) {
+        String periodoNormalizado = periodo == null || periodo.isBlank()
+                ? RECEITA_PERIODO_PADRAO
+                : periodo.trim().toUpperCase(Locale.ROOT);
+        YearMonth mesAtual = YearMonth.now(APP_ZONE);
+
+        return switch (periodoNormalizado) {
+            case "MES_PASSADO" -> {
+                YearMonth mesPassado = mesAtual.minusMonths(1);
+                yield new ReceitaPeriodoRange(mesPassado.atDay(1), mesPassado.atEndOfMonth());
+            }
+            case "ULTIMOS_3_MESES" -> {
+                YearMonth primeiroMes = mesAtual.minusMonths(2);
+                yield new ReceitaPeriodoRange(primeiroMes.atDay(1), mesAtual.atEndOfMonth());
+            }
+            case "ESTE_SEMESTRE" -> {
+                int mesInicial = mesAtual.getMonthValue() <= 6 ? 1 : 7;
+                int mesFinal = mesInicial == 1 ? 6 : 12;
+                yield new ReceitaPeriodoRange(
+                        LocalDate.of(mesAtual.getYear(), mesInicial, 1),
+                        YearMonth.of(mesAtual.getYear(), mesFinal).atEndOfMonth()
+                );
+            }
+            case "ESTE_ANO" -> new ReceitaPeriodoRange(
+                    LocalDate.of(mesAtual.getYear(), 1, 1),
+                    LocalDate.of(mesAtual.getYear(), 12, 31)
+            );
+            case "ESTE_MES" -> new ReceitaPeriodoRange(mesAtual.atDay(1), mesAtual.atEndOfMonth());
+            default -> new ReceitaPeriodoRange(mesAtual.atDay(1), mesAtual.atEndOfMonth());
+        };
     }
 
     private List<Ensaio> buscarEnsaiosAgendadosFuturos(
@@ -505,5 +765,44 @@ public class DashboardService {
         return preferenciasSistemaRepository.findByUsuarioId(usuario.getId())
                 .map(preferencias -> preferencias.getCapaAlbumPadraoUrl())
                 .orElse(null);
+    }
+
+    private static class RegiaoClienteResumo {
+        private final String regiao;
+        private int quantidadeClientes;
+
+        private RegiaoClienteResumo(String regiao) {
+            this.regiao = regiao;
+        }
+
+        private void incrementar() {
+            quantidadeClientes++;
+        }
+
+        private String getRegiao() {
+            return regiao;
+        }
+
+        private int getQuantidadeClientes() {
+            return quantidadeClientes;
+        }
+    }
+
+    private static class ReceitaPeriodoRange {
+        private final LocalDate inicio;
+        private final LocalDate fim;
+
+        private ReceitaPeriodoRange(LocalDate inicio, LocalDate fim) {
+            this.inicio = inicio;
+            this.fim = fim;
+        }
+
+        private LocalDate getInicio() {
+            return inicio;
+        }
+
+        private LocalDate getFim() {
+            return fim;
+        }
     }
 }
