@@ -1038,7 +1038,7 @@ function AttentionSummaryCard({ dashboard, abrirTodasPendencias = false }) {
             tone: 'bg-[#fff0f0] text-[#dc2626]',
         },
         {
-            label: 'Pagamentos pendentes',
+            label: 'Pagamentos pendentes/não informados',
             value: countByType(['PAGAMENTO_PENDENTE']),
             types: ['PAGAMENTO_PENDENTE'],
             icon: DollarSign,
@@ -1208,7 +1208,9 @@ function AttentionDetailItem({ item }) {
     const config = getAttentionTypeConfig(item?.tipo)
     const Icon = config.icon
     const data = getDate(item?.dataReferencia)
-    const to = item?.ensaioId ? `/ensaios/${item.ensaioId}` : '/ensaios?grupo=ativos'
+    const to = item?.ensaioId
+        ? `/ensaios/${item.ensaioId}${item?.tipo === 'PAGAMENTO_PENDENTE' ? '?editar=valores' : ''}`
+        : '/ensaios?grupo=ativos'
 
     return (
         <Link
@@ -1632,10 +1634,13 @@ function RevenueByTypeDashboardCard({
 }) {
     const [visualizacao, setVisualizacao] = useState('lista')
     const [modalOpen, setModalOpen] = useState(false)
+    const [activeDonutSlice, setActiveDonutSlice] = useState(null)
     const ranking = Array.isArray(tipos) ? tipos : []
     const visibleRanking = ranking.slice(0, REVENUE_VISIBLE_LIMIT)
     const hasMoreTypes = ranking.length > REVENUE_VISIBLE_LIMIT
     const leader = visibleRanking[0] || ranking[0]
+    const highlightedType = activeDonutSlice?.item || leader
+    const highlightedColor = activeDonutSlice?.color || '#C84F32'
     const periodoLabel = getRevenuePeriodLabel(periodo)
 
     return (
@@ -1713,17 +1718,24 @@ function RevenueByTypeDashboardCard({
                 ) : ranking.length ? (
                     <div className={`mt-6 flex min-h-[228px] items-center justify-center xl:min-h-[318px] ${loading ? 'opacity-60' : ''}`}>
                         <div className="relative h-72 w-72">
-                            <DashboardDonutChart ranking={ranking} />
+                            <DashboardDonutChart
+                                ranking={ranking}
+                                activeIndex={activeDonutSlice?.index ?? null}
+                                onActiveSliceChange={setActiveDonutSlice}
+                            />
 
                             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
                                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8a7e73]">
-                                    Líder
+                                    {activeDonutSlice ? 'Tipo' : 'Líder'}
                                 </p>
                                 <p className="mt-2 max-w-[150px] truncate text-base font-semibold text-[#2b2520]">
-                                    {leader?.tipoExibicao || getTipoLabel(leader)}
+                                    {highlightedType?.tipoExibicao || getTipoLabel(highlightedType)}
                                 </p>
-                                <p className="text-4xl font-semibold text-[#C84F32]">
-                                    {formatarPercentual(leader?.percentualReceita)}
+                                <p
+                                    className="text-4xl font-semibold transition-colors"
+                                    style={{ color: highlightedColor }}
+                                >
+                                    {formatarPercentual(highlightedType?.percentualReceita)}
                                 </p>
                             </div>
                         </div>
@@ -1737,7 +1749,7 @@ function RevenueByTypeDashboardCard({
                 <div className="mt-4 flex items-center gap-2 border-t border-[#EEEAE7] pt-3 text-xs text-[#8A8580]">
                     <span className="h-2 w-2 rounded-full bg-[#F29B7D]" />
                     <span>
-                        Período: {periodoLabel}. Considera ensaios finalizados.
+                        Período: {periodoLabel}. Considera ensaios com valores pagos, independentemente do status
                     </span>
                     {loading ? (
                         <span className="ml-auto font-semibold text-[#C84F32]">
@@ -1931,11 +1943,32 @@ function RankingListItem({
     )
 }
 
-function DashboardDonutChart({ ranking }) {
+function DashboardDonutChart({ ranking, activeIndex = null, onActiveSliceChange }) {
     let offset = 0
+    const slices = ranking.map((item, index) => {
+        const percentual = Math.max(0, Number(item?.percentualReceita || 0))
+        const quantidade = Number(item?.quantidadeEnsaios || 0)
+        const nome = item?.tipoExibicao || getTipoLabel(item)
+        const startPercent = offset
+        const endPercent = offset + percentual
+        const color = getDashboardDonutColor(item, index)
+        offset += percentual
+
+        return {
+            color,
+            endPercent,
+            index,
+            item,
+            nome,
+            percentual,
+            quantidade,
+            startPercent,
+        }
+    })
+    const activeSlice = activeIndex !== null ? slices[activeIndex] : null
 
     return (
-        <svg viewBox="0 0 42 42" className="h-full w-full -rotate-90">
+        <svg viewBox="0 0 42 42" className="h-full w-full">
             <circle
                 cx="21"
                 cy="21"
@@ -1945,40 +1978,100 @@ function DashboardDonutChart({ ranking }) {
                 strokeWidth="5"
             />
 
-            {ranking.map((item, index) => {
-                const percentual = Math.max(0, Number(item?.percentualReceita || 0))
-                const quantidade = Number(item?.quantidadeEnsaios || 0)
-                const nome = item?.tipoExibicao || getTipoLabel(item)
-                const dashOffset = -offset
-                offset += percentual
+            {slices.map((slice) => {
+                const path = getDonutSlicePath(slice.startPercent, slice.endPercent)
 
                 return (
-                    <circle
-                        key={item?.tipoExibicao || item?.tipo || index}
-                        className="cursor-pointer opacity-90 transition duration-200 hover:opacity-100 hover:[filter:saturate(1.28)_brightness(1.08)]"
-                        cx="21"
-                        cy="21"
-                        r="15.915"
+                    <path
+                        key={slice.item?.tipoExibicao || slice.item?.tipo || slice.index}
+                        className="cursor-pointer opacity-85 transition duration-200 hover:opacity-100"
+                        d={path}
                         fill="transparent"
-                        stroke={getDashboardDonutColor(index)}
+                        stroke={slice.color}
                         strokeWidth="5"
-                        strokeDasharray={`${percentual} ${100 - percentual}`}
-                        strokeDashoffset={dashOffset}
-                    >
-                        <title>
-                            {`${nome} · ${formatarPercentual(percentual)} · ${formatarMoeda(item?.faturamento)} · ${quantidade} ensaio${quantidade === 1 ? '' : 's'}`}
-                        </title>
-                    </circle>
+                        strokeLinecap="butt"
+                        onMouseEnter={() => onActiveSliceChange?.(slice)}
+                        onMouseLeave={() => onActiveSliceChange?.(null)}
+                        onFocus={() => onActiveSliceChange?.(slice)}
+                        onBlur={() => onActiveSliceChange?.(null)}
+                        aria-label={`${slice.nome}: ${formatarPercentual(slice.percentual)} da receita, ${formatarMoeda(slice.item?.faturamento)}, ${slice.quantidade} ensaio${slice.quantidade === 1 ? '' : 's'}`}
+                        tabIndex={0}
+                    />
                 )
             })}
+
+            {activeSlice ? (
+                <path
+                    className="pointer-events-none opacity-100 [filter:drop-shadow(0_0_1.8px_rgba(31,31,33,0.34))_saturate(1.22)_brightness(1.08)]"
+                    d={getDonutSlicePath(activeSlice.startPercent, activeSlice.endPercent)}
+                    fill="transparent"
+                    stroke={activeSlice.color}
+                    strokeWidth="6.2"
+                    strokeLinecap="butt"
+                />
+            ) : null}
         </svg>
     )
 }
 
-function getDashboardDonutColor(index) {
-    const colors = ['#C84F32', '#c9872b', '#20B8A6', '#7167E8', '#F29A2E']
+function getDonutSlicePath(startPercent, endPercent) {
+    const center = 21
+    const radius = 15.915
+    const startAngle = percentToAngle(startPercent)
+    const endAngle = percentToAngle(Math.min(endPercent, 99.999))
+    const start = polarToCartesian(center, center, radius, startAngle)
+    const end = polarToCartesian(center, center, radius, endAngle)
+    const largeArcFlag = endPercent - startPercent > 50 ? 1 : 0
 
-    return colors[index % colors.length]
+    return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`
+}
+
+function percentToAngle(percent) {
+    return (percent / 100) * 360 - 90
+}
+
+function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+    const angleInRadians = (angleInDegrees * Math.PI) / 180
+
+    return {
+        x: centerX + radius * Math.cos(angleInRadians),
+        y: centerY + radius * Math.sin(angleInRadians),
+    }
+}
+
+function getDashboardDonutColor(item, index) {
+    const typeColors = {
+        FEMININO: '#C84F32',
+        FAMILIA: '#2F80A7',
+        GESTANTE: '#9B6A2F',
+        INFANTIL: '#2F9B79',
+        NEWBORN: '#6E63C8',
+        CASAL: '#B84D6B',
+        BOOK: '#5C7A35',
+        BATIZADO: '#7D6A55',
+        EXTERNO: '#D08A2E',
+        FORMATURA: '#4568A6',
+        EVENTO: '#A64F8A',
+        DEBUTANTE: '#7E5AA7',
+        OUTRO: '#6F6D6B',
+    }
+    const fallbackColors = [
+        '#C84F32',
+        '#2F80A7',
+        '#9B6A2F',
+        '#2F9B79',
+        '#6E63C8',
+        '#B84D6B',
+        '#5C7A35',
+        '#7D6A55',
+        '#D08A2E',
+        '#4568A6',
+        '#A64F8A',
+        '#6F6D6B',
+    ]
+    const tipo = item?.tipo
+
+    return typeColors[tipo] || fallbackColors[index % fallbackColors.length]
 }
 
 function EmptyDashboardMetric({ children, compact = false }) {
@@ -2012,14 +2105,9 @@ function getFlowMetricConfig(chave, index = 0) {
 }
 
 function getRankingTone(index) {
-    const tones = [
-        'bg-[#fff0f0] text-[#ef5350]',
-        'bg-[#e7f7fb] text-[#1597ad]',
-        'bg-[#f2ecff] text-[#8b5cf6]',
-        'bg-[#e8f8ef] text-[#20a66a]',
-    ]
-
-    return tones[index] || tones[0]
+    return index === 0
+        ? 'border border-[#D8CFC7] bg-[#F7F3EF] text-[#4F4A45]'
+        : 'border border-[#E8E3DF] bg-white text-[#8A8580]'
 }
 
 function formatarDiasFluxo(valor) {

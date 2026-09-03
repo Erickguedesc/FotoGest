@@ -4,6 +4,7 @@ import {
     ArrowRight,
     CheckCircle2,
     Clock3,
+    DollarSign,
     Images,
     Upload,
 } from 'lucide-react'
@@ -43,6 +44,15 @@ const CONFIG = {
         border: 'border-emerald-400/20',
         badge: 'bg-emerald-400',
         action: 'Revisar seleção',
+    },
+
+    PAGAMENTO_PENDENTE: {
+        icon: DollarSign,
+        color: 'text-amber-300',
+        bg: 'bg-amber-400/10',
+        border: 'border-amber-400/20',
+        badge: 'bg-amber-400',
+        action: 'Revisar valores',
     },
 }
 
@@ -134,7 +144,11 @@ export default function AtencaoNecessaria({ itens }) {
                                         </div>
 
                                         <Link
-                                            to={item.ensaioId ? `/ensaios/${item.ensaioId}` : '/ensaios'}
+                                            to={
+                                                item.ensaioId
+                                                    ? `/ensaios/${item.ensaioId}${item?.tipo === 'PAGAMENTO_PENDENTE' ? '?editar=valores' : ''}`
+                                                    : '/ensaios'
+                                            }
                                             className="mt-4 inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-black/5 px-3 py-2 text-xs font-medium text-[var(--text)] transition hover:border-[var(--gold-border)] hover:text-[var(--gold)]"
                                         >
                                             {config.action}

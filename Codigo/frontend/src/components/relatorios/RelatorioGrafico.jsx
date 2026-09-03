@@ -170,7 +170,7 @@ function BarrasChart({ periodos }) {
                       <Tooltip
                         label={item.label}
                         value={`${item.quantidadeEnsaios || 0} ensaio(s)`}
-                        description="Ensaios realizados"
+                        description="Ensaios no período"
                         variant="gray"
                       />
                     </button>
@@ -197,11 +197,30 @@ function BarrasChart({ periodos }) {
 }
 
 function DonutChart({ periodos }) {
+  const [activeIndex, setActiveIndex] = useState(null)
   const total = periodos.reduce(
     (acc, item) => acc + Number(item.totalLiquido || 0),
     0,
   )
   let offset = 0
+  const slices = periodos.map((item, index) => {
+    const percentual = total
+      ? (Number(item.totalLiquido || 0) / total) * 100
+      : 0
+    const startPercent = offset
+    const endPercent = offset + percentual
+    const color = CORES_PERIODOS[index % CORES_PERIODOS.length]
+    offset += percentual
+
+    return {
+      color,
+      endPercent,
+      index,
+      item,
+      percentual,
+      startPercent,
+    }
+  })
   const principal = periodos.reduce(
     (maior, item) =>
       Number(item.totalLiquido || 0) > Number(maior?.totalLiquido || 0)
@@ -212,11 +231,15 @@ function DonutChart({ periodos }) {
   const percentualPrincipal = total
     ? (Number(principal?.totalLiquido || 0) / total) * 100
     : 0
+  const activeSlice = activeIndex !== null ? slices[activeIndex] : null
+  const highlightedItem = activeSlice?.item || principal
+  const highlightedPercentual = activeSlice?.percentual ?? percentualPrincipal
+  const highlightedColor = activeSlice?.color || '#AE3F28'
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr] lg:items-center">
       <div className="relative mx-auto h-72 w-72">
-        <svg viewBox="0 0 42 42" className="h-full w-full -rotate-90">
+        <svg viewBox="0 0 42 42" className="h-full w-full">
           <circle
             cx="21"
             cy="21"
@@ -226,48 +249,53 @@ function DonutChart({ periodos }) {
             strokeWidth="6"
           />
 
-          {periodos.map((item, index) => {
-            const percentual = total
-              ? (Number(item.totalLiquido || 0) / total) * 100
-              : 0
-            const dashOffset = -offset
-            offset += percentual
+          {slices.map((slice) => {
+            const path = getDonutSlicePath(slice.startPercent, slice.endPercent)
 
             return (
-              <circle
-                key={`${item.label}-${item.inicio}`}
-                className="cursor-pointer opacity-90 transition duration-200 hover:opacity-100 hover:[filter:saturate(1.16)_brightness(1.04)]"
-                cx="21"
-                cy="21"
-                r="15.915"
+              <path
+                key={`${slice.item.label}-${slice.item.inicio}`}
+                className="cursor-pointer opacity-85 transition duration-200 hover:opacity-100"
+                d={path}
                 fill="transparent"
-                stroke={CORES_PERIODOS[index % CORES_PERIODOS.length]}
+                stroke={slice.color}
                 strokeWidth="6"
-                strokeDasharray={`${percentual} ${100 - percentual}`}
-                strokeDashoffset={dashOffset}
                 strokeLinecap="butt"
-              >
-                <title>
-                  {`${item.label} · ${percentual.toLocaleString('pt-BR', {
-                    maximumFractionDigits: 1,
-                  })}% · ${formatMoney(item.totalLiquido)}`}
-                </title>
-              </circle>
+                onMouseEnter={() => setActiveIndex(slice.index)}
+                onMouseLeave={() => setActiveIndex(null)}
+                onFocus={() => setActiveIndex(slice.index)}
+                onBlur={() => setActiveIndex(null)}
+                aria-label={`${slice.item.label}: ${slice.percentual.toLocaleString('pt-BR', {
+                  maximumFractionDigits: 1,
+                })}% da receita, ${formatMoney(slice.item.totalLiquido)}`}
+                tabIndex={0}
+              />
             )
           })}
+
+          {activeSlice ? (
+            <path
+              className="pointer-events-none opacity-100 [filter:drop-shadow(0_0_1.8px_rgba(31,31,33,0.34))_saturate(1.18)_brightness(1.07)]"
+              d={getDonutSlicePath(activeSlice.startPercent, activeSlice.endPercent)}
+              fill="transparent"
+              stroke={activeSlice.color}
+              strokeWidth="7.2"
+              strokeLinecap="butt"
+            />
+          ) : null}
         </svg>
 
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8a7e73]">
-            Maior fatia
+            {activeSlice ? 'Período' : 'Maior fatia'}
           </p>
 
-          <p className="mt-1 max-w-[150px] truncate text-lg font-semibold text-[#2b2520]" title={principal?.label}>
-            {principal?.label}
+          <p className="mt-1 max-w-[150px] truncate text-lg font-semibold text-[#2b2520]" title={highlightedItem?.label}>
+            {highlightedItem?.label}
           </p>
 
-          <p className="font-serif text-4xl text-[#AE3F28]">
-            {percentualPrincipal.toLocaleString('pt-BR', {
+          <p className="font-serif text-4xl transition-colors" style={{ color: highlightedColor }}>
+            {highlightedPercentual.toLocaleString('pt-BR', {
               maximumFractionDigits: 1,
             })}%
           </p>
@@ -279,11 +307,18 @@ function DonutChart({ periodos }) {
           const percentual = total
             ? (Number(item.totalLiquido || 0) / total) * 100
             : 0
+          const active = activeIndex === index
 
           return (
             <div
               key={`${item.label}-${item.inicio}`}
-              className="flex items-center justify-between gap-4 rounded-[12px] border border-[#E8E3DF] bg-[#F5F3F1] px-4 py-3"
+              className={`flex items-center justify-between gap-4 rounded-[12px] border px-4 py-3 transition ${
+                active
+                  ? 'border-[#D8CFC7] bg-white shadow-[0_10px_24px_rgba(31,31,33,0.07)]'
+                  : 'border-[#E8E3DF] bg-[#F5F3F1]'
+              }`}
+              onMouseEnter={() => setActiveIndex(index)}
+              onMouseLeave={() => setActiveIndex(null)}
             >
               <div className="flex min-w-0 items-center gap-3">
                 <span
@@ -302,7 +337,7 @@ function DonutChart({ periodos }) {
                 </div>
               </div>
 
-              <span className="font-serif text-xl text-[#AE3F28]">
+              <span className="font-serif text-xl transition-colors" style={{ color: active ? CORES_PERIODOS[index % CORES_PERIODOS.length] : '#AE3F28' }}>
                 {percentual.toLocaleString('pt-BR', {
                   maximumFractionDigits: 1,
                 })}%
@@ -313,6 +348,31 @@ function DonutChart({ periodos }) {
       </div>
     </div>
   )
+}
+
+function getDonutSlicePath(startPercent, endPercent) {
+  const center = 21
+  const radius = 15.915
+  const startAngle = percentToAngle(startPercent)
+  const endAngle = percentToAngle(Math.min(endPercent, 99.999))
+  const start = polarToCartesian(center, center, radius, startAngle)
+  const end = polarToCartesian(center, center, radius, endAngle)
+  const largeArcFlag = endPercent - startPercent > 50 ? 1 : 0
+
+  return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`
+}
+
+function percentToAngle(percent) {
+  return (percent / 100) * 360 - 90
+}
+
+function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+  const angleInRadians = (angleInDegrees * Math.PI) / 180
+
+  return {
+    x: centerX + radius * Math.cos(angleInRadians),
+    y: centerY + radius * Math.sin(angleInRadians),
+  }
 }
 
 function LinhaChart({ periodos }) {

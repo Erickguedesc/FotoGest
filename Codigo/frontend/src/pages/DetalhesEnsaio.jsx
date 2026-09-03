@@ -1,5 +1,5 @@
   import { useEffect, useMemo, useState } from 'react'
-  import { useNavigate, useParams } from 'react-router-dom'
+  import { useLocation, useNavigate, useParams } from 'react-router-dom'
   import { Heart, Images, Info, ListChecks, UserRound } from 'lucide-react'
 
   import Header from '../components/layout/Header'
@@ -155,6 +155,7 @@
   export default function DetalhesEnsaio() {
     const { id } = useParams()
     const navigate = useNavigate()
+    const location = useLocation()
 
     const [ensaio, setEnsaio] = useState(null)
     const [fotos, setFotos] = useState([])
@@ -186,6 +187,10 @@
     const [uploadStatus, setUploadStatus] = useState('')
     const [configuracoes, setConfiguracoes] = useState(null)
     const [activeTab, setActiveTab] = useState('informacoes')
+    const deveFocarValores = useMemo(() => {
+      const searchParams = new URLSearchParams(location.search)
+      return searchParams.get('editar') === 'valores'
+    }, [location.search])
 
     const albumToken = useMemo(() => {
       if (album?.tokenUrl) return album.tokenUrl
@@ -366,6 +371,36 @@
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id])
 
+    useEffect(() => {
+      if (!ensaio || !deveFocarValores) return
+
+      setActiveTab('informacoes')
+      setEditModalOpen(true)
+    }, [deveFocarValores, ensaio])
+
+    const limparParametroEditar = () => {
+      if (!deveFocarValores) return
+
+      const searchParams = new URLSearchParams(location.search)
+      searchParams.delete('editar')
+
+      const nextSearch = searchParams.toString()
+      navigate(
+        {
+          pathname: location.pathname,
+          search: nextSearch ? `?${nextSearch}` : '',
+        },
+        { replace: true },
+      )
+    }
+
+    const handleCloseEditModal = () => {
+      if (editLoading) return
+
+      setEditModalOpen(false)
+      limparParametroEditar()
+    }
+
     const handleEdit = async (payload) => {
       if (!ensaio) return
 
@@ -375,6 +410,7 @@
         await ensaiosService.atualizar(ensaio.id, payload)
         showToast('Ensaio atualizado com sucesso.')
         setEditModalOpen(false)
+        limparParametroEditar()
         await loadEnsaio()
         await loadHistoricoStatus()
       } catch (error) {
@@ -1288,10 +1324,9 @@ const texto =
     open={editModalOpen}
     ensaio={ensaio}
     loading={editLoading}
+    focusSection={deveFocarValores ? 'valores' : null}
     showClienteFields={false}
-    onClose={() => {
-      if (!editLoading) setEditModalOpen(false)
-    }}
+    onClose={handleCloseEditModal}
     onSave={handleEdit}
   />
 

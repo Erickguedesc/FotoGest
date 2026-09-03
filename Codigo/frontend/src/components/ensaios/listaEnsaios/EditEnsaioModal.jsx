@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Map, MapPin } from 'lucide-react'
 
 import BaseModal from './BaseModal'
@@ -26,10 +26,12 @@ export default function EditEnsaioModal({
   loading,
   onClose,
   onSave,
+  focusSection = null,
   showClienteFields = true,
 }) {
   const [form, setForm] = useState(null)
   const [mapOpen, setMapOpen] = useState(false)
+  const valoresSectionRef = useRef(null)
 
   useEffect(() => {
     if (!ensaio) return
@@ -61,6 +63,19 @@ export default function EditEnsaioModal({
   useEffect(() => {
     if (!open) setMapOpen(false)
   }, [open])
+
+  useEffect(() => {
+    if (!open || !form || focusSection !== 'valores') return undefined
+
+    const timeoutId = window.setTimeout(() => {
+      valoresSectionRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    }, 80)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [focusSection, form, open])
 
   const change = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -349,7 +364,11 @@ export default function EditEnsaioModal({
               </label>
             )}
 
-            <div className="theme-panel space-y-4 rounded-xl border p-4">
+            <div
+              ref={valoresSectionRef}
+              id="resumo-valores"
+              className="theme-panel space-y-4 rounded-xl border p-4 scroll-mt-4"
+            >
               <p className={sectionTitleClass}>Resumo de valores</p>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

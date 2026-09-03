@@ -1,15 +1,9 @@
-import { CalendarDays, Download } from 'lucide-react'
-import { TIPOS_PERIODO, getTipoPeriodoLabel } from '../../utils/relatoriosUtils'
+import { Download } from 'lucide-react'
 
 export default function RelatorioHeader({
-  tipo,
-  ano,
-  periodoDescricao,
-  anosDisponiveis = [],
   disabled,
   exportLoading,
   onExportPdf,
-  onPeriodoResumoChange,
 }) {
   return (
     <header className="mb-6 flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
@@ -19,42 +13,16 @@ export default function RelatorioHeader({
         </p>
 
         <h1 className="font-serif text-4xl font-light leading-tight text-[#1f1a16] md:text-5xl">
-          Relatório de Valores Previstos
+          Relatório financeiro
         </h1>
 
         <p className="mt-3 max-w-2xl text-sm leading-6 text-[#6d6258]">
-          Acompanhe valores previstos e recebidos conforme os ensaios, pacotes,
-          fotos extras e acordos finais informados.
+          Acompanhe o previsto, o recebido e o que falta receber por período,
+          com agrupamentos para enxergar tendências.
         </p>
       </div>
 
       <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
-        <label className="relative">
-          <span className="sr-only">Período atual</span>
-          <CalendarDays
-            size={16}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#7d7066]"
-          />
-          <select
-            value={`${tipo}|${ano}`}
-            onChange={(event) => onPeriodoResumoChange(event.target.value)}
-            disabled={disabled}
-            className="h-11 w-full appearance-none rounded-[10px] border border-[#E8E3DF] bg-white px-10 pr-11 text-sm font-medium text-[#342b24] outline-none transition focus:border-[#C84F32] focus:ring-4 focus:ring-[#C84F32]/10 disabled:cursor-not-allowed disabled:opacity-60 sm:w-[220px]"
-            title={periodoDescricao || `${getTipoPeriodoLabel(tipo)} · ${ano}`}
-          >
-            {anosDisponiveis.flatMap((anoItem) =>
-              TIPOS_PERIODO.map((periodo) => (
-                <option key={`${periodo.value}|${anoItem}`} value={`${periodo.value}|${anoItem}`}>
-                  {getTipoPeriodoLabel(periodo.value)} · {anoItem}
-                </option>
-              )),
-            )}
-          </select>
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#7d7066]">
-            ▾
-          </span>
-        </label>
-
         <button
           type="button"
           onClick={onExportPdf}

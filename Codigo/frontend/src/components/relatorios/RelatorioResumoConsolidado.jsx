@@ -49,6 +49,7 @@ export default function RelatorioResumoConsolidado({ relatorio, tituloFallback }
             value={formatMoney(recebido)}
             detail={`${formatPercent(taxaRecebimento)} do previsto`}
             valueClassName="text-green-700"
+            valueSizeClassName="text-[18px] min-[1440px]:text-[21px]"
           />
 
           <FinancialMetric
@@ -57,6 +58,7 @@ export default function RelatorioResumoConsolidado({ relatorio, tituloFallback }
             value={formatMoney(aReceber)}
             detail={`${formatPercent(taxaAReceber)} do previsto`}
             valueClassName="text-[#b5741d]"
+            valueSizeClassName="text-[18px] min-[1440px]:text-[20px]"
           />
 
           <FinancialMetric
@@ -182,8 +184,8 @@ function TopEnsaiosRow({ index, tipo, quantidade }) {
     <div className={`grid min-h-[48px] grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-3 rounded-[10px] px-2 py-2 ${
       isLeader ? 'bg-[#fff8f0]' : 'border-b border-[#eee7df] last:border-b-0'
     }`}>
-      <span className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
-        isLeader ? 'bg-[#ffe9d7] text-[#C84F32]' : 'bg-[#f3eee8] text-[#7c7167]'
+      <span className={`flex h-8 w-8 items-center justify-center rounded-full border text-sm font-semibold ${
+        isLeader ? 'border-[#D8CFC7] bg-[#F7F3EF] text-[#4F4A45]' : 'border-[#E8E3DF] bg-white text-[#8A8580]'
       }`}>
         {index + 1}
       </span>
@@ -203,7 +205,14 @@ function TopEnsaiosRow({ index, tipo, quantidade }) {
   )
 }
 
-function FinancialMetric({ icon, label, value, detail, valueClassName }) {
+function FinancialMetric({
+  icon,
+  label,
+  value,
+  detail,
+  valueClassName,
+  valueSizeClassName = 'text-[26px]',
+}) {
   return (
     <div className="min-w-0 md:px-4 md:first:pl-0 md:last:pr-0">
       <span className="mb-3 flex h-8 w-8 items-center justify-center rounded-full border border-[#eee4d9] bg-[#faf6ef] text-[#7c7167]">
@@ -214,7 +223,7 @@ function FinancialMetric({ icon, label, value, detail, valueClassName }) {
         {label}
       </p>
 
-      <p className={`mt-2 break-words text-[26px] font-semibold leading-none tracking-normal ${valueClassName}`}>
+      <p className={`mt-2 whitespace-nowrap font-semibold leading-none tracking-normal ${valueSizeClassName} ${valueClassName}`}>
         {value}
       </p>
 

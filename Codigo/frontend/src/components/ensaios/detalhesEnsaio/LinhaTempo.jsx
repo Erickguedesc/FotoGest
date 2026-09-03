@@ -83,12 +83,7 @@ export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
     return acc
   }, {})
 
-  const totalPorStatus = historicoOrdenado.reduce((acc, item) => {
-    acc[item.status] = (acc[item.status] || 0) + 1
-    return acc
-  }, {})
-
-  const possuiRetornoDeStatus = Object.values(totalPorStatus).some((total) => total > 1)
+  const deveExibirHistoricoCompleto = historicoOrdenado.length > 1
 
   const labelPorStatus = STATUS_OPTIONS.reduce((acc, item) => {
     acc[item.value] = item.label
@@ -195,13 +190,13 @@ export default function LinhaTempo({ ensaio, historicoStatus = [] }) {
             })}
           </div>
 
-          {possuiRetornoDeStatus && (
+          {deveExibirHistoricoCompleto && (
             <div className="mt-5 rounded-[10px] border border-[var(--border)] bg-white/70 px-4 py-3">
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">
                 Histórico completo
               </p>
 
-              <div className="mt-3 space-y-2">
+              <div className={`mt-3 space-y-2 ${historicoOrdenado.length > 5 ? 'max-h-[268px] overflow-y-auto pr-1' : ''}`}>
                 {historicoOrdenado.map((item, index) => {
                   const dataEvento = formatDateTime(item.alteradoEmNormalizado)
                   const statusLabel = labelPorStatus[item.status] || item.status

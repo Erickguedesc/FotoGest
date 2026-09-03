@@ -183,7 +183,7 @@ function ValoresResumoCard({
       {observacaoValores ? (
         <div className="mt-3 rounded-lg border border-[var(--border)] bg-white/58 p-3">
           <p className="mb-1 text-[11px] text-[var(--text-muted)]">
-            Observação de valores
+            Observação de valores  
           </p>
           <p className="text-[13px] leading-5 text-[var(--text)]">
             {observacaoValores}

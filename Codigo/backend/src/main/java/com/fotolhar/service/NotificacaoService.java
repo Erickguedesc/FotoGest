@@ -295,8 +295,7 @@ public class NotificacaoService {
 
     private void adicionarPagamentoPendente(List<NotificacaoResponse> itens, Ensaio ensaio) {
         if (ensaio.getStatus() != StatusEnsaio.FINALIZADO
-                || ensaio.getStatusValores() == null
-                || !"PENDENTE".equalsIgnoreCase(ensaio.getStatusValores())) {
+                || isValorRecebido(ensaio)) {
             return;
         }
 
@@ -304,10 +303,30 @@ public class NotificacaoService {
                 "PAGAMENTO_PENDENTE:" + ensaio.getId(),
                 "PAGAMENTO_PENDENTE",
                 "MEDIA",
-                "Pagamento pendente",
-                nomeCliente(ensaio) + " esta entregue, mas os valores continuam pendentes.",
+                "Pagamento pendente ou não informado",
+                resolverDescricaoPagamentoPendente(ensaio),
                 ensaio,
                 ensaio.getAtualizadoEm()));
+    }
+
+    private boolean isValorRecebido(Ensaio ensaio) {
+        return ensaio.getStatusValores() != null
+                && "PAGO".equalsIgnoreCase(ensaio.getStatusValores().trim());
+    }
+
+    private String resolverDescricaoPagamentoPendente(Ensaio ensaio) {
+        String statusValores = ensaio.getStatusValores();
+        String cliente = nomeCliente(ensaio);
+
+        if (statusValores == null || statusValores.isBlank()) {
+            return cliente + " esta entregue, mas o pagamento ainda nao foi informado.";
+        }
+
+        if ("PENDENTE".equalsIgnoreCase(statusValores.trim())) {
+            return cliente + " esta entregue, mas os valores continuam pendentes.";
+        }
+
+        return cliente + " esta entregue, mas o pagamento ainda nao foi confirmado.";
     }
 
     private NotificacaoResponse notificacao(
@@ -327,7 +346,9 @@ public class NotificacaoService {
                 .descricao(descricao)
                 .ensaioId(ensaio.getId())
                 .clienteNome(nomeCliente(ensaio))
-                .actionUrl("/ensaios/" + ensaio.getId())
+                .actionUrl("PAGAMENTO_PENDENTE".equals(tipo)
+                        ? "/ensaios/" + ensaio.getId() + "?editar=valores"
+                        : "/ensaios/" + ensaio.getId())
                 .dataReferencia(dataReferencia)
                 .build();
     }

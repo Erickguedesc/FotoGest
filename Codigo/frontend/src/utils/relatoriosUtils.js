@@ -1,23 +1,23 @@
 export const TIPOS_PERIODO = [
   {
-    value: 'ANUAL',
-    label: 'Anual',
-    detalhe: '1 período',
-  },
-  {
-    value: 'SEMESTRAL',
-    label: 'Semestral',
-    detalhe: '2 semestres',
+    value: 'MENSAL',
+    label: 'Mensal',
+    detalhe: 'Por mês',
   },
   {
     value: 'TRIMESTRAL',
     label: 'Trimestral',
-    detalhe: '4 trimestres',
+    detalhe: 'Por trimestre',
   },
   {
-    value: 'MENSAL',
-    label: 'Mensal',
-    detalhe: '12 meses',
+    value: 'SEMESTRAL',
+    label: 'Semestral',
+    detalhe: 'Por semestre',
+  },
+  {
+    value: 'ANUAL',
+    label: 'Anual',
+    detalhe: 'Total por ano',
   },
 ]
 
@@ -25,7 +25,7 @@ export function formatMoney(valor) {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-  }).format(valor || 0)
+  }).format(valor || 0).replace(/\s/g, '\u00A0')
 }
 
 export function formatDateBR(date) {

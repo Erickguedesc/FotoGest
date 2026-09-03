@@ -16,13 +16,13 @@ export default function RelatorioKpiGrid({ relatorio }) {
       <KpiCard
         title="Valor recebido"
         value={formatMoney(relatorio?.valorRecebido)}
-        description="Ensaios entregues marcados como pagos"
+        description="Ensaios marcados como pagos"
         icon={<Wallet size={18} />}
         variant="green"
       />
 
       <KpiCard
-        title="Ensaios realizados"
+        title="Ensaios no período"
         value={relatorio?.ensaiosRealizados ?? 0}
         description={relatorio?.comparativo?.descricaoEnsaios || 'Sem base comparativa'}
         tendencia={relatorio?.comparativo?.tendenciaEnsaios}
@@ -49,7 +49,7 @@ export default function RelatorioKpiGrid({ relatorio }) {
       <KpiCard
         title="Ticket médio por ensaio"
         value={formatMoney(relatorio?.ticketMedioEnsaio)}
-        description="Total previsto dividido pelos ensaios entregues"
+        description="Total previsto dividido pelos ensaios do período"
         icon={<Wallet size={18} />}
         variant="white"
       />

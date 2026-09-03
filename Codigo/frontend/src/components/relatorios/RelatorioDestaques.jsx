@@ -2,7 +2,7 @@ import { Camera, Star, TrendingDown, TrendingUp } from 'lucide-react'
 import { formatMoney } from '../../utils/relatoriosUtils'
 import { getTipoLabel } from '../ensaios/listaEnsaios/ensaioHelpers'
 
-export default function RelatorioDestaques({ destaques, periodos = [] }) {
+export default function RelatorioDestaques({ destaques, periodos = [], ensaiosMaisRealizados = [] }) {
   const periodosComReceita = periodos.filter(
     (periodo) => Number(periodo?.totalLiquido || 0) > 0,
   )
@@ -10,23 +10,24 @@ export default function RelatorioDestaques({ destaques, periodos = [] }) {
   const comparacaoLabel = periodosComReceita.length === 0
     ? 'Sem receita'
     : 'Apenas 1 período com receita'
-  const quantidadeTipo = Number(destaques?.quantidadeTipoMaisRealizado || 0)
-  const tipoMaisRealizado = destaques?.tipoMaisRealizado
-  const tipoMaisRealizadoExibicao = destaques?.tipoMaisRealizadoExibicao
+  const tipoMaisRealizado = Array.isArray(ensaiosMaisRealizados)
+    ? ensaiosMaisRealizados[0]
+    : null
+  const quantidadeTipo = Number(tipoMaisRealizado?.quantidadeEnsaios || 0)
   const tipoMaisRealizadoLabel = tipoMaisRealizado
-    ? `${tipoMaisRealizadoExibicao || getTipoLabel(tipoMaisRealizado)} · ${quantidadeTipo} ensaio${quantidadeTipo === 1 ? '' : 's'}`
+    ? `${tipoMaisRealizado.tipoExibicao || getTipoLabel(tipoMaisRealizado.tipo)} · ${quantidadeTipo} ensaio${quantidadeTipo === 1 ? '' : 's'}`
     : 'Sem ensaios'
   const melhorPeriodoLabel = periodosComReceita.length > 0
     ? destaques?.melhorPeriodo || '—'
     : 'Sem receita'
 
   return (
-    <div className="space-y-3">
+    <div className="flex min-h-0 flex-col space-y-3 xl:h-full">
       <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C84F32]">
         Destaques
       </h2>
 
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+      <div className="theme-scrollbar grid min-h-0 gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:flex-1 xl:overflow-y-auto xl:pr-1">
         <DestaqueItem
           icon={<Star size={15} />}
           label="Melhor período"

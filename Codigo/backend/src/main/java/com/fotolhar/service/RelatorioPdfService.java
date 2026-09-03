@@ -86,7 +86,7 @@ public class RelatorioPdfService {
         marca.setSpacingAfter(6);
         document.add(marca);
 
-        Paragraph titulo = new Paragraph("Relatorio de Valores Previstos", tituloFont);
+        Paragraph titulo = new Paragraph("Relatorio financeiro", tituloFont);
         titulo.setAlignment(Element.ALIGN_CENTER);
         titulo.setSpacingAfter(4);
         document.add(titulo);

@@ -63,8 +63,18 @@ export default function RelatoriosPage() {
     } catch (error) {
       console.error('Erro ao carregar relatório:', error)
 
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        setErro('Sessão expirada ou acesso não autorizado. Faça login novamente.')
+      if (error.response?.status === 401) {
+        setErro('Sessão expirada. Faça login novamente.')
+        return
+      }
+
+      if (error.response?.status === 403) {
+        setErro('Acesso não autorizado para carregar este relatório.')
+        return
+      }
+
+      if (error.response?.status === 400) {
+        setErro(error.response?.data?.message || 'Não foi possível aplicar esse filtro.')
         return
       }
 
@@ -83,65 +93,42 @@ export default function RelatoriosPage() {
     carregarRelatorio(nextFiltros)
   }
 
+  function montarFiltros(agrupamento, anoSelecionado, datas = {}) {
+    return {
+      tipo: agrupamento || tipo,
+      ano: Number(anoSelecionado || ano),
+      dataInicio: datas.dataInicio ?? dataInicio,
+      dataFim: datas.dataFim ?? dataFim,
+    }
+  }
+
   function handleTipoChange(nextTipo) {
     setTipo(nextTipo)
-    setDataInicio('')
-    setDataFim('')
-    aplicarFiltros({
-      ...filtrosAplicados,
-      tipo: nextTipo,
-      dataInicio: '',
-      dataFim: '',
-    })
+    aplicarFiltros(montarFiltros(nextTipo, ano))
   }
 
   function handleAnoChange(nextAno) {
-    setAno(nextAno)
-    setDataInicio('')
-    setDataFim('')
-    aplicarFiltros({
-      ...filtrosAplicados,
-      ano: nextAno,
-      dataInicio: '',
-      dataFim: '',
-    })
-  }
-
-  function handlePeriodoResumoChange(value) {
-    const [nextTipo, nextAno] = value.split('|')
     const anoNumerico = Number(nextAno)
 
-    setTipo(nextTipo)
     setAno(anoNumerico)
     setDataInicio('')
     setDataFim('')
-    aplicarFiltros({
-      ...filtrosAplicados,
-      tipo: nextTipo,
-      ano: anoNumerico,
-      dataInicio: '',
-      dataFim: '',
-    })
+    aplicarFiltros(montarFiltros(tipo, anoNumerico, { dataInicio: '', dataFim: '' }))
   }
 
   function handleFiltrarDatas() {
-    aplicarFiltros({
-      tipo,
-      ano,
-      dataInicio,
-      dataFim,
-    })
+    if (!dataInicio || !dataFim) {
+      setErro('Informe a data de início e fim para filtrar um período personalizado.')
+      return
+    }
+
+    aplicarFiltros(montarFiltros(tipo, ano, { dataInicio, dataFim }))
   }
 
   function handleLimparDatas() {
     setDataInicio('')
     setDataFim('')
-    aplicarFiltros({
-      tipo,
-      ano,
-      dataInicio: '',
-      dataFim: '',
-    })
+    aplicarFiltros(montarFiltros(tipo, ano, { dataInicio: '', dataFim: '' }))
   }
 
   const tituloFallback = `${getTipoPeriodoLabel(filtrosAplicados.tipo)} - ${filtrosAplicados.ano}`
@@ -187,17 +174,12 @@ return (
     <main className="relatorios-page min-h-screen overflow-x-hidden bg-[#FCFCFD] px-4 pb-10 pt-20 text-[#1F1F21] md:px-6 lg:px-8 xl:px-10">
       <div className="w-full max-w-[1480px]">
         <RelatorioHeader
-          tipo={filtrosAplicados.tipo}
-          ano={filtrosAplicados.ano}
-          periodoDescricao={relatorio?.periodoDescricao}
-          anosDisponiveis={anosDisponiveis}
           disabled={!relatorio || loading || exportLoading}
           exportLoading={exportLoading}
           onExportPdf={handleExportPdf}
-          onPeriodoResumoChange={handlePeriodoResumoChange}
         />
 
-        <section className="mb-5 grid gap-5 rounded-[18px] border border-[#E8E3DF] bg-white/92 p-4 shadow-[0_16px_46px_rgba(31,31,33,0.055)] backdrop-blur sm:p-5 md:grid-cols-2 xl:grid-cols-[1fr_0.85fr_1.35fr_1.45fr]">
+        <section className="mb-5 grid items-stretch gap-5 rounded-[18px] border border-[#E8E3DF] bg-white/92 p-4 shadow-[0_16px_46px_rgba(31,31,33,0.055)] backdrop-blur sm:p-5 md:grid-cols-2 xl:h-[318px] xl:grid-cols-[1.05fr_0.75fr_1.15fr_1.35fr] xl:overflow-hidden">
             <RelatorioFiltros
               tipo={tipo}
               ano={ano}
@@ -215,6 +197,7 @@ return (
 
             <RelatorioDestaques
               destaques={relatorio?.destaques}
+              ensaiosMaisRealizados={relatorio?.ensaiosMaisRealizados}
               periodos={periodos}
             />
         </section>

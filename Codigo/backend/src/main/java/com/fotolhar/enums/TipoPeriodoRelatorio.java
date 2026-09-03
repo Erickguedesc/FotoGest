@@ -1,6 +1,8 @@
 package com.fotolhar.enums;
 
 public enum TipoPeriodoRelatorio {
+    DIARIO,
+    SEMANAL,
     ANUAL,
     SEMESTRAL,
     TRIMESTRAL,

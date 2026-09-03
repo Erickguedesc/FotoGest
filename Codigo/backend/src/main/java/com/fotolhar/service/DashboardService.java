@@ -8,7 +8,6 @@ import com.fotolhar.dto.DashboardResumoResponse;
 import com.fotolhar.dto.RelatorioTipoEnsaioResponse;
 import com.fotolhar.enums.StatusEnsaio;
 import com.fotolhar.enums.TipoEnsaio;
-import com.fotolhar.enums.TipoPeriodoRelatorio;
 import com.fotolhar.model.Album;
 import com.fotolhar.model.Cliente;
 import com.fotolhar.model.Ensaio;
@@ -61,7 +60,6 @@ public class DashboardService {
     private final SelecaoFotoRepository selecaoFotoRepository;
     private final PreferenciasSistemaRepository preferenciasSistemaRepository;
     private final UsuarioContextService usuarioContextService;
-    private final RelatorioService relatorioService;
 
     @Transactional(readOnly = true)
     public DashboardResumoResponse buscarResumo() {
@@ -85,7 +83,7 @@ public class DashboardService {
         Map<UUID, Integer> totalSelecoesPorAlbum = contarSelecoesPorAlbum(albumPorEnsaio);
 
         BigDecimal receitaEstimada = ensaiosEsteMes.stream()
-                .map(ensaio -> calcularValorPrevistoDoEnsaio(
+                .map(ensaio -> calcularValorTotalDoEnsaio(
                         ensaio,
                         albumPorEnsaio,
                         totalSelecoesPorAlbum
@@ -421,24 +419,84 @@ public class DashboardService {
                 .divide(BigDecimal.valueOf(total), 1, RoundingMode.HALF_UP);
     }
 
+    @Transactional(readOnly = true)
     public List<RelatorioTipoEnsaioResponse> buscarReceitaPorTipoEnsaio(String periodo) {
         ReceitaPeriodoRange intervalo = resolverPeriodoReceita(periodo);
-        List<RelatorioTipoEnsaioResponse> tipos = relatorioService
-                .buscarFaturamento(
-                        TipoPeriodoRelatorio.MENSAL,
-                        intervalo.getInicio().getYear(),
-                        intervalo.getInicio(),
-                        intervalo.getFim()
-                )
-                .getTiposEnsaio();
+        Usuario usuario = usuarioContextService.getUsuarioLogado();
+        List<Ensaio> ensaios = ensaioRepository.findByClienteUsuarioId(usuario.getId());
+        Map<UUID, Album> albumPorEnsaio = buscarAlbunsPorEnsaio(usuario);
+        Map<UUID, Integer> totalSelecoesPorAlbum = contarSelecoesPorAlbum(albumPorEnsaio);
 
-        if (tipos == null) {
-            return List.of();
-        }
-
-        return tipos
-                .stream()
+        List<Ensaio> ensaiosPagosNoPeriodo = ensaios.stream()
+                .filter(this::isValorRecebido)
+                .filter(ensaio -> pertenceAoPeriodoReceita(ensaio, intervalo))
                 .toList();
+
+        BigDecimal totalRecebido = ensaiosPagosNoPeriodo.stream()
+                .map(ensaio -> calcularValorTotalDoEnsaio(
+                        ensaio,
+                        albumPorEnsaio,
+                        totalSelecoesPorAlbum
+                ))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return ensaiosPagosNoPeriodo
+                .stream()
+                .collect(Collectors.groupingBy(
+                        this::resolverTipoExibicao,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ))
+                .entrySet()
+                .stream()
+                .map(entry -> montarReceitaRecebidaPorTipo(
+                        entry.getValue().get(0).getTipo(),
+                        entry.getKey(),
+                        entry.getValue(),
+                        albumPorEnsaio,
+                        totalSelecoesPorAlbum,
+                        totalRecebido
+                ))
+                .sorted(Comparator
+                        .comparing(RelatorioTipoEnsaioResponse::getFaturamento)
+                        .reversed()
+                        .thenComparing(RelatorioTipoEnsaioResponse::getTipoExibicao))
+                .toList();
+    }
+
+    private RelatorioTipoEnsaioResponse montarReceitaRecebidaPorTipo(
+            TipoEnsaio tipo,
+            String tipoExibicao,
+            List<Ensaio> ensaios,
+            Map<UUID, Album> albumPorEnsaio,
+            Map<UUID, Integer> totalSelecoesPorAlbum,
+            BigDecimal totalRecebido
+    ) {
+        BigDecimal faturamento = ensaios.stream()
+                .map(ensaio -> calcularValorTotalDoEnsaio(
+                        ensaio,
+                        albumPorEnsaio,
+                        totalSelecoesPorAlbum
+                ))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        int fotosExtrasVendidas = ensaios.stream()
+                .map(ensaio -> calcularQuantidadeFotosExtras(
+                        ensaio,
+                        albumPorEnsaio,
+                        totalSelecoesPorAlbum
+                ))
+                .reduce(0, Integer::sum);
+
+        return RelatorioTipoEnsaioResponse.builder()
+                .tipo(tipo)
+                .tipoExibicao(tipoExibicao)
+                .faturamento(faturamento)
+                .percentualReceita(calcularPercentualReceita(faturamento, totalRecebido))
+                .ticketMedio(calcularMedia(faturamento, ensaios.size()))
+                .quantidadeEnsaios(ensaios.size())
+                .fotosExtrasVendidas(fotosExtrasVendidas)
+                .build();
     }
 
     private ReceitaPeriodoRange resolverPeriodoReceita(String periodo) {
@@ -564,13 +622,11 @@ public class DashboardService {
                 }
             }
 
-            if (ensaio.getStatus() == StatusEnsaio.FINALIZADO
-                    && ensaio.getStatusValores() != null
-                    && "PENDENTE".equalsIgnoreCase(ensaio.getStatusValores())) {
+            if (ensaio.getStatus() == StatusEnsaio.FINALIZADO && !isValorRecebido(ensaio)) {
                 itens.add(DashboardAtencaoResponse.builder()
                         .tipo("PAGAMENTO_PENDENTE")
-                        .titulo("Pagamento pendente")
-                        .descricao("Entrega finalizada com valores pendentes")
+                        .titulo("Pagamento pendente ou não informado")
+                        .descricao(resolverDescricaoPagamentoPendente(ensaio))
                         .ensaioId(ensaio.getId())
                         .clienteNome(ensaio.getCliente().getNome())
                         .dataReferencia(ensaio.getAtualizadoEm())
@@ -656,6 +712,17 @@ public class DashboardService {
         return YearMonth.from(ensaio.getDataEnsaio().atZoneSameInstant(APP_ZONE)).equals(mes);
     }
 
+    private boolean pertenceAoPeriodoReceita(Ensaio ensaio, ReceitaPeriodoRange intervalo) {
+        if (ensaio.getDataEnsaio() == null) {
+            return false;
+        }
+
+        LocalDate dataEnsaio = toAppLocalDate(ensaio.getDataEnsaio());
+
+        return !dataEnsaio.isBefore(intervalo.getInicio())
+                && !dataEnsaio.isAfter(intervalo.getFim());
+    }
+
     private OffsetDateTime agoraNoFusoDoApp() {
         return OffsetDateTime.now(APP_ZONE);
     }
@@ -670,7 +737,7 @@ public class DashboardService {
                 || ensaio.getStatus() == StatusEnsaio.EM_EDICAO;
     }
 
-    private BigDecimal calcularValorPrevistoDoEnsaio(
+    private BigDecimal calcularValorTotalDoEnsaio(
             Ensaio ensaio,
             Map<UUID, Album> albumPorEnsaio,
             Map<UUID, Integer> totalSelecoesPorAlbum
@@ -715,6 +782,44 @@ public class DashboardService {
         return ensaio.getValorFotoExtra().multiply(BigDecimal.valueOf(excedentes));
     }
 
+    private int calcularQuantidadeFotosExtras(
+            Ensaio ensaio,
+            Map<UUID, Album> albumPorEnsaio,
+            Map<UUID, Integer> totalSelecoesPorAlbum
+    ) {
+        if (!Boolean.TRUE.equals(ensaio.getCobrarFotoExtra()) || ensaio.getQtdFotosPacote() == null) {
+            return 0;
+        }
+
+        Album album = albumPorEnsaio.get(ensaio.getId());
+
+        if (album == null) {
+            return 0;
+        }
+
+        int totalSelecionadas = totalSelecoesPorAlbum.getOrDefault(album.getId(), 0);
+
+        return Math.max(0, totalSelecionadas - ensaio.getQtdFotosPacote());
+    }
+
+    private BigDecimal calcularPercentualReceita(BigDecimal valor, BigDecimal total) {
+        if (valor == null || total == null || total.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return valor
+                .multiply(BigDecimal.valueOf(100))
+                .divide(total, 1, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal calcularMedia(BigDecimal total, int quantidade) {
+        if (total == null || quantidade <= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return total.divide(BigDecimal.valueOf(quantidade), 2, RoundingMode.HALF_UP);
+    }
+
     private boolean temSelecaoEnviada(
             Ensaio ensaio,
             Map<UUID, Album> albumPorEnsaio
@@ -722,6 +827,25 @@ public class DashboardService {
         Album album = albumPorEnsaio.get(ensaio.getId());
 
         return album != null && selecaoFotoRepository.existsByAlbumId(album.getId());
+    }
+
+    private String resolverDescricaoPagamentoPendente(Ensaio ensaio) {
+        String statusValores = ensaio.getStatusValores();
+
+        if (statusValores == null || statusValores.isBlank()) {
+            return "Ensaio finalizado com pagamento não informado";
+        }
+
+        if ("PENDENTE".equalsIgnoreCase(statusValores.trim())) {
+            return "Ensaio finalizado com pagamento pendente";
+        }
+
+        return "Ensaio finalizado sem pagamento confirmado";
+    }
+
+    private boolean isValorRecebido(Ensaio ensaio) {
+        return ensaio.getStatusValores() != null
+                && "PAGO".equalsIgnoreCase(ensaio.getStatusValores().trim());
     }
 
     private OffsetDateTime buscarDataStatusAtual(Ensaio ensaio) {

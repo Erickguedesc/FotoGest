@@ -17,12 +17,12 @@ export default function RelatorioFiltros({
 }) {
   return (
     <>
-      <div className="space-y-3 xl:border-r xl:border-[#EEEAE7] xl:pr-5">
+      <div className="flex min-h-0 flex-col space-y-3 xl:h-full xl:border-r xl:border-[#EEEAE7] xl:pr-5">
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C84F32]">
-          Período
+          Agrupar por
         </h2>
 
-        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+        <div className="theme-scrollbar grid min-h-0 gap-2 sm:grid-cols-2 xl:flex-1 xl:grid-cols-1 xl:overflow-y-auto xl:pr-1">
           {TIPOS_PERIODO.map((item) => (
             <button
               key={item.value}
@@ -41,12 +41,12 @@ export default function RelatorioFiltros({
         </div>
       </div>
 
-      <div className="space-y-3 xl:border-r xl:border-[#EEEAE7] xl:pr-5">
+      <div className="flex min-h-0 flex-col space-y-3 xl:h-full xl:border-r xl:border-[#EEEAE7] xl:pr-5">
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C84F32]">
           Ano
         </h2>
 
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap xl:grid xl:grid-cols-1">
+        <div className="theme-scrollbar grid min-h-0 grid-cols-2 gap-2 sm:flex sm:flex-wrap xl:grid xl:flex-1 xl:grid-cols-1 xl:overflow-y-auto xl:pr-1">
           {anosDisponiveis.map((item) => (
             <button
               key={item}
@@ -64,12 +64,12 @@ export default function RelatorioFiltros({
         </div>
       </div>
 
-      <div className="space-y-3 xl:border-r xl:border-[#EEEAE7] xl:pr-5">
+      <div className="flex min-h-0 flex-col space-y-3 xl:h-full xl:border-r xl:border-[#EEEAE7] xl:pr-5">
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C84F32]">
           Período personalizado
         </h2>
 
-        <div className="space-y-3">
+        <div className="theme-scrollbar min-h-0 space-y-3 xl:flex-1 xl:overflow-y-auto xl:pr-1">
           <label className="block">
             <span className="mb-1.5 block text-[11px] font-medium text-[#6F6D6B]">
               Início
@@ -95,7 +95,7 @@ export default function RelatorioFiltros({
           </label>
         </div>
 
-        <div className="space-y-2">
+        <div className="shrink-0 space-y-2">
           {(dataInicio || dataFim) && (
             <button
               type="button"

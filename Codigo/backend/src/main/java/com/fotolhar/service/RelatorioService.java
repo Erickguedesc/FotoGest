@@ -130,7 +130,7 @@ List<RelatorioEnsaioMaisRealizadoResponse> ensaiosMaisRealizados = montarEnsaios
         periodosInternos
 );
 
-RelatorioDestaqueResponse destaques = montarDestaques(periodos, tiposEnsaio);
+RelatorioDestaqueResponse destaques = montarDestaques(periodos, ensaiosMaisRealizados);
 
 int anoComparado = anoFinal - 1;
 
@@ -378,7 +378,7 @@ RelatorioComparativoResponse comparativo = montarComparativo(
         }
 
         private boolean isEnsaioFinanceiro(Ensaio ensaio) {
-                return ensaio.getStatus() == StatusEnsaio.FINALIZADO;
+                return ensaio.getStatus() != StatusEnsaio.CANCELADO;
         }
 
         private boolean isEnsaioRealizadoParaRanking(Ensaio ensaio) {
@@ -503,7 +503,7 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                                 fim = originalInicio;
                         }
 
-                        return List.of(periodo("Personalizado", inicio, fim));
+                        return gerarPeriodosNoIntervalo(tipo, inicio, fim);
                 }
 
                 return gerarPeriodos(tipo, ano);
@@ -511,11 +511,58 @@ RelatorioComparativoResponse comparativo = montarComparativo(
 
         private List<PeriodoRelatorioInterno> gerarPeriodos(TipoPeriodoRelatorio tipo, int ano) {
                 return switch (tipo) {
+                        case DIARIO -> gerarPeriodosDiarios(LocalDate.of(ano, 1, 1), LocalDate.of(ano, 12, 31));
+                        case SEMANAL -> gerarPeriodosSemanais(LocalDate.of(ano, 1, 1), LocalDate.of(ano, 12, 31));
                         case ANUAL -> gerarPeriodoAnual(ano);
                         case SEMESTRAL -> gerarPeriodosSemestrais(ano);
                         case TRIMESTRAL -> gerarPeriodosTrimestrais(ano);
                         case MENSAL -> gerarPeriodosMensais(ano);
                 };
+        }
+
+        private List<PeriodoRelatorioInterno> gerarPeriodosNoIntervalo(
+                        TipoPeriodoRelatorio tipo,
+                        LocalDate inicio,
+                        LocalDate fim) {
+                return switch (tipo) {
+                        case DIARIO -> gerarPeriodosDiarios(inicio, fim);
+                        case SEMANAL -> gerarPeriodosSemanais(inicio, fim);
+                        case MENSAL -> gerarPeriodosMensais(inicio, fim);
+                        case TRIMESTRAL -> gerarPeriodosTrimestrais(inicio, fim);
+                        case SEMESTRAL -> gerarPeriodosSemestrais(inicio, fim);
+                        case ANUAL -> gerarPeriodosAnuais(inicio, fim);
+                };
+        }
+
+        private List<PeriodoRelatorioInterno> gerarPeriodosDiarios(LocalDate inicio, LocalDate fim) {
+                List<PeriodoRelatorioInterno> periodos = new java.util.ArrayList<>();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM");
+                LocalDate cursor = inicio;
+
+                while (!cursor.isAfter(fim)) {
+                        periodos.add(periodo(cursor.format(formatter), cursor, cursor));
+                        cursor = cursor.plusDays(1);
+                }
+
+                return periodos;
+        }
+
+        private List<PeriodoRelatorioInterno> gerarPeriodosSemanais(LocalDate inicio, LocalDate fim) {
+                List<PeriodoRelatorioInterno> periodos = new java.util.ArrayList<>();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM");
+                LocalDate cursor = inicio;
+
+                while (!cursor.isAfter(fim)) {
+                        LocalDate fimSemana = cursor.plusDays(6);
+                        LocalDate fimPeriodo = fimSemana.isAfter(fim) ? fim : fimSemana;
+                        periodos.add(periodo(
+                                        cursor.format(formatter) + " - " + fimPeriodo.format(formatter),
+                                        cursor,
+                                        fimPeriodo));
+                        cursor = fimPeriodo.plusDays(1);
+                }
+
+                return periodos;
         }
 
         private List<PeriodoRelatorioInterno> gerarPeriodosMensais(int ano) {
@@ -541,6 +588,23 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                                                 LocalDate.of(ano, Month.DECEMBER, 31)));
         }
 
+        private List<PeriodoRelatorioInterno> gerarPeriodosMensais(LocalDate inicio, LocalDate fim) {
+                List<PeriodoRelatorioInterno> periodos = new java.util.ArrayList<>();
+                LocalDate cursor = inicio;
+
+                while (!cursor.isAfter(fim)) {
+                        LocalDate fimMes = cursor.withDayOfMonth(cursor.lengthOfMonth());
+                        LocalDate fimPeriodo = fimMes.isAfter(fim) ? fim : fimMes;
+                        periodos.add(periodo(
+                                        abreviarMes(cursor.getMonth()) + "/" + String.valueOf(cursor.getYear()).substring(2),
+                                        cursor,
+                                        fimPeriodo));
+                        cursor = fimPeriodo.plusDays(1);
+                }
+
+                return periodos;
+        }
+
         private List<PeriodoRelatorioInterno> gerarPeriodosTrimestrais(int ano) {
                 return List.of(
                                 periodo("1º trim.", LocalDate.of(ano, 1, 1), LocalDate.of(ano, 3, 31)),
@@ -549,13 +613,85 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                                 periodo("4º trim.", LocalDate.of(ano, 10, 1), LocalDate.of(ano, 12, 31)));
         }
 
+        private List<PeriodoRelatorioInterno> gerarPeriodosTrimestrais(LocalDate inicio, LocalDate fim) {
+                List<PeriodoRelatorioInterno> periodos = new java.util.ArrayList<>();
+                LocalDate cursor = inicio;
+
+                while (!cursor.isAfter(fim)) {
+                        int trimestre = ((cursor.getMonthValue() - 1) / 3) + 1;
+                        int mesFinalTrimestre = trimestre * 3;
+                        LocalDate fimTrimestre = LocalDate
+                                        .of(cursor.getYear(), mesFinalTrimestre, 1)
+                                        .withDayOfMonth(LocalDate.of(cursor.getYear(), mesFinalTrimestre, 1).lengthOfMonth());
+                        LocalDate fimPeriodo = fimTrimestre.isAfter(fim) ? fim : fimTrimestre;
+                        periodos.add(periodo(
+                                        trimestre + "º trim. " + cursor.getYear(),
+                                        cursor,
+                                        fimPeriodo));
+                        cursor = fimPeriodo.plusDays(1);
+                }
+
+                return periodos;
+        }
+
+        private List<PeriodoRelatorioInterno> gerarPeriodosSemestrais(LocalDate inicio, LocalDate fim) {
+                List<PeriodoRelatorioInterno> periodos = new java.util.ArrayList<>();
+                LocalDate cursor = inicio;
+
+                while (!cursor.isAfter(fim)) {
+                        boolean primeiroSemestre = cursor.getMonthValue() <= 6;
+                        LocalDate fimSemestre = primeiroSemestre
+                                        ? LocalDate.of(cursor.getYear(), 6, 30)
+                                        : LocalDate.of(cursor.getYear(), 12, 31);
+                        LocalDate fimPeriodo = fimSemestre.isAfter(fim) ? fim : fimSemestre;
+                        periodos.add(periodo(
+                                        (primeiroSemestre ? "1º sem. " : "2º sem. ") + cursor.getYear(),
+                                        cursor,
+                                        fimPeriodo));
+                        cursor = fimPeriodo.plusDays(1);
+                }
+
+                return periodos;
+        }
+
+        private List<PeriodoRelatorioInterno> gerarPeriodosAnuais(LocalDate inicio, LocalDate fim) {
+                List<PeriodoRelatorioInterno> periodos = new java.util.ArrayList<>();
+                LocalDate cursor = inicio;
+
+                while (!cursor.isAfter(fim)) {
+                        LocalDate fimAno = LocalDate.of(cursor.getYear(), 12, 31);
+                        LocalDate fimPeriodo = fimAno.isAfter(fim) ? fim : fimAno;
+                        periodos.add(periodo("Ano " + cursor.getYear(), cursor, fimPeriodo));
+                        cursor = fimPeriodo.plusDays(1);
+                }
+
+                return periodos;
+        }
+
+        private String abreviarMes(Month mes) {
+                return switch (mes) {
+                        case JANUARY -> "Jan";
+                        case FEBRUARY -> "Fev";
+                        case MARCH -> "Mar";
+                        case APRIL -> "Abr";
+                        case MAY -> "Mai";
+                        case JUNE -> "Jun";
+                        case JULY -> "Jul";
+                        case AUGUST -> "Ago";
+                        case SEPTEMBER -> "Set";
+                        case OCTOBER -> "Out";
+                        case NOVEMBER -> "Nov";
+                        case DECEMBER -> "Dez";
+                };
+        }
+
         private PeriodoRelatorioInterno periodo(String label, LocalDate inicio, LocalDate fim) {
                 return new PeriodoRelatorioInterno(label, inicio, fim);
         }
 
         private RelatorioDestaqueResponse montarDestaques(
                         List<RelatorioPeriodoResponse> periodos,
-                        List<RelatorioTipoEnsaioResponse> tiposEnsaio) {
+                        List<RelatorioEnsaioMaisRealizadoResponse> ensaiosMaisRealizados) {
                 RelatorioPeriodoResponse maior = periodos.stream()
                                 .filter(periodo -> periodo.getTotalLiquido().compareTo(BigDecimal.ZERO) > 0)
                                 .max(Comparator.comparing(RelatorioPeriodoResponse::getTotalLiquido))
@@ -566,10 +702,8 @@ RelatorioComparativoResponse comparativo = montarComparativo(
                                 .min(Comparator.comparing(RelatorioPeriodoResponse::getTotalLiquido))
                                 .orElse(null);
 
-                RelatorioTipoEnsaioResponse tipoMaisRealizado = tiposEnsaio.stream()
-                                .max(Comparator
-                                                .comparing(RelatorioTipoEnsaioResponse::getQuantidadeEnsaios)
-                                                .thenComparing(RelatorioTipoEnsaioResponse::getFaturamento))
+                RelatorioEnsaioMaisRealizadoResponse tipoMaisRealizado = ensaiosMaisRealizados.stream()
+                                .findFirst()
                                 .orElse(null);
 
                 return RelatorioDestaqueResponse.builder()
@@ -632,14 +766,7 @@ RelatorioComparativoResponse comparativo = montarComparativo(
         }
 
         private String montarDescricao(TipoPeriodoRelatorio tipo, int ano) {
-                String nome = switch (tipo) {
-                        case ANUAL -> "Anual";
-                        case SEMESTRAL -> "Semestral";
-                        case TRIMESTRAL -> "Trimestral";
-                        case MENSAL -> "Mensal";
-                };
-
-                return nome + " - " + ano;
+                return resolverNomeAgrupamento(tipo) + " - " + ano;
         }
 
         private String montarDescricao(TipoPeriodoRelatorio tipo, int ano, LocalDate dataInicio, LocalDate dataFim) {
@@ -658,7 +785,18 @@ RelatorioComparativoResponse comparativo = montarComparativo(
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-                return "Personalizado - " + inicio.format(formatter) + " a " + fim.format(formatter);
+                return resolverNomeAgrupamento(tipo) + " - " + inicio.format(formatter) + " a " + fim.format(formatter);
+        }
+
+        private String resolverNomeAgrupamento(TipoPeriodoRelatorio tipo) {
+                return switch (tipo) {
+                        case DIARIO -> "Diario";
+                        case SEMANAL -> "Semanal";
+                        case ANUAL -> "Anual";
+                        case SEMESTRAL -> "Semestral";
+                        case TRIMESTRAL -> "Trimestral";
+                        case MENSAL -> "Mensal";
+                };
         }
 
         @FunctionalInterface
@@ -799,6 +937,8 @@ private String resolverTendenciaNumero(int valor) {
 
 private String resolverUnidadePeriodo(TipoPeriodoRelatorio tipo) {
     return switch (tipo) {
+        case DIARIO -> "dia";
+        case SEMANAL -> "semana";
         case ANUAL -> "ano";
         case SEMESTRAL -> "semestre";
         case TRIMESTRAL -> "trimestre";
