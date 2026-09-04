@@ -63,6 +63,12 @@ public class EnsaioRequest {
     )
     private String estadoEnsaio;
 
+    @Size(max = 300, message = "Endereco completo deve ter no maximo 300 caracteres")
+    private String enderecoCompleto;
+
+    @Size(max = 300, message = "Referencia do local deve ter no maximo 300 caracteres")
+    private String referenciaLocal;
+
     @NotNull(message = "Quantidade de fotos do pacote e obrigatoria")
     @Min(value = 1, message = "Deve ter pelo menos 1 foto no pacote")
     private Integer qtdFotosPacote;

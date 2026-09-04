@@ -117,7 +117,7 @@ export default function SelecaoClienteCard({
 
   return (
     <section className="rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
-      <SectionTitle title="Fotos selecionadas pela cliente" icon={Heart} />
+      <SectionTitle title="Fotos selecionadas" icon={Heart} />
 
       {semSelecao ? (
         <div className="flex min-h-[190px] flex-col items-center justify-center p-8 text-center">
@@ -148,11 +148,11 @@ export default function SelecaoClienteCard({
           ) : (
             <>
               <p className="text-[14px] text-[var(--text)]">
-                Aguardando seleção da cliente.
+                Aguardando seleção.
               </p>
 
               <p className="mt-1 text-[12px] text-[var(--text-muted)]">
-                Quando a cliente finalizar a escolha, a seleção aparecerá aqui.
+                Quando cliente finalizar a escolha, a seleção aparecerá aqui.
               </p>
             </>
           )}

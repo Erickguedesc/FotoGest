@@ -49,6 +49,8 @@ export default function EditEnsaioModal({
       local: ensaio.local || '',
       cidadeEnsaio: ensaio.cidadeEnsaio || '',
       estadoEnsaio: ensaio.estadoEnsaio || '',
+      enderecoCompleto: ensaio.enderecoCompleto || '',
+      referenciaLocal: ensaio.referenciaLocal || '',
       qtdFotosPacote: ensaio.qtdFotosPacote || 1,
       valorPacote: ensaio.valorPacote || '',
       cobrarFotoExtra: Boolean(ensaio.cobrarFotoExtra),
@@ -83,17 +85,18 @@ export default function EditEnsaioModal({
 
   const mapInitialQuery = useMemo(
     () => montarConsultaMapa({
-      local: form?.local,
+      enderecoCompleto: form?.enderecoCompleto,
       cidade: form?.cidadeEnsaio,
       estado: form?.estadoEnsaio,
+      local: form?.local,
     }),
-    [form?.cidadeEnsaio, form?.estadoEnsaio, form?.local],
+    [form?.cidadeEnsaio, form?.enderecoCompleto, form?.estadoEnsaio, form?.local],
   )
 
   const handleUseLocationFromMap = (value) => {
     const parsed = interpretarTextoLocalizacao(value)
 
-    if (parsed.local) change('local', parsed.local)
+    change('enderecoCompleto', value)
     if (parsed.cidade) change('cidadeEnsaio', parsed.cidade)
     if (parsed.estado) change('estadoEnsaio', parsed.estado)
 
@@ -120,6 +123,8 @@ export default function EditEnsaioModal({
       local: form.local.trim(),
       cidadeEnsaio: form.cidadeEnsaio.trim() || null,
       estadoEnsaio: form.estadoEnsaio || null,
+      enderecoCompleto: form.enderecoCompleto?.trim() || null,
+      referenciaLocal: form.referenciaLocal?.trim() || null,
       qtdFotosPacote: Number(form.qtdFotosPacote),
       valorPacote: Number(form.valorPacote),
       cobrarFotoExtra: Boolean(form.cobrarFotoExtra),
@@ -272,16 +277,8 @@ export default function EditEnsaioModal({
                   value={form.local}
                   onChange={(event) => change('local', event.target.value)}
                   className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-[13px] outline-none"
-                  placeholder="Ex: Studio Fotolhar, BH"
+                  placeholder="Ex: Estúdio, chácara da cliente, Jardim Botânico"
                 />
-                <button
-                  type="button"
-                  onClick={() => setMapOpen(true)}
-                  className="flex flex-shrink-0 items-center gap-2 border-l border-[var(--border)] px-3 text-[12px] font-medium text-[#C84F32] transition hover:bg-white hover:text-[#AE3F28] max-sm:px-2.5"
-                >
-                  <Map className="h-4 w-4" strokeWidth={1.8} />
-                  <span className="max-[420px]:hidden">Mapa</span>
-                </button>
               </div>
             </label>
 
@@ -310,6 +307,39 @@ export default function EditEnsaioModal({
                     </option>
                   ))}
                 </select>
+              </label>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label>
+                <span className={labelClass}>Endereço completo</span>
+                <div className="flex min-h-[42px] overflow-hidden rounded-lg border border-[var(--border)] bg-white transition focus-within:border-[var(--gold-border)] focus-within:bg-[var(--gold-dim)]">
+                  <Map className="ml-3.5 mt-3 h-4 w-4 flex-shrink-0 text-[var(--text-muted)]" strokeWidth={1.8} />
+                  <input
+                    value={form.enderecoCompleto}
+                    onChange={(event) => change('enderecoCompleto', event.target.value)}
+                    className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-[13px] outline-none"
+                    placeholder="Opcional, se quiser rota exata"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMapOpen(true)}
+                    className="flex flex-shrink-0 items-center gap-2 border-l border-[var(--border)] px-3 text-[12px] font-medium text-[#C84F32] transition hover:bg-white hover:text-[#AE3F28] max-sm:px-2.5"
+                  >
+                    <Map className="h-4 w-4" strokeWidth={1.8} />
+                    <span className="max-[420px]:hidden">Mapa</span>
+                  </button>
+                </div>
+              </label>
+
+              <label>
+                <span className={labelClass}>Referência do local</span>
+                <input
+                  value={form.referenciaLocal}
+                  onChange={(event) => change('referenciaLocal', event.target.value)}
+                  className={inputClass}
+                  placeholder="Ex: entrada principal, portão azul"
+                />
               </label>
             </div>
 

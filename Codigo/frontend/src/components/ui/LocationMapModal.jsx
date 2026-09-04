@@ -50,10 +50,10 @@ export default function LocationMapModal({ initialQuery, onClose, onUseLocation,
         <div className="flex items-center justify-between gap-4 border-b border-[var(--border)] px-5 py-4">
           <div className="min-w-0">
             <p className="text-[14px] font-medium text-[var(--text)]">
-              Selecionar local no mapa
+              Conferir no mapa
             </p>
             <p className="mt-0.5 truncate text-[12px] text-[var(--text-muted)]">
-              {query || 'Pesquise um endereço ou lugar'}
+              {query || 'Pesquise uma cidade ou endereço'}
             </p>
           </div>
 
@@ -81,7 +81,7 @@ export default function LocationMapModal({ initialQuery, onClose, onUseLocation,
                   }
                 }}
                 className={`${inputClass} pl-10`}
-                placeholder="Pesquisar endereço ou lugar"
+                placeholder="Pesquisar cidade ou endereço"
               />
             </label>
 
@@ -105,7 +105,7 @@ export default function LocationMapModal({ initialQuery, onClose, onUseLocation,
               />
             ) : (
               <div className="flex h-[260px] items-center justify-center px-6 text-center text-[13px] text-[var(--text-muted)]">
-                Informe um local para visualizar o mapa.
+                Informe uma cidade ou endereço para visualizar o mapa.
               </div>
             )}
           </div>
@@ -134,7 +134,7 @@ export default function LocationMapModal({ initialQuery, onClose, onUseLocation,
               className="inline-flex min-h-[42px] items-center gap-2 rounded-[9px] bg-[#C84F32] px-4 text-[12px] font-medium text-white transition hover:bg-[#AE3F28] disabled:cursor-not-allowed disabled:opacity-55"
             >
               <Check className="h-4 w-4" />
-              Usar este local
+              Usar no endereço
             </button>
           </div>
         </div>

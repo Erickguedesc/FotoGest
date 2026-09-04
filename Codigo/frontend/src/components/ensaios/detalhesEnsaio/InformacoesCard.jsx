@@ -8,6 +8,11 @@ import {
 
 import SectionTitle from './SectionTitle'
 import InfoItem from './InfoItem'
+import {
+  getGoogleMapsEmbedUrl,
+  getGoogleMapsUrl,
+  montarConsultaMapa,
+} from '../../../utils/localizacaoEnsaio'
 
 const STATUS_VALORES_LABEL = {
   NAO_INFORMADO: 'Não informado',
@@ -31,12 +36,6 @@ const formatTime = (value) => {
     minute: '2-digit',
   })
 }
-
-const getMapsUrl = (local) =>
-  `https://www.google.com/maps?q=${encodeURIComponent(local)}`
-
-const getMapsEmbedUrl = (local) =>
-  `https://maps.google.com/maps?q=${encodeURIComponent(local)}&output=embed`
 
 export default function InformacoesCard({ ensaio, selecao, onEdit }) {
   const fotosIncluidas =
@@ -65,6 +64,7 @@ export default function InformacoesCard({ ensaio, selecao, onEdit }) {
   const statusValores =
     STATUS_VALORES_LABEL[ensaio?.statusValores] ||
     STATUS_VALORES_LABEL.NAO_INFORMADO
+  const cidadeUf = [ensaio?.cidadeEnsaio, ensaio?.estadoEnsaio].filter(Boolean).join(', ')
 
   return (
     <section className="rounded-[14px] border border-[var(--border)] bg-white/78 shadow-[0_14px_34px_rgba(31,31,33,0.055)]">
@@ -81,6 +81,10 @@ export default function InformacoesCard({ ensaio, selecao, onEdit }) {
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 max-md:grid-cols-1">
             <InfoItem label="Local" value={getSafeValue(ensaio.local)} compact />
             <InfoItem label="Tipo" value={getTipoExibicao(ensaio)} compact />
+
+            <InfoItem label="Cidade do ensaio" value={getSafeValue(cidadeUf)} compact />
+            <InfoItem label="Endereço completo" value={getSafeValue(ensaio.enderecoCompleto)} compact />
+            <InfoItem label="Referência" value={getSafeValue(ensaio.referenciaLocal)} compact />
 
             <InfoItem label="Data" value={formatDate(ensaio.dataEnsaio)} compact />
             <InfoItem label="Horário" value={formatTime(ensaio.dataEnsaio)} compact />
@@ -122,7 +126,7 @@ export default function InformacoesCard({ ensaio, selecao, onEdit }) {
         </div>
 
         <div>
-          <LocationPreview local={ensaio.local} />
+          <LocationPreview ensaio={ensaio} />
         </div>
 
         <div className="col-span-2 max-xl:col-span-1">
@@ -214,10 +218,18 @@ function ValorItem({ label, value, meta, highlight }) {
   )
 }
 
-function LocationPreview({ local }) {
-  const hasLocal = Boolean(String(local || '').trim())
+function LocationPreview({ ensaio }) {
+  const query = montarConsultaMapa({
+    enderecoCompleto: ensaio?.enderecoCompleto,
+    cidade: ensaio?.cidadeEnsaio,
+    estado: ensaio?.estadoEnsaio,
+    local: ensaio?.local,
+  }).trim()
+  const cidadeUf = [ensaio?.cidadeEnsaio, ensaio?.estadoEnsaio].filter(Boolean).join(', ')
+  const label = ensaio?.enderecoCompleto || cidadeUf || ensaio?.local
+  const hasMapQuery = Boolean(query)
 
-  if (!hasLocal) {
+  if (!hasMapQuery) {
     return (
       <div className="flex min-h-[152px] flex-col items-center justify-center rounded-[12px] border border-dashed border-[var(--border)] bg-white/60 p-4 text-center">
         <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[var(--gold-dim)] text-[var(--gold)]">
@@ -235,11 +247,11 @@ function LocationPreview({ local }) {
       <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-3.5 py-2.5">
         <span className="flex min-w-0 items-center gap-2 text-[12px] font-medium text-[var(--text)]">
           <MapPin size={15} className="shrink-0 text-[var(--gold)]" />
-          <span className="truncate">{local}</span>
+          <span className="truncate">{label}</span>
         </span>
 
         <a
-          href={getMapsUrl(local)}
+          href={getGoogleMapsUrl(query)}
           target="_blank"
           rel="noreferrer"
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border border-[var(--border)] text-[var(--text-muted)] transition hover:border-[var(--gold-border)] hover:text-[var(--gold)]"
@@ -251,8 +263,8 @@ function LocationPreview({ local }) {
       </div>
 
       <iframe
-        title={`Mapa de ${local}`}
-        src={getMapsEmbedUrl(local)}
+        title={`Mapa de ${label}`}
+        src={getGoogleMapsEmbedUrl(query)}
         className="block h-[218px] w-full border-0 max-md:h-[190px]"
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"

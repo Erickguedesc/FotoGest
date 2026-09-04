@@ -1,8 +1,8 @@
 import { normalizarEstadoUf } from './brasil'
 
-export function montarConsultaMapa({ local, cidade, estado }) {
+export function montarConsultaMapa({ enderecoCompleto, cidade, estado, local }) {
   const cidadeEstado = [cidade, estado].filter(Boolean).join(', ')
-  return [local, cidadeEstado].filter(Boolean).join(', ').trim()
+  return enderecoCompleto || cidadeEstado || local || ''
 }
 
 export function getGoogleMapsUrl(query) {

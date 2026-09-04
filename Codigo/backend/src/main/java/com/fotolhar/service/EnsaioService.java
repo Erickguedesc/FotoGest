@@ -101,6 +101,8 @@ Ensaio ensaio = Ensaio.builder()
         .local(request.getLocal())
         .cidadeEnsaio(normalizarTexto(request.getCidadeEnsaio()))
         .estadoEnsaio(normalizarUf(request.getEstadoEnsaio()))
+        .enderecoCompleto(normalizarTexto(request.getEnderecoCompleto()))
+        .referenciaLocal(normalizarTexto(request.getReferenciaLocal()))
         .qtdFotosPacote(request.getQtdFotosPacote())
         .valorPacote(request.getValorPacote())
         .cobrarFotoExtra(cobrar)
@@ -227,6 +229,8 @@ public List<EnsaioResponse> listar(
         ensaio.setLocal(request.getLocal());
         ensaio.setCidadeEnsaio(normalizarTexto(request.getCidadeEnsaio()));
         ensaio.setEstadoEnsaio(normalizarUf(request.getEstadoEnsaio()));
+        ensaio.setEnderecoCompleto(normalizarTexto(request.getEnderecoCompleto()));
+        ensaio.setReferenciaLocal(normalizarTexto(request.getReferenciaLocal()));
         // ✅ Direto — @NotNull no DTO já protege
          ensaio.setQtdFotosPacote(request.getQtdFotosPacote());
         ensaio.setValorPacote(request.getValorPacote());
@@ -552,6 +556,8 @@ private EnsaioResponse toResponse(Ensaio ensaio, EnsaioResponseContext responseC
             .local(ensaio.getLocal())
             .cidadeEnsaio(ensaio.getCidadeEnsaio())
             .estadoEnsaio(ensaio.getEstadoEnsaio())
+            .enderecoCompleto(ensaio.getEnderecoCompleto())
+            .referenciaLocal(ensaio.getReferenciaLocal())
 
             .qtdFotosPacote(ensaio.getQtdFotosPacote())
             .valorPacote(ensaio.getValorPacote())

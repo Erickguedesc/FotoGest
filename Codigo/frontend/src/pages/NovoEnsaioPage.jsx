@@ -12,10 +12,6 @@ import { ensaiosService } from '../services/ensaiosService'
 import { clientesService } from '../services/clientesService'
 import { configuracoesService } from '../services/configuracoesService'
 import { removerEstadoDoTexto } from '../utils/brasil'
-import {
-  getUltimoEstadoEnsaio,
-  salvarUltimoEstadoEnsaio,
-} from '../utils/ultimoEstadoEnsaio'
 
 const TIPO_ENUM_MAP = {
   Newborn:  'NEWBORN',
@@ -48,7 +44,8 @@ const INITIAL_FORM = {
   hora:      '',
   local:     '',
   cidadeEnsaio: '',
-  estadoEnsaio: '',
+  enderecoCompleto: '',
+  referenciaLocal: '',
   obs:       '',
   fotos:     '',
   valor:     '',
@@ -90,10 +87,7 @@ function getCidadePadrao(configuracoes) {
 export default function NovoEnsaioPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const [form, setForm]       = useState(() => ({
-    ...INITIAL_FORM,
-    estadoEnsaio: getUltimoEstadoEnsaio(),
-  }))
+  const [form, setForm]       = useState(INITIAL_FORM)
   const [errors, setErrors]   = useState({})
   const [loading, setLoading] = useState(false)
   const [toast, setToast]     = useState(null)
@@ -121,7 +115,6 @@ export default function NovoEnsaioPage() {
 
       if (!preferencias) return
       const cidadePadrao = getCidadePadrao(configuracoes)
-      const ultimoEstado = getUltimoEstadoEnsaio()
 
       setForm((prev) => ({
         ...prev,
@@ -132,9 +125,7 @@ export default function NovoEnsaioPage() {
           preferencias.valorFotoExtraPadrao !== undefined
             ? formatCurrencyInput(preferencias.valorFotoExtraPadrao)
             : prev.extra,
-        local: prev.local || preferencias.cidadePadrao || '',
         cidadeEnsaio: prev.cidadeEnsaio || cidadePadrao || '',
-        estadoEnsaio: prev.estadoEnsaio || ultimoEstado || '',
       }))
     } catch (error) {
       console.error('[NovoEnsaio] Erro ao carregar preferências:', error)
@@ -265,6 +256,8 @@ export default function NovoEnsaioPage() {
     const e = {}
     if (form.cliente.trim().length < 3)
       e.cliente = 'Informe o nome completo do cliente'
+    if (!form.cidade.trim())
+      e.cidade = 'Informe a cidade do cliente'
     if (!form.tipo)
       e.tipo = 'Selecione o tipo de ensaio'
     if (form.tipo === 'Outro' && !form.tipoCustom?.trim())
@@ -275,10 +268,6 @@ export default function NovoEnsaioPage() {
       e.hora = 'Informe o horário'
     if (!form.local.trim())
       e.local = 'Informe o local'
-    if (!form.cidadeEnsaio.trim())
-      e.cidadeEnsaio = 'Informe a cidade do ensaio'
-    if (!form.estadoEnsaio)
-      e.estadoEnsaio = 'Selecione o estado do ensaio'
     if (!form.valor || parseCurrencyBR(form.valor) <= 0)
       e.valor = 'Informe o valor do pacote'
     if (!form.fotos || parseInt(form.fotos) <= 0)
@@ -304,7 +293,7 @@ export default function NovoEnsaioPage() {
           telefone:  form.telefone?.trim()           || null,
           email:     form.email?.trim()              || null,
           cpf:       onlyDigits(form.cpf)             || null,
-          cidade:    form.cidade?.trim()             || null,
+          cidade:    form.cidade.trim(),
           indicacao: form.indicacao                  || null,
         }
 
@@ -324,15 +313,17 @@ export default function NovoEnsaioPage() {
         clienteTelefone: form.telefone?.trim() || null,
         clienteEmail: form.email?.trim() || null,
         clienteCpf: onlyDigits(form.cpf) || null,
-        clienteCidade: form.cidade?.trim() || null,
+        clienteCidade: form.cidade.trim(),
         clienteIndicacao: form.indicacao || null,
         tipo:            tipoEnum,
         tipoPersonalizado:
           tipoEnum === 'OUTRO' ? form.tipoCustom.trim() : null,
         dataEnsaio: new Date(`${form.data}T${form.hora}:00`).toISOString(),
         local:           form.local.trim(),
-        cidadeEnsaio:    form.cidadeEnsaio.trim(),
-        estadoEnsaio:    form.estadoEnsaio,
+        cidadeEnsaio:    form.cidadeEnsaio.trim() || null,
+        estadoEnsaio:    null,
+        enderecoCompleto: form.enderecoCompleto?.trim() || null,
+        referenciaLocal: form.referenciaLocal?.trim() || null,
         qtdFotosPacote:  parseInt(form.fotos),
         valorPacote:     parseCurrencyBR(form.valor),
         cobrarFotoExtra: form.extraAtivo,
@@ -342,7 +333,6 @@ export default function NovoEnsaioPage() {
       }
 
       await ensaiosService.criar(ensaioPayload)
-      salvarUltimoEstadoEnsaio(form.estadoEnsaio)
 
       setToast({ message: 'Ensaio cadastrado com sucesso!', type: 'success' })
       setTimeout(() => {

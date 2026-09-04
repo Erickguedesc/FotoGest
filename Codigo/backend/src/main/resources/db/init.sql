@@ -134,6 +134,8 @@ CREATE TABLE IF NOT EXISTS ensaio (
   local VARCHAR(300) NOT NULL,
   cidade_ensaio VARCHAR(120),
   estado_ensaio VARCHAR(2),
+  endereco_completo VARCHAR(300),
+  referencia_local VARCHAR(300),
   qtd_fotos_pacote INTEGER NOT NULL DEFAULT 30,
   valor_pacote NUMERIC(10,2) NOT NULL DEFAULT 0,
   valor_foto_extra NUMERIC(10,2) DEFAULT 35.00,
@@ -151,6 +153,8 @@ CREATE TABLE IF NOT EXISTS ensaio (
 ALTER TABLE ensaio ADD COLUMN IF NOT EXISTS notas_internas TEXT;
 ALTER TABLE ensaio ADD COLUMN IF NOT EXISTS cidade_ensaio VARCHAR(120);
 ALTER TABLE ensaio ADD COLUMN IF NOT EXISTS estado_ensaio VARCHAR(2);
+ALTER TABLE ensaio ADD COLUMN IF NOT EXISTS endereco_completo VARCHAR(300);
+ALTER TABLE ensaio ADD COLUMN IF NOT EXISTS referencia_local VARCHAR(300);
 
 CREATE TABLE IF NOT EXISTS historico_status_ensaio (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

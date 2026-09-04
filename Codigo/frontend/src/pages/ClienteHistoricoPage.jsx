@@ -209,7 +209,7 @@ export default function ClienteHistoricoPage() {
         </section>
 
         {clienteArquivado && (
-          <div className="mb-5 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-5 text-[13px] leading-6 text-amber-100">
+          <div className="mb-5 rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-[13px] leading-6 text-white/70">
             Este cliente está arquivado. O histórico, valores e relatórios foram preservados, mas ele fica no filtro Arquivados e fora de Em andamento. Reative o cliente antes de criar novos ensaios para ele.
           </div>
         )}

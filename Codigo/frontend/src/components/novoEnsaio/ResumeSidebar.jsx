@@ -94,6 +94,8 @@ export default function ResumeSidebar({ form, loading, activeSection = 'cliente'
     { label: 'Data', value: fmtDate(form.data) },
     { label: 'Horário', value: form.hora },
     { label: 'Local', value: form.local },
+    { label: 'Cidade ensaio', value: form.cidadeEnsaio },
+    { label: 'Referência', value: form.referenciaLocal },
     { label: 'Fotos incluídas', value: form.fotos },
     {
       label: 'Foto extra',

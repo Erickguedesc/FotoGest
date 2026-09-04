@@ -3,7 +3,6 @@ import { Map, MapPin } from 'lucide-react'
 
 import FormInput from '../ui/FormInput'
 import LocationMapModal from '../ui/LocationMapModal'
-import { ESTADOS_BRASILEIROS } from '../../utils/brasil'
 import {
   interpretarTextoLocalizacao,
   montarConsultaMapa,
@@ -92,19 +91,18 @@ export default function FormInfoSection({
   const [mapOpen, setMapOpen] = useState(false)
   const mapInitialQuery = useMemo(
     () => montarConsultaMapa({
-      local: form.local,
+      enderecoCompleto: form.enderecoCompleto,
       cidade: form.cidadeEnsaio,
-      estado: form.estadoEnsaio,
+      local: form.local,
     }),
-    [form.cidadeEnsaio, form.estadoEnsaio, form.local],
+    [form.cidadeEnsaio, form.enderecoCompleto, form.local],
   )
 
   const handleUseLocationFromMap = (value) => {
     const parsed = interpretarTextoLocalizacao(value)
 
-    if (parsed.local) set('local', parsed.local)
+    set('enderecoCompleto', value)
     if (parsed.cidade) set('cidadeEnsaio', parsed.cidade)
-    if (parsed.estado) set('estadoEnsaio', parsed.estado)
 
     setMapOpen(false)
   }
@@ -205,7 +203,7 @@ export default function FormInfoSection({
               />
             </FormInput>
 
-            <FormInput label="Cidade" error={errors.cidade}>
+            <FormInput label="Cidade" required error={errors.cidade}>
               <input
                 type="text"
                 placeholder="digite a cidade"
@@ -339,62 +337,61 @@ export default function FormInfoSection({
             </div>
           )}
 
-          {/* Local */}
-          <FormInput label="Local do ensaio" required error={errors.local}>
-            <div className={`${compoundInputClass} ${errors.local ? errorInputClass : ''}`}>
-              <MapPin className="ml-3.5 h-4 w-4 flex-shrink-0 text-[var(--text-muted)] opacity-75" strokeWidth={1.8} />
-              <input
-                type="text"
-                placeholder="Digite o local do ensaio"
-                value={form.local}
-                onChange={(e) => set('local', e.target.value)}
-                className="min-w-0 flex-1 bg-transparent px-3 py-[11px] text-[13.5px] text-[var(--text)] outline-none placeholder:text-[var(--text-muted)]"
-              />
-              <button
-                type="button"
-                onClick={() => setMapOpen(true)}
-                className="flex h-full min-h-[45px] flex-shrink-0 items-center gap-2 border-l border-[var(--border)] px-3 text-[12px] font-medium text-[#C84F32] transition hover:bg-[rgba(200,79,50,0.08)] hover:text-[#AE3F28] max-sm:px-2.5"
-              >
-                <Map className="h-4 w-4" strokeWidth={1.8} />
-                <span className="max-[420px]:hidden">Abrir mapa</span>
-              </button>
-            </div>
-          </FormInput>
-
-          {/* Cidade + Estado */}
           <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
-            <FormInput label="Cidade" required error={errors.cidadeEnsaio}>
+            <FormInput label="Local do ensaio" required error={errors.local}>
+              <div className={`${compoundInputClass} ${errors.local ? errorInputClass : ''}`}>
+                <MapPin className="ml-3.5 h-4 w-4 flex-shrink-0 text-[var(--text-muted)] opacity-75" strokeWidth={1.8} />
+                <input
+                  type="text"
+                  placeholder="Digite o local do ensaio"
+                  value={form.local}
+                  onChange={(e) => set('local', e.target.value)}
+                  className="min-w-0 flex-1 bg-transparent px-3 py-[11px] text-[13.5px] text-[var(--text)] outline-none placeholder:text-[var(--text-muted)]"
+                />
+              </div>
+            </FormInput>
+
+            <FormInput label="Endereço completo" error={errors.enderecoCompleto}>
+              <div className={`${compoundInputClass} ${errors.enderecoCompleto ? errorInputClass : ''}`}>
+                <Map className="ml-3.5 h-4 w-4 flex-shrink-0 text-[var(--text-muted)] opacity-75" strokeWidth={1.8} />
+                <input
+                  type="text"
+                  placeholder="Opcional, se quiser abrir rota exata"
+                  value={form.enderecoCompleto}
+                  onChange={(e) => set('enderecoCompleto', e.target.value)}
+                  className="min-w-0 flex-1 bg-transparent px-3 py-[11px] text-[13.5px] text-[var(--text)] outline-none placeholder:text-[var(--text-muted)]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setMapOpen(true)}
+                  className="flex h-full min-h-[45px] flex-shrink-0 items-center gap-2 border-l border-[var(--border)] px-3 text-[12px] font-medium text-[#C84F32] transition hover:bg-[rgba(200,79,50,0.08)] hover:text-[#AE3F28] max-sm:px-2.5"
+                >
+                  <Map className="h-4 w-4" strokeWidth={1.8} />
+                  <span className="max-[420px]:hidden">Mapa</span>
+                </button>
+              </div>
+            </FormInput>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
+            <FormInput label="Cidade do ensaio" error={errors.cidadeEnsaio}>
               <input
                 type="text"
-                placeholder="Digite a cidade"
+                placeholder="Opcional"
                 value={form.cidadeEnsaio}
                 onChange={(e) => set('cidadeEnsaio', e.target.value)}
                 className={`${inputClass} ${errors.cidadeEnsaio ? errorInputClass : ''}`}
               />
             </FormInput>
 
-            <FormInput label="Estado" required error={errors.estadoEnsaio}>
-              <div className="relative">
-                <select
-                  value={form.estadoEnsaio}
-                  onChange={(e) => set('estadoEnsaio', e.target.value)}
-                  className={`${inputClass} appearance-none pr-9 cursor-pointer ${errors.estadoEnsaio ? errorInputClass : ''}`}
-                >
-                  <option value="">Selecione o estado</option>
-                  {ESTADOS_BRASILEIROS.map((estado) => (
-                    <option key={estado.uf} value={estado.uf}>
-                      {estado.nome}
-                    </option>
-                  ))}
-                </select>
-                <svg
-                  width="11" height="11" viewBox="0 0 24 24"
-                  fill="none" stroke="currentColor" strokeWidth="2"
-                  className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] opacity-70"
-                >
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </div>
+            <FormInput label="Referência do local" error={errors.referenciaLocal}>
+              <input
+                type="text"
+                placeholder="Ex: entrada principal, portão azul"
+                value={form.referenciaLocal}
+                onChange={(e) => set('referenciaLocal', e.target.value)}
+                className={`${inputClass} ${errors.referenciaLocal ? errorInputClass : ''}`}
+              />
             </FormInput>
           </div>
 

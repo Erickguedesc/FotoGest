@@ -32,6 +32,8 @@ public class EnsaioResponse {
     private String local;
     private String cidadeEnsaio;
     private String estadoEnsaio;
+    private String enderecoCompleto;
+    private String referenciaLocal;
 
     private Integer qtdFotosPacote;
     private BigDecimal valorPacote;

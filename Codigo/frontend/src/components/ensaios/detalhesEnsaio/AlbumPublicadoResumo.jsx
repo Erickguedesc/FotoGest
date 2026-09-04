@@ -89,13 +89,13 @@ export default function AlbumPublicadoResumo({
           </div>
 
           <h3 className="max-w-[560px] font-serif text-[31px] font-light leading-[1.12] tracking-normal text-[var(--text)] max-md:text-[28px]">
-            Galeria enviada para a cliente
+            Galeria criada!
           </h3>
 
           <p className="mt-4 max-w-[620px] text-[14px] leading-6 text-[var(--text-muted)]">
             As fotos foram agrupadas em um álbum e estão bloqueadas para preservar
             a galeria enviada. O link e a senha ficam disponíveis no card de publicação
-            ao lado.
+            ao lado. 
           </p>
 
           <div className="mt-5 grid max-w-[560px] grid-cols-3 gap-3 max-sm:grid-cols-1">
